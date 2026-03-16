@@ -33,4 +33,11 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Aprende más sobre las capacidades del stack en la documentación de [Next.js](https://nextjs.org/docs).
+
+## Motor de Scraping (POC)
+Para probar el pipeline completo de extracción y procesamiento de Lenguaje Natural en la consola:
+```bash
+npx tsx scripts/test-scraper.ts "https://www.colsubsidio.com"
+```
+*Nota: Asegúrate de tener configurada la variable `ANTHROPIC_API_KEY` en tu `.env` para usar a Claude real. Si no la tienes, el parser usará nuestro modo de emulación (Mock) sin consumir datos reales.

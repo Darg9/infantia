@@ -53,8 +53,11 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 ```
 src/modules/activities/__tests__/
-  schemas.test.ts → listActivitiesSchema, createActivitySchema, updateActivitySchema
+  schemas.test.ts  → listActivitiesSchema, createActivitySchema, updateActivitySchema — 100%
+  service.test.ts  → listActivities (filtros+paginación), CRUD completo, soft delete (120 tests total) — 94% stmts / 100% funcs
 ```
+
+Cobertura v0.1.0: schemas 100% · service 94% stmts / 100% funcs / 100% lines
 
 ## Pendiente
 

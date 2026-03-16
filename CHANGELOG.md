@@ -12,22 +12,10 @@ Relación con Documento Fundacional:
 ## [Unreleased]
 <!-- Agregar aquí cada cambio antes de hacer el tag de release -->
 
-### Added
-- Sistema de testing con Vitest: threshold dinámico +10%/día desde 2026-03-16
-- 46 tests iniciales: ScrapingCache, activityNLPResultSchema, activity schemas
-- GitHub Actions: CI corre tests en cada push/PR
-- Workflow de versionamiento con feature branches, PR template, CHANGELOG y docs de módulos
-- Separación completa de habit-challenge en su propio directorio y repo
-
-### Fixed
-- schema.prisma sin `url` (Prisma 7 lo toma de prisma.config.ts)
-- node_modules con Prisma 5 → reinstalado Prisma 7
-- Regla de directorio en CLAUDE.md para prevenir mezcla de proyectos
-
 ---
 
 ## [v0.1.0] — 2026-03-16
-**Documento Fundacional: V05**
+**Documento Fundacional: V06**
 
 ### Added
 - Pipeline de scraping completo end-to-end
@@ -41,6 +29,18 @@ Relación con Documento Fundacional:
 - Arquitectura modular por dominio (scraping, activities, providers, search...)
 - Schema de base de datos con 11 entidades
 - Scraper genérico con Cheerio + Playwright
+- Sistema de testing: Vitest + cobertura dinámica +10%/día
+- 120 tests — 31% cobertura statements, 52% functions (supera threshold día 1: 30%)
+- TEST_PLAN.md y TEST_STATUS.md propios de Infantia
+- Workflow de versionamiento: feature branches + PR template + CHANGELOG + docs de módulos
+- Separación completa de habit-challenge (directorio y cuenta GitHub independientes)
+- Cuenta GitHub dedicada: Darg9 / denysreyes@gmail.com
+
+### Fixed
+- schema.prisma sin `url` (Prisma 7 lo toma de prisma.config.ts)
+- node_modules con Prisma 5 → reinstalado Prisma 7
+- Regla de directorio en CLAUDE.md para prevenir mezcla de proyectos
+- TEST_PLAN.md y TEST_STATUS.md contenían archivos de habit-challenge (reemplazados)
 
 ### Decisions
 - Stack: Next.js 15 + TypeScript + Supabase + Prisma 7 + Meilisearch

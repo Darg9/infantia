@@ -54,9 +54,12 @@ npx tsx scripts/verify-db.ts
 
 ```
 src/modules/scraping/__tests__/
-  cache.test.ts   → ScrapingCache: has, add, filterNew, size
-  types.test.ts   → activityNLPResultSchema, discoveredActivityUrlsSchema
+  cache.test.ts    → ScrapingCache: has, add, filterNew, size, save, load (14 tests) — 100%
+  types.test.ts    → activityNLPResultSchema, discoveredActivityUrlsSchema — 100%
+  storage.test.ts  → ScrapingStorage: saveBatchResults, saveActivity, disconnect (11 tests) — 95% stmts
 ```
+
+Cobertura v0.1.0: cache 100% · storage 95% stmts / 100% funcs · pipeline/extractor/nlp pendientes (v0.2.0)
 
 ## Sitios probados
 

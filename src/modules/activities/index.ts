@@ -3,5 +3,5 @@
 // Handles: CRUD, search, filtering, feed generation
 // =============================================================================
 
-export { };
-// TODO: Activity service, API routes, search integration
+export * from './activities.service';
+export * from './activities.schemas';

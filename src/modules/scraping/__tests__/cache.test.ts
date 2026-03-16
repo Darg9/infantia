@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vitest';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ScrapingCache } from '../cache';
 
 // Mock file system — tests no deben escribir archivos reales
@@ -75,6 +76,57 @@ describe('ScrapingCache', () => {
       expect(cache.size).toBe(1);
       // La URL sigue en cache
       expect(cache.has('https://a.com')).toBe(true);
+    });
+  });
+
+  describe('save()', () => {
+    it('llama writeFileSync al guardar', () => {
+      const mockWrite = writeFileSync as MockedFunction<typeof writeFileSync>;
+      cache.add('https://a.com', 'Actividad A');
+      cache.save();
+      expect(mockWrite).toHaveBeenCalledTimes(1);
+    });
+
+    it('serializa el contenido como JSON', () => {
+      const mockWrite = writeFileSync as MockedFunction<typeof writeFileSync>;
+      mockWrite.mockClear();
+      cache.add('https://test.com', 'Test');
+      cache.save();
+      const contenido = mockWrite.mock.calls[0][1] as string;
+      expect(() => JSON.parse(contenido)).not.toThrow();
+      expect(contenido).toContain('https://test.com');
+    });
+  });
+
+  describe('load() desde archivo existente', () => {
+    it('carga entradas desde archivo si existe', () => {
+      const mockExists = existsSync as MockedFunction<typeof existsSync>;
+      const mockRead = readFileSync as MockedFunction<typeof readFileSync>;
+      const dataMock = JSON.stringify({
+        entries: {
+          'https://guardada.com': {
+            url: 'https://guardada.com',
+            title: 'Actividad guardada',
+            scrapedAt: new Date().toISOString(),
+          },
+        },
+      });
+      mockExists.mockReturnValueOnce(true);
+      mockRead.mockReturnValueOnce(dataMock as any);
+
+      const cacheConArchivo = new ScrapingCache();
+      expect(cacheConArchivo.has('https://guardada.com')).toBe(true);
+      expect(cacheConArchivo.size).toBe(1);
+    });
+
+    it('retorna cache vacío si el archivo tiene JSON inválido', () => {
+      const mockExists = existsSync as MockedFunction<typeof existsSync>;
+      const mockRead = readFileSync as MockedFunction<typeof readFileSync>;
+      mockExists.mockReturnValueOnce(true);
+      mockRead.mockReturnValueOnce('json-invalido{{{' as any);
+
+      const cacheRoto = new ScrapingCache();
+      expect(cacheRoto.size).toBe(0);
     });
   });
 });

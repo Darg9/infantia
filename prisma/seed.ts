@@ -16,28 +16,20 @@ async function main() {
   // =========================================================================
   // Cities - Colombia
   // =========================================================================
-  const citiesData = [
-    { name: 'Bogotá', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Medellín', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Cali', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Barranquilla', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Cartagena', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Bucaramanga', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Pereira', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Manizales', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Santa Marta', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
-    { name: 'Ibagué', countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
+  const cityNames = [
+    'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena',
+    'Bucaramanga', 'Pereira', 'Manizales', 'Santa Marta', 'Ibagué',
   ];
 
-  const cities = [];
-  for (const c of citiesData) {
-    const city = await prisma.city.upsert({
-      where: { name_countryCode: { name: c.name, countryCode: c.countryCode } },
-      update: {},
-      create: c,
-    });
-    cities.push(city);
-  }
+  const cities = await Promise.all(
+    cityNames.map((name) =>
+      prisma.city.upsert({
+        where: { name_countryCode: { name, countryCode: 'CO' } },
+        update: {},
+        create: { name, countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
+      })
+    )
+  );
 
   console.log(`✅ ${cities.length} cities created`);
 

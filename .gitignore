@@ -56,3 +56,6 @@ test-results.json
 ts-errors.txt
 ts-admin-errors.txt
 TEST_PLAN.md
+
+# ─── Claude Code internals ─────────────────────────────────────
+.agents/

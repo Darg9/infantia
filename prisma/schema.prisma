@@ -1,0 +1,360 @@
+// =============================================================================
+// Infantia - Database Schema
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// Core Entities
+// =============================================================================
+
+model Activity {
+  id                String         @id @default(uuid())
+  title             String         @db.VarChar(255)
+  description       String         @db.Text
+  type              ActivityType   @default(ONE_TIME)
+  status            ActivityStatus @default(DRAFT)
+  startDate         DateTime?
+  endDate           DateTime?
+  schedule          Json?          // { days: ["mon","wed"], start: "15:00", end: "17:00" }
+  ageMin            Int?
+  ageMax            Int?
+  price             Decimal?       @db.Decimal(12, 2)
+  priceCurrency     String         @default("COP") @db.VarChar(3)
+  pricePeriod       PricePeriod?
+  capacity          Int?
+  imageUrl          String?
+  providerId        String
+  locationId        String?
+  verticalId        String
+  sourceType        SourceType     @default(MANUAL)
+  sourceUrl         String?
+  sourcePlatform    String?        @db.VarChar(50)
+  sourceConfidence  Float          @default(0.5)
+  sourceCapturedAt  DateTime?
+  isVerified        Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  provider   Provider  @relation(fields: [providerId], references: [id])
+  location   Location? @relation(fields: [locationId], references: [id])
+  vertical   Vertical  @relation(fields: [verticalId], references: [id])
+  categories ActivityCategory[]
+  favorites  Favorite[]
+  ratings    Rating[]
+
+  @@index([verticalId, status])
+  @@index([providerId])
+  @@index([locationId])
+  @@index([startDate])
+  @@index([status, verticalId, startDate])
+  @@map("activities")
+}
+
+model Provider {
+  id               String       @id @default(uuid())
+  name             String       @db.VarChar(255)
+  type             ProviderType @default(ACADEMY)
+  description      String?      @db.Text
+  email            String?      @db.VarChar(255)
+  phone            String?      @db.VarChar(30)
+  website          String?
+  instagram        String?      @db.VarChar(100)
+  facebook         String?
+  logoUrl          String?
+  isVerified       Boolean      @default(false)
+  isClaimed        Boolean      @default(false)
+  verificationDate DateTime?
+  ratingAvg        Float?
+  ratingCount      Int          @default(0)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  activities Activity[]
+  locations  ProviderLocation[]
+
+  @@map("providers")
+}
+
+model User {
+  id                String   @id @default(uuid())
+  email             String   @unique @db.VarChar(255)
+  name              String   @db.VarChar(255)
+  avatarUrl         String?
+  cityId            String?
+  neighborhood      String?  @db.VarChar(100)
+  notificationPrefs Json     @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
+  role              UserRole @default(USER)
+  createdAt         DateTime @default(now())
+
+  city      City?      @relation(fields: [cityId], references: [id])
+  children  Child[]
+  favorites Favorite[]
+  ratings   Rating[]
+
+  @@map("users")
+}
+
+model Child {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String   @db.VarChar(100)
+  birthDate DateTime @db.Date
+  interests Json     @default("[]")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("children")
+}
+
+// =============================================================================
+// Geography
+// =============================================================================
+
+model City {
+  id          String  @id @default(uuid())
+  name        String  @db.VarChar(100)
+  countryCode String  @db.VarChar(2)
+  countryName String  @db.VarChar(100)
+  timezone    String  @db.VarChar(50)
+  currency    String  @default("COP") @db.VarChar(3)
+  isActive    Boolean @default(true)
+
+  users           User[]
+  locations       Location[]
+  scrapingSources ScrapingSource[]
+
+  @@unique([name, countryCode])
+  @@map("cities")
+}
+
+model Location {
+  id           String  @id @default(uuid())
+  name         String  @db.VarChar(255)
+  address      String  @db.VarChar(500)
+  neighborhood String? @db.VarChar(100)
+  cityId       String
+  latitude     Decimal @db.Decimal(10, 8)
+  longitude    Decimal @db.Decimal(11, 8)
+  isVirtual    Boolean @default(false)
+
+  city       City               @relation(fields: [cityId], references: [id])
+  activities Activity[]
+  providers  ProviderLocation[]
+
+  @@index([cityId])
+  @@map("locations")
+}
+
+model ProviderLocation {
+  providerId String
+  locationId String
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@id([providerId, locationId])
+  @@map("provider_locations")
+}
+
+// =============================================================================
+// Verticals & Categories
+// =============================================================================
+
+model Vertical {
+  id              String  @id @default(uuid())
+  slug            String  @unique @db.VarChar(50)
+  name            String  @db.VarChar(100)
+  description     String  @db.Text
+  targetAudience  String  @db.VarChar(255)
+  icon            String? @db.VarChar(50)
+  color           String? @db.VarChar(7)
+  isActive        Boolean @default(true)
+  config          Json    @default("{}")
+
+  activities      Activity[]
+  categories      Category[]
+  scrapingSources ScrapingSource[]
+
+  @@map("verticals")
+}
+
+model Category {
+  id         String  @id @default(uuid())
+  verticalId String
+  parentId   String?
+  name       String  @db.VarChar(100)
+  slug       String  @db.VarChar(100)
+  icon       String? @db.VarChar(50)
+  sortOrder  Int     @default(0)
+
+  vertical   Vertical           @relation(fields: [verticalId], references: [id])
+  parent     Category?          @relation("CategoryTree", fields: [parentId], references: [id])
+  children   Category[]         @relation("CategoryTree")
+  activities ActivityCategory[]
+
+  @@unique([verticalId, slug])
+  @@index([parentId])
+  @@map("categories")
+}
+
+model ActivityCategory {
+  activityId String
+  categoryId String
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([activityId, categoryId])
+  @@map("activity_categories")
+}
+
+// =============================================================================
+// User Interactions
+// =============================================================================
+
+model Favorite {
+  userId     String
+  activityId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@id([userId, activityId])
+  @@map("favorites")
+}
+
+model Rating {
+  id            String   @id @default(uuid())
+  userId        String
+  activityId    String
+  score         Int
+  comment       String?  @db.Text
+  providerReply String?  @db.Text
+  createdAt     DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, activityId])
+  @@index([activityId])
+  @@map("ratings")
+}
+
+// =============================================================================
+// Scraping
+// =============================================================================
+
+model ScrapingSource {
+  id            String            @id @default(uuid())
+  name          String            @db.VarChar(255)
+  platform      ScrapingPlatform
+  url           String
+  cityId        String
+  verticalId    String
+  scraperType   String            @db.VarChar(50)
+  scheduleCron  String            @db.VarChar(50)
+  isActive      Boolean           @default(true)
+  lastRunAt     DateTime?
+  lastRunStatus ScrapingStatus?
+  lastRunItems  Int?
+  config        Json?
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  city     City         @relation(fields: [cityId], references: [id])
+  vertical Vertical     @relation(fields: [verticalId], references: [id])
+  logs     ScrapingLog[]
+
+  @@index([platform, isActive])
+  @@map("scraping_sources")
+}
+
+model ScrapingLog {
+  id              String         @id @default(uuid())
+  sourceId        String
+  startedAt       DateTime       @default(now())
+  finishedAt      DateTime?
+  status          ScrapingStatus @default(RUNNING)
+  itemsFound      Int            @default(0)
+  itemsNew        Int            @default(0)
+  itemsUpdated    Int            @default(0)
+  itemsDuplicated Int            @default(0)
+  errorMessage    String?        @db.Text
+  metadata        Json?
+
+  source ScrapingSource @relation(fields: [sourceId], references: [id], onDelete: Cascade)
+
+  @@index([sourceId, startedAt])
+  @@map("scraping_logs")
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+enum ActivityType {
+  RECURRING
+  ONE_TIME
+  CAMP
+  WORKSHOP
+}
+
+enum ActivityStatus {
+  ACTIVE
+  PAUSED
+  EXPIRED
+  DRAFT
+}
+
+enum PricePeriod {
+  PER_SESSION
+  MONTHLY
+  TOTAL
+  FREE
+}
+
+enum SourceType {
+  MANUAL
+  PROVIDER
+  SCRAPING
+}
+
+enum ProviderType {
+  ACADEMY
+  INDEPENDENT
+  INSTITUTION
+  GOVERNMENT
+}
+
+enum UserRole {
+  USER
+  PROVIDER
+  ADMIN
+}
+
+enum ScrapingPlatform {
+  WEBSITE
+  INSTAGRAM
+  FACEBOOK
+  TELEGRAM
+  TIKTOK
+  X
+  WHATSAPP
+}
+
+enum ScrapingStatus {
+  RUNNING
+  SUCCESS
+  PARTIAL
+  FAILED
+}

@@ -214,7 +214,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "Documento generado automáticamente por Claude Code — Infantia v0.1.0",
+        text: "Documento generado automáticamente por Claude Code — Infantia v0.6",
         size: 18,
         font: "Arial",
         color: "999999",
@@ -424,11 +424,11 @@ children.push(
   twoColTable(
     ["Métrica", "Valor"],
     [
-      ["Actividades totales en Supabase", "167"],
-      ["Proveedor principal", "biblored.gov.co"],
-      ["Calidad alta (sourceConfidence ≥ 0.9)", "162 (97%)"],
-      ["Con rango de edad definido", "142 (85%)"],
-      ["Actividades gratuitas", "161"],
+      ["Actividades totales en Supabase", "188"],
+      ["Fuentes activas", "2 (biblored.gov.co, bogota.gov.co)"],
+      ["Calidad alta (sourceConfidence ≥ 0.9)", "181 (96%)"],
+      ["Con rango de edad definido", "145 (77%)"],
+      ["Actividades gratuitas", "175"],
       ["Páginas scrapeadas", "19"],
       ["Tiempo total batch completo", "~12 minutos"],
     ]
@@ -439,8 +439,43 @@ children.push(new Paragraph({ children: [new TextRun({ text: "Tipos de actividad
 children.push(bodyParagraph("Arte, Cine, Ciencias, Escritura, Lectura, Lúdico, Música, Teatro, Literatura, Sensorial, Ajedrez"));
 children.push(spacer());
 
-// ---- SECTION 10: ROADMAP ----
-children.push(sectionHeading("10. ROADMAP"));
+// ---- SECTION 10: FRONTEND (NUEVO EN V06) ----
+children.push(sectionHeading("10. FRONTEND — ESTADO ACTUAL (v0.6)"));
+children.push(labelValue("Stack", "Next.js 15 App Router — Server Components + Client Components con Tailwind v4"));
+children.push(spacer(0.5));
+children.push(
+  threeColTable(
+    ["Página / Componente", "Tipo", "Estado"],
+    [
+      ["/ (Home page)", "Server Component", "✅ Funcional"],
+      ["/actividades (listado)", "Server Component", "✅ Funcional"],
+      ["/actividades/[id] (detalle)", "Server Component", "✅ Funcional"],
+      ["ActivityCard", "Client — presentación", "✅ Funcional"],
+      ["Filters (búsqueda + edad + categoría)", "Client — useRouter", "✅ Funcional"],
+      ["Pagination", "Client — useSearchParams", "✅ Funcional"],
+    ],
+    [40, 30, 30]
+  )
+);
+children.push(spacer());
+children.push(new Paragraph({ children: [new TextRun({ text: "Funcionalidades implementadas:", bold: true, size: 20, font: "Arial", color: DARK_BLUE })], spacing: { before: 80, after: 60 } }));
+for (const f of [
+  "Grid responsivo 1→2→3→4 columnas",
+  "Búsqueda de texto con debounce (400ms) — busca en título y descripción",
+  "Filtro por rango de edad (6 rangos: 0–3, 4–6, 7–10, 11–14, 15–18, Cualquier)",
+  "Filtro por categoría (13 categorías reales desde la BD)",
+  "Paginación — 24 actividades por página, conserva filtros activos",
+  "Home page con hero, 188 actividades, 8 categorías con links directos",
+  "Detalle: hero, descripción, fechas, proveedor, precio, edad, ubicación, CTA",
+  "Emojis por categoría (category-utils.ts): 🎹 Piano, 🩰 Ballet, 💻 Programación, etc.",
+  "Precio Prisma Decimal — tipo union PrismaPrice para manejar el tipo Decimal de Prisma 7",
+]) {
+  children.push(bodyParagraph("• " + f));
+}
+children.push(spacer());
+
+// ---- SECTION 11: ROADMAP ----
+children.push(sectionHeading("11. ROADMAP"));
 children.push(
   threeColTable(
     ["Fase", "Hito", "Estado"],
@@ -448,8 +483,10 @@ children.push(
       ["Fase 1 MVP", "Pipeline de scraping funcional", "✅ Completado"],
       ["Fase 1 MVP", "167 actividades en Supabase", "✅ Completado"],
       ["Fase 1 MVP", "IA con 97% de confianza", "✅ Completado"],
-      ["Fase 1 MVP", "Segunda fuente de datos", "⏳ Pendiente"],
-      ["Fase 1 MVP", "Frontend (búsqueda y filtros)", "⏳ Pendiente"],
+      ["Fase 1 MVP", "Segunda fuente (bogota.gov.co)", "✅ Completado"],
+      ["Fase 1 MVP", "Frontend /actividades (búsqueda y filtros)", "✅ Completado"],
+      ["Fase 1 MVP", "Página de detalle /actividades/[id]", "✅ Completado"],
+      ["Fase 1 MVP", "Home page con categorías", "✅ Completado"],
       ["Fase 1 MVP", "Panel de administración", "⏳ Pendiente"],
       ["Fase 1 MVP", "Scraping Instagram", "⏳ Pendiente"],
       ["Fase 2", "Panel de proveedores", "—"],
@@ -469,8 +506,8 @@ children.push(
 );
 children.push(spacer());
 
-// ---- SECTION 11: ESTRATEGIA DE FUENTES DE DATOS ----
-children.push(sectionHeading("11. ESTRATEGIA DE FUENTES DE DATOS"));
+// ---- SECTION 12: ESTRATEGIA DE FUENTES DE DATOS ----
+children.push(sectionHeading("12. ESTRATEGIA DE FUENTES DE DATOS"));
 children.push(new Paragraph({ children: [new TextRun({ text: "Principios:", bold: true, size: 20, font: "Arial", color: DARK_BLUE })], spacing: { before: 80, after: 60 } }));
 for (const p of [
   "Ninguna fuente supera el 30% del total de actividades",
@@ -486,6 +523,7 @@ children.push(
     ["Fuente (Bogotá MVP)", "Tipo", "Estado"],
     [
       ["BibloRed (biblored.gov.co)", "Web estático", "✅ 167 actividades"],
+      ["Bogotá ciudad (bogota.gov.co)", "Web estático / JSON-LD", "✅ 21 actividades"],
       ["IDARTES", "Web estático", "⏳ Pendiente"],
       ["Jardín Botánico", "Web estático", "⏳ Pendiente"],
       ["Trazos (trazos.net)", "Web estático", "✅ Probado"],
@@ -496,8 +534,8 @@ children.push(
 );
 children.push(spacer());
 
-// ---- SECTION 12: MONETIZACIÓN ----
-children.push(sectionHeading("12. MONETIZACIÓN (PENDIENTE POST-MVP)"));
+// ---- SECTION 13: MONETIZACIÓN ----
+children.push(sectionHeading("13. MONETIZACIÓN (PENDIENTE POST-MVP)"));
 children.push(bodyParagraph("Decisión estratégica: evaluar modelos con datos reales de uso del MVP antes de comprometerse."));
 children.push(spacer(0.5));
 children.push(
@@ -514,8 +552,8 @@ children.push(
 );
 children.push(spacer());
 
-// ---- SECTION 13: DECISIONES TÉCNICAS PENDIENTES ----
-children.push(sectionHeading("13. DECISIONES TÉCNICAS PENDIENTES"));
+// ---- SECTION 14: DECISIONES TÉCNICAS PENDIENTES ----
+children.push(sectionHeading("14. DECISIONES TÉCNICAS PENDIENTES"));
 children.push(spacer(0.5));
 children.push(
   twoColTable(
@@ -531,8 +569,8 @@ children.push(
 );
 children.push(spacer());
 
-// ---- SECTION 14: HERRAMIENTAS DE TRABAJO ----
-children.push(sectionHeading("14. HERRAMIENTAS DE TRABAJO"));
+// ---- SECTION 15: HERRAMIENTAS DE TRABAJO ----
+children.push(sectionHeading("15. HERRAMIENTAS DE TRABAJO"));
 children.push(spacer(0.5));
 children.push(
   twoColTable(
@@ -541,46 +579,12 @@ children.push(
       ["Claude Code", "Todo código, arquitectura, decisiones técnicas, generación de documentos"],
       ["Gemini / Antigravity", "Resúmenes de video, investigación web, análisis competencia, segundas opiniones"],
       ["Supabase", "PostgreSQL en la nube (DB + Auth + Storage)"],
-      ["GitHub", "Control de versiones (repo privado: Infantia Claude — Darg9 (denysreyes@gmail.com))"],
+      ["GitHub", "Control de versiones (repo privado: Infantia Claude — andresreyesg-cyber)"],
       ["Vercel", "Hosting frontend Next.js (planificado)"],
       ["Railway", "Workers de scraping en background (planificado)"],
     ]
   )
 );
-children.push(spacer());
-
-// ---- SECTION 15: TESTING Y CALIDAD ----
-children.push(sectionHeading("15. PLAN DE PRUEBAS Y CALIDAD (v0.1.0)"));
-children.push(labelValue("Framework", "Vitest 4.x + @vitest/coverage-v8"));
-children.push(labelValue("Threshold", "+10% por día desde 2026-03-16 (día 1 = 30%, cap = 100%)"));
-children.push(labelValue("Filosofía", "Cada PR incluye código + tests + docs. El CI verifica cobertura en cada push."));
-children.push(spacer(0.5));
-children.push(
-  threeColTable(
-    ["Módulo", "Tests", "Cobertura"],
-    [
-      ["lib/utils", "20 tests", "100% stmts / 100% funcs"],
-      ["lib/validation", "13 tests", "100% stmts / 100% funcs"],
-      ["scraping/cache", "14 tests", "100% stmts / 100% funcs"],
-      ["scraping/storage", "11 tests", "95% stmts / 100% funcs"],
-      ["activities/schemas", "Cobertura completa", "100% stmts / 100% funcs"],
-      ["activities/service", "Prisma mockeado", "94% stmts / 100% funcs"],
-      ["scraping/pipeline", "Pendiente v0.2.0", "0%"],
-      ["scraping/extractor", "Pendiente v0.2.0", "0%"],
-      ["TOTAL", "120 tests (7 archivos)", "31% stmt / 52% funcs / 31% lines"],
-    ],
-    [35, 35, 30]
-  )
-);
-children.push(spacer());
-children.push(new Paragraph({ children: [new TextRun({ text: "Roadmap de pruebas:", bold: true, size: 20, font: "Arial", color: DARK_BLUE })], spacing: { before: 80, after: 60 } }));
-for (const item of [
-  "v0.2.0 (40%): api-response.ts, pipeline.ts, extractor.ts, gemini.analyzer.ts",
-  "v0.3.0 (50%): módulo providers, search (Meilisearch), endpoints API con Supertest",
-  "v1.0.0 (MVP): Tests E2E con Playwright, 100% cobertura módulos core",
-]) {
-  children.push(bodyParagraph("• " + item));
-}
 children.push(spacer());
 
 // ---- SECTION 16: HISTORIAL DE VERSIONES ----
@@ -595,7 +599,7 @@ children.push(
       ["V03", "2026-03-16", "Gemini/Antigravity — Adiciones de estado real del proyecto (gaps detectados)"],
       ["V04", "2026-03-16", "Claude Code — Profundidad V02 + adiciones de estado real V03"],
       ["V05", "2026-03-16", "Claude Code — Pipeline scraping funcional, 167 actividades en Supabase, fix chunking Gemini, verify-db"],
-      ["V06", "2026-03-16", "Claude Code — Testing (120 tests, 31% cobertura, Vitest), git Darg9, workflow versionamiento, TEST_PLAN"],
+      ["V06", "2026-03-16", "Claude Code — UI completa (/actividades + detalle + home), bogota.gov.co (21 act.), fix Gemini truncation (indices), 127 tests, category-utils"],
     ],
     [10, 18, 72]
   )
@@ -607,7 +611,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "Documento generado automáticamente por Claude Code — Infantia v0.1.0 — 2026-03-16",
+        text: "Documento generado automáticamente por Claude Code — Infantia v0.6 — 2026-03-16",
         size: 16,
         font: "Arial",
         color: "999999",

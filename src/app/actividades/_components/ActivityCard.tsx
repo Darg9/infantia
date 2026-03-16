@@ -3,6 +3,7 @@
 // =============================================================================
 
 import clsx from 'clsx';
+import { getCategoryColor, getCategoryEmoji } from '@/lib/category-utils';
 
 // Tipo local inferido desde lo que devuelve listActivities
 // Prisma retorna price como Decimal (objeto con toNumber()), no como number primitivo
@@ -34,44 +35,6 @@ interface ActivityCardProps {
   activity: Activity;
 }
 
-const CATEGORY_COLORS = [
-  'bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100',
-  'bg-cyan-100', 'bg-violet-100', 'bg-orange-100', 'bg-teal-100',
-];
-
-function getCategoryColor(slug: string): string {
-  let hash = 0;
-  for (let i = 0; i < slug.length; i++) hash = slug.charCodeAt(i) + ((hash << 5) - hash);
-  return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
-}
-
-const CATEGORY_EMOJIS: Record<string, string> = {
-  'arte': '🎨', 'pintura': '🖌️', 'dibujo': '✏️',
-  'música': '🎵', 'piano': '🎹', 'guitarra': '🎸', 'canto': '🎤',
-  'deporte': '⚽', 'fútbol': '⚽', 'natación': '🏊', 'tenis': '🎾',
-  'teatro': '🎭', 'actuación': '🎭',
-  'danza': '💃', 'ballet': '🩰', 'baile': '💃',
-  'ciencia': '🔬', 'experimento': '🔬',
-  'lectura': '📚', 'libro': '📚',
-  'tecnología': '💻', 'programación': '💻', 'robótica': '🤖',
-  'cocina': '👨‍🍳', 'repostería': '🍰',
-  'naturaleza': '🌿', 'ecología': '🌱',
-  'yoga': '🧘', 'bienestar': '💆',
-  'manualidad': '✂️',
-  'cine': '🎬', 'audiovisual': '🎬',
-  'lúdico': '🎮', 'juego': '🎲',
-  'campamento': '⛺',
-  'idioma': '🌍', 'inglés': '🌍', 'francés': '🌍',
-  'matemática': '🔢', 'ajedrez': '♟️',
-};
-
-function getCategoryEmoji(categoryName: string): string {
-  const lower = categoryName.toLowerCase();
-  for (const [key, emoji] of Object.entries(CATEGORY_EMOJIS)) {
-    if (lower.includes(key)) return emoji;
-  }
-  return '✨';
-}
 
 function formatAge(ageMin: number | null, ageMax: number | null): string {
   if (ageMin === null && ageMax === null) return '';

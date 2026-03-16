@@ -4,34 +4,7 @@
 
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
-
-const CATEGORY_EMOJIS: Record<string, string> = {
-  'arte': '🎨', 'pintura': '🖌️', 'dibujo': '✏️',
-  'música': '🎵', 'piano': '🎹', 'guitarra': '🎸', 'canto': '🎤',
-  'deporte': '⚽', 'fútbol': '⚽', 'natación': '🏊', 'tenis': '🎾',
-  'teatro': '🎭', 'actuación': '🎭',
-  'danza': '💃', 'ballet': '🩰', 'baile': '💃',
-  'ciencia': '🔬', 'experimento': '🔬',
-  'lectura': '📚', 'libro': '📚',
-  'tecnología': '💻', 'programación': '💻', 'robótica': '🤖',
-  'cocina': '👨‍🍳', 'repostería': '🍰',
-  'naturaleza': '🌿', 'ecología': '🌱',
-  'yoga': '🧘', 'bienestar': '💆',
-  'manualidad': '✂️',
-  'cine': '🎬', 'audiovisual': '🎬',
-  'lúdico': '🎮', 'juego': '🎲',
-  'campamento': '⛺',
-  'idioma': '🌍', 'inglés': '🌍', 'francés': '🌍',
-  'matemática': '🔢', 'ajedrez': '♟️',
-};
-
-function getCategoryEmoji(name: string): string {
-  const lower = name.toLowerCase();
-  for (const [key, emoji] of Object.entries(CATEGORY_EMOJIS)) {
-    if (lower.includes(key)) return emoji;
-  }
-  return '✨';
-}
+import { getCategoryEmoji } from '@/lib/category-utils';
 
 export default async function HomePage() {
   const [{ total }, categories] = await Promise.all([

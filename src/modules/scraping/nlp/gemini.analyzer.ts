@@ -162,7 +162,7 @@ export class GeminiAnalyzer {
         .join('\n');
 
       const prompt = `Eres un filtro inteligente para la plataforma Infantia.
-Te doy una lista de links extraídos de: ${sourceUrl}
+Te doy una lista numerada de links extraídos de: ${sourceUrl}
 
 Tu tarea: selecciona SOLO los links que probablemente lleven a páginas de actividades, eventos, talleres, cursos o programas para niños, jóvenes o familias.
 
@@ -170,8 +170,9 @@ EXCLUYE: links de navegación general (inicio, contacto, nosotros, login, redes 
 
 INCLUYE: links a eventos específicos, talleres, cursos, programas culturales, actividades recreativas, clubes de lectura, etc.
 
-Responde con JSON: { "activityUrls": ["url1", "url2", ...] }
-Si ningún link parece ser una actividad, devuelve { "activityUrls": [] }
+Responde con JSON: { "indices": [1, 3, 7, ...] }
+Los números son los índices (posición en la lista, comenzando en 1) de los links seleccionados.
+Si ningún link parece ser una actividad, devuelve { "indices": [] }
 
 LINKS:
 ${linksText}`;
@@ -201,7 +202,10 @@ ${linksText}`;
           continue;
         }
 
-        const found = validated.data.activityUrls;
+        // Mapear índices (1-based) de vuelta a URLs
+        const found = validated.data.indices
+          .filter((idx) => idx >= 1 && idx <= chunk.length)
+          .map((idx) => chunk[idx - 1].url);
         console.log(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
         allActivityUrls.push(...found);
       } catch (error: any) {

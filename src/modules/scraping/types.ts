@@ -46,7 +46,7 @@ export type DiscoveredLink = {
 };
 
 export const discoveredActivityUrlsSchema = z.object({
-  activityUrls: z.array(z.string()),
+  indices: z.array(z.number().int().positive()),
 });
 
 export type BatchPipelineResult = {

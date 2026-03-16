@@ -34,22 +34,43 @@ interface ActivityCardProps {
   activity: Activity;
 }
 
-// Colores de fondo para categorías (fallback si no hay imagen)
 const CATEGORY_COLORS = [
-  'bg-indigo-100',
-  'bg-emerald-100',
-  'bg-amber-100',
-  'bg-rose-100',
-  'bg-cyan-100',
-  'bg-violet-100',
-  'bg-orange-100',
-  'bg-teal-100',
+  'bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100',
+  'bg-cyan-100', 'bg-violet-100', 'bg-orange-100', 'bg-teal-100',
 ];
 
 function getCategoryColor(slug: string): string {
   let hash = 0;
   for (let i = 0; i < slug.length; i++) hash = slug.charCodeAt(i) + ((hash << 5) - hash);
   return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
+}
+
+const CATEGORY_EMOJIS: Record<string, string> = {
+  'arte': '🎨', 'pintura': '🖌️', 'dibujo': '✏️',
+  'música': '🎵', 'piano': '🎹', 'guitarra': '🎸', 'canto': '🎤',
+  'deporte': '⚽', 'fútbol': '⚽', 'natación': '🏊', 'tenis': '🎾',
+  'teatro': '🎭', 'actuación': '🎭',
+  'danza': '💃', 'ballet': '🩰', 'baile': '💃',
+  'ciencia': '🔬', 'experimento': '🔬',
+  'lectura': '📚', 'libro': '📚',
+  'tecnología': '💻', 'programación': '💻', 'robótica': '🤖',
+  'cocina': '👨‍🍳', 'repostería': '🍰',
+  'naturaleza': '🌿', 'ecología': '🌱',
+  'yoga': '🧘', 'bienestar': '💆',
+  'manualidad': '✂️',
+  'cine': '🎬', 'audiovisual': '🎬',
+  'lúdico': '🎮', 'juego': '🎲',
+  'campamento': '⛺',
+  'idioma': '🌍', 'inglés': '🌍', 'francés': '🌍',
+  'matemática': '🔢', 'ajedrez': '♟️',
+};
+
+function getCategoryEmoji(categoryName: string): string {
+  const lower = categoryName.toLowerCase();
+  for (const [key, emoji] of Object.entries(CATEGORY_EMOJIS)) {
+    if (lower.includes(key)) return emoji;
+  }
+  return '✨';
 }
 
 function formatAge(ageMin: number | null, ageMax: number | null): string {
@@ -83,6 +104,7 @@ const TYPE_LABELS: Record<string, string> = {
 export default function ActivityCard({ activity }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
+  const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
   const ageLabel = formatAge(activity.ageMin, activity.ageMax);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
   const locationLabel = activity.location?.neighborhood ?? activity.location?.city?.name ?? '';
@@ -101,7 +123,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             loading="lazy"
           />
         ) : (
-          <span className="text-5xl select-none opacity-60">🎨</span>
+          <span className="text-5xl select-none opacity-60">{categoryEmoji}</span>
         )}
 
         {/* Badge de tipo */}

@@ -80,19 +80,19 @@ describe('activityNLPResultSchema', () => {
 });
 
 describe('discoveredActivityUrlsSchema', () => {
-  it('valida array de URLs', () => {
+  it('valida array de índices', () => {
     const result = discoveredActivityUrlsSchema.safeParse({
-      activityUrls: ['https://a.com', 'https://b.com'],
+      indices: [1, 3, 7],
     });
     expect(result.success).toBe(true);
   });
 
   it('acepta array vacío', () => {
-    const result = discoveredActivityUrlsSchema.safeParse({ activityUrls: [] });
+    const result = discoveredActivityUrlsSchema.safeParse({ indices: [] });
     expect(result.success).toBe(true);
   });
 
-  it('falla si falta activityUrls', () => {
+  it('falla si falta indices', () => {
     const result = discoveredActivityUrlsSchema.safeParse({});
     expect(result.success).toBe(false);
   });

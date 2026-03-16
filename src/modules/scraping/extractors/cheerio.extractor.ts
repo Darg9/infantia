@@ -19,12 +19,27 @@ export class CheerioExtractor implements Extractor {
       const html = await response.text();
       const $ = cheerio.load(html);
 
+      // Extraer JSON-LD ANTES de eliminar scripts (mejora calidad de extracción)
+      let jsonLdText = '';
+      $('script[type="application/ld+json"]').each((_, el) => {
+        try {
+          const raw = $(el).html() ?? '';
+          const data = JSON.parse(raw);
+          const items = Array.isArray(data) ? data : [data];
+          for (const item of items) {
+            if (item['@type'] === 'Event' || item['@type'] === 'Article') {
+              jsonLdText += `\n[DATOS ESTRUCTURADOS JSON-LD]\n${JSON.stringify(item, null, 2)}\n[FIN DATOS ESTRUCTURADOS]\n`;
+            }
+          }
+        } catch { /* ignorar JSON-LD inválido */ }
+      });
+
       // Limpiar etiquetas ruidosas
       $('script, style, noscript, iframe, svg, path, nav, footer, header').remove();
 
       // Extraer texto limpio
       // text() en cheerio elimina los tags HTML, nos deja el "texto crudo"
-      const rawText = $('body').text();
+      const rawText = (jsonLdText + '\n' + $('body').text());
       
       // Limpiar un poco los saltos de línea y espacios en blanco extremos
       const cleanText = rawText

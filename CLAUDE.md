@@ -68,6 +68,57 @@ src/
 **Threshold de cobertura:** sube +10% por día desde el inicio del proyecto (2026-03-16).
 El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 
+## Workflow de versionamiento
+
+**Cada unidad de trabajo = una rama + código + tests + docs. Nada llega a master sin los tres.**
+
+### Flujo por tarea
+
+```
+1. Crear rama:   git checkout -b feat/nombre-descriptivo
+2. Escribir código
+3. Escribir/actualizar tests → npm test debe pasar
+4. Actualizar docs/modules/<módulo>.md
+5. Agregar entrada en CHANGELOG.md bajo [Unreleased]
+6. Commit y merge a master
+7. Si es hito → tag vX.Y.Z + nuevo Documento Fundacional (V0X.docx)
+```
+
+### Convención de ramas
+
+| Prefijo | Cuándo usarlo |
+|---|---|
+| `feat/` | Nueva funcionalidad (scraper nuevo, endpoint nuevo) |
+| `fix/` | Corrección de bug |
+| `chore/` | Infraestructura, dependencias, limpieza |
+| `test/` | Solo agregar/mejorar tests |
+| `docs/` | Solo documentación |
+
+### Versiones (Semantic Versioning)
+
+| Versión | Cuándo |
+|---|---|
+| `vX.Y.Z` patch | Fix sin cambio funcional |
+| `vX.Y.Z` minor | Nueva funcionalidad compatible |
+| `vX.Y.Z` major | Cambio arquitectural o breaking change |
+
+### Relación git tag ↔ Documento Fundacional
+
+| Git tag | Doc Fundacional | Descripción |
+|---|---|---|
+| v0.0.1 | V02 | Stack, arquitectura, modelo de datos |
+| v0.1.0 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
+| v0.2.0 | V06 (próximo) | API pública + segundo scraper |
+
+### Regla para Documento Fundacional
+
+Generar nueva versión del doc cuando:
+- Se agrega un módulo nuevo completo
+- Cambia la arquitectura o el stack
+- Se completa un milestone del roadmap
+
+Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero)
+
 ## Agent Orchestration (Claude Code + Gemini)
 **CRITICAL RULE FOR CLAUDE CODE:** The user has limited Claude Pro credits. Claude Code must act as a lightweight, fast executer, and offload all heavy-lifting to Gemini (Antigravity).
 - **Claude Code's Job:** Run terminal commands, generate boilerplate, fix small typos, run ESLint/TS errors, and answer quick context questions.

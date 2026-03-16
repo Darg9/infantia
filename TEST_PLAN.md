@@ -1,6 +1,6 @@
 # Infantia — Plan de Pruebas
 
-**Versión:** v0.1.0
+**Versión:** v0.2.0
 **Fecha:** 2026-03-16
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** +10% por día desde 2026-03-16 (día 1 = 30%, cap = 100%)
@@ -29,23 +29,24 @@ Calculado automáticamente en vitest.config.ts.
 
 ---
 
-## Cobertura actual (v0.1.0)
+## Cobertura actual (v0.2.0)
 
 | Módulo | Test | Stmts | Funcs | Lines | Estado |
 |--------|------|-------|-------|-------|--------|
 | lib/utils | utils.test.ts | 100% | 100% | 100% | OK |
 | lib/validation | validation.test.ts | 100% | 100% | 100% | OK |
+| lib/api-response | api-response.test.ts | 100% | 100% | 100% | OK |
 | scraping/cache | cache.test.ts | 100% | 100% | 100% | OK |
 | scraping/types | types.test.ts | 100% | 100% | 100% | OK |
 | scraping/storage | storage.test.ts | 95% | 100% | 96% | OK |
+| scraping/extractor | cheerio-extractor.test.ts | ~92% | 100% | ~91% | OK |
+| scraping/nlp/claude | claude-analyzer.test.ts | 100% | 100% | 100% | OK |
+| scraping/nlp/gemini | gemini-analyzer.test.ts | ~99% | 100% | ~99% | OK |
+| scraping/pipeline | pipeline.test.ts | 100% | 100% | 100% | OK |
 | activities/schemas | schemas.test.ts | 100% | 100% | 100% | OK |
 | activities/service | service.test.ts | 94% | 100% | 100% | OK |
-| lib/api-response | pendiente | 0% | 0% | 0% | v0.2.0 |
-| scraping/pipeline | pendiente | 0% | 0% | 0% | v0.2.0 |
-| scraping/extractor | pendiente | 0% | 0% | 0% | v0.2.0 |
-| scraping/nlp | pendiente | 0% | 0% | 0% | v0.2.0 |
 
-Total v0.1.0: 31% statements / 52% functions / 31% lines
+**Total v0.2.0: ~96% statements / ~97% functions / 95.8% lines**
 
 ---
 
@@ -62,6 +63,10 @@ Total v0.1.0: 31% statements / 52% functions / 31% lines
 - paginationSchema: defaults, strings a numeros, limites
 - parsePagination(): skip calculado, primera pagina
 
+### lib/api-response
+- successResponse(), paginatedResponse()
+- errorResponse(): con detalles, sin detalles
+
 ### scraping/cache
 - has/add/filterNew/size: todos los casos edge
 - save(): writeFileSync, JSON valido
@@ -72,6 +77,33 @@ Total v0.1.0: 31% statements / 52% functions / 31% lines
 - Mezcla validos/omitidos, error sin vertical
 - Upsert vs create, vincular categorias, mapeo tipos
 - disconnect()
+
+### scraping/cheerio-extractor
+- extract(): exito, elimina nav/script/footer, JSON-LD Event vs no-Event
+- FAILED en error de red, en HTTP 4xx
+- extractLinks(): filtro mismo dominio, excluye anchors/mailto/javascript/tel
+- Deduplicacion, ignora URL de listing, anchorText vacio
+- extractLinksAllPages(): pagina unica, multi-pagina
+
+### scraping/nlp/claude-analyzer
+- Sin API key → mockAnalysis (sin llamar fetch)
+- Con API key: JSON valido, markdown cleanup, error API, JSON invalido, schema Zod invalido
+- Trunca texto a 15000 chars
+
+### scraping/nlp/gemini-analyzer
+- Sin API key → mockAnalysis (sin llamar Gemini)
+- Con API key: JSON valido, markdown cleanup, confianza baja → "No identificado"
+- JSON invalido lanza error, schema invalido lanza error
+- discoverActivityLinks: mapeo indices, fuera de rango, lista vacia
+- Lotes de 50 (110 links → 3 llamadas), fallo de lote → continua
+- callWithRetry: 503 reintenta, 429 agota (3x), 400 no reintenta
+
+### scraping/pipeline
+- runPipeline(): exito, FAILED, texto vacio
+- runBatchPipeline(): 0 links, 0 filtrados, todos en cache
+- Procesamiento exitoso, error por URL, saveToDb true/false
+- Concurrencia respeta CONCURRENCY_LIMIT
+- disconnect(): con y sin storage
 
 ### activities/schemas
 - listActivitiesSchema, createActivitySchema, updateActivitySchema
@@ -95,13 +127,10 @@ npm run test:coverage     # Con reporte (verifica threshold del dia)
 
 ## Roadmap de pruebas
 
-v0.2.0 (threshold 40%):
-- api-response.ts, pipeline.ts, extractor.ts, gemini.analyzer.ts
-- Tests del segundo sitio scrapeado (Idartes)
-
 v0.3.0 (threshold 50%):
 - Modulo providers, search (Meilisearch)
 - Tests de endpoints API con Supertest
+- Tests del segundo sitio scrapeado (Idartes)
 
 v1.0.0 (MVP):
 - Tests E2E con Playwright

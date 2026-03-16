@@ -52,6 +52,21 @@ src/
 - `npm run dev` — Start development server
 - `npm run build` — Build for production
 - `npm run lint` — Run ESLint
+- `npm test` — Correr tests (una vez)
+- `npm run test:watch` — Correr tests en modo watch
+- `npm run test:coverage` — Tests + reporte de cobertura con threshold dinámico
+
+## ⚠️ REGLA DE TESTING OBLIGATORIA
+
+**Cada vez que modifiques o crees código en `src/modules/` o `src/lib/`:**
+
+1. Verifica si existe un archivo de test en `__tests__/` junto al módulo
+2. Si no existe → créalo con tests básicos del nuevo código
+3. Si existe → agrégale tests para la funcionalidad nueva/modificada
+4. Corre `npm test` antes de hacer commit — si falla, no hagas commit
+
+**Threshold de cobertura:** sube +10% por día desde el inicio del proyecto (2026-03-16).
+El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 
 ## Agent Orchestration (Claude Code + Gemini)
 **CRITICAL RULE FOR CLAUDE CODE:** The user has limited Claude Pro credits. Claude Code must act as a lightweight, fast executer, and offload all heavy-lifting to Gemini (Antigravity).

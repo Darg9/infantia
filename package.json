@@ -9,7 +9,10 @@
     "lint": "eslint",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:migrate": "npx prisma migrate dev",
-    "db:generate": "npx prisma generate"
+    "db:generate": "npx prisma generate",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -32,10 +35,12 @@
     "@types/pg": "^8.18.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   }
 }

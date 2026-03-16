@@ -40,7 +40,65 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-/src/generated/prisma
+# ─── Databases (SQLite — Infantia uses PostgreSQL/Supabase) ────
+*.db
+*.sqlite
+prisma/dev.db
 
-# scraping cache
-/data/
+# ─── Prisma generated client ───────────────────────────────────
+src/generated/
+temp-prisma/
+
+# ─── Scraping cache (generated data, can be large) ─────────────
+data/scraping-cache.json
+
+# ─── Test & build artifacts ────────────────────────────────────
+test-results.json
+ts-errors.txt
+ts-admin-errors.txt
+TEST_PLAN.md
+
+# ─── Habit-Challenge files (proyecto externo filtrado al repo) ──
+# Estos archivos no pertenecen a Infantia. Ignorados para evitar
+# que aparezcan en GitHub Desktop. Eliminarlos del disco es seguro.
+.husky/
+public/manifest.json
+public/push-sw.js
+scripts/check-db.js
+scripts/generate-test-report.mjs
+src/app/admin/
+src/app/api/admin/
+src/app/api/auth/
+src/app/api/challenges/
+src/app/api/checkin/
+src/app/api/communities/
+src/app/api/duels/
+src/app/api/push/
+src/app/api/users/
+src/app/challenges/
+src/app/dashboard/
+src/app/duels/
+src/app/leaderboard/
+src/app/login/
+src/app/page.server.tsx
+src/app/privacy/
+src/app/register/
+src/app/terms/
+src/lib/audio.ts
+src/lib/auth.ts
+src/lib/email.ts
+src/lib/i18n.ts
+src/lib/prisma.ts
+src/lib/push.ts
+src/lib/session.ts
+src/locales/
+src/modules/admin/components/
+src/modules/auth/
+src/modules/checkin/
+src/modules/communities/
+src/modules/duels/
+src/modules/feature-flags/
+src/modules/notifications/components/
+src/modules/shared/
+src/types/index.test.ts
+src/types/next-auth.d.ts

@@ -1,5 +1,18 @@
 # Infantia - Project Guidelines
 
+## ⚠️ REGLA DE SEGURIDAD — VERIFICACIÓN DE DIRECTORIO
+
+**AL INICIO DE CADA SESIÓN, antes de escribir cualquier línea de código:**
+
+1. Ejecuta `pwd` y verifica que el resultado sea `C:/Users/denys/Projects/infantia`
+2. Si el directorio NO es ese, detente inmediatamente y avisa al usuario:
+   > "⛔ Directorio incorrecto: estoy en [directorio actual]. Este proyecto debe abrirse desde C:/Users/denys/Projects/infantia. Abre Claude Code desde esa carpeta."
+3. Verifica que `prisma/schema.prisma` exista y contenga `provider = "postgresql"` (no SQLite).
+   Si contiene SQLite o le falta `provider`, detente y avisa antes de continuar.
+
+**Este proyecto es INFANTIA. Nunca escribas código de habit-challenge aquí.**
+**habit-challenge tiene su propio directorio: `C:/Users/denys/Projects/habit-challenge`**
+
 ## What is this project?
 Infantia is a multi-source activity discovery platform for families. It aggregates activities from websites, social media, and messaging platforms into a single searchable interface.
 

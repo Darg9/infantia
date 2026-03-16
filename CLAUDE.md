@@ -39,3 +39,10 @@ src/
 - `npm run dev` — Start development server
 - `npm run build` — Build for production
 - `npm run lint` — Run ESLint
+
+## Agent Orchestration (Claude Code + Gemini)
+**CRITICAL RULE FOR CLAUDE CODE:** The user has limited Claude Pro credits. Claude Code must act as a lightweight, fast executer, and offload all heavy-lifting to Gemini (Antigravity).
+- **Claude Code's Job:** Run terminal commands, generate boilerplate, fix small typos, run ESLint/TS errors, and answer quick context questions.
+- **Gemini's Job (Antigravity):** Architect complex features (like the Scraping engine), write massive refactors, create extensive documentation, and debug deep logical issues.
+- If a task requires writing more than 100 lines of code or complex reasoning, Claude Code MUST advise the user to switch to Gemini.
+- Always use `/compact` in Claude Code after finishing a distinct sub-task to save context tokens.

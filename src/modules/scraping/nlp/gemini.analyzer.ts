@@ -136,11 +136,32 @@ export class GeminiAnalyzer {
       return links.map((l) => l.url);
     }
 
-    const linksText = links
-      .map((l, i) => `${i + 1}. URL: ${l.url} | Texto: ${l.anchorText}`)
-      .join('\n');
+    const CHUNK_SIZE = 50;
+    const chunks: DiscoveredLink[][] = [];
+    for (let i = 0; i < links.length; i += CHUNK_SIZE) {
+      chunks.push(links.slice(i, i + CHUNK_SIZE));
+    }
 
-    const prompt = `Eres un filtro inteligente para la plataforma Infantia.
+    console.log(`[GEMINI-DISCOVER] Procesando ${links.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
+
+    const model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.1,
+        maxOutputTokens: 8192,
+      },
+    });
+
+    const allActivityUrls: string[] = [];
+
+    for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
+      const chunk = chunks[chunkIndex];
+      const linksText = chunk
+        .map((l, i) => `${i + 1}. URL: ${l.url} | Texto: ${l.anchorText}`)
+        .join('\n');
+
+      const prompt = `Eres un filtro inteligente para la plataforma Infantia.
 Te doy una lista de links extraídos de: ${sourceUrl}
 
 Tu tarea: selecciona SOLO los links que probablemente lleven a páginas de actividades, eventos, talleres, cursos o programas para niños, jóvenes o familias.
@@ -155,47 +176,41 @@ Si ningún link parece ser una actividad, devuelve { "activityUrls": [] }
 LINKS:
 ${linksText}`;
 
-    try {
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-        },
-      });
-
-      const result = await callWithRetry(
-        () => model.generateContent(prompt),
-        'GEMINI-DISCOVER',
-      );
-      const rawText = result.response.text();
-      const jsonStr = rawText
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/\s*```\s*$/, '')
-        .trim();
-
-      console.log(`[GEMINI-DISCOVER] Respuesta raw (primeros 500 chars): ${rawText.substring(0, 500)}`);
-
-      let parsed: unknown;
       try {
-        parsed = JSON.parse(jsonStr);
-      } catch (parseErr: any) {
-        console.error(`[GEMINI-DISCOVER] JSON inválido (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
-        return [];
-      }
+        const result = await callWithRetry(
+          () => model.generateContent(prompt),
+          `GEMINI-DISCOVER-lote${chunkIndex + 1}`,
+        );
+        const rawText = result.response.text();
+        const jsonStr = rawText
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/\s*```\s*$/, '')
+          .trim();
 
-      const validated = discoveredActivityUrlsSchema.safeParse(parsed);
-      if (!validated.success) {
-        console.error('[GEMINI-DISCOVER] Validación falló:', validated.error.issues);
-        return [];
-      }
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch (parseErr: any) {
+          console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}: JSON inválido (${parseErr.message})`);
+          continue;
+        }
 
-      return validated.data.activityUrls;
-    } catch (error: any) {
-      console.error('[GEMINI-DISCOVER] Error:', error.message);
-      return [];
+        const validated = discoveredActivityUrlsSchema.safeParse(parsed);
+        if (!validated.success) {
+          console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}: Validación falló`);
+          continue;
+        }
+
+        const found = validated.data.activityUrls;
+        console.log(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
+        allActivityUrls.push(...found);
+      } catch (error: any) {
+        console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1} Error:`, error.message);
+      }
     }
+
+    console.log(`[GEMINI-DISCOVER] Total actividades identificadas: ${allActivityUrls.length}`);
+    return allActivityUrls;
   }
 
   private mockAnalysis(url: string): ActivityNLPResult {

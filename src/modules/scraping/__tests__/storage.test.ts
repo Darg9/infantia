@@ -293,7 +293,7 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
   it('incluye schedules como JSON cuando hay datos', async () => {
     const withSchedule: ActivityNLPResult = {
       ...actividadNLPBase,
-      schedules: [{ startDate: '2026-04-01', endDate: '2026-04-30' }],
+      schedules: [{ startDate: '2026-04-01', endDate: '2026-04-30', notes: undefined }],
     };
     const batch = makeBatchResult([{ data: withSchedule }]);
     await storage.saveBatchResults(batch);

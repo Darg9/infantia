@@ -46,7 +46,7 @@ describe('createSupabaseServerClient', () => {
   it('cookies.getAll() delega al cookieStore', async () => {
     await createSupabaseServerClient();
 
-    const cookiesConfig = mockCreateServerClient.mock.calls[0][2].cookies;
+    const cookiesConfig = (mockCreateServerClient.mock.calls as any)[0][2].cookies;
     const result = cookiesConfig.getAll();
     expect(result).toEqual([{ name: 'sb-token', value: 'abc' }]);
   });
@@ -54,7 +54,7 @@ describe('createSupabaseServerClient', () => {
   it('cookies.setAll() llama cookieStore.set para cada cookie', async () => {
     await createSupabaseServerClient();
 
-    const cookiesConfig = mockCreateServerClient.mock.calls[0][2].cookies;
+    const cookiesConfig = (mockCreateServerClient.mock.calls as any)[0][2].cookies;
     const cookiesToSet = [
       { name: 'token', value: 'val1', options: { path: '/' } },
       { name: 'refresh', value: 'val2', options: { path: '/' } },
@@ -71,7 +71,7 @@ describe('createSupabaseServerClient', () => {
 
     await createSupabaseServerClient();
 
-    const cookiesConfig = mockCreateServerClient.mock.calls[0][2].cookies;
+    const cookiesConfig = (mockCreateServerClient.mock.calls as any)[0][2].cookies;
     expect(() => {
       cookiesConfig.setAll([{ name: 'x', value: 'y', options: {} }]);
     }).not.toThrow();

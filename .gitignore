@@ -60,3 +60,4 @@ ts-admin-errors.txt
 
 # ─── Claude Code internals ─────────────────────────────────────
 .agents/
+.claude/

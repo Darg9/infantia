@@ -88,7 +88,7 @@ describe('updateSession', () => {
 
     await updateSession(mockRequest);
 
-    const cookiesConfig = mockCreateServerClient.mock.calls[0][2].cookies;
+    const cookiesConfig = (mockCreateServerClient.mock.calls as any)[0][2].cookies;
     cookiesConfig.getAll();
     expect(mockCookiesGetAll).toHaveBeenCalled();
   });
@@ -100,7 +100,7 @@ describe('updateSession', () => {
 
     await updateSession(mockRequest);
 
-    const cookiesConfig = mockCreateServerClient.mock.calls[0][2].cookies;
+    const cookiesConfig = (mockCreateServerClient.mock.calls as any)[0][2].cookies;
     cookiesConfig.setAll([
       { name: 'token', value: 'v1', options: { path: '/' } },
     ]);

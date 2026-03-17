@@ -159,6 +159,24 @@ describe('listActivities()', () => {
     const whereArg = mockFindMany.mock.calls[0][0].where;
     expect(whereArg.price).toEqual({ gte: 10000 });
   });
+
+  it('aplica solo priceMax cuando no hay priceMin', async () => {
+    await listActivities({ skip: 0, pageSize: 20, priceMax: 50000 });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.price).toEqual({ lte: 50000 });
+  });
+
+  it('filtra por type cuando se pasa', async () => {
+    await listActivities({ skip: 0, pageSize: 20, type: 'RECURRING' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.type).toBe('RECURRING');
+  });
+
+  it('filtra por categoryId cuando se pasa', async () => {
+    await listActivities({ skip: 0, pageSize: 20, categoryId: 'cat-001' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.categories).toEqual({ some: { categoryId: 'cat-001' } });
+  });
 });
 
 describe('getActivityById()', () => {
@@ -199,6 +217,7 @@ describe('createActivity()', () => {
       type: 'RECURRING',
       status: 'DRAFT',
       priceCurrency: 'COP',
+      sourceType: 'MANUAL',
       sourceConfidence: 0.5,
       providerId: 'prov-001',
       verticalId: 'vert-001',
@@ -216,11 +235,31 @@ describe('createActivity()', () => {
         type: 'ONE_TIME',
         status: 'DRAFT',
         priceCurrency: 'COP',
+        sourceType: 'MANUAL',
         sourceConfidence: 0.5,
         providerId: 'prov-001',
         verticalId: 'vert-001',
       })
     ).resolves.not.toThrow();
+  });
+
+  it('convierte startDate y endDate a Date si se proporcionan', async () => {
+    await createActivity({
+      title: 'Evento con fechas',
+      description: 'Evento',
+      type: 'ONE_TIME',
+      status: 'DRAFT',
+      priceCurrency: 'COP',
+      sourceType: 'MANUAL',
+      sourceConfidence: 0.5,
+      providerId: 'prov-001',
+      verticalId: 'vert-001',
+      startDate: '2026-04-01',
+      endDate: '2026-04-30',
+    });
+    const dataArg = mockCreate.mock.calls[0][0].data;
+    expect(dataArg.startDate).toBeInstanceOf(Date);
+    expect(dataArg.endDate).toBeInstanceOf(Date);
   });
 
   it('crea actividad con categoryIds y los vincula', async () => {
@@ -230,6 +269,7 @@ describe('createActivity()', () => {
       type: 'RECURRING',
       status: 'DRAFT',
       priceCurrency: 'COP',
+      sourceType: 'MANUAL',
       sourceConfidence: 0.5,
       providerId: 'prov-001',
       verticalId: 'vert-001',
@@ -256,6 +296,16 @@ describe('updateActivity()', () => {
   it('retorna la actividad actualizada', async () => {
     const result = await updateActivity('abc-123', { title: 'Título actualizado' });
     expect(result.title).toBe('Título actualizado');
+  });
+
+  it('convierte startDate y endDate a Date en update', async () => {
+    await updateActivity('abc-123', {
+      startDate: '2026-05-01',
+      endDate: '2026-05-31',
+    });
+    const dataArg = mockUpdate.mock.calls[0][0].data;
+    expect(dataArg.startDate).toBeInstanceOf(Date);
+    expect(dataArg.endDate).toBeInstanceOf(Date);
   });
 
   it('reemplaza categorías cuando se pasan categoryIds en el update', async () => {

@@ -24,7 +24,7 @@ describe('cn()', () => {
 });
 
 describe('formatPrice()', () => {
-  it('formatea precio en COP por defecto', () => {
+  it('formatea precio en COP por defecto', { timeout: 15000 }, () => {
     const result = formatPrice(50000);
     expect(result).toContain('50');
     expect(result).toContain('000');

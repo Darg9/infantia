@@ -61,7 +61,7 @@ async function main() {
       for (const s of scripts) {
         const text = s.textContent || '';
         if (text.includes('window._sharedData')) {
-          const match = text.match(/window\._sharedData\s*=\s*({.*?});\s*$/s);
+          const match = text.match(/window\._sharedData\s*=\s*({[\s\S]*?});\s*$/);
           if (match) return match[1].substring(0, 500);
         }
         if (text.includes('window.__additionalDataLoaded')) {

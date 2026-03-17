@@ -177,6 +177,14 @@ describe('GeminiAnalyzer', () => {
         expect(result).toEqual([]);
       });
 
+      it('maneja error general del lote (catch branch)', async () => {
+        const links = [{ url: 'https://x.com/taller', anchorText: 'Taller' }];
+        mockGenerateContent.mockRejectedValue(new Error('Network error'));
+        const analyzer = new GeminiAnalyzer();
+        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        expect(result).toEqual([]);
+      });
+
       it('procesa links en lotes de 50', async () => {
         const links = Array.from({ length: 110 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,
@@ -256,6 +264,21 @@ describe('GeminiAnalyzer', () => {
       const result = await analyzer.analyzeInstagramPost(samplePost, profileBio);
       expect(result.title).toBe('Actividad Infantil (Mock)');
       expect(mockGenerateContent).not.toHaveBeenCalled();
+    });
+
+    it('lanza error si respuesta de IG no cumple schema Zod', async () => {
+      const invalidSchema = { title: 'Algo', confidenceScore: 'no-num' };
+      mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(invalidSchema)));
+      const analyzer = new GeminiAnalyzer();
+      await expect(analyzer.analyzeInstagramPost(samplePost, profileBio))
+        .rejects.toThrow('schema');
+    });
+
+    it('re-lanza errores de API en Instagram', async () => {
+      mockGenerateContent.mockRejectedValue(new Error('Gemini API error'));
+      const analyzer = new GeminiAnalyzer();
+      await expect(analyzer.analyzeInstagramPost(samplePost, profileBio))
+        .rejects.toThrow('Gemini API error');
     });
   });
 

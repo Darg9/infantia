@@ -85,13 +85,14 @@ model Provider {
 
 model User {
   id                String   @id @default(uuid())
+  supabaseAuthId    String   @unique @map("supabase_auth_id") @db.VarChar(255)
   email             String   @unique @db.VarChar(255)
   name              String   @db.VarChar(255)
   avatarUrl         String?
   cityId            String?
   neighborhood      String?  @db.VarChar(100)
   notificationPrefs Json     @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
-  role              UserRole @default(USER)
+  role              UserRole @default(PARENT)
   createdAt         DateTime @default(now())
 
   city      City?      @relation(fields: [cityId], references: [id])
@@ -337,8 +338,9 @@ enum ProviderType {
 }
 
 enum UserRole {
-  USER
+  PARENT
   PROVIDER
+  MODERATOR
   ADMIN
 }
 

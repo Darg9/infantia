@@ -16,6 +16,10 @@ const {
   mockStorageDisconnect,
   mockExtractProfile,
   mockPlaywrightClose,
+  mockGetOrCreateSource,
+  mockStartRun,
+  mockCompleteRun,
+  mockUpdateSourceStatus,
 } = vi.hoisted(() => ({
   mockExtract: vi.fn(),
   mockExtractLinksAllPages: vi.fn(),
@@ -31,6 +35,10 @@ const {
   mockStorageDisconnect: vi.fn(),
   mockExtractProfile: vi.fn(),
   mockPlaywrightClose: vi.fn(),
+  mockGetOrCreateSource: vi.fn(),
+  mockStartRun: vi.fn(),
+  mockCompleteRun: vi.fn(),
+  mockUpdateSourceStatus: vi.fn(),
 }));
 
 vi.mock('../extractors/cheerio.extractor', () => ({
@@ -73,6 +81,29 @@ vi.mock('../storage', () => ({
   }),
 }));
 
+vi.mock('../logger', () => ({
+  ScrapingLogger: vi.fn(function(this: Record<string, unknown>) {
+    this.getOrCreateSource = mockGetOrCreateSource;
+    this.startRun = mockStartRun;
+    this.completeRun = mockCompleteRun;
+    this.updateSourceStatus = mockUpdateSourceStatus;
+  }),
+}));
+
+// Mock dynamic imports for getCityId/getVerticalId
+vi.mock('@prisma/adapter-pg', () => ({
+  PrismaPg: vi.fn().mockImplementation(function () { return {}; }),
+}));
+vi.mock('../../../generated/prisma/client', () => ({
+  PrismaClient: vi.fn().mockImplementation(function () {
+    return {
+      city: { findFirst: vi.fn().mockResolvedValue({ id: 'city-bog' }) },
+      vertical: { findUnique: vi.fn().mockResolvedValue({ id: 'vert-kids' }) },
+      $disconnect: vi.fn(),
+    };
+  }),
+}));
+
 import { ScrapingPipeline } from '../pipeline';
 
 const sampleNLPResult = {
@@ -91,6 +122,10 @@ beforeEach(() => {
   mockSaveActivity.mockResolvedValue('activity-123');
   mockStorageDisconnect.mockResolvedValue(undefined);
   mockPlaywrightClose.mockResolvedValue(undefined);
+  mockGetOrCreateSource.mockResolvedValue('source-1');
+  mockStartRun.mockResolvedValue('log-1');
+  mockCompleteRun.mockResolvedValue(undefined);
+  mockUpdateSourceStatus.mockResolvedValue(undefined);
 });
 
 // ── runPipeline() ─────────────────────────────────────────────────────────────
@@ -377,6 +412,173 @@ describe('ScrapingPipeline.runInstagramPipeline()', () => {
   });
 });
 
+// ── Logger integration in batch ──────────────────────────────────────────────
+
+describe('ScrapingPipeline logger integration (batch)', () => {
+  const listingUrl = 'https://example.com/actividades';
+
+  it('llama logger.startRun y completeRun cuando saveToDb=true', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/t1', anchorText: 'T1' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/t1']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runBatchPipeline(listingUrl);
+
+    expect(mockGetOrCreateSource).toHaveBeenCalled();
+    expect(mockStartRun).toHaveBeenCalledWith('source-1');
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      itemsFound: 1,
+    }));
+    expect(mockUpdateSourceStatus).toHaveBeenCalled();
+  });
+
+  it('logger init error es non-fatal', async () => {
+    mockGetOrCreateSource.mockRejectedValue(new Error('DB down'));
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/t1', anchorText: 'T1' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/t1']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    // Should not throw despite logger error
+    const result = await pipeline.runBatchPipeline(listingUrl);
+    expect(result.results).toHaveLength(1);
+  });
+
+  it('logger complete error es non-fatal', async () => {
+    mockCompleteRun.mockRejectedValue(new Error('Logger write failed'));
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/t1', anchorText: 'T1' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/t1']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runBatchPipeline(listingUrl);
+    expect(result.results).toHaveLength(1);
+  });
+
+  it('batch con 0 links completa logger con FAILED', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([]);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runBatchPipeline(listingUrl);
+
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      itemsFound: 0,
+      errorMessage: 'No links found',
+    }));
+    expect(mockUpdateSourceStatus).toHaveBeenCalledWith('source-1', 'FAILED', 0);
+  });
+
+  it('batch con 0 actividades filtradas completa logger con SUCCESS', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/x', anchorText: 'X' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue([]);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runBatchPipeline(listingUrl);
+
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      itemsFound: 0,
+    }));
+    expect(mockUpdateSourceStatus).toHaveBeenCalledWith('source-1', 'SUCCESS', 0);
+  });
+
+  it('batch todo en cache completa logger con duplicated count', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/t1', anchorText: 'T1' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/t1']);
+    mockFilterNew.mockReturnValue([]);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runBatchPipeline(listingUrl);
+
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      itemsDuplicated: 1,
+      itemsNew: 0,
+    }));
+  });
+});
+
+// ── Logger integration in Instagram ──────────────────────────────────────────
+
+describe('ScrapingPipeline logger integration (Instagram)', () => {
+  const profileUrl = 'https://www.instagram.com/fcecolombia/';
+
+  it('llama logger en Instagram pipeline con saveToDb=true', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(mockGetOrCreateSource).toHaveBeenCalledWith(expect.objectContaining({
+      platform: 'INSTAGRAM',
+      scraperType: 'playwright-instagram',
+    }));
+    expect(mockStartRun).toHaveBeenCalled();
+    expect(mockCompleteRun).toHaveBeenCalled();
+    expect(mockUpdateSourceStatus).toHaveBeenCalled();
+  });
+
+  it('IG logger init error es non-fatal', async () => {
+    mockGetOrCreateSource.mockRejectedValue(new Error('DB down'));
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runInstagramPipeline(profileUrl);
+    expect(result.results).toHaveLength(2);
+  });
+
+  it('IG logger complete error es non-fatal', async () => {
+    mockCompleteRun.mockRejectedValue(new Error('write failed'));
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runInstagramPipeline(profileUrl);
+    expect(result.results).toHaveLength(2);
+  });
+
+  it('IG todos cacheados completa logger con SUCCESS', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockCacheHas.mockReturnValue(true);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      itemsDuplicated: 2,
+      itemsNew: 0,
+    }));
+  });
+
+  it('IG con errores completa logger con PARTIAL status', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost
+      .mockRejectedValueOnce(new Error('fail'))
+      .mockResolvedValueOnce(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(mockCompleteRun).toHaveBeenCalledWith('log-1', expect.objectContaining({
+      errorMessage: expect.stringContaining('1 posts fallaron'),
+    }));
+  });
+});
+
 // ── disconnect() ──────────────────────────────────────────────────────────────
 
 describe('ScrapingPipeline.disconnect()', () => {
@@ -390,5 +592,17 @@ describe('ScrapingPipeline.disconnect()', () => {
     const pipeline = new ScrapingPipeline();
     await pipeline.disconnect();
     expect(mockStorageDisconnect).not.toHaveBeenCalled();
+  });
+
+  it('cierra PlaywrightExtractor si fue inicializado', async () => {
+    mockExtractProfile.mockResolvedValue({
+      ...sampleInstagramProfile,
+      posts: [],
+    });
+
+    const pipeline = new ScrapingPipeline();
+    await pipeline.runInstagramPipeline('https://www.instagram.com/test/');
+    await pipeline.disconnect();
+    expect(mockPlaywrightClose).toHaveBeenCalled();
   });
 });

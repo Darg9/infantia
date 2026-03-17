@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../generated/prisma/client';
+import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { ActivityNLPResult, BatchPipelineResult } from './types';
 
 // Prisma client propio para scripts standalone (no usa el singleton de Next.js)
@@ -66,7 +66,7 @@ export class ScrapingStorage {
         status: 'ACTIVE' as const,
         startDate: data.schedules?.[0]?.startDate ? new Date(data.schedules[0].startDate) : null,
         endDate: data.schedules?.[0]?.endDate ? new Date(data.schedules[0].endDate) : null,
-        schedule: data.schedules ? { items: data.schedules } : null,
+        schedule: data.schedules ? { items: data.schedules } : Prisma.JsonNull,
         ageMin: data.minAge ?? null,
         ageMax: data.maxAge ?? null,
         price: data.price != null ? data.price : null,

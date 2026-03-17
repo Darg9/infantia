@@ -4,6 +4,7 @@ import { PlaywrightExtractor } from './extractors/playwright.extractor';
 import { GeminiAnalyzer } from './nlp/gemini.analyzer';
 import { ScrapingCache } from './cache';
 import { ScrapingStorage } from './storage';
+import { ScrapingLogger } from './logger';
 
 export class ScrapingPipeline {
   private extractor: CheerioExtractor;
@@ -11,12 +12,14 @@ export class ScrapingPipeline {
   private analyzer: GeminiAnalyzer;
   private cache: ScrapingCache;
   private storage: ScrapingStorage | null;
+  private logger: ScrapingLogger | null;
 
   constructor(options?: { saveToDb?: boolean }) {
     this.extractor = new CheerioExtractor();
     this.analyzer = new GeminiAnalyzer();
     this.cache = new ScrapingCache();
     this.storage = options?.saveToDb ? new ScrapingStorage() : null;
+    this.logger = options?.saveToDb ? new ScrapingLogger() : null;
   }
 
   async runPipeline(url: string): Promise<ActivityNLPResult> {
@@ -48,6 +51,26 @@ export class ScrapingPipeline {
     console.log(`[BATCH] URL de listado: ${listingUrl}`);
     console.log(`[BATCH] Cache: ${this.cache.size} URLs ya scrapeadas`);
 
+    // Logging: obtener o crear fuente y empezar log
+    let logId: string | null = null;
+    let sourceId: string | null = null;
+    if (this.logger) {
+      try {
+        sourceId = await this.logger.getOrCreateSource({
+          name: new URL(listingUrl).hostname.replace('www.', ''),
+          url: listingUrl,
+          platform: 'WEBSITE',
+          scraperType: 'cheerio-batch',
+          cityId: await this.getCityId('bogota'),
+          verticalId: await this.getVerticalId('kids'),
+        });
+        logId = await this.logger.startRun(sourceId);
+        console.log(`[BATCH] Logger: sourceId=${sourceId}, logId=${logId}`);
+      } catch (err: any) {
+        console.warn(`[BATCH] Logger init error (non-fatal): ${err.message}`);
+      }
+    }
+
     // Fase 1: Extraer links de TODAS las páginas del listado
     console.log(`[BATCH] Fase 1: Extrayendo links (con paginación automática)...`);
     const allLinks = await this.extractor.extractLinksAllPages(listingUrl, maxPages);
@@ -55,6 +78,10 @@ export class ScrapingPipeline {
 
     if (allLinks.length === 0) {
       console.warn('[BATCH] No se encontraron links. Posiblemente SPA o página sin enlaces.');
+      if (this.logger && logId && sourceId) {
+        await this.logger.completeRun(logId, { itemsFound: 0, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: 0, errorMessage: 'No links found' });
+        await this.logger.updateSourceStatus(sourceId, 'FAILED' as any, 0);
+      }
       return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
     }
 
@@ -65,6 +92,10 @@ export class ScrapingPipeline {
 
     if (activityUrls.length === 0) {
       console.warn('[BATCH] Gemini no identificó ningún link como actividad.');
+      if (this.logger && logId && sourceId) {
+        await this.logger.completeRun(logId, { itemsFound: 0, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: 0, metadata: { discoveredLinks: allLinks.length } });
+        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, 0);
+      }
       return { sourceUrl: listingUrl, discoveredLinks: allLinks.length, filteredLinks: 0, results: [] };
     }
 
@@ -77,6 +108,10 @@ export class ScrapingPipeline {
 
     if (newUrls.length === 0) {
       console.log('[BATCH] ✅ Todo al día — no hay actividades nuevas.');
+      if (this.logger && logId && sourceId) {
+        await this.logger.completeRun(logId, { itemsFound: activityUrls.length, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: skipped });
+        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, activityUrls.length);
+      }
       return {
         sourceUrl: listingUrl,
         discoveredLinks: allLinks.length,
@@ -115,6 +150,7 @@ export class ScrapingPipeline {
     console.log(`[BATCH] Cache actualizado: ${this.cache.size} URLs totales`);
 
     const successful = results.filter((r) => r.data !== null).length;
+    const errors = results.filter((r) => r.data === null);
     console.log(`[BATCH] ========== FIN BATCH PIPELINE ==========`);
     console.log(`[BATCH] Exitosas: ${successful}/${results.length} (${skipped} omitidas por cache)`);
 
@@ -126,10 +162,30 @@ export class ScrapingPipeline {
     };
 
     // Fase 4: Guardar en BD si está habilitado
+    let savedCount = 0;
     if (this.storage) {
       console.log(`[BATCH] Fase 4: Guardando en base de datos...`);
       const saveResult = await this.storage.saveBatchResults(batchResult);
+      savedCount = saveResult.saved;
       console.log(`[BATCH] BD: ${saveResult.saved} guardadas, ${saveResult.skipped} omitidas, ${saveResult.errors.length} errores`);
+    }
+
+    // Logging: completar el log
+    if (this.logger && logId && sourceId) {
+      try {
+        const status = errors.length > 0 && successful > 0 ? 'PARTIAL' : errors.length > 0 ? 'FAILED' : 'SUCCESS';
+        await this.logger.completeRun(logId, {
+          itemsFound: activityUrls.length,
+          itemsNew: savedCount,
+          itemsUpdated: 0,
+          itemsDuplicated: skipped,
+          errorMessage: errors.length > 0 ? `${errors.length} URLs fallaron` : undefined,
+          metadata: { discoveredLinks: allLinks.length, processed: results.length, cached: skipped },
+        });
+        await this.logger.updateSourceStatus(sourceId, status as any, activityUrls.length);
+      } catch (err: any) {
+        console.warn(`[BATCH] Logger complete error (non-fatal): ${err.message}`);
+      }
     }
 
     return batchResult;
@@ -145,6 +201,27 @@ export class ScrapingPipeline {
     console.log(`[IG-PIPELINE] Max posts: ${maxPosts}`);
     console.log(`[IG-PIPELINE] Cache: ${this.cache.size} URLs ya scrapeadas`);
 
+    // Logging: obtener o crear fuente y empezar log
+    let logId: string | null = null;
+    let sourceId: string | null = null;
+    if (this.logger) {
+      try {
+        const username = profileUrl.replace(/\/$/, '').split('/').pop() ?? 'unknown';
+        sourceId = await this.logger.getOrCreateSource({
+          name: `@${username}`,
+          url: profileUrl,
+          platform: 'INSTAGRAM',
+          scraperType: 'playwright-instagram',
+          cityId: await this.getCityId('bogota'),
+          verticalId: await this.getVerticalId('kids'),
+        });
+        logId = await this.logger.startRun(sourceId);
+        console.log(`[IG-PIPELINE] Logger: sourceId=${sourceId}, logId=${logId}`);
+      } catch (err: any) {
+        console.warn(`[IG-PIPELINE] Logger init error (non-fatal): ${err.message}`);
+      }
+    }
+
     // Lazy-init Playwright extractor
     if (!this.playwrightExtractor) {
       this.playwrightExtractor = new PlaywrightExtractor();
@@ -154,7 +231,7 @@ export class ScrapingPipeline {
     console.log(`[IG-PIPELINE] Fase 1: Extrayendo perfil y posts con Playwright...`);
     const profile = await this.playwrightExtractor.extractProfile(profileUrl, maxPosts);
     console.log(`[IG-PIPELINE] Perfil: @${profile.username} | Bio: ${profile.bio.substring(0, 80)}...`);
-    console.log(`[IG-PIPELINE] Posts extraídos: ${profile.posts.length}`);
+    console.log(`[IG-PIPELINE] Posts extraidos: ${profile.posts.length}`);
 
     // Phase 2: Filter already-cached posts
     const newPosts = profile.posts.filter((p) => !this.cache.has(p.url));
@@ -164,7 +241,11 @@ export class ScrapingPipeline {
     }
 
     if (newPosts.length === 0) {
-      console.log('[IG-PIPELINE] ✅ Todo al día — no hay posts nuevos.');
+      console.log('[IG-PIPELINE] ✅ Todo al dia — no hay posts nuevos.');
+      if (this.logger && logId && sourceId) {
+        await this.logger.completeRun(logId, { itemsFound: profile.posts.length, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: skipped });
+        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, profile.posts.length);
+      }
       return {
         profileUrl,
         username: profile.username,
@@ -199,9 +280,9 @@ export class ScrapingPipeline {
     console.log(`[IG-PIPELINE] Cache actualizado: ${this.cache.size} URLs totales`);
 
     // Phase 4: Save to DB if enabled
+    let savedCount = 0;
     if (this.storage) {
       console.log(`[IG-PIPELINE] Fase 3: Guardando en base de datos...`);
-      let saved = 0;
       let dbSkipped = 0;
       for (const r of results) {
         if (!r.data || r.data.confidenceScore < 0.3) {
@@ -214,14 +295,33 @@ export class ScrapingPipeline {
           'kids',
           { platform: 'INSTAGRAM', instagramUsername: profile.username },
         );
-        if (activityId) saved++;
+        if (activityId) savedCount++;
       }
-      console.log(`[IG-PIPELINE] BD: ${saved} guardadas, ${dbSkipped} omitidas (baja confianza o sin datos)`);
+      console.log(`[IG-PIPELINE] BD: ${savedCount} guardadas, ${dbSkipped} omitidas (baja confianza o sin datos)`);
     }
 
     const successful = results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
+    const errorCount = results.filter((r) => r.data === null).length;
     console.log(`[IG-PIPELINE] ========== FIN INSTAGRAM PIPELINE ==========`);
     console.log(`[IG-PIPELINE] Actividades encontradas: ${successful}/${results.length}`);
+
+    // Logging: completar el log
+    if (this.logger && logId && sourceId) {
+      try {
+        const status = errorCount > 0 && successful > 0 ? 'PARTIAL' : errorCount > 0 ? 'FAILED' : 'SUCCESS';
+        await this.logger.completeRun(logId, {
+          itemsFound: newPosts.length,
+          itemsNew: savedCount,
+          itemsUpdated: 0,
+          itemsDuplicated: skipped,
+          errorMessage: errorCount > 0 ? `${errorCount} posts fallaron` : undefined,
+          metadata: { postsExtracted: profile.posts.length, processed: results.length, cached: skipped },
+        });
+        await this.logger.updateSourceStatus(sourceId, status as any, newPosts.length);
+      } catch (err: any) {
+        console.warn(`[IG-PIPELINE] Logger complete error (non-fatal): ${err.message}`);
+      }
+    }
 
     return {
       profileUrl,
@@ -229,6 +329,47 @@ export class ScrapingPipeline {
       postsExtracted: profile.posts.length,
       results,
     };
+  }
+
+  /**
+   * Helper: obtener cityId por nombre (cached).
+   */
+  private cityCache: Record<string, string> = {};
+  private async getCityId(cityName: string): Promise<string> {
+    if (this.cityCache[cityName]) return this.cityCache[cityName];
+
+    // Import inline to avoid circular deps
+    const { PrismaPg } = await import('@prisma/adapter-pg');
+    const { PrismaClient } = await import('../../generated/prisma/client');
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+    const p = new PrismaClient({ adapter });
+
+    const city = await p.city.findFirst({
+      where: { name: { contains: cityName, mode: 'insensitive' } },
+    });
+    await p.$disconnect();
+    const id = city?.id ?? 'unknown';
+    this.cityCache[cityName] = id;
+    return id;
+  }
+
+  /**
+   * Helper: obtener verticalId por slug (cached).
+   */
+  private verticalCache: Record<string, string> = {};
+  private async getVerticalId(slug: string): Promise<string> {
+    if (this.verticalCache[slug]) return this.verticalCache[slug];
+
+    const { PrismaPg } = await import('@prisma/adapter-pg');
+    const { PrismaClient } = await import('../../generated/prisma/client');
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+    const p = new PrismaClient({ adapter });
+
+    const vertical = await p.vertical.findUnique({ where: { slug } });
+    await p.$disconnect();
+    const id = vertical?.id ?? 'unknown';
+    this.verticalCache[slug] = id;
+    return id;
   }
 
   async disconnect(): Promise<void> {

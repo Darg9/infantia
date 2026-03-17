@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema } from '../types';
+import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema, InstagramPost } from '../types';
 
 const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
@@ -18,6 +18,41 @@ REGLAS:
 ESTRUCTURA JSON ESPERADA:
 {
   "title": "string",
+  "description": "string (máx 300 caracteres, en español)",
+  "categories": ["string"],
+  "minAge": number | null,
+  "maxAge": number | null,
+  "price": number | null,
+  "pricePeriod": "PER_SESSION" | "MONTHLY" | "TOTAL" | "FREE" | null,
+  "currency": "string",
+  "location": { "address": "string", "city": "string" } | null,
+  "schedules": [{ "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "notes": "string" }] | null,
+  "confidenceScore": number
+}`;
+
+const INSTAGRAM_SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
+Tu tarea es extraer información estructurada de publicaciones de Instagram.
+
+CONTEXTO: Recibirás el caption de un post de Instagram y la bio del perfil que lo publicó.
+Los posts de Instagram son cortos, usan hashtags y emojis como indicadores clave.
+
+REGLAS:
+- Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional ni markdown.
+- Los HASHTAGS son pistas importantes de categoría (#arte → Arte, #talleres → Talleres, #danza → Danza, #musica → Música).
+- Los emojis como 📅🗓️ indican fechas, 💰💲 precios, 👶🧒 edades, 📍 ubicación.
+- La BIO del perfil puede contener dirección, ciudad y datos de contacto.
+- Si el post NO es sobre una actividad infantil/familiar (es publicidad, meme, contenido personal), usa confidenceScore: 0.0
+- Si el post menciona una actividad pero con poca info, usa confidenceScore entre 0.3 y 0.6.
+- Si tiene título, descripción, fechas y/o precio claro, usa confidenceScore >= 0.7.
+- categories: usa nombres genéricos en español (Deportes, Música, Arte, Danza, Idiomas, Tecnología, Lúdico, Campamentos, Ciencia, Teatro, Cocina, Literatura, etc.)
+- price: número sin símbolo de moneda. Si dice "gratis" o "entrada libre", usa 0.
+- pricePeriod: PER_SESSION, MONTHLY, TOTAL, o FREE.
+- currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
+- Fechas en formato YYYY-MM-DD.
+
+ESTRUCTURA JSON ESPERADA:
+{
+  "title": "string (nombre de la actividad)",
   "description": "string (máx 300 caracteres, en español)",
   "categories": ["string"],
   "minAge": number | null,
@@ -215,6 +250,85 @@ ${linksText}`;
 
     console.log(`[GEMINI-DISCOVER] Total actividades identificadas: ${allActivityUrls.length}`);
     return allActivityUrls;
+  }
+
+  /**
+   * Analyze an Instagram post caption + profile bio to extract activity data.
+   * Uses a prompt adapted for short captions, hashtags, and emojis.
+   */
+  async analyzeInstagramPost(post: InstagramPost, profileBio: string): Promise<ActivityNLPResult> {
+    if (!this.genAI) {
+      console.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
+      return this.mockAnalysis(post.url);
+    }
+
+    const userMessage = `POST DE INSTAGRAM:
+URL: ${post.url}
+Fecha: ${post.timestamp ?? 'No disponible'}
+Likes: ${post.likesCount ?? 'No disponible'}
+
+CAPTION DEL POST:
+${post.caption}
+
+BIO DEL PERFIL:
+${profileBio}`;
+
+    try {
+      const model = this.genAI.getGenerativeModel({
+        model: 'gemini-2.5-flash',
+        systemInstruction: INSTAGRAM_SYSTEM_PROMPT,
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+          maxOutputTokens: 4096,
+        },
+      });
+
+      const result = await callWithRetry(
+        () => model.generateContent(userMessage),
+        'GEMINI-IG',
+      );
+      const rawText = result.response.text();
+
+      const jsonStr = rawText
+        .replace(/^```(?:json)?\s*/i, '')
+        .replace(/\s*```\s*$/, '')
+        .trim();
+
+      console.log(`[GEMINI-IG] Respuesta raw (primeros 300 chars): ${rawText.substring(0, 300)}`);
+
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(jsonStr);
+      } catch (parseErr: any) {
+        throw new Error(`Gemini retornó JSON inválido para Instagram (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
+      }
+
+      const rawParsed = parsed as Record<string, unknown>;
+      if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
+        console.warn('[GEMINI-IG] Confianza < 0.1 — el post no parece ser una actividad infantil.');
+        return {
+          title: 'No identificado',
+          description: `No se encontró información de actividad infantil en ${post.url}`,
+          categories: ['Sin categoría'],
+          confidenceScore: 0,
+          currency: 'COP',
+        };
+      }
+
+      const validated = activityNLPResultSchema.safeParse(parsed);
+      if (!validated.success) {
+        console.error('Zod validation errors:', validated.error.issues);
+        throw new Error(
+          `Respuesta de Gemini-IG no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+        );
+      }
+
+      return validated.data;
+    } catch (error: any) {
+      console.error('Error en GeminiAnalyzer (Instagram):', error.message);
+      throw error;
+    }
   }
 
   private mockAnalysis(url: string): ActivityNLPResult {

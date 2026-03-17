@@ -191,6 +191,74 @@ describe('GeminiAnalyzer', () => {
     });
   });
 
+  // ── analyzeInstagramPost() ─────────────────────────────────────────────
+  describe('analyzeInstagramPost()', () => {
+    beforeEach(() => {
+      vi.stubEnv('GOOGLE_AI_STUDIO_KEY', 'test-key');
+    });
+
+    const samplePost = {
+      url: 'https://www.instagram.com/p/ABC123/',
+      caption: 'Taller de pintura para ninos! Sabado 22 de marzo. Inscripciones abiertas. #arte #talleres #ninos',
+      imageUrls: ['https://instagram.com/img.jpg'],
+      timestamp: '2026-03-15T10:00:00.000Z',
+      likesCount: 50,
+    };
+    const profileBio = 'Academia de Arte. Cra 15 #80-20, Bogota. Tel: 3001234567';
+
+    const validIGResult = {
+      title: 'Taller de Pintura Infantil',
+      description: 'Taller de pintura para ninos',
+      categories: ['Arte'],
+      confidenceScore: 0.85,
+      currency: 'COP',
+    };
+
+    it('analiza post de Instagram correctamente', async () => {
+      mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(validIGResult)));
+      const analyzer = new GeminiAnalyzer();
+      const result = await analyzer.analyzeInstagramPost(samplePost, profileBio);
+      expect(result.title).toBe('Taller de Pintura Infantil');
+      expect(result.confidenceScore).toBe(0.85);
+      expect(mockGenerateContent).toHaveBeenCalled();
+    });
+
+    it('devuelve "No identificado" cuando confianza < 0.1', async () => {
+      const lowConfidence = { ...validIGResult, confidenceScore: 0.05 };
+      mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(lowConfidence)));
+      const analyzer = new GeminiAnalyzer();
+      const result = await analyzer.analyzeInstagramPost(samplePost, profileBio);
+      expect(result.title).toBe('No identificado');
+      expect(result.confidenceScore).toBe(0);
+    });
+
+    it('lanza error si JSON es invalido', async () => {
+      mockGenerateContent.mockResolvedValue(makeResponse('not json'));
+      const analyzer = new GeminiAnalyzer();
+      await expect(analyzer.analyzeInstagramPost(samplePost, profileBio))
+        .rejects.toThrow('JSON inválido para Instagram');
+    });
+
+    it('envia caption y bio en el prompt a Gemini', async () => {
+      mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(validIGResult)));
+      const analyzer = new GeminiAnalyzer();
+      await analyzer.analyzeInstagramPost(samplePost, profileBio);
+
+      const callArg = mockGenerateContent.mock.calls[0][0];
+      expect(callArg).toContain('Taller de pintura');
+      expect(callArg).toContain('Academia de Arte');
+      expect(callArg).toContain('instagram.com/p/ABC123');
+    });
+
+    it('usa mock si no hay API key', async () => {
+      vi.stubEnv('GOOGLE_AI_STUDIO_KEY', '');
+      const analyzer = new GeminiAnalyzer();
+      const result = await analyzer.analyzeInstagramPost(samplePost, profileBio);
+      expect(result.title).toBe('Actividad Infantil (Mock)');
+      expect(mockGenerateContent).not.toHaveBeenCalled();
+    });
+  });
+
   // ── callWithRetry (vía analyze) ──────────────────────────────────────────
   describe('callWithRetry', () => {
     beforeEach(() => {

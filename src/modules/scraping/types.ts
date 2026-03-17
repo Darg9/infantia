@@ -21,8 +21,8 @@ export const activityNLPResultSchema = z.object({
   title: z.string().min(1),
   description: z.string().nullable().default(''),
   categories: z.array(z.string()).min(1),
-  minAge: z.number().int().min(0).max(99).nullable().optional(),
-  maxAge: z.number().int().min(0).max(99).nullable().optional(),
+  minAge: z.number().int().min(0).max(120).nullable().optional(),
+  maxAge: z.number().int().min(0).max(120).nullable().optional(),
   price: z.number().min(0).nullable().optional(),
   pricePeriod: z.enum(['PER_SESSION', 'MONTHLY', 'TOTAL', 'FREE']).nullable().optional(),
   currency: z.string().length(3).nullable().default('COP'),
@@ -55,6 +55,35 @@ export type BatchPipelineResult = {
   filteredLinks: number;
   results: Array<{
     url: string;
+    data: ActivityNLPResult | null;
+    error?: string;
+  }>;
+};
+
+// ── Instagram Types ──
+
+export type InstagramPost = {
+  url: string;
+  caption: string;
+  imageUrls: string[];
+  timestamp: string | null;
+  likesCount: number | null;
+};
+
+export type InstagramProfileData = {
+  username: string;
+  bio: string;
+  followerCount: number | null;
+  posts: InstagramPost[];
+  profileUrl: string;
+};
+
+export type InstagramPipelineResult = {
+  profileUrl: string;
+  username: string;
+  postsExtracted: number;
+  results: Array<{
+    postUrl: string;
     data: ActivityNLPResult | null;
     error?: string;
   }>;

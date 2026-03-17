@@ -20,7 +20,12 @@ export class ScrapingStorage {
    * - Asocia categorías existentes por nombre (fuzzy match simple)
    * - Usa upsert por sourceUrl para evitar duplicados
    */
-  async saveActivity(data: ActivityNLPResult, sourceUrl: string, verticalSlug: string = 'kids'): Promise<string | null> {
+  async saveActivity(
+    data: ActivityNLPResult,
+    sourceUrl: string,
+    verticalSlug: string = 'kids',
+    sourceOptions?: { platform?: string; instagramUsername?: string },
+  ): Promise<string | null> {
     try {
       // 1. Obtener vertical
       const vertical = await prisma.vertical.findUnique({ where: { slug: verticalSlug } });
@@ -29,18 +34,25 @@ export class ScrapingStorage {
         return null;
       }
 
-      // 2. Obtener o crear Provider basado en el hostname
-      const hostname = new URL(sourceUrl).hostname.replace('www.', '');
-      const provider = await prisma.provider.upsert({
-        where: { id: await this.getProviderIdByWebsite(hostname) },
-        update: {},
-        create: {
-          name: hostname,
-          type: 'INSTITUTION',
-          website: `https://${hostname}`,
-          description: `Proveedor auto-detectado desde ${hostname}`,
-        },
-      });
+      // 2. Obtener o crear Provider
+      const isInstagram = sourceOptions?.platform === 'INSTAGRAM';
+      let provider;
+      if (isInstagram && sourceOptions?.instagramUsername) {
+        const igUsername = sourceOptions.instagramUsername;
+        provider = await this.getOrCreateInstagramProvider(igUsername);
+      } else {
+        const hostname = new URL(sourceUrl).hostname.replace('www.', '');
+        provider = await prisma.provider.upsert({
+          where: { id: await this.getProviderIdByWebsite(hostname) },
+          update: {},
+          create: {
+            name: hostname,
+            type: 'INSTITUTION',
+            website: `https://${hostname}`,
+            description: `Proveedor auto-detectado desde ${hostname}`,
+          },
+        });
+      }
 
       // 3. Crear o actualizar Activity (upsert por sourceUrl)
       const existing = await prisma.activity.findFirst({
@@ -64,7 +76,7 @@ export class ScrapingStorage {
         verticalId: vertical.id,
         sourceType: 'SCRAPING' as const,
         sourceUrl,
-        sourcePlatform: 'WEBSITE',
+        sourcePlatform: sourceOptions?.platform ?? 'WEBSITE',
         sourceConfidence: data.confidenceScore,
         sourceCapturedAt: new Date(),
       };
@@ -124,6 +136,28 @@ export class ScrapingStorage {
 
     console.log(`[STORAGE] Batch: ${result.saved} guardadas, ${result.skipped} omitidas, ${result.errors.length} errores`);
     return result;
+  }
+
+  /**
+   * Get or create a Provider for an Instagram account.
+   */
+  private async getOrCreateInstagramProvider(username: string) {
+    // Try to find by instagram field
+    const existing = await prisma.provider.findFirst({
+      where: { instagram: username },
+    });
+    if (existing) return existing;
+
+    // Create new provider for this Instagram account
+    return prisma.provider.create({
+      data: {
+        name: `@${username}`,
+        type: 'INSTITUTION',
+        instagram: username,
+        website: `https://www.instagram.com/${username}/`,
+        description: `Proveedor auto-detectado desde Instagram @${username}`,
+      },
+    });
   }
 
   /**

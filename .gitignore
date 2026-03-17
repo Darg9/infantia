@@ -48,8 +48,10 @@ next-env.d.ts
 src/generated/
 temp-prisma/
 
-# ─── Scraping cache (datos generados, puede ser grande) ────────
+# ─── Scraping cache & sessions ───────────────────────────────
 data/scraping-cache.json
+data/ig-session.json
+data/ig-debug-*.png
 
 # ─── Test & build artifacts ────────────────────────────────────
 test-results.json

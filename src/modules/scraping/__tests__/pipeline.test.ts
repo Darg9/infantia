@@ -5,22 +5,32 @@ const {
   mockExtract,
   mockExtractLinksAllPages,
   mockAnalyze,
+  mockAnalyzeInstagramPost,
   mockDiscoverActivityLinks,
   mockFilterNew,
+  mockCacheHas,
   mockCacheAdd,
   mockCacheSave,
   mockSaveBatchResults,
+  mockSaveActivity,
   mockStorageDisconnect,
+  mockExtractProfile,
+  mockPlaywrightClose,
 } = vi.hoisted(() => ({
   mockExtract: vi.fn(),
   mockExtractLinksAllPages: vi.fn(),
   mockAnalyze: vi.fn(),
+  mockAnalyzeInstagramPost: vi.fn(),
   mockDiscoverActivityLinks: vi.fn(),
   mockFilterNew: vi.fn((urls: string[]) => urls),
+  mockCacheHas: vi.fn(() => false),
   mockCacheAdd: vi.fn(),
   mockCacheSave: vi.fn(),
   mockSaveBatchResults: vi.fn(),
+  mockSaveActivity: vi.fn(),
   mockStorageDisconnect: vi.fn(),
+  mockExtractProfile: vi.fn(),
+  mockPlaywrightClose: vi.fn(),
 }));
 
 vi.mock('../extractors/cheerio.extractor', () => ({
@@ -30,9 +40,17 @@ vi.mock('../extractors/cheerio.extractor', () => ({
   }),
 }));
 
+vi.mock('../extractors/playwright.extractor', () => ({
+  PlaywrightExtractor: vi.fn(function(this: Record<string, unknown>) {
+    this.extractProfile = mockExtractProfile;
+    this.close = mockPlaywrightClose;
+  }),
+}));
+
 vi.mock('../nlp/gemini.analyzer', () => ({
   GeminiAnalyzer: vi.fn(function(this: Record<string, unknown>) {
     this.analyze = mockAnalyze;
+    this.analyzeInstagramPost = mockAnalyzeInstagramPost;
     this.discoverActivityLinks = mockDiscoverActivityLinks;
   }),
 }));
@@ -40,6 +58,7 @@ vi.mock('../nlp/gemini.analyzer', () => ({
 vi.mock('../cache', () => ({
   ScrapingCache: vi.fn(function(this: Record<string, unknown>) {
     Object.defineProperty(this, 'size', { get: () => 0, configurable: true });
+    this.has = mockCacheHas;
     this.filterNew = mockFilterNew;
     this.add = mockCacheAdd;
     this.save = mockCacheSave;
@@ -49,6 +68,7 @@ vi.mock('../cache', () => ({
 vi.mock('../storage', () => ({
   ScrapingStorage: vi.fn(function(this: Record<string, unknown>) {
     this.saveBatchResults = mockSaveBatchResults;
+    this.saveActivity = mockSaveActivity;
     this.disconnect = mockStorageDisconnect;
   }),
 }));
@@ -66,8 +86,11 @@ const sampleNLPResult = {
 beforeEach(() => {
   vi.clearAllMocks();
   mockFilterNew.mockImplementation((urls: string[]) => urls);
+  mockCacheHas.mockReturnValue(false);
   mockSaveBatchResults.mockResolvedValue({ saved: 1, skipped: 0, errors: [] });
+  mockSaveActivity.mockResolvedValue('activity-123');
   mockStorageDisconnect.mockResolvedValue(undefined);
+  mockPlaywrightClose.mockResolvedValue(undefined);
 });
 
 // ── runPipeline() ─────────────────────────────────────────────────────────────
@@ -222,6 +245,135 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
     const pipeline = new ScrapingPipeline();
     const result = await pipeline.runBatchPipeline(listingUrl, 2);
     expect(result.results).toHaveLength(6);
+  });
+});
+
+// ── runInstagramPipeline() ─────────────────────────────────────────────────────
+
+const sampleInstagramProfile = {
+  username: 'fcecolombia',
+  bio: 'Fondo de Cultura Economica Colombia. Cra 16 #85-32, Bogota',
+  followerCount: 5000,
+  profileUrl: 'https://www.instagram.com/fcecolombia/',
+  posts: [
+    {
+      url: 'https://www.instagram.com/p/ABC123/',
+      caption: 'Taller de lectura para ninos este sabado! #talleres #ninos #lectura',
+      imageUrls: ['https://instagram.com/img1.jpg'],
+      timestamp: '2026-03-15T10:00:00.000Z',
+      likesCount: 42,
+    },
+    {
+      url: 'https://www.instagram.com/p/DEF456/',
+      caption: 'Feliz dia del libro! #books',
+      imageUrls: ['https://instagram.com/img2.jpg'],
+      timestamp: '2026-03-14T08:00:00.000Z',
+      likesCount: 100,
+    },
+  ],
+};
+
+const sampleIGActivity = {
+  title: 'Taller de Lectura Infantil',
+  description: 'Taller de lectura para ninos',
+  categories: ['Literatura'],
+  confidenceScore: 0.85,
+  currency: 'COP',
+};
+
+const sampleIGNonActivity = {
+  title: 'Dia del libro',
+  description: 'Publicacion conmemorativa',
+  categories: ['Sin categoria'],
+  confidenceScore: 0.1,
+  currency: 'COP',
+};
+
+describe('ScrapingPipeline.runInstagramPipeline()', () => {
+  const profileUrl = 'https://www.instagram.com/fcecolombia/';
+
+  it('extrae perfil y analiza posts con Gemini', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline(profileUrl, 12);
+
+    expect(result.username).toBe('fcecolombia');
+    expect(result.postsExtracted).toBe(2);
+    expect(result.results).toHaveLength(2);
+    expect(mockExtractProfile).toHaveBeenCalledWith(profileUrl, 12);
+    expect(mockAnalyzeInstagramPost).toHaveBeenCalledTimes(2);
+    expect(mockCacheAdd).toHaveBeenCalledTimes(2);
+    expect(mockCacheSave).toHaveBeenCalled();
+  });
+
+  it('filtra posts ya cacheados', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockCacheHas.mockImplementation((...args: unknown[]) => String(args[0]).includes('ABC123'));
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline(profileUrl);
+
+    // Solo 1 post nuevo (DEF456), ABC123 estaba en cache
+    expect(result.results).toHaveLength(1);
+    expect(mockAnalyzeInstagramPost).toHaveBeenCalledTimes(1);
+  });
+
+  it('retorna results vacio si todos los posts estan cacheados', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockCacheHas.mockReturnValue(true);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(result.results).toEqual([]);
+    expect(mockAnalyzeInstagramPost).not.toHaveBeenCalled();
+  });
+
+  it('guarda en BD solo posts con confianza >= 0.3', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost
+      .mockResolvedValueOnce(sampleIGActivity) // confianza 0.85
+      .mockResolvedValueOnce(sampleIGNonActivity); // confianza 0.1
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runInstagramPipeline(profileUrl);
+
+    // Solo la primera actividad debe guardarse (0.85 >= 0.3)
+    expect(mockSaveActivity).toHaveBeenCalledTimes(1);
+    expect(mockSaveActivity).toHaveBeenCalledWith(
+      sampleIGActivity,
+      'https://www.instagram.com/p/ABC123/',
+      'kids',
+      { platform: 'INSTAGRAM', instagramUsername: 'fcecolombia' },
+    );
+  });
+
+  it('NO guarda en BD si saveToDb es false', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline({ saveToDb: false });
+    await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(mockSaveActivity).not.toHaveBeenCalled();
+  });
+
+  it('maneja errores de analisis sin detener el pipeline', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost
+      .mockRejectedValueOnce(new Error('Gemini timeout'))
+      .mockResolvedValueOnce(sampleIGActivity);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline(profileUrl);
+
+    expect(result.results).toHaveLength(2);
+    expect(result.results[0].data).toBeNull();
+    expect(result.results[0].error).toBe('Gemini timeout');
+    expect(result.results[1].data).toEqual(sampleIGActivity);
   });
 });
 

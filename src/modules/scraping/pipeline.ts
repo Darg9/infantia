@@ -1,11 +1,13 @@
-import { ActivityNLPResult, BatchPipelineResult } from './types';
+import { ActivityNLPResult, BatchPipelineResult, InstagramPipelineResult } from './types';
 import { CheerioExtractor } from './extractors/cheerio.extractor';
+import { PlaywrightExtractor } from './extractors/playwright.extractor';
 import { GeminiAnalyzer } from './nlp/gemini.analyzer';
 import { ScrapingCache } from './cache';
 import { ScrapingStorage } from './storage';
 
 export class ScrapingPipeline {
   private extractor: CheerioExtractor;
+  private playwrightExtractor: PlaywrightExtractor | null = null;
   private analyzer: GeminiAnalyzer;
   private cache: ScrapingCache;
   private storage: ScrapingStorage | null;
@@ -133,7 +135,106 @@ export class ScrapingPipeline {
     return batchResult;
   }
 
+  /**
+   * Scrape an Instagram profile: extract posts, analyze each with Gemini,
+   * optionally save to DB. Posts are processed sequentially to avoid bans.
+   */
+  async runInstagramPipeline(profileUrl: string, maxPosts: number = 12): Promise<InstagramPipelineResult> {
+    console.log(`\n[IG-PIPELINE] ========== INICIO INSTAGRAM PIPELINE ==========`);
+    console.log(`[IG-PIPELINE] Perfil: ${profileUrl}`);
+    console.log(`[IG-PIPELINE] Max posts: ${maxPosts}`);
+    console.log(`[IG-PIPELINE] Cache: ${this.cache.size} URLs ya scrapeadas`);
+
+    // Lazy-init Playwright extractor
+    if (!this.playwrightExtractor) {
+      this.playwrightExtractor = new PlaywrightExtractor();
+    }
+
+    // Phase 1: Extract profile and posts
+    console.log(`[IG-PIPELINE] Fase 1: Extrayendo perfil y posts con Playwright...`);
+    const profile = await this.playwrightExtractor.extractProfile(profileUrl, maxPosts);
+    console.log(`[IG-PIPELINE] Perfil: @${profile.username} | Bio: ${profile.bio.substring(0, 80)}...`);
+    console.log(`[IG-PIPELINE] Posts extraídos: ${profile.posts.length}`);
+
+    // Phase 2: Filter already-cached posts
+    const newPosts = profile.posts.filter((p) => !this.cache.has(p.url));
+    const skipped = profile.posts.length - newPosts.length;
+    if (skipped > 0) {
+      console.log(`[IG-PIPELINE] ⏭️  Saltando ${skipped} posts ya procesados. Nuevos: ${newPosts.length}`);
+    }
+
+    if (newPosts.length === 0) {
+      console.log('[IG-PIPELINE] ✅ Todo al día — no hay posts nuevos.');
+      return {
+        profileUrl,
+        username: profile.username,
+        postsExtracted: profile.posts.length,
+        results: [],
+      };
+    }
+
+    // Phase 3: Analyze each post with Gemini (sequential to avoid rate limits)
+    console.log(`[IG-PIPELINE] Fase 2: Analizando ${newPosts.length} posts con Gemini...`);
+    const results: InstagramPipelineResult['results'] = [];
+
+    for (let i = 0; i < newPosts.length; i++) {
+      const post = newPosts[i];
+      try {
+        console.log(`[IG-PIPELINE] Analizando post ${i + 1}/${newPosts.length}: ${post.url}`);
+        const data = await this.analyzer.analyzeInstagramPost(post, profile.bio);
+
+        // Cache the post regardless of confidence
+        this.cache.add(post.url, data.title);
+        results.push({ postUrl: post.url, data });
+
+        console.log(`[IG-PIPELINE] → "${data.title}" (confianza: ${data.confidenceScore})`);
+      } catch (error: any) {
+        console.error(`[IG-PIPELINE] Error analizando ${post.url}: ${error.message}`);
+        results.push({ postUrl: post.url, data: null, error: error.message });
+      }
+    }
+
+    // Persist cache
+    this.cache.save();
+    console.log(`[IG-PIPELINE] Cache actualizado: ${this.cache.size} URLs totales`);
+
+    // Phase 4: Save to DB if enabled
+    if (this.storage) {
+      console.log(`[IG-PIPELINE] Fase 3: Guardando en base de datos...`);
+      let saved = 0;
+      let dbSkipped = 0;
+      for (const r of results) {
+        if (!r.data || r.data.confidenceScore < 0.3) {
+          dbSkipped++;
+          continue;
+        }
+        const activityId = await this.storage.saveActivity(
+          r.data,
+          r.postUrl,
+          'kids',
+          { platform: 'INSTAGRAM', instagramUsername: profile.username },
+        );
+        if (activityId) saved++;
+      }
+      console.log(`[IG-PIPELINE] BD: ${saved} guardadas, ${dbSkipped} omitidas (baja confianza o sin datos)`);
+    }
+
+    const successful = results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
+    console.log(`[IG-PIPELINE] ========== FIN INSTAGRAM PIPELINE ==========`);
+    console.log(`[IG-PIPELINE] Actividades encontradas: ${successful}/${results.length}`);
+
+    return {
+      profileUrl,
+      username: profile.username,
+      postsExtracted: profile.posts.length,
+      results,
+    };
+  }
+
   async disconnect(): Promise<void> {
+    if (this.playwrightExtractor) {
+      await this.playwrightExtractor.close();
+    }
     if (this.storage) {
       await this.storage.disconnect();
     }

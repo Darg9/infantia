@@ -76,6 +76,7 @@ const actividadNLPBase: ActivityNLPResult = {
   pricePeriod: null,
   schedules: [],
   location: null,
+  audience: 'KIDS',
 };
 
 const makeBatchResult = (overrides: Partial<BatchPipelineResult['results'][0]>[] = []): BatchPipelineResult => ({

@@ -4,6 +4,7 @@
 
 import clsx from 'clsx';
 import { getCategoryColor, getCategoryEmoji } from '@/lib/category-utils';
+import { FavoriteButton } from '@/components/FavoriteButton';
 
 // Tipo local inferido desde lo que devuelve listActivities
 // Prisma retorna price como Decimal (objeto con toNumber()), no como number primitivo
@@ -33,6 +34,8 @@ interface Activity {
 
 interface ActivityCardProps {
   activity: Activity;
+  /** true si el usuario autenticado ya marcó esta actividad como favorita */
+  isFavorited?: boolean;
 }
 
 
@@ -64,7 +67,7 @@ const TYPE_LABELS: Record<string, string> = {
   WORKSHOP: 'Taller',
 };
 
-export default function ActivityCard({ activity }: ActivityCardProps) {
+export default function ActivityCard({ activity, isFavorited = false }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
@@ -157,12 +160,19 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
               <span>📍</span> {locationLabel}
             </span>
           )}
-          {activity.provider && (
-            <span className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
-              {activity.provider.name}
-              {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
-            </span>
-          )}
+          <span className="ml-auto flex items-center gap-2">
+            {activity.provider && (
+              <span className="flex items-center gap-1 text-xs text-gray-400">
+                {activity.provider.name}
+                {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
+              </span>
+            )}
+            <FavoriteButton
+              activityId={activity.id}
+              initialIsFavorited={isFavorited}
+              size="sm"
+            />
+          </span>
         </div>
       </div>
     </div>

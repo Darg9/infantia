@@ -7,6 +7,9 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/modules/activities';
 import { ShareButton } from '@/components/ShareButton';
+import { FavoriteButton } from '@/components/FavoriteButton';
+import { getSession } from '@/lib/auth';
+import { prisma } from '@/lib/db';
 import clsx from 'clsx';
 
 export async function generateMetadata({
@@ -118,9 +121,28 @@ export default async function ActividadDetallePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const activity = await getActivityById(id);
+  const [activity, sessionUser] = await Promise.all([
+    getActivityById(id),
+    getSession(),
+  ]);
 
   if (!activity) notFound();
+
+  // Comprobar si la actividad está en favoritos del usuario autenticado
+  let isFavorited = false;
+  if (sessionUser) {
+    const dbUser = await prisma.user.findUnique({
+      where: { supabaseAuthId: sessionUser.id },
+      select: { id: true },
+    });
+    if (dbUser) {
+      const fav = await prisma.favorite.findUnique({
+        where: { userId_activityId: { userId: dbUser.id, activityId: id } },
+        select: { activityId: true },
+      });
+      isFavorited = fav !== null;
+    }
+  }
 
   const mainCategory = activity.categories[0]?.category;
   const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
@@ -415,15 +437,26 @@ export default async function ActividadDetallePage({
               </a>
             )}
 
-            {/* Compartir */}
-            <ShareButton
-              id={id}
-              title={activity.title}
-              description={activity.description ?? ''}
-              imageUrl={activity.imageUrl}
-              ageMin={activity.ageMin}
-              ageMax={activity.ageMax}
-            />
+            {/* Favorito + Compartir */}
+            <div className="flex gap-3">
+              <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 flex-shrink-0">
+                <FavoriteButton
+                  activityId={id}
+                  initialIsFavorited={isFavorited}
+                  size="md"
+                />
+              </div>
+              <div className="flex-1">
+                <ShareButton
+                  id={id}
+                  title={activity.title}
+                  description={activity.description ?? ''}
+                  imageUrl={activity.imageUrl}
+                  ageMin={activity.ageMin}
+                  ageMax={activity.ageMax}
+                />
+              </div>
+            </div>
 
             {/* Confianza y fuente */}
             <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col gap-1.5 text-xs text-gray-400">

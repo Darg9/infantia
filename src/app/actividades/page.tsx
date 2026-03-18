@@ -7,6 +7,7 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
+import { getSession } from '@/lib/auth';
 import type { Prisma } from '@/generated/prisma/client';
 import ActivityCard from './_components/ActivityCard';
 import Filters from './_components/Filters';
@@ -161,6 +162,10 @@ export default async function ActividadesPage({
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
   };
 
+  // Cargar actividades, facets y favoriteIds del usuario (si está autenticado) en paralelo
+  const sessionUser = await getSession();
+  let favoriteIds = new Set<string>();
+
   const [{ activities, total }, facets] = await Promise.all([
     listActivities({
       skip,
@@ -168,6 +173,20 @@ export default async function ActividadesPage({
       ...filters,
     }),
     getFacets(filters),
+    // Obtener favoriteIds si hay sesión activa
+    sessionUser
+      ? prisma.user
+          .findUnique({ where: { supabaseAuthId: sessionUser.id }, select: { id: true } })
+          .then((dbUser) =>
+            dbUser
+              ? prisma.favorite
+                  .findMany({ where: { userId: dbUser.id }, select: { activityId: true } })
+                  .then((favs) => {
+                    favoriteIds = new Set(favs.map((f) => f.activityId));
+                  })
+              : null
+          )
+      : Promise.resolve(null),
   ]);
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -208,7 +227,11 @@ export default async function ActividadesPage({
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity} />
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                isFavorited={favoriteIds.has(activity.id)}
+              />
             ))}
           </div>
         )}

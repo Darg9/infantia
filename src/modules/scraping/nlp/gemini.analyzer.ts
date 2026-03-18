@@ -15,6 +15,12 @@ REGLAS:
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
 - Fechas en formato YYYY-MM-DD.
 
+AUDIENCIA (audience) — infiere basándote en el contenido:
+- "KIDS": actividad exclusivamente para niños, sin presencia esperada de adultos como participantes (ej: taller de robótica para niños 6-12 años, club de lectura infantil).
+- "FAMILY": actividad para familias completas o padres/adultos acompañando a niños (ej: obra de teatro familiar, paseo ecológico en familia, taller de manualidades para padres e hijos).
+- "ADULTS": actividad exclusivamente para adultos (ej: yoga para mamás, curso de finanzas, taller de escritura creativa para adultos).
+- "ALL": aplica a múltiples audiencias mezcladas, o no hay información suficiente para clasificar.
+
 ESTRUCTURA JSON ESPERADA:
 {
   "title": "string",
@@ -25,6 +31,7 @@ ESTRUCTURA JSON ESPERADA:
   "price": number | null,
   "pricePeriod": "PER_SESSION" | "MONTHLY" | "TOTAL" | "FREE" | null,
   "currency": "string",
+  "audience": "KIDS" | "FAMILY" | "ADULTS" | "ALL",
   "location": { "address": "string", "city": "string" } | null,
   "schedules": [{ "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "notes": "string" }] | null,
   "confidenceScore": number
@@ -50,6 +57,12 @@ REGLAS:
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
 - Fechas en formato YYYY-MM-DD.
 
+AUDIENCIA (audience) — infiere basándote en hashtags, emojis y texto:
+- "KIDS": actividad exclusivamente para niños (👶🧒 #niños #infantil #kids #children).
+- "FAMILY": actividad para toda la familia o padres con hijos (👨‍👩‍👧 #familia #family #padresehijos).
+- "ADULTS": exclusivamente para adultos (mamás, papás sin niños como participantes).
+- "ALL": aplica a múltiples audiencias o no hay información suficiente.
+
 ESTRUCTURA JSON ESPERADA:
 {
   "title": "string (nombre de la actividad)",
@@ -60,6 +73,7 @@ ESTRUCTURA JSON ESPERADA:
   "price": number | null,
   "pricePeriod": "PER_SESSION" | "MONTHLY" | "TOTAL" | "FREE" | null,
   "currency": "string",
+  "audience": "KIDS" | "FAMILY" | "ADULTS" | "ALL",
   "location": { "address": "string", "city": "string" } | null,
   "schedules": [{ "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD", "notes": "string" }] | null,
   "confidenceScore": number
@@ -145,6 +159,7 @@ export class GeminiAnalyzer {
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${url}`,
           categories: ['Sin categoría'],
+          audience: 'ALL' as const,
           confidenceScore: 0,
           currency: 'COP',
         };
@@ -311,6 +326,7 @@ ${profileBio}`;
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${post.url}`,
           categories: ['Sin categoría'],
+          audience: 'ALL' as const,
           confidenceScore: 0,
           currency: 'COP',
         };
@@ -341,6 +357,7 @@ ${profileBio}`;
       price: 50000,
       pricePeriod: 'MONTHLY',
       currency: 'COP',
+      audience: 'KIDS',
       location: { address: 'Calle Falsa 123', city: 'Bogotá' },
       schedules: null,
       confidenceScore: 0.85,

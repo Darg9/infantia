@@ -75,8 +75,12 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
   const cardContent = (
     <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
-      {/* Imagen / placeholder de color */}
-      <div className={clsx('relative h-36 flex items-center justify-center', bgColor, activity.status === 'EXPIRED' && 'opacity-60')}>
+      {/* Strip visual — siempre presente, h-20 */}
+      <div className={clsx(
+        'relative h-20 flex items-center justify-center overflow-hidden',
+        !activity.imageUrl && bgColor,
+        activity.status === 'EXPIRED' && 'opacity-60'
+      )}>
         {activity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -86,24 +90,17 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             loading="lazy"
           />
         ) : (
-          <span className="text-5xl select-none opacity-60">{categoryEmoji}</span>
+          <span className="text-3xl select-none opacity-50">{categoryEmoji}</span>
         )}
 
-        {/* Badge de tipo */}
-        <span className="absolute top-2 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm">
+        {/* Badge tipo */}
+        <span className="absolute top-1.5 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm">
           {TYPE_LABELS[activity.type] ?? activity.type}
         </span>
 
-        {/* Badge de expirada */}
-        {activity.status === 'EXPIRED' && (
-          <span className="absolute bottom-2 left-0 right-0 mx-auto w-fit rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
-            Verificar disponibilidad
-          </span>
-        )}
-
-        {/* Badge de precio */}
+        {/* Badge precio */}
         <span className={clsx(
-          'absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
+          'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
           priceLabel === 'Gratis'
             ? 'bg-emerald-500 text-white'
             : priceLabel === 'No disponible'
@@ -112,6 +109,13 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         )}>
           {priceLabel}
         </span>
+
+        {/* Badge expirada */}
+        {activity.status === 'EXPIRED' && (
+          <span className="absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+            Verificar disponibilidad
+          </span>
+        )}
       </div>
 
       {/* Contenido */}
@@ -120,7 +124,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         {/* Categorías */}
         {activity.categories.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {activity.categories.slice(0, 3).map(({ category }) => (
+            {activity.categories.slice(0, 2).map(({ category }) => (
               <span
                 key={category.id}
                 className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700"
@@ -153,17 +157,13 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
               <span>📍</span> {locationLabel}
             </span>
           )}
+          {activity.provider && (
+            <span className="flex items-center gap-1 text-xs text-gray-400 ml-auto">
+              {activity.provider.name}
+              {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
+            </span>
+          )}
         </div>
-
-        {/* Proveedor */}
-        {activity.provider && (
-          <div className="flex items-center gap-1 mt-1">
-            <span className="text-xs text-gray-400">{activity.provider.name}</span>
-            {activity.provider.isVerified && (
-              <span className="text-xs text-indigo-500" title="Verificado">✓</span>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

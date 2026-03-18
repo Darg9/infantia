@@ -30,7 +30,16 @@ interface ListParams {
   priceMax?: number;
   status?: string;
   type?: string;
+  audience?: string;
   search?: string;
+}
+
+// Valores de audience que aplican a cada opción de filtro
+function audienceValues(audience: string): string[] {
+  if (audience === 'KIDS') return ['KIDS', 'ALL'];
+  if (audience === 'FAMILY') return ['FAMILY', 'ALL'];
+  if (audience === 'ADULTS') return ['ADULTS', 'ALL'];
+  return [];
 }
 
 export async function listActivities(params: ListParams) {
@@ -48,19 +57,21 @@ export async function listActivities(params: ListParams) {
   if (params.categoryId) where.categories = { some: { categoryId: params.categoryId } };
   if (params.cityId) where.location = { cityId: params.cityId };
 
+  // Audience — actividades con audience=ALL aparecen en todos los filtros
+  if (params.audience) {
+    const vals = audienceValues(params.audience);
+    if (vals.length) where.audience = { in: vals as Prisma.EnumActivityAudienceFilter['in'] };
+  }
+
+  // Acumulamos condiciones AND para evitar conflictos entre age y search
+  const andConditions: Prisma.ActivityWhereInput[] = [];
+
   // Age overlap: activity range overlaps with requested range
   if (params.ageMin !== undefined) {
-    where.OR = [
-      ...(where.OR ?? []),
-      { ageMax: { gte: params.ageMin } },
-      { ageMax: null },
-    ];
+    andConditions.push({ OR: [{ ageMax: { gte: params.ageMin } }, { ageMax: null }] });
   }
   if (params.ageMax !== undefined) {
-    where.AND = [
-      ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
-      { OR: [{ ageMin: { lte: params.ageMax } }, { ageMin: null }] },
-    ];
+    andConditions.push({ OR: [{ ageMin: { lte: params.ageMax } }, { ageMin: null }] });
   }
 
   if (params.priceMin !== undefined || params.priceMax !== undefined) {
@@ -70,10 +81,16 @@ export async function listActivities(params: ListParams) {
   }
 
   if (params.search) {
-    where.OR = [
-      { title: { contains: params.search, mode: 'insensitive' } },
-      { description: { contains: params.search, mode: 'insensitive' } },
-    ];
+    andConditions.push({
+      OR: [
+        { title: { contains: params.search, mode: 'insensitive' } },
+        { description: { contains: params.search, mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  if (andConditions.length) {
+    where.AND = andConditions;
   }
 
   const [activities, total] = await Promise.all([

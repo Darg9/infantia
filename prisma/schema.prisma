@@ -19,8 +19,9 @@ model Activity {
   id                String         @id @default(uuid())
   title             String         @db.VarChar(255)
   description       String         @db.Text
-  type              ActivityType   @default(ONE_TIME)
-  status            ActivityStatus @default(DRAFT)
+  type              ActivityType      @default(ONE_TIME)
+  status            ActivityStatus    @default(DRAFT)
+  audience          ActivityAudience  @default(ALL)
   startDate         DateTime?
   endDate           DateTime?
   schedule          Json?          // { days: ["mon","wed"], start: "15:00", end: "17:00" }
@@ -320,6 +321,13 @@ enum ActivityType {
   ONE_TIME
   CAMP
   WORKSHOP
+}
+
+enum ActivityAudience {
+  KIDS    // Solo niños
+  FAMILY  // Toda la familia
+  ADULTS  // Solo adultos
+  ALL     // Aplica a todos (default para datos existentes)
 }
 
 enum ActivityStatus {

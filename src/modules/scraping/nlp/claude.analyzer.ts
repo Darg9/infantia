@@ -99,6 +99,7 @@ export class ClaudeAnalyzer {
       price: 50000,
       pricePeriod: 'MONTHLY',
       currency: 'COP',
+      audience: 'KIDS' as const,
       location: { address: 'Calle Falsa 123', city: 'Bogotá' },
       schedules: null,
       confidenceScore: 0.85,

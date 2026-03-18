@@ -26,6 +26,8 @@ export const activityNLPResultSchema = z.object({
   price: z.number().min(0).nullable().optional(),
   pricePeriod: z.enum(['PER_SESSION', 'MONTHLY', 'TOTAL', 'FREE']).nullable().optional(),
   currency: z.string().length(3).nullable().default('COP'),
+  // KIDS=solo niños | FAMILY=padres+hijos | ADULTS=solo adultos | ALL=sin info clara
+  audience: z.enum(['KIDS', 'FAMILY', 'ADULTS', 'ALL']).nullable().optional().default('ALL'),
   location: z.object({
     address: coerceString,
     city: coerceString,

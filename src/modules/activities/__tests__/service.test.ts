@@ -128,8 +128,11 @@ describe('listActivities()', () => {
   it('aplica filtro ageMin al where', async () => {
     await listActivities({ skip: 0, pageSize: 20, ageMin: 5 });
     const whereArg = mockFindMany.mock.calls[0][0].where;
-    expect(whereArg.OR).toEqual(
-      expect.arrayContaining([{ ageMax: { gte: 5 } }, { ageMax: null }])
+    // ageMin va dentro de AND como condición OR
+    expect(whereArg.AND).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ OR: expect.arrayContaining([{ ageMax: { gte: 5 } }, { ageMax: null }]) }),
+      ])
     );
   });
 
@@ -146,10 +149,15 @@ describe('listActivities()', () => {
   it('aplica búsqueda por texto al where', async () => {
     await listActivities({ skip: 0, pageSize: 20, search: 'natación' });
     const whereArg = mockFindMany.mock.calls[0][0].where;
-    expect(whereArg.OR).toEqual(
+    // search va dentro de AND como condición OR (evita conflicto con filtros de age)
+    expect(whereArg.AND).toEqual(
       expect.arrayContaining([
-        { title: { contains: 'natación', mode: 'insensitive' } },
-        { description: { contains: 'natación', mode: 'insensitive' } },
+        expect.objectContaining({
+          OR: expect.arrayContaining([
+            { title: { contains: 'natación', mode: 'insensitive' } },
+            { description: { contains: 'natación', mode: 'insensitive' } },
+          ]),
+        }),
       ])
     );
   });

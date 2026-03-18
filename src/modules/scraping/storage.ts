@@ -72,6 +72,7 @@ export class ScrapingStorage {
         price: data.price != null ? data.price : null,
         priceCurrency: data.currency || 'COP',
         pricePeriod: data.pricePeriod ?? null,
+        audience: (data.audience ?? 'ALL') as 'KIDS' | 'FAMILY' | 'ADULTS' | 'ALL',
         providerId: provider.id,
         verticalId: vertical.id,
         sourceType: 'SCRAPING' as const,

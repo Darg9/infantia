@@ -29,7 +29,7 @@ Calculado automaticamente en vitest.config.ts.
 
 ---
 
-## Cobertura actual (v0.4.0)
+## Cobertura actual (v0.5.0)
 
 | Modulo | Test | Stmts | Funcs | Lines | Estado |
 |--------|------|-------|-------|-------|--------|
@@ -54,7 +54,7 @@ Calculado automaticamente en vitest.config.ts.
 | activities/schemas | schemas.test.ts | 100% | 100% | 100% | OK |
 | activities/service | service.test.ts | 100% | 100% | 100% | OK |
 
-**Total v0.5.0: ~95% statements / ~84% functions / ~96% lines (314 tests, 21 archivos)**
+**Total v0.5.0: ~95% statements / ~88% branch / ~84% functions / ~96% lines (314 tests, 21 archivos)**
 
 > Todos los modulos con logica de negocio tienen 100% cobertura en lines/funcs. Las brechas restantes son callbacks de `evaluateAll()` en Playwright (ejecutan en contexto del browser, no testables con mocks unitarios) y branches de paginacion en Cheerio.
 
@@ -149,7 +149,7 @@ Calculado automaticamente en vitest.config.ts.
 - updateSourceStatus(): actualiza lastRunAt, lastRunStatus, lastRunItems
 - getOrCreateSource(): existente, nuevo, busca por URL
 
-### scraping/pipeline (32 tests — 13 base + 6 IG + 13 logger)
+### scraping/pipeline (30 tests — 13 base + 6 IG + 11 logger)
 - runPipeline(): exito, FAILED, texto vacio
 - runBatchPipeline(): 0 links, 0 filtrados, todos en cache
 - Procesamiento exitoso, error por URL, saveToDb true/false
@@ -163,25 +163,27 @@ Calculado automaticamente en vitest.config.ts.
 ### activities/schemas (24 tests)
 - listActivitiesSchema, createActivitySchema, updateActivitySchema
 - Defaults, validaciones, conversiones, casos de error
-- audience: 4 valores válidos, valor inválido rechazado
-- ageMax hasta 120 (actividades "de 0 a 100 años")
-- ageMin=0 no se trata como falsy en refine ni en ShareButton
-- createActivitySchema: audience default ALL, ageMin=0 con ageMax=100
+- audience: 4 valores válidos (KIDS/FAMILY/ADULTS/ALL), valor inválido rechazado
+- ageMax hasta 120 (actividades "de 0 a 100 años" o "de 60 a 120 años")
+- ageMin=0 no se trata como falsy en refine (bug JS `&&` → `!= null`)
+- createActivitySchema: audience default ALL, ageMin=0 con ageMax=100 válido
 
 ### activities/service (22 tests)
-- listActivities(): filtros completos (vertical, city, price, age, type, category, search), paginacion
+- listActivities(): filtros completos (vertical, city, price, age, type, category, audience, search), paginacion
 - getActivityById(), createActivity() con fechas y categoryIds
 - updateActivity() con fechas y categoryIds, deleteActivity() soft delete
 
 ---
 
-## Modulos sin tests unitarios (requieren E2E)
+## Modulos sin tests unitarios (requieren E2E o integración)
 
 | Modulo | Razon | Prioridad |
 |--------|-------|-----------|
 | components/layout/Header | Server Component, requiere RSC testing | Baja |
+| components/ShareButton | Client Component con Web Share API y Clipboard API (no mockeables trivialmente en jsdom) | Baja |
 | app/admin/* pages | Server Components, requiere E2E | Baja |
 | app/login, app/registro | Client Components, requiere E2E | Media |
+| app/api/children/route.ts | Route handler con requireAuth + Prisma, requiere integration test con auth mock | Media |
 
 ---
 
@@ -196,13 +198,21 @@ npm run test:coverage     # Con reporte (verifica threshold del dia)
 
 ## Roadmap de pruebas
 
-v0.5.0 (threshold 80%):
-- Tests de endpoints API admin con mock auth
-- Tests de providers, search (Meilisearch)
+v0.5.0 (ENTREGADO — threshold 50% superado, real ~95%):
+- ✅ Tests de schemas con audience y ageMax=120
+- ✅ Bugs críticos verificados por tests (ageMin=0 falsy, ageMax limit, audience enum)
+- ✅ 314 tests, 21 archivos, todos pasan
+
+v0.6.0 (threshold 60%):
+- Tests de endpoints API admin con mock auth (GET /api/admin/scraping/logs, sources)
+- Tests de API children (GET /api/children, POST /api/children) con mock requireAuth + Prisma
+- Tests de expire-activities.ts (lógica de expiración ONE_TIME/CAMP/WORKSHOP/RECURRING)
+- Tests de service.ts filtro audience (caso KIDS incluye ALL, caso ADULTS incluye ALL)
 
 v1.0.0 (MVP):
 - Tests E2E con Playwright (login, registro, admin panel, actividades)
 - 100% cobertura modulos core
+- ShareButton: integration test con jsdom y mock de navigator.share / navigator.clipboard
 
 ---
 

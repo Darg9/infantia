@@ -14,6 +14,36 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.5.0] — 2026-03-18
+**Documento Fundacional: V10 (pendiente de generar)**
+
+### Added
+- Enum `ActivityAudience` en Prisma: KIDS / FAMILY / ADULTS / ALL
+- Filtro de audiencia en `/actividades` con facetado completo
+- Filtros facetados: cada filtro calcula sus opciones excluyendo su propia dimensión (0 combinaciones vacías garantizado)
+- `audience` field en Gemini prompts (SYSTEM_PROMPT + INSTAGRAM_SYSTEM_PROMPT) para inferencia automática
+- Script `reclassify-audience.ts`: reclasificó 200 actividades existentes (35 KIDS / 36 FAMILY / 68 ADULTS / 61 ALL)
+- `ShareButton` component: Web Share API nativa + fallback dropdown con 9 plataformas (WhatsApp, Facebook, Twitter/X, Telegram, Email, LinkedIn, Instagram, TikTok, Copiar vínculo)
+- Tarjetas con h-20 strip visual uniforme (imagen real cuando existe, emoji placeholder cuando no)
+- `audience` en `listActivitiesSchema` y `createActivitySchema`
+
+### Fixed
+- `ShareButton`: `ageMin=0` tratado como falsy en JS (`&&`) → corregido con `!= null`
+- `activities.schemas`: `ageMax: max(18)` → `max(120)` en list y create schemas
+- `activities.schemas`: refine `ageMin > ageMax` con mismo falsy-zero bug
+- `actividades/page.tsx`: `parseInt(ageMin)` sin guard NaN → `parseAge()` con `Number.isFinite()`
+- `actividades/page.tsx`: `?type=INVALID` causaba crash 500 → validación contra enums antes de Prisma
+- `actividades/page.tsx`: `?audience=INVALID` silenciosamente ignorado con validación
+- `Pagination.tsx`: `disabled={page === totalPages}` → `>=` (Siguiente habilitado en page > total)
+- `api/children/route.ts`: cálculo de edad solo por año → comparación por fecha exacta
+- `api/admin/scraping/logs/route.ts`: `parseInt()` sin radix ni NaN guard
+
+### Tests
+- 294 → 314 tests (+20)
+- +5 tests nuevos en `activities/schemas.test.ts` cubriendo audience y ageMax=120
+
+---
+
 ## [v0.1.0] — 2026-03-16
 **Documento Fundacional: V06**
 

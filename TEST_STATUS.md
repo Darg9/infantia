@@ -1,16 +1,16 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-03-17 | Version: v0.4.0
+Actualizado: 2026-03-18 | Version: v0.5.0
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 20 |
-| Tests totales | 294 |
-| Pasados | 294 |
+| Archivos de test | 21 |
+| Tests totales | 314 |
+| Pasados | 314 |
 | Fallidos | 0 |
-| Threshold hoy (dia 2) | 40% |
+| Threshold hoy (dia 3) | 50% |
 | Statements | ~95% OK |
 | Branch | ~88% OK |
 | Functions | ~84% OK |
@@ -146,9 +146,13 @@ Actualizado: 2026-03-17 | Version: v0.4.0
 - 0 links FAILED, 0 filtered SUCCESS, all cached SUCCESS
 - Logger integration (Instagram): logger called, init/complete error non-fatal, all cached SUCCESS, errors PARTIAL
 
-### activities/__tests__/schemas.test.ts (tests de schemas) OK
-- listActivitiesSchema, createActivitySchema, updateActivitySchema
-- Defaults, validaciones, conversiones, casos de error
+### activities/__tests__/schemas.test.ts (24 tests) OK
+- listActivitiesSchema: defaults, conversiones, validaciones de rango
+- audience: 4 valores válidos (KIDS/FAMILY/ADULTS/ALL), valor inválido falla
+- ageMax hasta 120 (actividades para todas las edades)
+- ageMin=0 no tratado como falsy en refine de validación
+- createActivitySchema: audience con default ALL, ageMin=0/ageMax=100 válido
+- updateActivitySchema: parcial, solo status
 
 ### activities/__tests__/service.test.ts (tests de servicio) OK
 - listActivities(): 8+ escenarios de filtros y paginacion
@@ -192,6 +196,14 @@ Las funciones con cobertura baja son callbacks de `page.$$eval()` / `page.evalua
 
 ### cheerio.extractor.ts (~91% lines)
 Faltan edge cases de paginacion: limite maxPages, estrategia ?page=N+1, y algunos branches de extractLinks con URLs edge case.
+
+## Cambios respecto a v0.4.0
+
+- **+20 tests** (294 → 314)
+- **+1 archivo de test** (20 → 21): children.test.ts (parcial)
+- **activities/schemas.ts**: +7 tests cubriendo audience, ageMax=120, ageMin=0 falsy-zero
+- **Bug fixes verificados por tests**: audience en API, ageMax limit, refine falsy-zero
+- **Bugs críticos corregidos sin tests nuevos**: NaN guard parseInt, Pagination disabled, type enum validation, children age calculation
 
 ## Cambios respecto a v0.3.0
 

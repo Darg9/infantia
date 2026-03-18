@@ -1,7 +1,7 @@
 # Infantia — Plan de Pruebas
 
-**Version:** v0.4.0
-**Fecha:** 2026-03-17
+**Version:** v0.5.0
+**Fecha:** 2026-03-18
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** +10% por dia desde 2026-03-16 (dia 1 = 30%, cap = 100%)
 
@@ -54,7 +54,7 @@ Calculado automaticamente en vitest.config.ts.
 | activities/schemas | schemas.test.ts | 100% | 100% | 100% | OK |
 | activities/service | service.test.ts | 100% | 100% | 100% | OK |
 
-**Total v0.4.0: ~95% statements / ~84% functions / ~96% lines (294 tests, 20 archivos)**
+**Total v0.5.0: ~95% statements / ~84% functions / ~96% lines (314 tests, 21 archivos)**
 
 > Todos los modulos con logica de negocio tienen 100% cobertura en lines/funcs. Las brechas restantes son callbacks de `evaluateAll()` en Playwright (ejecutan en contexto del browser, no testables con mocks unitarios) y branches de paginacion en Cheerio.
 
@@ -160,9 +160,13 @@ Calculado automaticamente en vitest.config.ts.
 - Logger integration (IG): startRun/completeRun, init error, complete error, cache, PARTIAL
 - disconnect(): con storage, sin storage, con PlaywrightExtractor
 
-### activities/schemas (tests de schemas)
+### activities/schemas (24 tests)
 - listActivitiesSchema, createActivitySchema, updateActivitySchema
 - Defaults, validaciones, conversiones, casos de error
+- audience: 4 valores válidos, valor inválido rechazado
+- ageMax hasta 120 (actividades "de 0 a 100 años")
+- ageMin=0 no se trata como falsy en refine ni en ShareButton
+- createActivitySchema: audience default ALL, ageMin=0 con ageMax=100
 
 ### activities/service (22 tests)
 - listActivities(): filtros completos (vertical, city, price, age, type, category, search), paginacion

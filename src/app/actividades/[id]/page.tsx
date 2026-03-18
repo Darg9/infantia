@@ -6,6 +6,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/modules/activities';
+import { ShareButton } from '@/components/ShareButton';
 import clsx from 'clsx';
 
 export async function generateMetadata({
@@ -413,6 +414,16 @@ export default async function ActividadDetallePage({
                 <span>↗</span>
               </a>
             )}
+
+            {/* Compartir */}
+            <ShareButton
+              id={id}
+              title={activity.title}
+              description={activity.description ?? ''}
+              imageUrl={activity.imageUrl}
+              ageMin={activity.ageMin}
+              ageMax={activity.ageMax}
+            />
 
             {/* Confianza y fuente */}
             <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col gap-1.5 text-xs text-gray-400">

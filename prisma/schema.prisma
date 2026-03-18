@@ -93,6 +93,9 @@ model User {
   neighborhood      String?  @db.VarChar(100)
   notificationPrefs Json     @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
   role              UserRole @default(PARENT)
+  // Preparado para Escenario B (menores con cuenta propia) — sin lógica activa en MVP
+  accountType       String   @default("adult") @db.VarChar(20) // 'adult' | 'minor'
+  guardianId        String?  // userId del tutor si accountType = 'minor'
   createdAt         DateTime @default(now())
 
   city      City?      @relation(fields: [cityId], references: [id])
@@ -104,14 +107,23 @@ model User {
 }
 
 model Child {
-  id        String   @id @default(uuid())
-  userId    String
-  name      String   @db.VarChar(100)
-  birthDate DateTime @db.Date
-  interests Json     @default("[]")
+  id              String   @id @default(uuid())
+  userId          String
+  name            String   @db.VarChar(100)
+  birthDate       DateTime @db.Date
+  gender          String?  @db.VarChar(20)
+  interests       Json     @default("[]")
+  // Consentimiento parental — Ley 1581 de 2012
+  consentGivenAt  DateTime
+  consentGivenBy  String   // userId del padre/tutor que aceptó
+  consentType     String   @default("parental") @db.VarChar(20) // 'parental' | 'self' (futuro Escenario B)
+  consentText     String   @db.Text // texto exacto mostrado al momento del consentimiento
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("children")
 }
 

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { Header } from "@/components/layout/Header";
+import { Footer } from "@/components/layout/Footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,9 +15,45 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co';
+
 export const metadata: Metadata = {
-  title: "Infantia — Actividades para niños",
-  description: "Descubre talleres, clubes, campamentos y eventos para niños en tu ciudad.",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'Infantia — Actividades para niños en Bogotá',
+    template: '%s | Infantia',
+  },
+  description:
+    'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá. Todo en un solo lugar, siempre actualizado.',
+  keywords: [
+    'actividades para niños',
+    'talleres infantiles',
+    'eventos familiares',
+    'Bogotá',
+    'campamentos',
+    'cursos para niños',
+  ],
+  openGraph: {
+    type: 'website',
+    locale: 'es_CO',
+    siteName: 'Infantia',
+    title: 'Infantia — Actividades para niños en Bogotá',
+    description:
+      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá.',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Infantia — Actividades para niños en Bogotá',
+    description:
+      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá.',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({
@@ -30,8 +67,11 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AuthProvider>
-          <Header />
-          <main>{children}</main>
+          <div className="flex flex-col min-h-screen">
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </div>
         </AuthProvider>
       </body>
     </html>

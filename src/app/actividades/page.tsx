@@ -4,11 +4,26 @@
 // =============================================================================
 
 import { Suspense } from 'react';
+import type { Metadata } from 'next';
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
 import ActivityCard from './_components/ActivityCard';
 import Filters from './_components/Filters';
 import Pagination from './_components/Pagination';
+
+export const metadata: Metadata = {
+  title: 'Actividades para niños en Bogotá',
+  description:
+    'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Bogotá. Filtra por edad, categoría y más.',
+  openGraph: {
+    title: 'Actividades para niños en Bogotá | Infantia',
+    description:
+      'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Bogotá.',
+  },
+  alternates: {
+    canonical: '/actividades',
+  },
+};
 
 const PAGE_SIZE = 24;
 
@@ -56,23 +71,7 @@ export default async function ActividadesPage({
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-indigo-700">Infantia</span>
-            <span className="hidden sm:inline text-sm text-gray-400">· Actividades para niños</span>
-          </div>
-          <a
-            href="/"
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            ← Inicio
-          </a>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
+      <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
 
         {/* Título de sección */}
         <div>
@@ -120,7 +119,7 @@ export default async function ActividadesPage({
             Mostrando {skip + 1}–{Math.min(skip + PAGE_SIZE, total)} de {total} actividades
           </p>
         )}
-      </main>
+      </div>
     </div>
   );
 }

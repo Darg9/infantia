@@ -18,19 +18,6 @@ export default async function HomePage() {
   return (
     <div className="min-h-screen bg-gray-50">
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-100">
-        <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-          <span className="text-2xl font-bold text-indigo-700">Infantia</span>
-          <a
-            href="/actividades"
-            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
-          >
-            Ver actividades
-          </a>
-        </div>
-      </header>
-
       {/* Hero */}
       <section className="mx-auto max-w-5xl px-4 py-16 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-6">
@@ -92,13 +79,6 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 bg-white">
-        <div className="mx-auto max-w-5xl px-4 py-6 flex items-center justify-between text-sm text-gray-400">
-          <span className="font-bold text-indigo-700">Infantia</span>
-          <span>Bogotá, Colombia · {new Date().getFullYear()}</span>
-        </div>
-      </footer>
     </div>
   );
 }

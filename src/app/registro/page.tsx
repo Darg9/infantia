@@ -8,6 +8,7 @@ export default function RegistroPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [aceptaTerminos, setAceptaTerminos] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -111,6 +112,28 @@ export default function RegistroPage() {
             />
           </div>
 
+          {/* Aceptación de políticas — obligatorio por Ley 1581 de 2012 */}
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="acepta-terminos"
+              checked={aceptaTerminos}
+              onChange={(e) => setAceptaTerminos(e.target.checked)}
+              required
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+            />
+            <label htmlFor="acepta-terminos" className="text-xs text-gray-500 leading-relaxed">
+              Acepto la{' '}
+              <Link href="/tratamiento-datos" target="_blank" className="text-orange-600 hover:underline">
+                Política de Tratamiento de Datos Personales
+              </Link>{' '}
+              y los{' '}
+              <Link href="/terminos" target="_blank" className="text-orange-600 hover:underline">
+                Términos de Uso
+              </Link>.
+            </label>
+          </div>
+
           {error && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
               {error}
@@ -119,7 +142,7 @@ export default function RegistroPage() {
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !aceptaTerminos}
             className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}

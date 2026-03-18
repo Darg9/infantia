@@ -44,7 +44,7 @@ function formatAge(ageMin: number | null, ageMax: number | null): string {
 }
 
 function formatPrice(price: PrismaPrice, currency: string, period: string | null): string {
-  if (price === null) return '';
+  if (price === null) return 'No disponible';
   const numPrice = typeof price === 'number' ? price : price.toNumber();
   if (numPrice === 0 || period === 'FREE') return 'Gratis';
   const formatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency, minimumFractionDigits: 0 }).format(numPrice);
@@ -76,7 +76,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
     <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
       {/* Imagen / placeholder de color */}
-      <div className={clsx('relative h-36 flex items-center justify-center', bgColor)}>
+      <div className={clsx('relative h-36 flex items-center justify-center', bgColor, activity.status === 'EXPIRED' && 'opacity-60')}>
         {activity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -94,17 +94,24 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
           {TYPE_LABELS[activity.type] ?? activity.type}
         </span>
 
-        {/* Badge de precio */}
-        {priceLabel && (
-          <span className={clsx(
-            'absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
-            priceLabel === 'Gratis'
-              ? 'bg-emerald-500 text-white'
-              : 'bg-white/90 text-gray-700'
-          )}>
-            {priceLabel}
+        {/* Badge de expirada */}
+        {activity.status === 'EXPIRED' && (
+          <span className="absolute bottom-2 left-0 right-0 mx-auto w-fit rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+            Verificar disponibilidad
           </span>
         )}
+
+        {/* Badge de precio */}
+        <span className={clsx(
+          'absolute top-2 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
+          priceLabel === 'Gratis'
+            ? 'bg-emerald-500 text-white'
+            : priceLabel === 'No disponible'
+            ? 'bg-gray-200 text-gray-500'
+            : 'bg-white/90 text-gray-700'
+        )}>
+          {priceLabel}
+        </span>
       </div>
 
       {/* Contenido */}

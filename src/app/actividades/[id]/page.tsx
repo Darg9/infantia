@@ -3,9 +3,48 @@
 // Server Component: lee el ID, consulta DB, renderiza todos los datos
 // =============================================================================
 
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getActivityById } from '@/modules/activities';
 import clsx from 'clsx';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const activity = await getActivityById(id);
+  if (!activity) return {};
+
+  const title = activity.title;
+  const description =
+    activity.description?.slice(0, 160).replace(/\s+/g, ' ').trim() ??
+    `${activity.title} — actividad para niños en Bogotá`;
+  const categoryNames = activity.categories
+    .map((c) => c.category.name)
+    .join(', ');
+
+  return {
+    title,
+    description,
+    keywords: categoryNames ? [categoryNames, 'Bogotá', 'niños'] : undefined,
+    openGraph: {
+      title: `${title} | Infantia`,
+      description,
+      type: 'article',
+      ...(activity.imageUrl && { images: [{ url: activity.imageUrl }] }),
+    },
+    twitter: {
+      card: activity.imageUrl ? 'summary_large_image' : 'summary',
+      title: `${title} | Infantia`,
+      description,
+    },
+    alternates: {
+      canonical: `/actividades/${id}`,
+    },
+  };
+}
 
 const TYPE_LABELS: Record<string, string> = {
   RECURRING: 'Recurrente',
@@ -47,7 +86,7 @@ function formatDate(dateStr: Date | string | null): string {
 }
 
 function formatPrice(price: unknown, currency: string, period: string | null): string {
-  if (price === null || price === undefined) return 'Consultar';
+  if (price === null || price === undefined) return 'No disponible';
   const num = typeof price === 'number' ? price
     : typeof price === 'object' && price !== null && 'toNumber' in price
     ? (price as { toNumber(): number }).toNumber()
@@ -87,23 +126,108 @@ export default async function ActividadDetallePage({
   const scheduleItems = parseSchedule(activity.schedule);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
 
+  // JSON-LD structured data for SEO (Event schema)
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Event',
+    name: activity.title,
+    description: activity.description,
+    ...(activity.startDate && { startDate: new Date(activity.startDate).toISOString() }),
+    ...(activity.endDate && { endDate: new Date(activity.endDate).toISOString() }),
+    ...(activity.imageUrl && { image: activity.imageUrl }),
+    ...(activity.location && {
+      location: {
+        '@type': 'Place',
+        name: activity.location.name,
+        ...(activity.location.address && {
+          address: {
+            '@type': 'PostalAddress',
+            streetAddress: activity.location.address,
+            addressLocality: activity.location.city?.name ?? 'Bogotá',
+            addressCountry: 'CO',
+          },
+        }),
+      },
+    }),
+    ...(activity.provider && {
+      organizer: {
+        '@type': 'Organization',
+        name: activity.provider.name,
+      },
+    }),
+    ...(priceLabel === 'Gratis'
+      ? { isAccessibleForFree: true }
+      : activity.price != null && {
+          offers: {
+            '@type': 'Offer',
+            price: typeof activity.price === 'number'
+              ? activity.price
+              : typeof activity.price === 'object' && activity.price !== null && 'toNumber' in activity.price
+              ? (activity.price as { toNumber(): number }).toNumber()
+              : Number(activity.price),
+            priceCurrency: activity.priceCurrency,
+            availability: 'https://schema.org/InStock',
+          },
+        }),
+    ...(activity.ageMin != null && {
+      typicalAgeRange: activity.ageMax != null
+        ? `${activity.ageMin}-${activity.ageMax}`
+        : `${activity.ageMin}+`,
+    }),
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <>
+      {/* JSON-LD for search engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="mx-auto max-w-4xl px-4 py-3 flex items-center justify-between">
-          <span className="text-2xl font-bold text-indigo-700">Infantia</span>
-          <a
-            href="/actividades"
-            className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            ← Volver a actividades
-          </a>
+      <div className="min-h-screen bg-gray-50">
+
+      {/* Breadcrumb */}
+      <div className="mx-auto max-w-4xl px-4 pt-4">
+        <a
+          href="/actividades"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        >
+          ← Volver a actividades
+        </a>
+      </div>
+
+      {/* Aviso de actividad expirada */}
+      {activity.status === 'EXPIRED' && (
+        <div className="mx-auto max-w-4xl px-4 pt-2">
+          <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <span className="text-amber-500 text-lg">⚠️</span>
+            <div>
+              <p className="text-sm font-semibold text-amber-800">
+                Esta actividad puede ya no estar disponible
+              </p>
+              <p className="text-xs text-amber-700 mt-0.5">
+                La fecha registrada indica que ya pasó. Te recomendamos verificar directamente
+                con el organizador antes de asistir.
+                {activity.sourceUrl && (
+                  <>
+                    {' '}
+                    <a
+                      href={activity.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-amber-900"
+                    >
+                      Ver fuente original
+                    </a>
+                  </>
+                )}
+              </p>
+            </div>
+          </div>
         </div>
-      </header>
+      )}
 
-      <main className="mx-auto max-w-4xl px-4 py-8 flex flex-col gap-6">
+      <div className="mx-auto max-w-4xl px-4 py-4 flex flex-col gap-6">
 
         {/* Hero: imagen o placeholder de color */}
         <div className={clsx('relative h-48 sm:h-64 rounded-2xl overflow-hidden flex items-center justify-center', bgColor)}>
@@ -127,6 +251,8 @@ export default async function ActividadDetallePage({
               'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
               priceLabel === 'Gratis'
                 ? 'bg-emerald-500 text-white'
+                : priceLabel === 'No disponible'
+                ? 'bg-gray-200 text-gray-500'
                 : 'bg-white/90 text-gray-700'
             )}>
               {priceLabel}
@@ -227,7 +353,11 @@ export default async function ActividadDetallePage({
                 <span className="text-gray-500">Precio</span>
                 <span className={clsx(
                   'font-semibold',
-                  priceLabel === 'Gratis' ? 'text-emerald-600' : 'text-gray-900'
+                  priceLabel === 'Gratis'
+                    ? 'text-emerald-600'
+                    : priceLabel === 'No disponible'
+                    ? 'text-gray-400'
+                    : 'text-gray-900'
                 )}>{priceLabel}</span>
               </div>
 
@@ -305,7 +435,18 @@ export default async function ActividadDetallePage({
             </div>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Disclaimer */}
+        <div className="col-span-full rounded-xl bg-gray-50 border border-gray-100 p-4 text-xs text-gray-400 leading-relaxed">
+          La información de esta actividad fue recopilada de fuentes públicas con fines informativos.
+          Los derechos del contenido original pertenecen a sus respectivos titulares.
+          Recomendamos verificar los detalles directamente con el organizador.{' '}
+          <a href="/contacto?motivo=reportar" className="text-orange-500 hover:underline">
+            Reportar error o solicitar remoción
+          </a>
+        </div>
+      </div>
+      </div>
+    </>
   );
 }

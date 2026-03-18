@@ -144,13 +144,21 @@ export default async function ActividadesPage({
   const page = Math.max(1, parseInt(params.page ?? '1', 10) || 1);
   const skip = (page - 1) * PAGE_SIZE;
 
+  const parseAge = (v?: string): number | undefined => {
+    const n = parseInt(v ?? '', 10);
+    return Number.isFinite(n) ? n : undefined;
+  };
+
+  const VALID_TYPES = ['ONE_TIME', 'RECURRING', 'WORKSHOP', 'CAMP'];
+  const VALID_AUDIENCES = ['KIDS', 'FAMILY', 'ADULTS', 'ALL'];
+
   const filters: ActiveFilters = {
     search: params.search?.trim() || undefined,
-    ageMin: params.ageMin ? parseInt(params.ageMin, 10) : undefined,
-    ageMax: params.ageMax ? parseInt(params.ageMax, 10) : undefined,
+    ageMin: parseAge(params.ageMin),
+    ageMax: parseAge(params.ageMax),
     categoryId: params.categoryId || undefined,
-    type: params.type || undefined,
-    audience: params.audience || undefined,
+    type: params.type && VALID_TYPES.includes(params.type) ? params.type : undefined,
+    audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
   };
 
   const [{ activities, total }, facets] = await Promise.all([

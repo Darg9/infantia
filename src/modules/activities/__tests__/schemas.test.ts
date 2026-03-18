@@ -60,6 +60,29 @@ describe('listActivitiesSchema', () => {
       expect(listActivitiesSchema.safeParse({ type: tipo }).success).toBe(true);
     }
   });
+
+  it('acepta los 4 valores de audience válidos', () => {
+    const audiencias = ['KIDS', 'FAMILY', 'ADULTS', 'ALL'] as const;
+    for (const audience of audiencias) {
+      expect(listActivitiesSchema.safeParse({ audience }).success).toBe(true);
+    }
+  });
+
+  it('falla si audience no es válido', () => {
+    const result = listActivitiesSchema.safeParse({ audience: 'TEENS' });
+    expect(result.success).toBe(false);
+  });
+
+  it('acepta ageMax hasta 120 (actividades para todas las edades)', () => {
+    const result = listActivitiesSchema.safeParse({ ageMax: 100 });
+    expect(result.success).toBe(true);
+  });
+
+  it('falla si ageMin=0 y ageMax=5 (0 no debe tratarse como falsy en la validación)', () => {
+    // ageMin=0 <= ageMax=5 → válido
+    const result = listActivitiesSchema.safeParse({ ageMin: 0, ageMax: 5 });
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('createActivitySchema', () => {
@@ -73,6 +96,23 @@ describe('createActivitySchema', () => {
 
   it('valida una actividad completa y correcta', () => {
     expect(createActivitySchema.safeParse(actividadBase).success).toBe(true);
+  });
+
+  it('acepta audience en createActivity', () => {
+    const result = createActivitySchema.safeParse({ ...actividadBase, audience: 'KIDS' });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.audience).toBe('KIDS');
+  });
+
+  it('usa ALL como audience por defecto en createActivity', () => {
+    const result = createActivitySchema.safeParse(actividadBase);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.audience).toBe('ALL');
+  });
+
+  it('acepta ageMin=0 y ageMax=100 en createActivity', () => {
+    const result = createActivitySchema.safeParse({ ...actividadBase, ageMin: 0, ageMax: 100 });
+    expect(result.success).toBe(true);
   });
 
   it('falla si el título tiene menos de 3 caracteres', () => {

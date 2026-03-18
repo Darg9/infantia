@@ -67,7 +67,7 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
 
       <button
         onClick={() => goTo(page + 1)}
-        disabled={page === totalPages}
+        disabled={page >= totalPages}
         className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         Siguiente →

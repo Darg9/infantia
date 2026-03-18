@@ -8,6 +8,7 @@ import { DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE } from '@/config/constants';
 // Enum values matching Prisma schema
 const ActivityType = z.enum(['RECURRING', 'ONE_TIME', 'CAMP', 'WORKSHOP']);
 const ActivityStatus = z.enum(['ACTIVE', 'PAUSED', 'EXPIRED', 'DRAFT']);
+const ActivityAudience = z.enum(['KIDS', 'FAMILY', 'ADULTS', 'ALL']);
 const PricePeriod = z.enum(['PER_SESSION', 'MONTHLY', 'TOTAL', 'FREE']);
 const SourceType = z.enum(['MANUAL', 'PROVIDER', 'SCRAPING']);
 
@@ -17,15 +18,16 @@ export const listActivitiesSchema = z.object({
   verticalId: z.string().uuid().optional(),
   categoryId: z.string().uuid().optional(),
   cityId: z.string().uuid().optional(),
-  ageMin: z.coerce.number().int().min(0).max(18).optional(),
-  ageMax: z.coerce.number().int().min(0).max(18).optional(),
+  ageMin: z.coerce.number().int().min(0).max(120).optional(),
+  ageMax: z.coerce.number().int().min(0).max(120).optional(),
   priceMin: z.coerce.number().min(0).optional(),
   priceMax: z.coerce.number().min(0).optional(),
   status: ActivityStatus.optional(),
   type: ActivityType.optional(),
+  audience: ActivityAudience.optional(),
   search: z.string().trim().min(1).max(200).optional(),
 }).refine(
-  (data) => !(data.ageMin && data.ageMax && data.ageMin > data.ageMax),
+  (data) => !(data.ageMin != null && data.ageMax != null && data.ageMin > data.ageMax),
   { message: 'ageMin must be <= ageMax', path: ['ageMin'] },
 ).refine(
   (data) => !(data.priceMin && data.priceMax && data.priceMin > data.priceMax),
@@ -46,8 +48,9 @@ export const createActivitySchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   schedule: scheduleSchema,
-  ageMin: z.number().int().min(0).max(18).optional(),
-  ageMax: z.number().int().min(0).max(18).optional(),
+  ageMin: z.number().int().min(0).max(120).optional(),
+  ageMax: z.number().int().min(0).max(120).optional(),
+  audience: ActivityAudience.default('ALL'),
   price: z.number().min(0).optional(),
   priceCurrency: z.string().max(3).default('COP'),
   pricePeriod: PricePeriod.optional(),

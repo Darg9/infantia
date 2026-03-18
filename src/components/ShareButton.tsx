@@ -30,11 +30,11 @@ export function ShareButton({
   const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co'
 
   const ageLabel =
-    ageMin && ageMax
+    ageMin != null && ageMax != null
       ? `${ageMin}–${ageMax} años`
-      : ageMin
+      : ageMin != null
         ? `Desde ${ageMin} años`
-        : ageMax
+        : ageMax != null
           ? `Hasta ${ageMax} años`
           : 'Todas las edades'
 

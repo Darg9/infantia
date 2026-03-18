@@ -73,10 +73,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Fecha de nacimiento inválida' }, { status: 400 })
     }
 
-    // Validar que sea menor de edad
+    // Validar que sea menor de edad (comparación exacta por fecha completa)
     const today = new Date()
-    const age = today.getFullYear() - birth.getFullYear()
-    if (age > 18) {
+    const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate())
+    if (birth < eighteenYearsAgo) {
       return NextResponse.json({ error: 'Solo se pueden registrar perfiles de menores de edad' }, { status: 400 })
     }
 

@@ -162,32 +162,33 @@ export default async function ActividadesPage({
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
   };
 
-  // Cargar actividades, facets y favoriteIds del usuario (si está autenticado) en paralelo
-  const sessionUser = await getSession();
+  // Cargar actividades, facets, sesión y favoriteIds en paralelo
   let favoriteIds = new Set<string>();
 
-  const [{ activities, total }, facets] = await Promise.all([
+  const [{ activities, total }, facets, sessionUser] = await Promise.all([
     listActivities({
       skip,
       pageSize: PAGE_SIZE,
       ...filters,
     }),
     getFacets(filters),
-    // Obtener favoriteIds si hay sesión activa
-    sessionUser
-      ? prisma.user
-          .findUnique({ where: { supabaseAuthId: sessionUser.id }, select: { id: true } })
-          .then((dbUser) =>
-            dbUser
-              ? prisma.favorite
-                  .findMany({ where: { userId: dbUser.id }, select: { activityId: true } })
-                  .then((favs) => {
-                    favoriteIds = new Set(favs.map((f) => f.activityId));
-                  })
-              : null
-          )
-      : Promise.resolve(null),
+    getSession(),
   ]);
+
+  // Si hay sesión, obtener los favoriteIds del usuario (query adicional pero inevitable)
+  if (sessionUser) {
+    const dbUser = await prisma.user.findUnique({
+      where: { supabaseAuthId: sessionUser.id },
+      select: { id: true },
+    });
+    if (dbUser) {
+      const favs = await prisma.favorite.findMany({
+        where: { userId: dbUser.id },
+        select: { activityId: true },
+      });
+      favoriteIds = new Set(favs.map((f) => f.activityId));
+    }
+  }
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 

@@ -37,7 +37,7 @@ export const ActivityDigestEmail = ({
     <Html>
       <Head />
       <Preview>
-        {activities.length} nuevas actividades en Infantia {periodLabel}
+        {String(activities.length)} nuevas actividades en Infantia {periodLabel}
       </Preview>
       <Body style={main}>
         <Container style={container}>

@@ -32,27 +32,26 @@ export async function POST(request: NextRequest) {
   console.log(`[NOTIFICATIONS] Starting send-notifications cron (period: ${period}, dryRun: ${dryRun})`);
 
   try {
-    // Get users with email notifications enabled AND newActivities category enabled
+    // Get all users (email and notificationPrefs are always present per schema)
     const users = await prisma.user.findMany({
-      where: {
-        email: { not: null },
-        notificationPrefs: {
-          not: null,
-        },
-      },
       select: {
         id: true,
         email: true,
         name: true,
         notificationPrefs: true,
-        children: {
-          select: {
-            minAge: true,
-            maxAge: true,
-          },
-        },
       },
     });
+
+    // Get children for each user (separate query to avoid relation type issues)
+    const allChildren = await prisma.child.findMany({
+      where: { userId: { in: users.map((u) => u.id) } },
+      select: { userId: true, birthDate: true },
+    });
+    const childrenByUser: Record<string, Date[]> = {};
+    for (const child of allChildren) {
+      if (!childrenByUser[child.userId]) childrenByUser[child.userId] = [];
+      childrenByUser[child.userId].push(child.birthDate);
+    }
 
     console.log(`[NOTIFICATIONS] Found ${users.length} users with notification prefs`);
 
@@ -87,19 +86,23 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
-        // Get min/max age from user's children (if any)
+        // Get min/max age from user's children (if any), calculated from birthDate
         let minAge = 0;
         let maxAge = 18;
-        if (user.children && user.children.length > 0) {
-          const ages = user.children
-            .map((c) => c.minAge)
-            .filter((a) => a !== null) as number[];
-          const maxAges = user.children
-            .map((c) => c.maxAge)
-            .filter((a) => a !== null) as number[];
-
-          if (ages.length > 0) minAge = Math.min(...ages);
-          if (maxAges.length > 0) maxAge = Math.max(...maxAges);
+        const userChildren = childrenByUser[user.id] ?? [];
+        if (userChildren.length > 0) {
+          const now = new Date();
+          const childAges = userChildren.map((birthDate) => {
+            const birth = new Date(birthDate);
+            let age = now.getFullYear() - birth.getFullYear();
+            const m = now.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+            return age;
+          });
+          if (childAges.length > 0) {
+            minAge = Math.min(...childAges);
+            maxAge = Math.max(...childAges);
+          }
         }
 
         // Fetch recent activities (last 24 hours for daily, last 7 days for weekly)
@@ -111,14 +114,14 @@ export async function POST(request: NextRequest) {
             status: 'ACTIVE',
             createdAt: { gte: since },
             OR: [
-              { minAge: null },
-              { minAge: { lte: maxAge } },
+              { ageMin: null },
+              { ageMin: { lte: maxAge } },
             ],
             AND: [
               {
                 OR: [
-                  { maxAge: null },
-                  { maxAge: { gte: minAge } },
+                  { ageMax: null },
+                  { ageMax: { gte: minAge } },
                 ],
               },
             ],
@@ -128,9 +131,8 @@ export async function POST(request: NextRequest) {
             title: true,
             description: true,
             price: true,
-            minAge: true,
-            maxAge: true,
-            activityType: true,
+            ageMin: true,
+            ageMax: true,
           },
           take: 10, // Limit to 10 most recent
           orderBy: { createdAt: 'desc' },
@@ -143,18 +145,21 @@ export async function POST(request: NextRequest) {
         }
 
         // Format activities with price label
-        const formattedActivities = activities.map((act) => ({
-          id: act.id,
-          title: act.title,
-          description: act.description || undefined,
-          price: act.price,
-          priceLabel:
-            act.price === 0 || act.price === null
-              ? 'Gratis'
-              : `$${act.price.toLocaleString('es-CO')}`,
-          minAge: act.minAge,
-          maxAge: act.maxAge,
-        }));
+        const formattedActivities = activities.map((act) => {
+          const priceNum = act.price ? Number(act.price) : null;
+          return {
+            id: act.id,
+            title: act.title,
+            description: act.description || undefined,
+            price: priceNum,
+            priceLabel:
+              priceNum === null || priceNum === 0
+                ? 'Gratis'
+                : `$${priceNum.toLocaleString('es-CO')}`,
+            minAge: act.ageMin,
+            maxAge: act.ageMax,
+          };
+        });
 
         // Send digest (or just log in dry run)
         if (dryRun) {

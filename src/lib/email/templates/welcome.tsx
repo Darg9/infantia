@@ -4,13 +4,12 @@ import {
   Head,
   Hr,
   Html,
-  Img,
   Link,
   Preview,
   Row,
   Section,
   Text,
-} from 'react-email';
+} from '@react-email/components';
 
 interface WelcomeEmailProps {
   userEmail?: string;

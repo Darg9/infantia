@@ -1,7 +1,7 @@
 import { Resend } from 'resend';
 import { WelcomeEmail } from './templates/welcome';
 import { ActivityDigestEmail } from './templates/activity-digest';
-import { renderAsync } from '@react-email/render';
+import { render as renderAsync } from '@react-email/components';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 

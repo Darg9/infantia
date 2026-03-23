@@ -9,7 +9,7 @@ import {
   Row,
   Section,
   Text,
-} from 'react-email';
+} from '@react-email/components';
 
 interface ActivityDigestEmailProps {
   userName?: string;

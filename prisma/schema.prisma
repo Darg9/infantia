@@ -98,6 +98,7 @@ model User {
   accountType       String   @default("adult") @db.VarChar(20) // 'adult' | 'minor'
   guardianId        String?  // userId del tutor si accountType = 'minor'
   createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt @default(now())
 
   city      City?      @relation(fields: [cityId], references: [id])
   children  Child[]

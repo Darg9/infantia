@@ -34,6 +34,12 @@ const SOURCES = [
     platform: 'INSTAGRAM' as const,
     scraperType: 'playwright',
   },
+  {
+    name: 'Cultura Recreación y Deporte – Centro Felicidad Chapinero',
+    url: 'https://www.culturarecreacionydeporte.gov.co/es/centro-felicidad-chapinero/eventos',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
 ]
 
 async function main() {

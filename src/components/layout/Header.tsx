@@ -4,6 +4,7 @@ import { LogoutButton } from '@/components/LogoutButton'
 
 export async function Header() {
   const session = await getSessionWithRole()
+  const avatarUrl = session?.user?.user_metadata?.avatar_url as string | undefined
 
   return (
     <header className="bg-white border-b border-gray-100">
@@ -35,9 +36,17 @@ export async function Header() {
               </Link>
 
               <div className="flex items-center gap-2 ml-2">
-                <div className="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-semibold">
-                  {(session.user.email?.[0] ?? '?').toUpperCase()}
-                </div>
+                {avatarUrl ? (
+                  <img
+                    src={avatarUrl}
+                    alt="Avatar"
+                    className="w-7 h-7 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-semibold">
+                    {(session.user.email?.[0] ?? '?').toUpperCase()}
+                  </div>
+                )}
                 <LogoutButton />
               </div>
             </>

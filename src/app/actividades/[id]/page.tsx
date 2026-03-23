@@ -8,6 +8,9 @@ import { notFound } from 'next/navigation';
 import { getActivityById } from '@/modules/activities';
 import { ShareButton } from '@/components/ShareButton';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { RatingForm } from '@/components/RatingForm';
+import { StarRating } from '@/components/StarRating';
+import { ActivityHistoryTracker } from '@/components/profile/ActivityHistoryTracker';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import clsx from 'clsx';
@@ -128,21 +131,44 @@ export default async function ActividadDetallePage({
 
   if (!activity) notFound();
 
-  // Comprobar si la actividad está en favoritos del usuario autenticado
+  // Comprobar favorito + rating del usuario autenticado
   let isFavorited = false;
+  let userRating: { score: number; comment: string | null } | null = null;
   if (sessionUser) {
     const dbUser = await prisma.user.findUnique({
       where: { supabaseAuthId: sessionUser.id },
       select: { id: true },
     });
     if (dbUser) {
-      const fav = await prisma.favorite.findUnique({
-        where: { userId_activityId: { userId: dbUser.id, activityId: id } },
-        select: { activityId: true },
-      });
+      const [fav, existingRating] = await Promise.all([
+        prisma.favorite.findUnique({
+          where: { userId_activityId: { userId: dbUser.id, activityId: id } },
+          select: { activityId: true },
+        }),
+        prisma.rating.findUnique({
+          where: { userId_activityId: { userId: dbUser.id, activityId: id } },
+          select: { score: true, comment: true },
+        }),
+      ]);
       isFavorited = fav !== null;
+      userRating = existingRating;
     }
   }
+
+  // Load public ratings summary
+  const [ratingsData, ratingsAvg] = await Promise.all([
+    prisma.rating.findMany({
+      where: { activityId: id },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      include: { user: { select: { name: true, avatarUrl: true } } },
+    }),
+    prisma.rating.aggregate({
+      where: { activityId: id },
+      _avg: { score: true },
+      _count: { score: true },
+    }),
+  ]);
 
   const mainCategory = activity.categories[0]?.category;
   const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
@@ -362,6 +388,58 @@ export default async function ActividadDetallePage({
                 </div>
               </div>
             )}
+
+            {/* Calificaciones */}
+            <div className="rounded-2xl bg-white border border-gray-100 p-5">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Calificaciones</h2>
+                {ratingsAvg._count.score > 0 && (
+                  <div className="flex items-center gap-2">
+                    <StarRating value={Math.round(ratingsAvg._avg.score ?? 0)} readonly size="sm" />
+                    <span className="text-sm text-gray-600 font-medium">
+                      {(ratingsAvg._avg.score ?? 0).toFixed(1)}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      ({ratingsAvg._count.score})
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Rating form */}
+              <RatingForm
+                activityId={id}
+                existingScore={userRating?.score}
+                existingComment={userRating?.comment}
+                isAuthenticated={!!sessionUser}
+              />
+
+              {/* Recent ratings */}
+              {ratingsData.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                  {ratingsData.map((r) => (
+                    <div key={r.id} className="flex items-start gap-3">
+                      {r.user.avatarUrl ? (
+                        <img src={r.user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center text-xs font-semibold">
+                          {r.user.name[0]?.toUpperCase() ?? '?'}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-medium text-gray-700">{r.user.name}</span>
+                          <StarRating value={r.score} readonly size="sm" />
+                        </div>
+                        {r.comment && (
+                          <p className="text-xs text-gray-500 mt-0.5">{r.comment}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Columna lateral */}
@@ -491,6 +569,13 @@ export default async function ActividadDetallePage({
         </div>
       </div>
       </div>
+
+      {/* Track activity view in browser history */}
+      <ActivityHistoryTracker
+        activityId={id}
+        title={activity.title}
+        imageUrl={activity.imageUrl}
+      />
     </>
   );
 }

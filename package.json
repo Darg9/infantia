@@ -29,6 +29,8 @@
     "prisma": "^7.5.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-email": "^5.2.10",
+    "resend": "^6.9.4",
     "zod": "^4.3.6"
   },
   "devDependencies": {

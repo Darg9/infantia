@@ -32,7 +32,7 @@ export default async function HijosPage() {
     : []
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mis hijos</h1>
@@ -51,7 +51,7 @@ export default async function HijosPage() {
       {children.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl">
           <p className="text-4xl mb-3">👶</p>
-          <p className="text-gray-500 text-sm mb-4">Aún no has agregado perfiles de hijos.</p>
+          <p className="text-gray-500 text-sm mb-4">Aun no has agregado perfiles de hijos.</p>
           <Link
             href="/perfil/hijos/nuevo"
             className="text-orange-600 text-sm font-medium hover:underline"
@@ -75,7 +75,7 @@ export default async function HijosPage() {
                   <div>
                     <p className="font-medium text-gray-900">{child.name}</p>
                     <p className="text-xs text-gray-400">
-                      {age} {age === 1 ? 'año' : 'años'} ·{' '}
+                      {age} {age === 1 ? 'ano' : 'anos'} ·{' '}
                       {new Date(child.birthDate).toLocaleDateString('es-CO', {
                         day: 'numeric',
                         month: 'long',
@@ -94,16 +94,10 @@ export default async function HijosPage() {
       <p className="text-xs text-gray-400 mt-6 leading-relaxed">
         Los datos de tus hijos se tratan conforme a nuestra{' '}
         <Link href="/tratamiento-datos" className="underline hover:text-gray-600">
-          Política de Tratamiento de Datos
+          Politica de Tratamiento de Datos
         </Link>
         . Puedes eliminar cualquier perfil en cualquier momento.
       </p>
-
-      <div className="mt-6">
-        <Link href="/perfil" className="text-sm text-orange-600 hover:underline">
-          ← Volver al perfil
-        </Link>
-      </div>
     </div>
   )
 }

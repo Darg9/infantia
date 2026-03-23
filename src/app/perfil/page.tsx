@@ -1,18 +1,39 @@
 import { requireAuth } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import Link from 'next/link'
 
 export default async function PerfilPage() {
   const user = await requireAuth()
 
+  const dbUser = await prisma.user.findUnique({
+    where: { supabaseAuthId: user.id },
+    select: { id: true, name: true, email: true, role: true },
+  })
+
+  // Counts in parallel
+  const [favoritesCount, childrenCount, ratingsCount] = dbUser
+    ? await Promise.all([
+        prisma.favorite.count({ where: { userId: dbUser.id } }),
+        prisma.child.count({ where: { userId: dbUser.id } }),
+        prisma.rating.count({ where: { userId: dbUser.id } }),
+      ])
+    : [0, 0, 0]
+
+  const stats = [
+    { label: 'Favoritos', count: favoritesCount, href: '/perfil/favoritos', icon: '❤️', color: 'rose' },
+    { label: 'Hijos', count: childrenCount, href: '/perfil/hijos', icon: '👶', color: 'orange' },
+    { label: 'Calificaciones', count: ratingsCount, href: '/perfil/calificaciones', icon: '⭐', color: 'amber' },
+  ]
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-12">
+    <div className="max-w-3xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Mi perfil</h1>
 
       {/* Datos de cuenta */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 mb-4">
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-4 mb-6">
         <div>
           <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Nombre</p>
-          <p className="text-gray-900 mt-1">{user.user_metadata?.name ?? '—'}</p>
+          <p className="text-gray-900 mt-1">{dbUser?.name ?? user.user_metadata?.name ?? '—'}</p>
         </div>
         <div>
           <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">Correo</p>
@@ -24,40 +45,31 @@ export default async function PerfilPage() {
             {user.app_metadata?.role ?? 'parent'}
           </p>
         </div>
+        <Link
+          href="/perfil/editar"
+          className="inline-block text-sm text-orange-600 hover:text-orange-700 font-medium"
+        >
+          Editar perfil →
+        </Link>
       </div>
 
-      <div className="flex flex-col gap-3">
-        {/* Mis favoritos */}
-        <Link
-          href="/perfil/favoritos"
-          className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-4 hover:border-rose-300 transition-colors group"
-        >
-          <div>
-            <p className="font-medium text-gray-900 group-hover:text-rose-600 transition-colors">
-              ❤️ Mis favoritos
+      {/* Stats cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {stats.map((stat) => (
+          <Link
+            key={stat.href}
+            href={stat.href}
+            className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-orange-300 hover:shadow-sm transition-all group"
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <span className="text-2xl">{stat.icon}</span>
+              <span className="text-2xl font-bold text-gray-900">{stat.count}</span>
+            </div>
+            <p className="text-sm text-gray-500 group-hover:text-gray-700 transition-colors">
+              {stat.label}
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Actividades que guardaste para volver a encontrarlas fácilmente
-            </p>
-          </div>
-          <span className="text-gray-400 group-hover:text-rose-500 transition-colors">→</span>
-        </Link>
-
-        {/* Mis hijos */}
-        <Link
-          href="/perfil/hijos"
-          className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-6 py-4 hover:border-orange-300 transition-colors group"
-        >
-          <div>
-            <p className="font-medium text-gray-900 group-hover:text-orange-600 transition-colors">
-              Mis hijos
-            </p>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Perfiles de menores para personalizar la búsqueda de actividades
-            </p>
-          </div>
-          <span className="text-gray-400 group-hover:text-orange-500 transition-colors">→</span>
-        </Link>
+          </Link>
+        ))}
       </div>
     </div>
   )

@@ -39,6 +39,18 @@ export default function RegistroPage() {
       return
     }
 
+    // Enviar email de bienvenida (no-blocking)
+    try {
+      await fetch('/api/auth/send-welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name }),
+      })
+    } catch (err) {
+      console.warn('Failed to send welcome email:', err)
+      // No bloquear — el usuario ya se registró exitosamente
+    }
+
     setSuccess(true)
   }
 

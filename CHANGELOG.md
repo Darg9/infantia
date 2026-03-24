@@ -44,8 +44,71 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.4.0] — 2026-03-17
+**Documento Fundacional: V09**
+
+### Added
+- Auth completa con Supabase Auth (SSR cookies): login, registro, perfil, callback OAuth
+- Panel admin: `/admin`, `/admin/scraping/sources`, `/admin/scraping/logs`
+- API protegida por middleware: `GET /api/admin/scraping/sources` y `/logs`
+- Perfiles de hijos (Ley 1581 Escenario A): `/perfil/hijos`, `/perfil/hijos/nuevo`
+- API `GET/POST/DELETE /api/children` con auth obligatoria
+- Child model: `gender`, `consentType`, `consentGivenAt/By`, `consentText`
+- User model: `accountType`, `guardianId`
+- Cron Vercel 5AM UTC (`/api/admin/expire-activities`) para expirar actividades pasadas
+- Páginas legales Ley 1581: `/privacidad`, `/tratamiento-datos`, `/terminos`, `/contacto`
+- Header con logout, link a registro, acceso a admin para rol ADMIN
+- AuthProvider: refresco automático de sesión
+- Script `promote-admin.ts` (asignar rol ADMIN)
+- Script `seed-scraping-sources.ts`
+- Migración SQL: trigger que sincroniza `auth.users` → `public.users`
+
+### Tests
+- 212 → 294 tests (+82)
+- Nuevos: db, supabase/client, supabase/server, supabase/middleware, scraping/logger, auth
+- Cobertura: 94.5% stmts / 88% branch / 84.4% funcs / 95.9% lines
+
+---
+
+## [v0.3.0] — 2026-03-16
+**Documento Fundacional: V08**
+
+### Added
+- Instagram scraping con Playwright (`PlaywrightExtractor`)
+- Sesión persistente en `data/ig-session.json` (evita re-login)
+- Script `ig-login.ts` para autenticación inicial manual
+- Scripts `test-instagram.ts` y `debug-instagram.ts`
+- `INSTAGRAM_SYSTEM_PROMPT` en GeminiAnalyzer para clasificación de posts
+- 12 actividades scrapeadas de 2 cuentas: `@fcecolombia` y `@quehaypahacerenbogota`
+- Pipeline `runInstagramPipeline()` en `pipeline.ts`
+- 3 estrategias de extracción de captions (`aria-label`, `alt`, `textContent`)
+
+### Tests
+- 193 → 212 tests (+19)
+- Nuevos: `gemini-analyzer.test.ts` (casos Instagram), `playwright-extractor.test.ts`
+
+---
+
+## [v0.2.0] — 2026-03-16
+**Documento Fundacional: V07**
+
+### Added
+- Página `/actividades` con listado, filtros y paginación
+- Segunda fuente de scraping: `bogota.gov.co` (21 actividades)
+- Emojis de categorías en home y tarjetas de actividades
+- Refactor `category-utils.ts` con tests propios
+- Fix: truncación de Gemini en modo `--discover` (respuestas largas)
+- Scripts de diagnóstico: `check-sources.ts`, `check-urls.ts`
+
+### Tests
+- 120 → 193 tests (+73)
+- Módulos cubiertos: `api-response`, `cheerio-extractor`, `claude-analyzer`, `gemini-analyzer`, `pipeline`
+- Cobertura: 95.8% lines
+
+---
+
 ## [v0.1.0] — 2026-03-16
-**Documento Fundacional: V06**
+**Documento Fundacional: V05**
 
 ### Added
 - Pipeline de scraping completo end-to-end

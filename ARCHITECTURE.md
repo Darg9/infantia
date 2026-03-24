@@ -1,186 +1,476 @@
-![Test Status](https://img.shields.io/badge/tests-6%2F6-brightgreen)
+# Infantia — Arquitectura del Sistema
 
-# Habit Challenge: Documento de Producto y Arquitectura
-
-Este documento rige las especificaciones del producto, técnicas y la arquitectura del proyecto "Habit Challenge", construido en marzo de 2026.
-
----
-
-## 1. Visión del Producto
-
-**Habit Challenge** es una plataforma gamificada diseñada para que personas de todas las edades (niños, familias, adolescentes, y adultos) establezcan, hagan seguimiento y consoliden hábitos positivos a lo largo del tiempo. 
-
-El núcleo del producto es la motivación a través de:
-1. **Rachas (Streaks):** Seguir realizando una acción día a día.
-2. **Sistema de Puntuaciones (Rewards):** Ganar experiencia según la dificultad del hábito.
-3. **Leaderboards Globales:** Competir de manera sana con la comunidad mundial.
-4. **Duelos 1v1 (Peer Challenges):** El aspecto más interactivo; retar a un amigo con una "apuesta" o "penitencia". Quien rompa la racha primero, paga.
-
-### Regulación Temprana y Protección al Menor
-Dada la naturaleza competitiva y la escalabilidad de la plataforma hacia verticales como colegios y familias, el producto integra un sistema CERO-TOLERANCIA de **Feature Flags** basados en **COPPA (Children's Online Privacy Protection Act)** y sentido común:
-- **TINY (<5 años) & KID (6-9):** Entorno altamente protegido. Usan cuentas controladas. Funciones sociales (como Duelos 1v1) están bloqueadas estrictamente desde el código.
-- **PRETEEN (10-14):** Funciones sociales (Duelos) limitadas a "Modo Seguro" con penitencias pre-aprobadas y sin exposición pública riesgosa.
-- **TEEN (15-18) & ADULT (18+):** Acceso a mecánicas competitivas y stakes personalizados completos con protección moderada.
+> Versión: v0.5.0 | Actualizado: 2026-03-24
+> Documento vivo — se actualiza con cada versión mayor.
 
 ---
 
-## 2. Pila Tecnológica (Tech Stack)
+## 1. Visión General
 
-El proyecto fue desarrollado pensando en alto rendimiento, bajo costo inicial, Server-Side Rendering (SSR) dinámico y una rampa de progresión sencilla hacia arquitecturas sin servidor (Serverless).
+**Infantia** es un agregador multi-fuente de actividades para niños y familias en Bogotá (con visión de expansión a otras ciudades de Colombia y Latinoamérica). Resuelve el problema de la información fragmentada: talleres, eventos, clubes y cursos están dispersos entre sitios web institucionales, redes sociales, grupos de mensajería y academias privadas.
 
-* **Framework Principal:** Next.js 16.1 (App Router) + React 19.
-* **Lenguaje:** TypeScript estricto.
-* **Motor UI y CSS:** Tailwind CSS v4.0. Se utiliza el esquema de variables globales en CSS estándar para manejar los temas (`globals.css`), sin engrosar la configuración de Tailwind.
-* **Base de Datos Local:** SQLite (para desarrollo rápido vía `dev.db`).
-* **ORM:** Prisma v6.19. (Fácilmente escalable a PostgreSQL migrando la variable de entorno `DATABASE_URL` y el provider en `schema.prisma`).
-* **Autenticación:** NextAuth.js (Auth.js) v5 - `beta`. Implementado actualmente con el proveedor Credentials (Email/Contraseña) encriptado con `bcryptjs`.
-* **Animaciones & Iconografía:** Framer Motion y Lucide React.
+**Problema central:** Los padres y cuidadores pierden tiempo buscando en múltiples fuentes sin garantía de que la información esté actualizada.
+
+**Solución:** Motor de scraping multi-fuente con NLP (Gemini 2.5 Flash) que normaliza, deduplica y clasifica actividades en una plataforma unificada.
 
 ---
 
-## 3. Arquitectura del Sistema
+## 2. Stack Tecnológico
 
-### 3.1 Estructura de Directorios (Next.js App Router)
-El proyecto utiliza una estructura modular enfocada en la mantenibilidad.
+| Capa | Tecnología | Versión | Notas |
+|---|---|---|---|
+| Framework web | Next.js (App Router) | 16.1.6 | SSR + RSC |
+| Lenguaje | TypeScript | ^5 | Strict mode |
+| UI | Tailwind CSS | v4 | Sin componentes externos |
+| Base de datos | PostgreSQL (Supabase) | — | Hosted en AWS |
+| ORM | Prisma | 7.5.0 | Adapter `@prisma/adapter-pg` |
+| Autenticación | Supabase Auth | ^2.99 | JWT + SSR cookies |
+| NLP / IA | Gemini 2.5 Flash | ^0.24.1 | Via `@google/generative-ai` |
+| Scraping estático | Cheerio | ^1.2.0 | Sitios con SSR/HTML estático |
+| Scraping dinámico | Playwright | ^1.58.2 | Instagram y SPAs |
+| Email | Resend + react-email | ^6.9.4 | Transaccional |
+| Validación | Zod | ^4.3.6 | Schemas runtime |
+| Tests | Vitest | ^4.1.0 | + @vitest/coverage-v8 |
+| Despliegue | Vercel | — | Crons integrados |
+| CI/CD | GitHub → Vercel | — | Auto-deploy en push a master |
+
+> **NLP:** El motor activo es **Gemini 2.5 Flash** (Google AI Studio). Existe `claude.analyzer.ts` como alternativa futura con la API de Anthropic, pero no está en uso en producción.
+
+---
+
+## 3. Estructura de Directorios
 
 ```
-/habit/src/
-  ├── app/                        # Rutas de la aplicación (Next.js App Router)
-  │    ├── globals.css            # Sistema de Diseño y Design Tokens
-  │    ├── layout.tsx             # Root layout y protección de hidratación
-  │    ├── page.tsx               # Landing Page pública
-  │    ├── admin/                 # Panel de Administración de módulos
-  │    ├── api/                   # Backend / REST API Routes
-  │    │    ├── auth/             # Rutas dinámicas de autenticación
-  │    │    └── checkin/, duels/  # Lógica de servidor y guardado de DB
-  │    ├── dashboard/             # SPA privada del usuario (Layout propio)
-  │    ├── login/                 # Vistas públicas de autenticación
-  │    └── register/              # Logica de registro y asignación de edad
-  ├── components/                 # Componentes compartidos y UI pura
-  ├── lib/                        # Singletons y clientes (ej. Prisma, Auth)
-  ├── modules/                    # Lógica de dominio aglomerada (Features)
-  │    ├── admin/
-  │    ├── auth/
-  │    ├── checkin/
-  │    ├── duels/
-  │    └── feature-flags/
-  └── types/                      # Declaración de Tipos e Inferencias de Prisma
+infantia/
+├── src/
+│   ├── app/                        # Next.js App Router
+│   │   ├── page.tsx                # Home — landing con contador y categorías
+│   │   ├── actividades/            # Listado con filtros facetados
+│   │   ├── login/                  # Autenticación (Supabase Auth)
+│   │   ├── registro/               # Registro con email de bienvenida
+│   │   ├── perfil/                 # Perfil de usuario, hijos, favoritos, notificaciones, historial
+│   │   ├── admin/                  # Panel interno (logs de scraping, fuentes)
+│   │   ├── contacto/               # Formulario de contacto
+│   │   ├── contribuir/             # Página para proveedores
+│   │   ├── privacidad/             # Política de privacidad
+│   │   ├── terminos/               # Términos de uso
+│   │   ├── tratamiento-datos/      # Aviso de tratamiento (Ley 1581)
+│   │   └── api/
+│   │       ├── activities/         # CRUD de actividades
+│   │       │   └── [id]/
+│   │       │       └── ratings/    # Calificaciones por actividad
+│   │       ├── favorites/          # Favoritos del usuario
+│   │       │   └── [activityId]/
+│   │       ├── ratings/            # Calificaciones globales
+│   │       │   └── [activityId]/
+│   │       ├── children/           # Hijos/perfiles de menores
+│   │       │   └── [id]/
+│   │       ├── profile/            # Perfil del usuario autenticado
+│   │       │   ├── avatar/
+│   │       │   └── notifications/
+│   │       ├── auth/
+│   │       │   └── send-welcome/   # Email de bienvenida post-registro
+│   │       └── admin/
+│   │           ├── expire-activities/     # Marcar actividades vencidas
+│   │           ├── send-notifications/    # Envío masivo de notificaciones
+│   │           └── scraping/
+│   │               ├── sources/           # CRUD de fuentes de scraping
+│   │               └── logs/              # Historial de ejecuciones
+│   │
+│   ├── modules/                    # Lógica de negocio por dominio
+│   │   ├── activities/             # Servicio + schemas de actividades
+│   │   ├── providers/              # Proveedores de actividades
+│   │   ├── scraping/               # Motor de scraping completo
+│   │   ├── search/                 # Búsqueda (stub — Meilisearch pendiente)
+│   │   ├── users/                  # Gestión de usuarios
+│   │   └── verticals/              # Verticales del negocio
+│   │
+│   ├── lib/                        # Utilidades compartidas
+│   │   ├── db.ts                   # Singleton de PrismaClient
+│   │   ├── auth.ts                 # Helpers de Supabase Auth
+│   │   ├── api-response.ts         # Formato estándar de respuesta API
+│   │   ├── validation.ts           # Validaciones comunes con Zod
+│   │   ├── utils.ts                # Utilidades generales
+│   │   ├── category-utils.ts       # Emojis y helpers de categorías
+│   │   ├── expire-activities.ts    # Lógica de expiración
+│   │   ├── email/                  # Templates y envío con Resend
+│   │   └── supabase/               # Clientes SSR de Supabase
+│   │
+│   ├── generated/
+│   │   └── prisma/                 # Cliente Prisma generado (no en git)
+│   │
+│   └── types/                      # Tipos globales de TypeScript
+│
+├── scripts/                        # Scripts de mantenimiento y scraping
+│   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
+│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts)
+│   ├── ig-login.ts                 # Login manual Instagram → genera ig-session.json
+│   ├── debug-instagram.ts          # Diagnóstico de extracción de Instagram
+│   ├── scrape-centro-felicidad.ts  # Datos hardcodeados CEFEs Chapinero
+│   ├── scrape-eventos-bogota.ts    # CEFEs múltiples + scraping real JSDOM
+│   ├── daily-dedup-check.ts        # Validación diaria de duplicados (Nivel 2)
+│   ├── find-all-duplicates.ts      # Análisis exhaustivo de duplicados
+│   ├── remove-duplicates.ts        # Limpieza batch de duplicados
+│   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
+│   ├── expire-activities.ts        # Marca actividades vencidas
+│   ├── verify-db.ts                # Reporte de estado de la BD
+│   └── seed-scraping-sources.ts    # Seed de fuentes de scraping
+│
+├── prisma/
+│   ├── schema.prisma               # Fuente de verdad del modelo de datos
+│   └── prisma.config.ts            # DATABASE_URL desde .env (NO en schema.prisma)
+├── docs/
+│   └── modules/                    # Documentación funcional por módulo
+├── data/
+│   ├── scraping-cache.json         # Cache incremental de URLs scrapeadas (~274 URLs)
+│   └── ig-session.json             # Sesión de Instagram — NO está en git
+├── DEDUPLICATION-STRATEGY.md       # Estrategia completa de deduplicación
+└── .agents/
+    └── workflows/
+        └── project-safety-check.md # Verificación anti-contaminación entre proyectos
 ```
 
-### 3.1 Lista de Endpoints (Autogenerado)
-<!-- AUTO_GEN_API_START -->
-- `/api/activities`
-- `/api/activities/[id]`
-- `/api/admin/feature-flags`
-- `/api/auth/parental-pin`
-- `/api/auth/register`
-- `/api/auth/[...nextauth]`
-- `/api/challenges`
-- `/api/checkin/[id]`
-- `/api/communities/join`
-- `/api/communities`
-- `/api/duels`
-- `/api/push/subscribe`
-- `/api/users/audio`
-- `/api/users/language`
-- `/api/users/search`
-- `/api/users/theme`
-<!-- AUTO_GEN_API_END -->
+---
 
-### 3.2 Módulos de Lógica (Autogenerado)
-<!-- AUTO_GEN_MODULES_START -->
-- **activities**: Módulo lógico completo.
-- **admin**: Módulo lógico completo.
-- **auth**: Contenedor de componentes/utilidades.
-- **checkin**: Contenedor de componentes/utilidades.
-- **communities**: Contenedor de componentes/utilidades.
-- **duels**: Contenedor de componentes/utilidades.
-- **feature-flags**: Módulo lógico completo.
-- **notifications**: Módulo lógico completo.
-- **providers**: Módulo lógico completo.
-- **scraping**: Módulo lógico completo.
-- **search**: Módulo lógico completo.
-- **shared**: Contenedor de componentes/utilidades.
-- **users**: Módulo lógico completo.
-- **verticals**: Módulo lógico completo.
-<!-- AUTO_GEN_MODULES_END -->
+## 4. Modelo de Datos
 
-### 3.2 Diagrama de Base de Datos (Modelo Relacional Prisma)
+### Diagrama de relaciones
 
-1. **User:** Modela al jugador. Define roles (`isAdmin`), Puntos totales, URL de Avatar, Grupo de Edad (inferido auto-exclusivamente desde `birthdate`), y asocia los hábitos y checkins.
-2. **Challenge:** El diccionario maestro de hábitos definidos (Categorías, Puntos base de dificultad, Frecuencia). Pueden ser públicos u ocultos.
-3. **UserChallenge:** La tabla pivote/Inscripción. Registra cuándo un `User` acepta un `Challenge`. Lleva el conteo de la `currentStreak` y la `bestStreak`.
-4. **CheckIn:** El evento cronológico inmutable (audit-log). Cada vez que alguien marca "Hoy lo hice", se crea un CheckIn atado a `UserChallenge` registrando fecha, notas en texto, y los puntos ganados.
-5. **PeerChallenge:** Modela los "Duelos 1v1". Une un "Retador" (Challenger) y un "Desafiado" (Challenged) bajo un mismo `challengeId` con una penalidad manual acordada (`stakes`), estado (PENDING, ACTIVE, DECLINED, COMPLETED) y quién ganó (`winnerId`).
-6. **FeatureFlag:** Clave-Valor que rige dinámicamente si módulos de la plataforma (ej. `DUELS_SYSTEM`) están encendidos (`enabled: true/false`) y, de ser así, qué grupos demográficos (`allowedAgeGroups: "PRETEEN,TEEN,ADULT"`) pueden acceder sin desplegar código nuevo.
+```
+Vertical ──┬── Category ──── ActivityCategory ──┐
+           │                                    │
+           └── ScrapingSource ── ScrapingLog    │
+                                                ▼
+City ── Location ──────────────────────── Activity ──┬── Favorite ── User ── Child
+                    Provider ──────────────────────┘ │
+                                                     └── Rating ── User
+```
+
+### Entidades
+
+| Entidad | Propósito |
+|---|---|
+| `Activity` | Actividad normalizada (título, descripción, fechas, precio, audiencia, tipo, fuente, confianza) |
+| `Provider` | Academia, institución o persona que ofrece la actividad. Soporta website e Instagram |
+| `User` | Usuario registrado (padre, proveedor, moderador, admin) |
+| `Child` | Perfil de menor a cargo del usuario — con consentimiento parental explícito (Ley 1581) |
+| `Location` | Ubicación física con coordenadas lat/lng |
+| `City` | Ciudad con moneda, timezone y país. Preparado para multi-país sin hardcodear |
+| `Vertical` | Segmento de negocio (ej: `kids-family`). Configurable por JSON, no por código |
+| `Category` | Taxonomía jerárquica de actividades (árbol con `parentId`) |
+| `ActivityCategory` | Relación N:M actividad ↔ categoría |
+| `Favorite` | Actividades guardadas por un usuario |
+| `Rating` | Calificación 1-5 + comentario (una por usuario por actividad) |
+| `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
+| `ScrapingLog` | Registro histórico de cada ejecución de scraping |
+
+### Enums clave
+
+```typescript
+ActivityAudience  → KIDS | FAMILY | ADULTS | ALL
+ActivityType      → RECURRING | ONE_TIME | CAMP | WORKSHOP
+ActivityStatus    → ACTIVE | PAUSED | EXPIRED | DRAFT
+PricePeriod       → PER_SESSION | MONTHLY | TOTAL | FREE
+ScrapingPlatform  → WEBSITE | INSTAGRAM | FACEBOOK | TELEGRAM | TIKTOK | X | WHATSAPP
+UserRole          → PARENT | PROVIDER | MODERATOR | ADMIN
+ProviderType      → ACADEMY | INDEPENDENT | INSTITUTION | GOVERNMENT
+```
 
 ---
 
-## 4. Diseño del Sistema (Design System)
+## 5. Módulo de Scraping
 
-La aplicación renuncia al diseño genérico y acata las corrientes modernas visuales:
-* **Glassmorphism:** Uso intensivo de fondos difuminados (`backdrop-blur-xl`, `bg-surface-800/80`), ideal para dar profundidad.
-* **Dark Theme First:** Colores base definidos en hexadecimales profundos (`#0f172a` al `#1e293b`), usando luces de neón en tonos turquesa/indigo (`brand`) y coral/rosa (`accent`).
-* **Animaciones Orgánicas:** `framer-motion` usado para micro-interacciones (fades, hover effects) y listados interactivos como el Leaderboard.
+El motor de scraping es el núcleo diferenciador de Infantia. Extrae actividades de múltiples fuentes, las normaliza con IA y las persiste con deduplicación automática.
+
+### Archivos del módulo
+
+```
+src/modules/scraping/
+├── types.ts                    # Contratos de datos del módulo
+├── pipeline.ts                 # Orquestador: runBatchPipeline, runInstagramPipeline
+├── storage.ts                  # Persistencia en BD con deduplicación Nivel 1
+├── cache.ts                    # Cache incremental en data/scraping-cache.json
+├── logger.ts                   # Registro en ScrapingLog
+├── deduplication.ts            # Jaccard, fingerprint SHA-256, isProbablyDuplicate
+├── index.ts                    # Re-exportaciones públicas
+├── extractors/
+│   ├── cheerio.extractor.ts    # Sitios estáticos + paginación automática
+│   └── playwright.extractor.ts # Instagram con Chromium headless + sesión persistente
+└── nlp/
+    ├── gemini.analyzer.ts      # Motor NLP activo (Gemini 2.5 Flash)
+    └── claude.analyzer.ts      # Alternativa futura (API Anthropic — no activo)
+```
+
+### Flujo — Scraping Web
+
+```
+URL semilla
+    │
+    ▼
+CheerioExtractor.extractLinksAllPages(baseUrl, maxPages)
+    ├─ Extrae JSON-LD estructurado (Event/Article) ANTES de limpiar scripts
+    ├─ Extrae todos los <a href> del mismo dominio
+    └─ Paginación automática: busca "Siguiente / Next / › / »" o ?page=N+1
+    │
+    ▼
+GeminiAnalyzer.discoverActivityLinks(links)
+    ├─ Divide en chunks de 50 (evita truncamiento de Gemini)
+    └─ Retorna índices de links identificados como actividades
+    │
+    ▼
+ScrapingCache.filterNew()  ← omite URLs ya procesadas
+    │
+    ▼
+GeminiAnalyzer.analyze(sourceText, url)   [concurrencia: 3]
+    ├─ Trunca a 15,000 chars
+    ├─ Llama Gemini con responseMimeType: 'application/json'
+    ├─ Valida con Zod (ActivityNLPResult)
+    └─ Retry x3 con backoff exponencial (errores 429 / 503)
+    │
+    ▼
+ScrapingStorage.saveActivity()
+    ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
+    ├─ Crea / reutiliza Provider por hostname
+    ├─ Mapea categorías de Gemini a categorías existentes en BD
+    └─ Upsert Activity (sourceUrl como clave)
+    │
+    ▼
+ScrapingCache.save() + ScrapingLogger.completeRun()
+```
+
+### Flujo — Scraping Instagram
+
+```
+URL de perfil (https://www.instagram.com/@cuenta/)
+    │
+    ▼
+PlaywrightExtractor.extractProfile(profileUrl, maxPosts)
+    ├─ Chromium headless, desktop UA (Chrome/122), viewport 1280x800, locale es-CO
+    ├─ Carga sesión desde data/ig-session.json (cookies persistentes)
+    ├─ waitUntil: 'domcontentloaded' + espera fija 4-6s (NO networkidle)
+    ├─ Descarta popup de login ("Not Now" / "Ahora no")
+    ├─ Extrae: bio (og:description), follower count, URLs de posts del grid
+    └─ Por cada post: caption (3 estrategias en cascada), imágenes, timestamp, likes
+    │
+    ▼
+ScrapingCache.filterNew()
+    │
+    ▼
+GeminiAnalyzer.analyzeInstagramPost(post, bio)   [SECUENCIAL — evita rate limiting]
+    └─ INSTAGRAM_SYSTEM_PROMPT: hashtags y emojis como señales de clasificación
+    │
+    ▼
+ScrapingStorage.saveActivity()
+    └─ Provider con campo instagram = @username
+```
+
+### Paginación web — estrategias implementadas
+
+1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
+2. Busca `<a href>` con parámetro `?page=N+1`
+
+### Fuentes activas (al 2026-03-24)
+
+| Fuente | Extractor | Páginas recorridas | Actividades |
+|---|---|---|---|
+| `biblored.gov.co/eventos` | Cheerio + Gemini | 19 | 167 |
+| `bogota.gov.co` | Cheerio + Gemini | — | 21 |
+| `@fcecolombia` | Playwright (Instagram) | — | 10 |
+| `@quehaypahacerenbogota` | Playwright (Instagram) | — | 2 |
+| CEFEs / culturarecreacionydeporte.gov.co | Script manual | — | ~11 |
+| Idartes | — | — | ❌ Pendiente |
+| Jardín Botánico | — | — | ❌ Pendiente |
+
+**Total en BD: ~211 actividades únicas**
 
 ---
 
-## 5. Decisiones de Ingeniería Críticas
+## 6. Sistema de Deduplicación (3 Niveles)
 
-### Motor de Rachas (Streaks Engine)
-El cálculo de rachas no exige un trabajo esclavo cron (CRON job) de base de datos revisando miles de usuarios diarios a la media noche (costoso a gran escala). 
-El recálculo ocurre *en caliente* (Just-In-Time) durante el endpoint `POST /api/checkin/[id]`. Cuando el usuario hace click:
-1. Compara `today` vs `lastCheckInDate`.
-2. Si fue *Ayer*, suma `streak + 1`. 
-3. Si fue *Antes de Ayer*, se rompió la racha y guarda `streak = 1`. 
-4. Otorga puntos basándose en `PuntosDificultad * BonoDeRacha`.
-5. Inserta CheckIn y actualiza Usuario dentro de un `$transaction` atómico de Prisma para garantizar integridad de datos.
+### Nivel 1 — Real-time (en `storage.ts`)
+Antes de guardar cada actividad, busca en las últimas 100 de la BD:
+- **Criterio:** similitud Jaccard >75% sobre palabras del título + fechas en ventana ±30 días
+- **Acción:** si hay match, reutiliza el ID existente (no crea duplicado)
 
-### Feature Flags "Smart"
-Puesto que las edades se calculan con máxima rigidez en backend basado en la fecha de nacimiento (`YYYY-MM-DD`), el servidor tiene el veredicto final sobre la bandera. Si el administrador apaga globalmente el "Catálogo", bloquea la renderización en el servidor (`layout.tsx`) antes de enviar ni siquiera el HTML al cliente, siendo altamente seguro y hermético a inyecciones.
+### Nivel 2 — Validación diaria automatizada (`daily-dedup-check.ts`)
+Cron en Vercel: `15 2 * * *` (2:15 AM UTC)
+- Duplicados exactos (100% por título normalizado) → **eliminación automática**
+- Similares 70-90% → **reporte para revisión manual**, no se eliminan
 
-### Control Parental (PIN Protection)
-Hemos implementado una capa adicional de seguridad para menores controlada por el Feature Flag `PARENTAL_CONTROL`:
-1.  **Bloqueo de Perfil:** Los campos sensibles (nombre, email, fecha de nacimiento) se oscurecen (blur) en la interfaz si el usuario pertenece a un grupo restringido.
-2.  **Verificación por PIN:** Para desbloquear estos ajustes, el tutor debe configurar e introducir un PIN de 4 dígitos.
-3.  **Seguridad:** El PIN se almacena en la base de datos de forma segura usando hashing con **bcryptjs**, siguiendo los estándares de seguridad de nivel industrial.
+### Nivel 3 — Revisión manual
+Para pares 70-90%: verificar fechas, ubicación y fuente.
+Ejemplo legítimo: "Salones de baile: Ritmos folclóricos - Chapinero" vs "- Fontanar" → actividades distintas, mantener ambas.
+Decisiones se registran en `DEDUP-LOG.md`.
 
-### Temas y Diseños Personalizados
-Implementado para mejorar la experiencia de usuario y accesibilidad:
-1.  **Modos Disponibles:** Estándar (Dark), Claro, Niños (Azul/Verde) y Niñas (Rosa/Púrpura).
-2.  **Arquitectura CSS:** Uso de variables CSS nativas y el atributo `data-theme` en la etiqueta raíz (`html`) para cambios en cascada sin recarga de página.
-3.  **Persistencia:** La preferencia se almacena en el modelo `User` y se inyecta en la sesión de Auth.js para una carga inmediata desde el servidor (RSC).
-4.  **Feature Flag:** La opción es controlable mediante `THEME_SELECTION`.
+### Umbrales por fuente
 
-### Accesibilidad (Audio Support)
-Integrado bajo la bandera `AUDIO_SUPPORT`:
-1.  **Text-to-Speech (TTS):** Utiliza la API nativa de Web Speech para leer contenidos en voz alta, adaptándose al idioma seleccionado por el usuario.
-2.  **Optimización para Niños:** El tono y la velocidad de lectura están ajustados para facilitar la comprensión en menores.
+| Fuente | Propensión a duplicados | Umbral de revisión |
+|---|---|---|
+| BibloRed | Alta | 80% |
+| Centro Felicidad / CEFEs | Media | 75% (diferenciadas por localidad) |
+| Bogotá.gov.co | Baja | 70% (revisión manual) |
 
-### Extensibilidad de Idiomas (i18n)
-El sistema está diseñado para crecer sin cambios en la arquitectura:
-1.  **DICCIONARIOS:** Para añadir un idioma (ej. Alemán), solo hay que añadir la clave `de` en `src/locales/dictionaries.ts`.
-2.  **MAPEO AUTOMÁTICO:** El componente `LanguagePicker` y la utilidad `i18n` detectarán automáticamente el nuevo idioma y lo ofrecerán en el dashboard.
+---
 
-### Autenticación Social (SSO Multiproveedor)
-Implementado bajo un esquema de doble capa de seguridad:
-1.  **Flags de Control:**
-    - `SSO_MASTER`: Habilita/deshabilita todo el bloque social.
-    - `SSO_META`, `SSO_GOOGLE`, `SSO_APPLE`, `SSO_MICROSOFT`: Permiten activar proveedores específicos según la plataforma de la vertical (ej. Microsoft para escuelas).
-2.  **Proveedores:** Integración completa con **Facebook, Google, Apple y Microsoft Entra ID** usando Auth.js v5.
-3.  **Seguridad:** El sistema utiliza OAuth 2.0 y permite la vinculación de cuentas si el correo electrónico coincide.
+## 7. Autenticación y Cumplimiento Legal
 
-### Rendimiento Vercel/Next.js
-Todas las llamadas a bases de datos iniciales en los dashboards (como la búsqueda del Top 50 Leaderboard) se realizan mediante **React Server Components (RSC)**. Esto extrae toda carga analítica del dispositivo cliente (celular de gama baja, por ejemplo), renderiza el HTML y envía solo el markup hiper-optimizado junto con pedacitos mínimos de JS en los "Client Components" estrictamente necesarios (como los botones de Like o CheckIn).
+### Autenticación
+- **Motor:** Supabase Auth (JWT con cookies SSR via `@supabase/ssr`)
+- **Flujo:** formulario → Supabase → email de confirmación → callback → email de bienvenida (Resend)
+- **Roles:** `PARENT | PROVIDER | MODERATOR | ADMIN`
 
-### UX & Premium Polish (Sonner + Framer Motion)
-Hemos elevado la calidad percibida de la aplicación:
-1. **Notificaciones (Sonner):** Feedback visual inmediato para acciones críticas (Auth, Ajustes).
-2. **Skeleton Loading:** Reducción del CLS y mejora de la percepción de carga en el Dashboard mediante siluetas animadas.
-3. **Transiciones (Page Transitions):** Uso de `AnimatePresence` para cambios de ruta fluidos.
+### Menores de edad (Ley 1581 de 2012)
+El modelo `Child` almacena consentimiento parental explícito:
+- `consentGivenAt` — fecha exacta del consentimiento
+- `consentGivenBy` — userId del padre/tutor
+- `consentText` — texto exacto mostrado en el momento
 
-### Cumplimiento Legal (Ley 1581 - Colombia)
-La app integra mecanismos de protección de datos personales:
-1. **Consentimiento Explícito:** Registro condicionado a la aceptación de términos.
-2. **Autorización Parental:** Detección de menores de 14 años para requerir validación de tutores legales.
-3. **Páginas de Soporte:** `/privacy` y `/terms` adaptadas a la legislación vigente.
+### Transferencia internacional de datos
+- Supabase Inc. (AWS, EEUU) — SOC 2 Type II, AES-256
+- Vercel Inc. (EEUU) — SOC 2 Type II
+- Registrado en RNBD (SIC Colombia) — trámite en `infantia.co/tratamiento-datos`
+
+---
+
+## 8. API REST
+
+Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts`.
+
+### Actividades
+| Método | Ruta | Auth |
+|---|---|---|
+| `GET` | `/api/activities` | Pública |
+| `POST` | `/api/activities` | Admin |
+| `GET/PUT/DELETE` | `/api/activities/[id]` | Mixto |
+| `GET/POST` | `/api/activities/[id]/ratings` | Usuario |
+
+**Filtros GET `/api/activities`:** `page`, `pageSize`, `verticalId`, `categoryId`, `cityId`, `ageMin`, `ageMax` (0-120), `priceMin`, `priceMax`, `status`, `type`, `audience`, `search`
+
+### Perfil y familia
+| Método | Ruta |
+|---|---|
+| `GET/PUT` | `/api/profile` |
+| `PUT` | `/api/profile/avatar` |
+| `GET/PUT` | `/api/profile/notifications` |
+| `GET/POST` | `/api/children` |
+| `GET/PUT/DELETE` | `/api/children/[id]` |
+
+### Interacciones
+| Método | Ruta |
+|---|---|
+| `GET` | `/api/favorites` |
+| `POST/DELETE` | `/api/favorites/[activityId]` |
+| `GET` | `/api/ratings` |
+| `POST` | `/api/ratings/[activityId]` |
+
+### Admin
+| Método | Ruta |
+|---|---|
+| `POST` | `/api/auth/send-welcome` |
+| `POST` | `/api/admin/expire-activities` |
+| `POST` | `/api/admin/send-notifications` |
+| `GET` | `/api/admin/scraping/sources` |
+| `GET` | `/api/admin/scraping/logs` |
+
+---
+
+## 9. Despliegue
+
+- **Plataforma:** Vercel (auto-deploy en push a `master`)
+- **DB:** Supabase PostgreSQL (AWS us-east-1, proyecto `vjfhlrpfubbfnvpthwym`)
+- **Dominio objetivo:** `infantia.co` (pendiente de configurar en Vercel)
+- **Crons Vercel:** deduplicación diaria — `15 2 * * *`
+
+### Variables de entorno requeridas
+
+```env
+DATABASE_URL                    # PostgreSQL Supabase
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+GEMINI_API_KEY                  # Google AI Studio
+RESEND_API_KEY                  # Email transaccional
+CRON_SECRET                     # Autenticación de crons Vercel
+```
+
+### Comandos
+
+```bash
+npm run dev       # Desarrollo (Turbopack)
+npm run build     # prisma generate + next build
+npm test          # Vitest
+npm run test:coverage
+```
+
+---
+
+## 10. Testing
+
+- **Framework:** Vitest + @vitest/coverage-v8
+- **Estado v0.5.0:** 314 tests, 21 archivos, 0 fallos
+- **Cobertura:** ~95% statements / ~88% branch / ~84% functions / ~96% lines
+- **Threshold dinámico:** +10%/día desde 2026-03-16 (configurado en `vitest.config.ts`)
+- **Módulos al 100%:** `lib/utils`, `lib/validation`, `scraping/cache`, `scraping/types`, `activities/schemas`, `activities/service`
+- **Gap justificado:** `playwright.extractor.ts` (~42% functions) — callbacks de browser no testeables en unit tests
+
+**Patrón crítico para mocks:**
+```typescript
+// Usar vi.hoisted() para mock functions en factories de vi.mock()
+const mockFn = vi.hoisted(() => vi.fn());
+vi.mock('./module', () => ({ fn: mockFn }));
+```
+
+---
+
+## 11. Decisiones de Arquitectura
+
+| Decisión | Razón |
+|---|---|
+| Gemini 2.5 Flash como NLP (no Claude API) | Mayor cuota gratuita, menor costo en producción |
+| Cheerio para web estática | Playwright es lento y pesado; Cheerio suficiente para HTML SSR |
+| Playwright solo para Instagram | Graph API de Instagram requiere permisos difíciles de obtener |
+| Cache incremental en JSON (no Redis) | Sin infraestructura adicional para el MVP |
+| Multi-vertical por config JSON | Permite nuevas verticales sin deploy de código |
+| Supabase Auth (no NextAuth) | Integración nativa con PostgreSQL, sin tablas adicionales |
+| Prisma 7 con adapter-pg | Prisma 7 requiere adapter explícito para conexión directa a PostgreSQL |
+| `DATABASE_URL` en `prisma.config.ts` (no en `schema.prisma`) | Requisito de Prisma 7 |
+
+---
+
+## 12. Roadmap Técnico Pendiente
+
+### Corto plazo
+- [ ] Meilisearch — búsqueda full-text (`src/modules/search/` existe como stub)
+- [ ] Idartes y Jardín Botánico como fuentes activas
+- [ ] Tests E2E con Playwright (autenticación, filtros, favoritos)
+- [ ] Git tags faltantes: `v0.2.0` a `v0.5.0`
+- [ ] CHANGELOG completo para versiones v0.2.0, v0.3.0, v0.4.0
+
+### Mediano plazo
+- [ ] BullMQ + Redis para colas de scraping asíncronas
+- [ ] Proxy rotation para anti-blocking
+- [ ] Geocodificación automática de direcciones
+- [ ] Segunda vertical (ej: adultos mayores)
+
+### Largo plazo
+- [ ] Facebook Graph API y Telegram Bot API como fuentes
+- [ ] Expansión a Medellín y Cali
+- [ ] Modelo de monetización (pendiente de definir)
+
+---
+
+## 13. Separación de Proyectos
+
+El mismo desarrollador mantiene dos proyectos independientes. En el pasado hubo contaminación cruzada (archivos de Habit Challenge en el repo de Infantia). Verificar al inicio de cada sesión:
+
+| Proyecto | Directorio | DB | NLP activo |
+|---|---|---|---|
+| **Infantia** | `C:\Users\denys\Projects\infantia` | PostgreSQL (Supabase) | Gemini 2.5 Flash |
+| **Habit Challenge** | `C:\Users\denys\Projects\habit-challenge` | SQLite | Claude API |
+
+**Señales de contaminación:**
+- `provider = "sqlite"` en `prisma/schema.prisma` → archivo de Habit Challenge
+- `"name": "habit-challenge"` en `package.json` → directorio equivocado
+- `DATABASE_URL="file:./dev.db"` en `.env` → configuración de Habit Challenge
+
+Ver `.agents/workflows/project-safety-check.md` para el checklist completo de verificación.

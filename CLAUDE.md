@@ -17,15 +17,16 @@
 Infantia is a multi-source activity discovery platform for families. It aggregates activities from websites, social media, and messaging platforms into a single searchable interface.
 
 ## Tech Stack
-- **Framework:** Next.js 15 (App Router) + TypeScript
+- **Framework:** Next.js 16.1.6 (App Router) + TypeScript (strict)
 - **Styling:** Tailwind CSS
 - **Database:** PostgreSQL via Supabase
-- **ORM:** Prisma
-- **Search:** Meilisearch
-- **Auth:** Supabase Auth
-- **Scraping:** Playwright + Cheerio
-- **AI/NLP:** Claude API (Anthropic)
-- **Queue:** BullMQ + Redis
+- **ORM:** Prisma 7 (adapter-pg — DATABASE_URL in `prisma.config.ts`, NOT schema.prisma)
+- **Search:** Meilisearch (stub — not yet active)
+- **Auth:** Supabase Auth (SSR cookies)
+- **Scraping:** Playwright (Instagram) + Cheerio (web) — auto-pagination via CheerioExtractor
+- **AI/NLP:** Gemini 2.5 Flash (Google AI Studio) — NOT Claude API
+- **Email:** Resend
+- **Queue:** BullMQ + Redis (planned)
 
 ## Project Structure
 ```
@@ -108,7 +109,10 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 |---|---|---|
 | v0.0.1 | V02 | Stack, arquitectura, modelo de datos |
 | v0.1.0 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
-| v0.2.0 | V06 (próximo) | API pública + segundo scraper |
+| v0.2.0 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
+| v0.3.0 | V08 | Instagram scraping (Playwright, ig-session.json) |
+| v0.4.0 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
+| v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
 
 ### Regla para Documento Fundacional
 
@@ -119,9 +123,19 @@ Generar nueva versión del doc cuando:
 
 Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero)
 
-## Agent Orchestration (Claude Code + Gemini)
-**CRITICAL RULE FOR CLAUDE CODE:** The user has limited Claude Pro credits. Claude Code must act as a lightweight, fast executer, and offload all heavy-lifting to Gemini (Antigravity).
-- **Claude Code's Job:** Run terminal commands, generate boilerplate, fix small typos, run ESLint/TS errors, and answer quick context questions.
-- **Gemini's Job (Antigravity):** Architect complex features (like the Scraping engine), write massive refactors, create extensive documentation, and debug deep logical issues.
-- If a task requires writing more than 100 lines of code or complex reasoning, Claude Code MUST advise the user to switch to Gemini.
-- Always use `/compact` in Claude Code after finishing a distinct sub-task to save context tokens.
+## Notas de arquitectura críticas
+
+- **Prisma config:** `DATABASE_URL` va en `prisma.config.ts` (no en `schema.prisma`). Usar `PrismaClient` con `PrismaPg` adapter.
+- **Scraping pagination:** `CheerioExtractor.extractLinksAllPages()` sigue paginación automáticamente buscando texto "Siguiente/Next/›/»" o parámetro `?page=N+1`.
+- **Instagram:** `PlaywrightExtractor` usa desktop UA, evento `domcontentloaded`, sesión persistente en `data/ig-session.json`.
+- **NLP:** `GeminiNLPService` — cuota de Google AI Studio puede agotarse. Si falla, revisar cuota antes de debuggear código.
+- **Deduplicación:** 3 niveles — (1) real-time Jaccard >75% en saveActivity, (2) cron diario auto-clean exactos, (3) manual review 70-90%.
+- **Zod schema ActivityNLPResult:** `schedules[].notes` (string), NO `frequency` ni `timeSlot`. `location` es `{address, city}`, NO string.
+- **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
+- **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
+
+## Estado actual (v0.5.0)
+- ~211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
+- 314 tests / 21 archivos / ~95% cobertura
+- Vercel deployment activo
+- Doc Fundacional: V10

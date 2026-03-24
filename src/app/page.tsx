@@ -1,5 +1,6 @@
 // =============================================================================
 // Home — Landing page de Infantia
+// Deployed with deduplication system (2026-03-24)
 // =============================================================================
 
 import { listActivities } from '@/modules/activities';

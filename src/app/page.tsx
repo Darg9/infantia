@@ -11,7 +11,17 @@ export default async function HomePage() {
   const [{ total }, categories] = await Promise.all([
     listActivities({ skip: 0, pageSize: 1 }),
     prisma.category.findMany({
-      orderBy: { sortOrder: 'asc' },
+      where: {
+        activities: {
+          some: {
+            activity: { status: { in: ['ACTIVE', 'EXPIRED'] } },
+          },
+        },
+      },
+      include: {
+        _count: { select: { activities: true } },
+      },
+      orderBy: { activities: { _count: 'desc' } },
       take: 8,
     }),
   ]);

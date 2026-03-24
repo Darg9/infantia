@@ -15,6 +15,9 @@ Relación con Documento Fundacional:
 ### Added
 - Componente `UserMenu`: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", "Salir" y enlace admin (condicional)
 - Método `getOrCreateDbUser()` en auth: upsert atomático en table `users` con Supabase Auth ID
+- Componente `EmptyState`: estado vacío context-aware en `/actividades` con sugerencias específicas según filtros activos
+- `/app/robots.ts`: generador dinámico de robots.txt con rutas excluidas y crawl-delay
+- `/app/sitemap.ts`: generador dinámico de sitemap.xml con rutas estáticas + todas las actividades ACTIVE (~150 URLs) con revalidación horaria
 
 ### Changed
 - Header: reemplazó avatar + "Mi perfil" link + LogoutButton con componente `UserMenu` unificado
@@ -24,6 +27,7 @@ Relación con Documento Fundacional:
 - Badge de precio en tarjetas: ocultado cuando no hay información ("No disponible") → solo muestra "Gratis" o precio real
 - Badge de precio en hero de detalle: ocultado cuando no hay información
 - Hero de detalle sin imagen: reemplazado placeholder gigante (h-48/h-64) con encabezado compacto (h-~44) con fondo de categoría
+- Empty state en `/actividades`: reemplazado genérico por componente context-aware con sugerencias específicas y 6 categorías populares
 
 ### Fixed
 - `getOrCreateDbUser()` en `auth/callback/route.ts`: nueva aplicación crea DB record inmediatamente en OAuth

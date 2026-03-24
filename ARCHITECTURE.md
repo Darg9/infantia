@@ -480,7 +480,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 - **UserMenu**: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", separator, "Salir" y enlace admin condicional
 - **Header**: UserMenu reemplazó avatar + links dispersos
 
-## 13. Decisiones de Arquitectura
+## 14. Decisiones de Arquitectura
 
 | Decisión | Razón |
 |---|---|
@@ -497,7 +497,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 
 ---
 
-## 13. Roadmap Técnico Pendiente
+## 15. Roadmap Técnico Pendiente
 
 ### Corto plazo
 - [ ] Idartes y Jardín Botánico como fuentes activas

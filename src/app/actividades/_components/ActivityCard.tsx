@@ -16,6 +16,7 @@ interface Activity {
   description: string;
   type: string;
   status: string;
+  audience: string;
   ageMin: number | null;
   ageMax: number | null;
   price: PrismaPrice;
@@ -148,6 +149,16 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
 
         {/* Metadatos */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-auto pt-2 border-t border-gray-100">
+          {activity.audience === 'KIDS' && (
+            <span className="flex items-center gap-1 text-xs text-violet-600 font-medium">
+              <span>👶</span> Niños
+            </span>
+          )}
+          {activity.audience === 'FAMILY' && (
+            <span className="flex items-center gap-1 text-xs text-teal-600 font-medium">
+              <span>👨‍👩‍👧</span> Familia
+            </span>
+          )}
           {ageLabel && (
             <span className="flex items-center gap-1 text-xs text-gray-500">
               <span>👧</span> {ageLabel}

@@ -27,15 +27,16 @@ export async function generateMetadata({
   const title = activity.title;
   const description =
     activity.description?.slice(0, 160).replace(/\s+/g, ' ').trim() ??
-    `${activity.title} — actividad para niños en Bogotá`;
+    `${activity.title} — actividad en ${activity.location?.city?.name ?? 'Colombia'}`;
   const categoryNames = activity.categories
     .map((c) => c.category.name)
     .join(', ');
+  const cityName = activity.location?.city?.name ?? 'Colombia';
 
   return {
     title,
     description,
-    keywords: categoryNames ? [categoryNames, 'Bogotá', 'niños'] : undefined,
+    keywords: categoryNames ? [categoryNames, cityName, 'actividades'] : undefined,
     openGraph: {
       title: `${title} | Infantia`,
       description,
@@ -382,7 +383,7 @@ export default async function ActividadDetallePage({
                 <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Organiza</h2>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-indigo-700">
-                    {activity.provider.name.charAt(0).toUpperCase()}
+                    {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
                   </div>
                   <div>
                     <div className="flex items-center gap-1">

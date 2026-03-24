@@ -6,10 +6,11 @@
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
 import { getCategoryEmoji } from '@/lib/category-utils';
+import ActivityCard from '@/app/actividades/_components/ActivityCard';
 
 export default async function HomePage() {
-  const [{ total }, categories] = await Promise.all([
-    listActivities({ skip: 0, pageSize: 1 }),
+  const [{ total }, categories, { activities: recentActivities }] = await Promise.all([
+    listActivities({ skip: 0, pageSize: 1, status: 'ACTIVE' }),
     prisma.category.findMany({
       where: {
         activities: {
@@ -24,6 +25,7 @@ export default async function HomePage() {
       orderBy: { activities: { _count: 'desc' } },
       take: 8,
     }),
+    listActivities({ skip: 0, pageSize: 4, status: 'ACTIVE' }),
   ]);
 
   return (
@@ -88,6 +90,25 @@ export default async function HomePage() {
           <div className="text-center mt-6">
             <a href="/actividades" className="text-sm text-indigo-600 hover:underline font-medium">
               Ver todas las categorías →
+            </a>
+          </div>
+        </section>
+      )}
+
+      {/* Actividades recientes */}
+      {recentActivities.length > 0 && (
+        <section className="mx-auto max-w-5xl px-4 pb-16">
+          <h2 className="text-center text-sm font-semibold text-gray-400 uppercase tracking-widest mb-6">
+            Recién agregadas
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentActivities.map((activity) => (
+              <ActivityCard key={activity.id} activity={activity} />
+            ))}
+          </div>
+          <div className="text-center mt-6">
+            <a href="/actividades" className="text-sm text-indigo-600 hover:underline font-medium">
+              Ver todas las actividades →
             </a>
           </div>
         </section>

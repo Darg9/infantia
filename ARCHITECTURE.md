@@ -285,7 +285,27 @@ ScrapingStorage.saveActivity()
 
 ---
 
-## 6. Sistema de Deduplicación (3 Niveles)
+## 6. Búsqueda Full-Text
+
+La búsqueda de actividades usa **PostgreSQL pg_trgm** (trigram similarity) para tolerancia a errores tipográficos.
+
+### Implementación
+- **Extensión:** `pg_trgm` activa en Supabase
+- **Índices GIN:** en `activities.title` y `activities.description`
+- **Lógica:** `activities.service.ts` → `prisma.$queryRaw` con ILIKE + `similarity() > 0.2`
+- **Flujo:** raw query obtiene IDs coincidentes → Prisma filtra por esos IDs con todos los demás filtros activos
+
+### Ejemplo
+- "taeatro" → encuentra "teatro"
+- "natcion" → encuentra "natación"
+- "biblored" → encuentra actividades de BibloRed
+
+### Por qué no Meilisearch
+Con 211 actividades, `pg_trgm` es suficiente y gratuito (usa Supabase ya existente). Meilisearch evaluable cuando haya 2000+ actividades o se necesite ranking avanzado.
+
+---
+
+## 7. Sistema de Deduplicación (3 Niveles)
 
 ### Nivel 1 — Real-time (en `storage.ts`)
 Antes de guardar cada actividad, busca en las últimas 100 de la BD:
@@ -312,7 +332,7 @@ Decisiones se registran en `DEDUP-LOG.md`.
 
 ---
 
-## 7. Autenticación y Cumplimiento Legal
+## 8. Autenticación y Cumplimiento Legal
 
 ### Autenticación
 - **Motor:** Supabase Auth (JWT con cookies SSR via `@supabase/ssr`)
@@ -332,7 +352,7 @@ El modelo `Child` almacena consentimiento parental explícito:
 
 ---
 
-## 8. API REST
+## 9. API REST
 
 Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts`.
 
@@ -374,7 +394,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 
 ---
 
-## 9. Despliegue
+## 10. Despliegue
 
 - **Plataforma:** Vercel (auto-deploy en push a `master`)
 - **DB:** Supabase PostgreSQL (AWS us-east-1, proyecto `vjfhlrpfubbfnvpthwym`)
@@ -404,10 +424,11 @@ npm run test:coverage
 
 ---
 
-## 10. Testing
+## 11. Testing
 
+### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado v0.5.0:** 314 tests, 21 archivos, 0 fallos
+- **Estado actual:** 402 tests, 28 archivos, 0 fallos
 - **Cobertura:** ~95% statements / ~88% branch / ~84% functions / ~96% lines
 - **Threshold dinámico:** +10%/día desde 2026-03-16 (configurado en `vitest.config.ts`)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `scraping/cache`, `scraping/types`, `activities/schemas`, `activities/service`
@@ -420,9 +441,23 @@ const mockFn = vi.hoisted(() => vi.fn());
 vi.mock('./module', () => ({ fn: mockFn }));
 ```
 
+### E2E tests (Playwright)
+- **Framework:** @playwright/test ^1.58.2
+- **Estado actual:** 19 tests, 3 archivos, 0 fallos
+- **Proyectos configurados:**
+  - `setup` — login inicial, guarda sesión en `e2e/.auth/user.json`
+  - `sin-auth` — tests sin sesión (auth, filtros, favorito sin login)
+  - `con-auth` — tests con sesión (agregar/quitar favorito, perfil)
+- **Archivos:**
+  - `e2e/auth.spec.ts` — login/registro (formularios, validaciones, errores)
+  - `e2e/actividades.spec.ts` — búsqueda, filtros, paginación
+  - `e2e/favoritos.auth.spec.ts` — favoritos sin y con autenticación
+- **Comandos:** `npm run test:e2e` / `npm run test:e2e:ui` / `npm run test:e2e:report`
+- **Requiere:** servidor dev corriendo + `.env.e2e` con credenciales de usuario de prueba
+
 ---
 
-## 11. Decisiones de Arquitectura
+## 12. Decisiones de Arquitectura
 
 | Decisión | Razón |
 |---|---|
@@ -437,14 +472,14 @@ vi.mock('./module', () => ({ fn: mockFn }));
 
 ---
 
-## 12. Roadmap Técnico Pendiente
+## 13. Roadmap Técnico Pendiente
 
 ### Corto plazo
-- [ ] Meilisearch — búsqueda full-text (`src/modules/search/` existe como stub)
 - [ ] Idartes y Jardín Botánico como fuentes activas
-- [ ] Tests E2E con Playwright (autenticación, filtros, favoritos)
-- [ ] Git tags faltantes: `v0.2.0` a `v0.5.0`
-- [ ] CHANGELOG completo para versiones v0.2.0, v0.3.0, v0.4.0
+- [x] Tests E2E con Playwright (autenticación, filtros, favoritos) — 19 tests
+- [x] Búsqueda fuzzy con pg_trgm (reemplaza ILIKE básico)
+- [x] Git tags v0.2.0–v0.5.0 creados y pusheados
+- [x] CHANGELOG completo para versiones v0.2.0–v0.5.0
 
 ### Mediano plazo
 - [ ] BullMQ + Redis para colas de scraping asíncronas
@@ -459,7 +494,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 
 ---
 
-## 13. Separación de Proyectos
+## 14. Separación de Proyectos
 
 El mismo desarrollador mantiene dos proyectos independientes. En el pasado hubo contaminación cruzada (archivos de Habit Challenge en el repo de Infantia). Verificar al inicio de cada sesión:
 

@@ -1,43 +1,180 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Infantia — Activity Discovery Platform for Families
 
-## Getting Started
+A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-First, run the development server:
+**Version:** v0.6.0 | **Status:** Production-ready | **Test Coverage:** 473 tests / 100% threshold
+
+## Quick Start
+
+### Prerequisites
+- Node.js 20+
+- PostgreSQL database (via Supabase)
+- `.env` file configured with required secrets
+
+### Setup
 
 ```bash
+# Install dependencies
+npm install
+
+# Set up database
+npx prisma migrate dev
+
+# Seed initial data
+npx tsx prisma/seed.ts
+npx tsx scripts/seed-scraping-sources.ts
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework:** Next.js 16.1.6 (App Router) + TypeScript
+- **Styling:** Tailwind CSS
+- **Database:** PostgreSQL + Prisma ORM
+- **Auth:** Supabase Auth (SSR)
+- **AI/NLP:** Google Gemini 2.5 Flash (Activity extraction)
+- **Scraping:** Playwright (Instagram) + Cheerio (web)
+- **Testing:** Vitest 1.0 + React Testing Library
+- **CI/CD:** GitHub Actions
 
-## Learn More
+## Core Features
 
-To learn more about Next.js, take a look at the following resources:
+- 🔍 **Search & Filter:** Full-text search + faceted filters (category, age, price, audience type)
+- 👥 **User Profiles:** Signup/login via Supabase Auth, manage children, favorite activities
+- ⭐ **Favorites:** Bookmark activities with timestamps, view history
+- 🤖 **AI-Powered:** Automatic activity extraction and classification with Gemini NLP
+- 📱 **Responsive:** Mobile-first design with Tailwind CSS
+- ♿ **Accessible:** WCAG-compliant components
+- 🧪 **Well-tested:** 473 unit tests, E2E tests, component tests
+- 🚀 **Production-ready:** CI/CD pipeline, automated testing, static generation (robots.txt, sitemap.xml)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Commands
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Aprende más sobre las capacidades del stack en la documentación de [Next.js](https://nextjs.org/docs).
-
-## Motor de Scraping (POC)
-Para probar el pipeline completo de extracción y procesamiento de Lenguaje Natural en la consola:
 ```bash
-npx tsx scripts/test-scraper.ts "https://www.colsubsidio.com"
+npm run dev          # Start development server
+npm run build        # Build for production
+npm test             # Run all tests
+npm run test:watch   # Run tests in watch mode
+npm run lint         # Run ESLint
+npm run format       # Format code with Prettier
 ```
-*Nota: Asegúrate de tener configurada la variable `ANTHROPIC_API_KEY` en tu `.env` para usar a Claude real. Si no la tienes, el parser usará nuestro modo de emulación (Mock) sin consumir datos reales.
+
+## Project Structure
+
+```
+src/
+├── app/              # Next.js App Router (pages, layouts, API)
+├── modules/          # Domain modules (activities, scraping, users, etc.)
+├── components/       # Reusable React components
+├── lib/              # Shared utilities and helpers
+├── types/            # TypeScript type definitions
+├── config/           # App configuration
+└── hooks/            # Custom React hooks
+```
+
+## Testing
+
+- **Unit tests:** 473 tests / 35 files
+- **Coverage threshold:** 100% (Day 9), dynamically increasing +10% per day
+- **Test frameworks:** Vitest, React Testing Library, Playwright (E2E)
+
+Run tests:
+```bash
+npm test              # Run once
+npm run test:watch    # Watch mode
+npm run test:coverage # With coverage report
+```
+
+## Scraping
+
+### Test a scraper
+
+```bash
+# Single page (extract activity from URL)
+npx tsx scripts/test-scraper.ts "https://example.com/activity"
+
+# Discovery mode (find all activities on a listing page)
+npx tsx scripts/test-scraper.ts --discover "https://example.com/events" --max-pages=5
+
+# Save to database
+npx tsx scripts/test-scraper.ts --discover "https://example.com/events" --save-db
+```
+
+### Scraping sources
+
+Currently configured sources:
+1. **BibloRed** (Bogotá public library events)
+2. **Bogotá.gov.co** (City culture & recreation)
+3. **Centro Felicidad Chapinero** (Municipal center)
+4. **Idartes** (Bogotá Institute of Culture)
+5. **Instagram:** fcecolombia
+6. **Instagram:** quehaypahacerenbogota
+
+## Deployment
+
+### Prerequisites
+- Vercel account
+- Environment variables configured in GitHub secrets:
+  - `DATABASE_URL` (PostgreSQL connection)
+  - `NEXT_PUBLIC_SUPABASE_URL` (Supabase project URL)
+  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase anon key)
+  - `GOOGLE_AI_STUDIO_KEY` (Gemini API key)
+  - `RESEND_API_KEY` (Email API key)
+  - `RESEND_FROM_EMAIL` (Sender email)
+
+### Deploy to Vercel
+
+```bash
+# Connect to Vercel and push to master branch
+git push origin master
+```
+
+The CI/CD pipeline will:
+1. Run all 473 tests
+2. Build production bundle
+3. Deploy to Vercel (if all checks pass)
+
+### Cron Jobs (Vercel)
+
+- **5:00 AM UTC**: Expire past activities (`/api/admin/expire-activities`)
+- **9:00 AM UTC**: Send daily notifications (`/api/admin/send-notifications`)
+
+## Documentation
+
+- **CLAUDE.md** — Project guidelines, conventions, and tech decisions
+- **ARCHITECTURE.md** — System design and module documentation
+- **CHANGELOG.md** — Version history and release notes
+- **TEST_PLAN.md** — Testing strategy and coverage goals
+- **DEDUPLICATION-STRATEGY.md** — 3-level activity deduplication algorithm
+
+## Contributing
+
+See `CLAUDE.md` for:
+- Code conventions (TypeScript strict, Spanish for UI)
+- Git workflow (branches, commits, versioning)
+- Testing requirements (mandatory for `src/modules/` and `src/lib/`)
+- Documentation standards
+
+## License
+
+MIT — See LICENSE file for details
+
+## Status
+
+**v0.6.0** (2026-03-24)
+- ✅ 473 tests passing
+- ✅ CI/CD pipeline live
+- ✅ Empty states & SEO features
+- ✅ Custom 404 page
+- ✅ Loading skeletons
+- 🔄 Awaiting Gemini API quota reset for Idartes/CEFE scraping
+- ⏳ Vercel deployment (ready)
+- 📝 Documento Fundacional V12 (pending)
+
+## Contact
+
+Built with ❤️ for families in Bogotá exploring activities and events with their children.

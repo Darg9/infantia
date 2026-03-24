@@ -1,5 +1,5 @@
 /**
- * Crea (upsert) los 4 ScrapingSource conocidos en la BD.
+ * Crea (upsert) los 6 ScrapingSource conocidos en la BD.
  * Uso: npx tsx scripts/seed-scraping-sources.ts
  */
 import 'dotenv/config'
@@ -37,6 +37,12 @@ const SOURCES = [
   {
     name: 'Cultura Recreación y Deporte – Centro Felicidad Chapinero',
     url: 'https://www.culturarecreacionydeporte.gov.co/es/centro-felicidad-chapinero/eventos',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Idartes – Agenda Cultural',
+    url: 'https://idartes.gov.co/es/agenda',
     platform: 'WEBSITE' as const,
     scraperType: 'cheerio-batch',
   },

@@ -58,9 +58,9 @@ export default async function FavoritosPage() {
       {activities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">🤍</span>
-          <p className="text-gray-600 font-medium text-lg">Aun no tienes favoritos</p>
+          <p className="text-gray-600 font-medium text-lg">Aún no tienes favoritos</p>
           <p className="text-sm text-gray-400 max-w-sm">
-            Toca el corazon en cualquier actividad para guardarla aqui y encontrarla facilmente despues.
+            Toca el corazón en cualquier actividad para guardarla aquí y encontrarla fácilmente después.
           </p>
           <a
             href="/actividades"

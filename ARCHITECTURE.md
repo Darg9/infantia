@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.6.0 (unreleased) | Actualizado: 2026-03-24
+> Versión: v0.6.0 (released 2026-03-24) | Actualizado: 2026-03-24
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---

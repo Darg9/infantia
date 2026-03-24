@@ -12,6 +12,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 interface Category {
   id: string;
   name: string;
+  _count: { activities: number };
 }
 
 interface Facets {
@@ -151,7 +152,9 @@ export default function Filters({
         >
           <option value="">👤 Todos</option>
           {visibleAudiences.map(a => (
-            <option key={a.value} value={a.value}>{a.label}</option>
+            <option key={a.value} value={a.value}>
+              {a.label} ({facets.audienceCounts[a.value as keyof typeof facets.audienceCounts]})
+            </option>
           ))}
         </select>
 
@@ -162,9 +165,12 @@ export default function Filters({
           className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-40"
         >
           <option value="">Todos los tipos</option>
-          {visibleTypes.map(t => (
-            <option key={t.value} value={t.value}>{t.label}</option>
-          ))}
+          {visibleTypes.map(t => {
+            const count = facets.availableTypes.find(a => a.type === t.value)?.count ?? 0;
+            return (
+              <option key={t.value} value={t.value}>{t.label} ({count})</option>
+            );
+          })}
         </select>
 
         {/* Categoría — facetado */}
@@ -175,7 +181,7 @@ export default function Filters({
         >
           <option value="">Todas las categorías</option>
           {facets.validCategories.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+            <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
           ))}
         </select>
 

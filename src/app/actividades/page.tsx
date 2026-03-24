@@ -121,7 +121,7 @@ async function getFacets(filters: ActiveFilters) {
       prisma.category.findMany({
         where: { activities: { some: { activity: buildWhere(filters, 'categoryId') } } },
         orderBy: { name: 'asc' },
-        select: { id: true, name: true },
+        select: { id: true, name: true, _count: { select: { activities: true } } },
       }),
     ]);
 

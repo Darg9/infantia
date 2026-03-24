@@ -106,6 +106,13 @@ export default function Filters({
 
   const hasFilters = search || ageMin || ageMax || categoryId || type || audience;
 
+  function selectCls(active: boolean, width = '') {
+    const base = 'rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
+    const off = 'border-gray-200 bg-white text-gray-700 focus:border-indigo-400 focus:ring-indigo-100';
+    const on  = 'border-indigo-400 bg-indigo-50 text-indigo-700 font-medium focus:ring-indigo-100';
+    return `${base} ${active ? on : off} ${width}`;
+  }
+
   // Filtros facetados: sólo mostrar opciones disponibles
   const visibleTypes = ALL_TYPES.filter(t =>
     // Siempre mostrar la opción actualmente seleccionada aunque no tenga resultados
@@ -137,7 +144,7 @@ export default function Filters({
         <select
           value={ageIndex}
           onChange={e => handleAgeChange(Number(e.target.value))}
-          className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-40"
+          className={selectCls(ageIndex !== 0, 'sm:w-40')}
         >
           {AGE_OPTIONS.map((o, i) => (
             <option key={i} value={i}>{o.label}</option>
@@ -148,7 +155,7 @@ export default function Filters({
         <select
           value={audience}
           onChange={e => handleAudienceChange(e.target.value)}
-          className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-40"
+          className={selectCls(audience !== '', 'sm:w-40')}
         >
           <option value="">👤 Todos</option>
           {visibleAudiences.map(a => (
@@ -162,7 +169,7 @@ export default function Filters({
         <select
           value={type}
           onChange={e => handleTypeChange(e.target.value)}
-          className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-40"
+          className={selectCls(type !== '', 'sm:w-40')}
         >
           <option value="">Todos los tipos</option>
           {visibleTypes.map(t => {
@@ -177,7 +184,7 @@ export default function Filters({
         <select
           value={categoryId}
           onChange={e => handleCategoryChange(e.target.value)}
-          className="rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 sm:w-48"
+          className={selectCls(categoryId !== '', 'sm:w-48')}
         >
           <option value="">Todas las categorías</option>
           {facets.validCategories.map(c => (

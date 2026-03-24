@@ -16,7 +16,7 @@ interface ActivityWithMetadata {
   title: string;
   startDate: Date | null;
   provider: { name: string };
-  sourceUrl: string;
+  sourceUrl: string | null;
   normalizedTitle: string;
   fingerprint: string;
 }

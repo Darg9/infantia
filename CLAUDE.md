@@ -134,8 +134,9 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.5.0)
+## Estado actual (v0.6.0)
 - ~211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 314 tests / 21 archivos / ~95% cobertura
-- Vercel deployment activo
-- Doc Fundacional: V10
+- 473 tests / 35 archivos test / 100% cobertura dinámica (threshold crece +10% por día desde 2026-03-16)
+- GitHub Actions CI/CD: tests + build automático en cada push a master
+- Vercel deployment: configurado con cron jobs (expire activities 5AM UTC, send notifications 9AM UTC)
+- Doc Fundacional: V11 (pendiente generar V12 después de scraped Idartes/CEFEs)

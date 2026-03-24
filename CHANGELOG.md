@@ -49,10 +49,12 @@ Relación con Documento Fundacional:
 - `/perfil/favoritos`: página mejorada con mejor UX y validaciones
 
 ### Tests
-- Unit tests: **401/401 pasando** — 28 archivos, 2.69s (verificado 2026-03-24)
+- Unit tests: **473/473 pasando** — 35 archivos test, ~5.97s (verificado 2026-03-24)
+  - +72 tests nuevos en esta versión (v0.5.0: 314 tests → v0.6.0: 473 tests)
+  - Tests para: robots.txt, sitemap.xml, EmptyState, LoadingSkeletons, 404, ActivityCard, FavoriteButton
 - E2E Playwright: 15 tests (6 skipped por falta de credenciales `.env.e2e`)
-- Rutas integración verificadas: 11/11 PASS (Home, /actividades, empty state, búsqueda, sitemap, robots.txt, contacto, privacidad, términos, 404, favoritos auth-redirect)
-- Build producción: compilado sin errores
+- CI/CD: GitHub Actions workflow configurado (`npm test` + `npm run build` + secrets para Prisma y Supabase)
+- Build producción: compilado sin errores (Turbopack)
 
 ---
 

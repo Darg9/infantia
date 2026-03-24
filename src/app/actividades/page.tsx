@@ -14,13 +14,13 @@ import Filters from './_components/Filters';
 import Pagination from './_components/Pagination';
 
 export const metadata: Metadata = {
-  title: 'Actividades para niños en Bogotá',
+  title: 'Actividades para niños en Colombia',
   description:
-    'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Bogotá. Filtra por edad, categoría y más.',
+    'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Colombia. Filtra por edad, categoría y más.',
   openGraph: {
-    title: 'Actividades para niños en Bogotá | Infantia',
+    title: 'Actividades para niños en Colombia | Infantia',
     description:
-      'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Bogotá.',
+      'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Colombia.',
   },
   alternates: {
     canonical: '/actividades',
@@ -200,7 +200,7 @@ export default async function ActividadesPage({
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Actividades para niños</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            Talleres, clubes, cursos y eventos en Bogotá
+            Talleres, clubes, cursos y eventos
           </p>
         </div>
 

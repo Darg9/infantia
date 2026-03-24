@@ -9,7 +9,7 @@ export function Footer() {
           <div>
             <span className="text-lg font-bold text-orange-500">Infantia</span>
             <p className="text-sm text-gray-500 mt-1">
-              Actividades para niños y familias en Bogotá.
+              Actividades para niños y familias en Colombia.
             </p>
           </div>
 

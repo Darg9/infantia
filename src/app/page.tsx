@@ -33,7 +33,7 @@ export default async function HomePage() {
       <section className="mx-auto max-w-5xl px-4 py-16 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-6">
           <span>🎉</span>
-          <span>{total} actividades disponibles en Bogotá</span>
+          <span>{total} actividades disponibles</span>
         </div>
 
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-4">
@@ -42,7 +42,7 @@ export default async function HomePage() {
         </h1>
 
         <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-10">
-          Talleres, eventos, clubes y cursos para niños y jóvenes en Bogotá.
+          Talleres, eventos, clubes y cursos para niños y jóvenes en Colombia.
           Todo en un solo lugar, siempre actualizado.
         </p>
 

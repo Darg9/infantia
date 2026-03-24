@@ -20,11 +20,11 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Infantia — Actividades para niños en Bogotá',
+    default: 'Infantia — Actividades para niños en Colombia',
     template: '%s | Infantia',
   },
   description:
-    'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá. Todo en un solo lugar, siempre actualizado.',
+    'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia. Todo en un solo lugar, siempre actualizado.',
   keywords: [
     'actividades para niños',
     'talleres infantiles',
@@ -37,15 +37,15 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'es_CO',
     siteName: 'Infantia',
-    title: 'Infantia — Actividades para niños en Bogotá',
+    title: 'Infantia — Actividades para niños en Colombia',
     description:
-      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá.',
+      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Infantia — Actividades para niños en Bogotá',
+    title: 'Infantia — Actividades para niños en Colombia',
     description:
-      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Bogotá.',
+      'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
   },
   robots: {
     index: true,

@@ -101,17 +101,15 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
           {TYPE_LABELS[activity.type] ?? activity.type}
         </span>
 
-        {/* Badge precio */}
-        <span className={clsx(
-          'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
-          priceLabel === 'Gratis'
-            ? 'bg-emerald-500 text-white'
-            : priceLabel === 'No disponible'
-            ? 'bg-gray-200 text-gray-500'
-            : 'bg-white/90 text-gray-700'
-        )}>
-          {priceLabel}
-        </span>
+        {/* Badge precio — sólo cuando hay información */}
+        {priceLabel !== 'No disponible' && (
+          <span className={clsx(
+            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
+            priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
+          )}>
+            {priceLabel}
+          </span>
+        )}
 
         {/* Badge expirada */}
         {activity.status === 'EXPIRED' && (

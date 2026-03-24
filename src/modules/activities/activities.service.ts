@@ -107,7 +107,7 @@ export async function listActivities(params: ListParams) {
     prisma.activity.findMany({
       where,
       include: activityIncludes,
-      orderBy: { createdAt: 'desc' },
+      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
       skip: params.skip,
       take: params.pageSize,
     }),

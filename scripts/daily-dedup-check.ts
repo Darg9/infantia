@@ -9,7 +9,7 @@ const p = new PrismaClient({ adapter });
 interface DuplicateIssue {
   type: 'exact' | 'residual' | 'manual-review';
   similarity: number;
-  activities: { id: string; title: string; date: string | null }[];
+  activities: { id: string; title: string; startDate: Date | null }[];
 }
 
 async function dailyDedupCheck() {

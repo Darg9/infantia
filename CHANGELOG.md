@@ -12,6 +12,29 @@ Relación con Documento Fundacional:
 ## [Unreleased]
 <!-- Agregar aquí cada cambio antes de hacer el tag de release -->
 
+### Added
+- Componente `UserMenu`: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", "Salir" y enlace admin (condicional)
+- Método `getOrCreateDbUser()` en auth: upsert atomático en table `users` con Supabase Auth ID
+
+### Changed
+- Header: reemplazó avatar + "Mi perfil" link + LogoutButton con componente `UserMenu` unificado
+- `/actividades` layout: dos filas de filtros en lugar de una (búsqueda+edad+audiencia / tipo+categoría+limpiar) → barra búsqueda menos estrecha en desktop
+- Contador de resultados: removido texto redundante "(con filtros activos)" → solo mostraba el count
+- Ordenamiento de actividades: `[{ status: 'asc' }, { createdAt: 'desc' }]` → ACTIVE primero, EXPIRED al final
+- Badge de precio en tarjetas: ocultado cuando no hay información ("No disponible") → solo muestra "Gratis" o precio real
+- Badge de precio en hero de detalle: ocultado cuando no hay información
+- Hero de detalle sin imagen: reemplazado placeholder gigante (h-48/h-64) con encabezado compacto (h-~44) con fondo de categoría
+
+### Fixed
+- `getOrCreateDbUser()` en `auth/callback/route.ts`: nueva aplicación crea DB record inmediatamente en OAuth
+- Páginas de perfil (`/perfil/*`): removidas condiciones "Usuario no encontrado" → upsert garantiza registro
+- API routes profile: cambiadas de `requireAuth() + update` a `getSession() + upsert` → maneja usuarios sin DB record
+- `useActivityHistory`: crash cuando `JSON.parse()` retorna non-array → validación con `Array.isArray()`
+- Filtros: counts añadidos a opciones de categoría (ya existían para audience y type)
+
+### Tests
+- Pruebas generales de navegación: home, `/actividades` (filtros, búsqueda, paginación, vacío), detalle, login, registro, páginas legales
+
 ---
 
 ## [v0.5.0] — 2026-03-18

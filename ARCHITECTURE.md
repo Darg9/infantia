@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.5.0 | Actualizado: 2026-03-24
+> Versión: v0.6.0 (unreleased) | Actualizado: 2026-03-24
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -457,7 +457,30 @@ vi.mock('./module', () => ({ fn: mockFn }));
 
 ---
 
-## 12. Decisiones de Arquitectura
+## 12. UI/UX — Patrones Implementados
+
+### Filtros facetados (`/actividades`)
+- **Layout**: dos filas en desktop (búsqueda+edad+audiencia / tipo+categoría+limpiar), vertical en mobile
+- **Counts**: cada opción muestra cantidad de resultados (facetado completo — cada filtro excluye su propia dimensión)
+- **Active state**: filtro activo tiene `border-indigo-400 bg-indigo-50 text-indigo-700 font-medium` (helper `selectCls()`)
+- **Sin "No disponible"**: contador no muestra "(con filtros activos)" — el botón "Limpiar" ya indica que hay filtros
+
+### Tarjetas de actividad (`/actividades`)
+- **Ordenamiento**: ACTIVE primero, EXPIRED al final
+- **Strip visual**: h-20 con imagen real o emoji placeholder
+- **Badges**: solo si hay información (oculta "No disponible")
+- **Contador**: cada tarjeta ahora muestra el conteo de la fuente
+
+### Detalle de actividad (`/actividades/[id]`)
+- **Con imagen**: hero h-48/h-64 con badges overlay
+- **Sin imagen**: encabezado compacto (~44px) con fondo de categoría y badges inline — el título aparece inmediatamente (no desperdiciar espacio con placeholders gigantes)
+- **Badges precio**: solo si hay información real
+
+### Componentes
+- **UserMenu**: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", separator, "Salir" y enlace admin condicional
+- **Header**: UserMenu reemplazó avatar + links dispersos
+
+## 13. Decisiones de Arquitectura
 
 | Decisión | Razón |
 |---|---|
@@ -469,6 +492,8 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Supabase Auth (no NextAuth) | Integración nativa con PostgreSQL, sin tablas adicionales |
 | Prisma 7 con adapter-pg | Prisma 7 requiere adapter explícito para conexión directa a PostgreSQL |
 | `DATABASE_URL` en `prisma.config.ts` (no en `schema.prisma`) | Requisito de Prisma 7 |
+| `getOrCreateDbUser()` con upsert | Garantiza DB record en primer acceso, sin "Usuario no encontrado" |
+| Encabezados compactos sin imagen | Respeta el tiempo del usuario — si no hay contenido visual real, no mostrar placeholder |
 
 ---
 
@@ -480,6 +505,15 @@ vi.mock('./module', () => ({ fn: mockFn }));
 - [x] Búsqueda fuzzy con pg_trgm (reemplaza ILIKE básico)
 - [x] Git tags v0.2.0–v0.5.0 creados y pusheados
 - [x] CHANGELOG completo para versiones v0.2.0–v0.5.0
+- [x] UserMenu component con dropdown
+- [x] Dos filas de filtros en /actividades (búsqueda ancha en desktop)
+- [x] Filtro visual active state (border indigo + bg)
+- [x] Counts en todas las opciones de filtro
+- [x] Encabezados compactos en detalle sin imagen
+- [x] Ocultar badges "No disponible" en tarjetas y detalle
+- [x] Ordenar ACTIVE antes de EXPIRED en listado
+- [x] getOrCreateDbUser() en auth callback + páginas de perfil
+- [x] Auditoría de pruebas generales (home, /actividades, detalle, auth, mobile)
 
 ### Mediano plazo
 - [ ] BullMQ + Redis para colas de scraping asíncronas

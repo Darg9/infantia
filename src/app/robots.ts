@@ -1,6 +1,9 @@
-import type { MetadataRoute } from 'next';
+// =============================================================================
+// robots.ts — Generador de robots.txt dinámico
+// Next.js App Router route que retorna el archivo robots.txt
+// =============================================================================
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co';
+import type { MetadataRoute } from 'next';
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,9 +11,10 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: '*',
         allow: '/',
-        disallow: ['/admin/', '/api/', '/auth/', '/perfil', '/login', '/registro'],
+        disallow: ['/admin/', '/api/', '/auth/', '/login', '/registro', '/perfil/'],
+        crawlDelay: 1,
       },
     ],
-    sitemap: `${SITE_URL}/sitemap.xml`,
+    sitemap: 'https://infantia.app/sitemap.xml',
   };
 }

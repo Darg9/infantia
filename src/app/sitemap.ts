@@ -1,64 +1,75 @@
+// =============================================================================
+// sitemap.ts — Generador de sitemap dinámico para SEO
+// Next.js App Router route que retorna XML válido
+// =============================================================================
+
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
 
-export const dynamic = 'force-dynamic';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co';
+export const revalidate = 3600; // Revalidar cada hora
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  let activities: { id: string; updatedAt: Date }[] = [];
+  const baseUrl = 'https://infantia.app';
 
-  try {
-    activities = await prisma.activity.findMany({
-      where: { status: 'ACTIVE' },
-      select: { id: true, updatedAt: true },
-      orderBy: { updatedAt: 'desc' },
-    });
-  } catch {
-    // DB not available at build time — return static pages only
-  }
-
-  const activityEntries: MetadataRoute.Sitemap = activities.map((a) => ({
-    url: `${SITE_URL}/actividades/${a.id}`,
-    lastModified: a.updatedAt,
-    changeFrequency: 'weekly',
-    priority: 0.7,
-  }));
-
-  const staticPages: MetadataRoute.Sitemap = [
+  // Rutas estáticas (siempre presentes)
+  const staticRoutes: MetadataRoute.Sitemap = [
     {
-      url: SITE_URL,
+      url: `${baseUrl}/`,
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 1,
     },
     {
-      url: `${SITE_URL}/actividades`,
+      url: `${baseUrl}/actividades`,
       lastModified: new Date(),
-      changeFrequency: 'daily',
+      changeFrequency: 'hourly',
       priority: 0.9,
     },
     {
-      url: `${SITE_URL}/privacidad`,
+      url: `${baseUrl}/contacto`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.3,
+      priority: 0.7,
     },
     {
-      url: `${SITE_URL}/terminos`,
+      url: `${baseUrl}/contribuir`,
+      lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.3,
+      priority: 0.7,
     },
     {
-      url: `${SITE_URL}/tratamiento-datos`,
-      changeFrequency: 'monthly',
-      priority: 0.3,
+      url: `${baseUrl}/privacidad`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
     },
     {
-      url: `${SITE_URL}/contacto`,
-      changeFrequency: 'monthly',
-      priority: 0.4,
+      url: `${baseUrl}/terminos`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/tratamiento-datos`,
+      lastModified: new Date(),
+      changeFrequency: 'yearly',
+      priority: 0.5,
     },
   ];
 
-  return [...staticPages, ...activityEntries];
+  // Rutas dinámicas: actividades individuales (ACTIVE solamente, no EXPIRED)
+  const activities = await prisma.activity.findMany({
+    where: { status: 'ACTIVE' },
+    select: { id: true, updatedAt: true },
+    orderBy: { updatedAt: 'desc' },
+  });
+
+  const dynamicRoutes = activities.map((activity) => ({
+    url: `${baseUrl}/actividades/${activity.id}`,
+    lastModified: activity.updatedAt,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticRoutes, ...dynamicRoutes];
 }

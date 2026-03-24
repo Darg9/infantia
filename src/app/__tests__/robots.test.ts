@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import robots from '../robots';
 
+// Tests for robots.txt generation
 describe('robots()', () => {
   it('retorna un objeto con rules', () => {
     const result = robots();

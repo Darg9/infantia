@@ -79,6 +79,9 @@ export default async function HomePage() {
                 <span className="text-sm font-medium text-gray-700 group-hover:text-indigo-700 transition-colors">
                   {cat.name}
                 </span>
+                <span className="text-xs text-gray-400">
+                  {cat._count.activities} actividades
+                </span>
               </a>
             ))}
           </div>

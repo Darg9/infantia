@@ -1,4 +1,4 @@
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -19,17 +19,12 @@ function calcAge(birthDate: Date): number {
 export default async function HijosPage() {
   const user = await requireAuth()
 
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseAuthId: user.id },
-    select: { id: true },
-  })
+  const dbUser = await getOrCreateDbUser(user)
 
-  const children = dbUser
-    ? await prisma.child.findMany({
-        where: { userId: dbUser.id },
-        orderBy: { createdAt: 'asc' },
-      })
-    : []
+  const children = await prisma.child.findMany({
+    where: { userId: dbUser.id },
+    orderBy: { createdAt: 'asc' },
+  })
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">

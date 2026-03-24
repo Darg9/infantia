@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { StarRating } from '@/components/StarRating'
@@ -11,18 +11,7 @@ export const metadata: Metadata = {
 export default async function CalificacionesPage() {
   const user = await requireAuth()
 
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseAuthId: user.id },
-    select: { id: true },
-  })
-
-  if (!dbUser) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-gray-500">Usuario no encontrado.</p>
-      </div>
-    )
-  }
+  const dbUser = await getOrCreateDbUser(user)
 
   const ratings = await prisma.rating.findMany({
     where: { userId: dbUser.id },

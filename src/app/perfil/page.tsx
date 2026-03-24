@@ -1,23 +1,17 @@
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 
 export default async function PerfilPage() {
   const user = await requireAuth()
 
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseAuthId: user.id },
-    select: { id: true, name: true, email: true, role: true },
-  })
+  const dbUser = await getOrCreateDbUser(user)
 
-  // Counts in parallel
-  const [favoritesCount, childrenCount, ratingsCount] = dbUser
-    ? await Promise.all([
-        prisma.favorite.count({ where: { userId: dbUser.id } }),
-        prisma.child.count({ where: { userId: dbUser.id } }),
-        prisma.rating.count({ where: { userId: dbUser.id } }),
-      ])
-    : [0, 0, 0]
+  const [favoritesCount, childrenCount, ratingsCount] = await Promise.all([
+    prisma.favorite.count({ where: { userId: dbUser.id } }),
+    prisma.child.count({ where: { userId: dbUser.id } }),
+    prisma.rating.count({ where: { userId: dbUser.id } }),
+  ])
 
   const stats = [
     { label: 'Favoritos', count: favoritesCount, href: '/perfil/favoritos', icon: '❤️', color: 'rose' },

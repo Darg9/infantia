@@ -4,7 +4,7 @@
 // =============================================================================
 
 import type { Metadata } from 'next';
-import { requireAuth } from '@/lib/auth';
+import { requireAuth, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 
@@ -16,18 +16,7 @@ export const metadata: Metadata = {
 export default async function FavoritosPage() {
   const user = await requireAuth();
 
-  const dbUser = await prisma.user.findUnique({
-    where: { supabaseAuthId: user.id },
-    select: { id: true },
-  });
-
-  if (!dbUser) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <p className="text-gray-500">Usuario no encontrado.</p>
-      </div>
-    );
-  }
+  const dbUser = await getOrCreateDbUser(user);
 
   const favorites = await prisma.favorite.findMany({
     where: { userId: dbUser.id },

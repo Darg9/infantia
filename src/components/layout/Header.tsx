@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { getSessionWithRole } from '@/lib/auth'
-import { LogoutButton } from '@/components/LogoutButton'
+import { UserMenu } from '@/components/layout/UserMenu'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -15,43 +15,19 @@ export async function Header() {
         </Link>
 
         {/* Nav */}
-        <nav className="flex items-center gap-4 text-sm">
+        <nav className="flex items-center gap-6 text-sm">
           <Link href="/actividades" className="text-gray-600 hover:text-gray-900 transition-colors">
             Actividades
           </Link>
 
           {session ? (
-            <>
-              {session.role === 'admin' && (
-                <Link
-                  href="/admin"
-                  className="text-orange-600 hover:text-orange-700 font-medium transition-colors"
-                >
-                  Admin
-                </Link>
-              )}
-
-              <Link href="/perfil" className="text-gray-600 hover:text-gray-900 transition-colors">
-                Mi perfil
-              </Link>
-
-              <div className="flex items-center gap-2 ml-2">
-                {avatarUrl ? (
-                  <img
-                    src={avatarUrl}
-                    alt="Avatar"
-                    className="w-7 h-7 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-7 h-7 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-semibold">
-                    {(session.user.email?.[0] ?? '?').toUpperCase()}
-                  </div>
-                )}
-                <LogoutButton />
-              </div>
-            </>
+            <UserMenu
+              email={session.user.email ?? ''}
+              avatarUrl={avatarUrl}
+              isAdmin={session.role === 'admin'}
+            />
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <Link
                 href="/login"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors"

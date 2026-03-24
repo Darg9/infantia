@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { prisma } from '@/lib/db'
 import { UserRole } from '@/generated/prisma/client'
+import type { User } from '@supabase/supabase-js'
 
 export async function getSession() {
   const supabase = await createSupabaseServerClient()
@@ -22,6 +24,28 @@ export async function getSessionWithRole() {
   const role = (user.app_metadata?.role as string | undefined) ?? 'parent'
 
   return { user, role }
+}
+
+/**
+ * Obtiene o crea el registro del usuario en la tabla `users`.
+ * Úsalo en las páginas del perfil en lugar de prisma.user.findUnique.
+ */
+export async function getOrCreateDbUser(authUser: User) {
+  const name =
+    authUser.user_metadata?.full_name ??
+    authUser.user_metadata?.name ??
+    authUser.email?.split('@')[0] ??
+    'Usuario'
+  return prisma.user.upsert({
+    where: { supabaseAuthId: authUser.id },
+    create: {
+      supabaseAuthId: authUser.id,
+      email: authUser.email ?? '',
+      name,
+      role: 'PARENT',
+    },
+    update: {},
+  })
 }
 
 export async function requireAuth() {

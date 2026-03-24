@@ -2,6 +2,7 @@ import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { ActivityNLPResult, BatchPipelineResult } from './types';
+import { calculateSimilarity, normalizeString } from './deduplication';
 
 // Prisma client propio para scripts standalone (no usa el singleton de Next.js)
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -54,7 +55,19 @@ export class ScrapingStorage {
         });
       }
 
-      // 3. Crear o actualizar Activity (upsert por sourceUrl)
+      // 3. Detectar duplicados potenciales (por similitud)
+      const potentialDuplicate = await this.findPotentialDuplicate(
+        data.title,
+        data.schedules?.[0]?.startDate
+      );
+
+      if (potentialDuplicate) {
+        console.log(`[STORAGE] ⚠️ Duplicado detectado: "${data.title}" es similar a "${potentialDuplicate.title}"`);
+        console.log(`          Reutilizando ID existente: ${potentialDuplicate.id}`);
+        return potentialDuplicate.id;
+      }
+
+      // 4. Crear o actualizar Activity (upsert por sourceUrl)
       const existing = await prisma.activity.findFirst({
         where: { sourceUrl },
       });
@@ -215,6 +228,52 @@ export class ScrapingStorage {
           // Ignorar duplicados silenciosamente
         }
       }
+    }
+  }
+
+  /**
+   * Busca actividades potencialmente duplicadas por similitud de título
+   * Si encuentra una con >75% de similitud y fecha cercana, la retorna
+   */
+  private async findPotentialDuplicate(
+    title: string,
+    startDate?: string,
+  ): Promise<{ id: string; title: string } | null> {
+    try {
+      const normalizedTitle = normalizeString(title);
+
+      // Obtener últimas 100 actividades (búsqueda rápida)
+      const recent = await prisma.activity.findMany({
+        select: { id: true, title: true, startDate: true },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      for (const existing of recent) {
+        const existingNormalized = normalizeString(existing.title);
+        const similarity = calculateSimilarity(normalizedTitle, existingNormalized);
+
+        // Si >75% similar, considerar duplicado
+        if (similarity > 75) {
+          // Verificar que las fechas sean cercanas (dentro de 30 días)
+          if (startDate && existing.startDate) {
+            const newDate = new Date(startDate);
+            const existingDate = new Date(existing.startDate);
+            const daysDiff = Math.abs(newDate.getTime() - existingDate.getTime()) / (1000 * 60 * 60 * 24);
+
+            if (daysDiff <= 30) {
+              return { id: existing.id, title: existing.title };
+            }
+          } else if (!startDate || !existing.startDate) {
+            // Si alguna no tiene fecha, confiar en la similitud
+            return { id: existing.id, title: existing.title };
+          }
+        }
+      }
+
+      return null;
+    } catch {
+      return null; // En caso de error, permitir crear la actividad
     }
   }
 

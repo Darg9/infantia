@@ -20,7 +20,7 @@ export default async function FavoritosPage() {
 
   const favorites = await prisma.favorite.findMany({
     where: { userId: dbUser.id },
-    orderBy: { createdAt: 'desc' },
+    orderBy: [{ activity: { status: 'asc' } }, { createdAt: 'desc' }],
     include: {
       activity: {
         include: {
@@ -41,9 +41,11 @@ export default async function FavoritosPage() {
   });
 
   const activities = favorites.map((f) => f.activity);
+  const activeCount = activities.filter((a) => a.status === 'ACTIVE').length;
+  const expiredCount = activities.filter((a) => a.status === 'EXPIRED').length;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-6">
+    <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Mis favoritos</h1>
@@ -53,6 +55,15 @@ export default async function FavoritosPage() {
           </span>
         )}
       </div>
+
+      {/* Aviso si hay expiradas */}
+      {expiredCount > 0 && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          {expiredCount === 1
+            ? '1 actividad puede haber expirado o cambiado. Aparece al final.'
+            : `${expiredCount} actividades pueden haber expirado o cambiado. Aparecen al final.`}
+        </div>
+      )}
 
       {/* Grid or empty state */}
       {activities.length === 0 ? (

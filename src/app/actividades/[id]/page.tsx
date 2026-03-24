@@ -296,16 +296,14 @@ export default async function ActividadDetallePage({
             <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
               {TYPE_LABELS[activity.type] ?? activity.type}
             </span>
-            <span className={clsx(
-              'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
-              priceLabel === 'Gratis'
-                ? 'bg-emerald-500 text-white'
-                : priceLabel === 'No disponible'
-                ? 'bg-gray-200 text-gray-500'
-                : 'bg-white/90 text-gray-700'
-            )}>
-              {priceLabel}
-            </span>
+            {priceLabel !== 'No disponible' && (
+              <span className={clsx(
+                'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
+                priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
+              )}>
+                {priceLabel}
+              </span>
+            )}
           </div>
         </div>
 

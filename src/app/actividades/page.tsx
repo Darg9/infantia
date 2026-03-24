@@ -12,6 +12,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import ActivityCard from './_components/ActivityCard';
 import Filters from './_components/Filters';
 import Pagination from './_components/Pagination';
+import { EmptyState } from './_components/EmptyState';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -162,10 +163,10 @@ export default async function ActividadesPage({
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
   };
 
-  // Cargar actividades, facets, sesión y favoriteIds en paralelo
+  // Cargar actividades, facets, sesión y categorías populares en paralelo
   let favoriteIds = new Set<string>();
 
-  const [{ activities, total }, facets, sessionUser] = await Promise.all([
+  const [{ activities, total }, facets, sessionUser, topCategories] = await Promise.all([
     listActivities({
       skip,
       pageSize: PAGE_SIZE,
@@ -173,6 +174,13 @@ export default async function ActividadesPage({
     }),
     getFacets(filters),
     getSession(),
+    // Top 6 categorías globales (para empty state)
+    prisma.category.groupBy({
+      by: ['id', 'name'],
+      where: { activities: { some: { activity: { status: { in: ['ACTIVE', 'EXPIRED'] } } } } },
+      orderBy: { _count: { id: 'desc' } },
+      take: 6,
+    }),
   ]);
 
   // Si hay sesión, obtener los favoriteIds del usuario (query adicional pero inevitable)
@@ -220,11 +228,20 @@ export default async function ActividadesPage({
 
         {/* Grid */}
         {activities.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-3 text-center">
-            <span className="text-5xl">🔍</span>
-            <p className="text-gray-600 font-medium">No encontramos actividades con esos filtros</p>
-            <p className="text-sm text-gray-400">Intenta cambiar la búsqueda o el rango de edad</p>
-          </div>
+          <EmptyState
+            search={filters.search}
+            ageMin={filters.ageMin}
+            ageMax={filters.ageMax}
+            categoryId={filters.categoryId}
+            categoryName={
+              filters.categoryId
+                ? facets.validCategories.find((c) => c.id === filters.categoryId)?.name
+                : undefined
+            }
+            type={filters.type}
+            audience={filters.audience}
+            popularCategories={topCategories}
+          />
         ) : (
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {activities.map((activity) => (

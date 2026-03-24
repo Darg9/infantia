@@ -124,8 +124,8 @@ export default function Filters({
   );
 
   return (
-    <div className="flex flex-col gap-3">
-      {/* Fila 1: búsqueda + edad */}
+    <div className="flex flex-col gap-2">
+      {/* Fila 1: búsqueda + edad + audiencia */}
       <div className="flex flex-col sm:flex-row gap-2">
 
         {/* Búsqueda */}
@@ -164,12 +164,16 @@ export default function Filters({
             </option>
           ))}
         </select>
+      </div>
+
+      {/* Fila 2: tipo + categoría + limpiar */}
+      <div className="flex flex-col sm:flex-row gap-2">
 
         {/* Tipo — facetado */}
         <select
           value={type}
           onChange={e => handleTypeChange(e.target.value)}
-          className={selectCls(type !== '', 'sm:w-40')}
+          className={selectCls(type !== '', 'sm:w-44')}
         >
           <option value="">Todos los tipos</option>
           {visibleTypes.map(t => {
@@ -184,7 +188,7 @@ export default function Filters({
         <select
           value={categoryId}
           onChange={e => handleCategoryChange(e.target.value)}
-          className={selectCls(categoryId !== '', 'sm:w-48')}
+          className={selectCls(categoryId !== '', 'sm:w-56')}
         >
           <option value="">Todas las categorías</option>
           {facets.validCategories.map(c => (
@@ -209,7 +213,6 @@ export default function Filters({
           ? 'No se encontraron actividades'
           : `${total} actividad${total !== 1 ? 'es' : ''} encontrada${total !== 1 ? 's' : ''}`
         }
-        {hasFilters && <span className="text-indigo-600"> (con filtros activos)</span>}
       </p>
     </div>
   );

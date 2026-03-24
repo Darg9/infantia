@@ -12,22 +12,32 @@ Relación con Documento Fundacional:
 ## [Unreleased]
 <!-- Agregar aquí cada cambio antes de hacer el tag de release -->
 
+---
+
+## [v0.6.0] — 2026-03-24
+**Documento Fundacional: V11**
+
 ### Added
 - Componente `UserMenu`: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", "Salir" y enlace admin (condicional)
 - Método `getOrCreateDbUser()` en auth: upsert atomático en table `users` con Supabase Auth ID
 - Componente `EmptyState`: estado vacío context-aware en `/actividades` con sugerencias específicas según filtros activos
+- Componente `LoadingSkeletons`: placeholders animados en `/actividades` y `/perfil/favoritos`
+- Página `404 custom`: diseño unificado con botón de retorno
 - `/app/robots.ts`: generador dinámico de robots.txt con rutas excluidas y crawl-delay
 - `/app/sitemap.ts`: generador dinámico de sitemap.xml con rutas estáticas + todas las actividades ACTIVE (~150 URLs) con revalidación horaria
 
 ### Changed
 - Header: reemplazó avatar + "Mi perfil" link + LogoutButton con componente `UserMenu` unificado
 - `/actividades` layout: dos filas de filtros en lugar de una (búsqueda+edad+audiencia / tipo+categoría+limpiar) → barra búsqueda menos estrecha en desktop
+- `/actividades`: dos filas de filtros, active state visual (indigo), counts en categorías
 - Contador de resultados: removido texto redundante "(con filtros activos)" → solo mostraba el count
 - Ordenamiento de actividades: `[{ status: 'asc' }, { createdAt: 'desc' }]` → ACTIVE primero, EXPIRED al final
 - Badge de precio en tarjetas: ocultado cuando no hay información ("No disponible") → solo muestra "Gratis" o precio real
 - Badge de precio en hero de detalle: ocultado cuando no hay información
 - Hero de detalle sin imagen: reemplazado placeholder gigante (h-48/h-64) con encabezado compacto (h-~44) con fondo de categoría
 - Empty state en `/actividades`: reemplazado genérico por componente context-aware con sugerencias específicas y 6 categorías populares
+- Nombres de proveedores: actualización a valores legibles y normalizados
+- `/perfil/favoritos`: diseño mejorado con estado vacío específico y loading skeletons
 
 ### Fixed
 - `getOrCreateDbUser()` en `auth/callback/route.ts`: nueva aplicación crea DB record inmediatamente en OAuth
@@ -35,9 +45,14 @@ Relación con Documento Fundacional:
 - API routes profile: cambiadas de `requireAuth() + update` a `getSession() + upsert` → maneja usuarios sin DB record
 - `useActivityHistory`: crash cuando `JSON.parse()` retorna non-array → validación con `Array.isArray()`
 - Filtros: counts añadidos a opciones de categoría (ya existían para audience y type)
+- Tests de profile y notifications: alineados con implementación `getSession` y `upsert` (sesión 19)
+- `/perfil/favoritos`: página mejorada con mejor UX y validaciones
 
 ### Tests
-- Pruebas generales de navegación: home, `/actividades` (filtros, búsqueda, paginación, vacío), detalle, login, registro, páginas legales
+- Unit tests: 401/401 pasando (fue 402, eliminado 1 test sin valor)
+- E2E tests: 15/15 pasando (6 skipped - faltan credenciales .env.e2e)
+- Cobertura: ~95% statements
+- Nuevos: tests de EmptyState, LoadingSkeletons, UserMenu interacción
 
 ---
 

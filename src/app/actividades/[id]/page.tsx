@@ -278,34 +278,46 @@ export default async function ActividadDetallePage({
 
       <div className="mx-auto max-w-4xl px-4 py-4 flex flex-col gap-6">
 
-        {/* Hero: imagen o placeholder de color */}
-        <div className={clsx('relative h-48 sm:h-64 rounded-2xl overflow-hidden flex items-center justify-center', bgColor)}>
-          {activity.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
+        {/* Hero: imagen real O encabezado compacto */}
+        {activity.imageUrl ? (
+          <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={activity.imageUrl}
               alt={activity.title}
               className="h-full w-full object-cover"
             />
-          ) : (
-            <span className="text-8xl select-none opacity-50">🎨</span>
-          )}
-
-          {/* Badges */}
-          <div className="absolute top-3 left-3 flex gap-2">
-            <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
-              {TYPE_LABELS[activity.type] ?? activity.type}
-            </span>
-            {priceLabel !== 'No disponible' && (
-              <span className={clsx(
-                'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
-                priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
-              )}>
-                {priceLabel}
+            <div className="absolute top-3 left-3 flex gap-2">
+              <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
+                {TYPE_LABELS[activity.type] ?? activity.type}
               </span>
-            )}
+              {priceLabel !== 'No disponible' && (
+                <span className={clsx(
+                  'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
+                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
+                )}>
+                  {priceLabel}
+                </span>
+              )}
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className={clsx('rounded-2xl border border-gray-100 overflow-hidden', bgColor)}>
+            <div className="px-5 py-3 flex flex-wrap gap-2 items-center">
+              <span className="rounded-full bg-white/80 border border-white/60 px-3 py-1 text-xs font-medium text-gray-700">
+                {TYPE_LABELS[activity.type] ?? activity.type}
+              </span>
+              {priceLabel !== 'No disponible' && (
+                <span className={clsx(
+                  'rounded-full px-3 py-1 text-xs font-semibold',
+                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/80 text-gray-700'
+                )}>
+                  {priceLabel}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 

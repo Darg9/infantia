@@ -7,15 +7,15 @@ vi.mock('next/server', () => ({
   },
 }))
 
-const { mockRequireAuth, mockPrisma } = vi.hoisted(() => {
-  const mockRequireAuth = vi.fn()
+const { mockGetSession, mockPrisma } = vi.hoisted(() => {
+  const mockGetSession = vi.fn()
   const mockPrisma = {
-    user: { findUnique: vi.fn(), update: vi.fn() },
+    user: { findUnique: vi.fn(), upsert: vi.fn() },
   }
-  return { mockRequireAuth, mockPrisma }
+  return { mockGetSession, mockPrisma }
 })
 
-vi.mock('@/lib/auth', () => ({ requireAuth: mockRequireAuth }))
+vi.mock('@/lib/auth', () => ({ getSession: mockGetSession }))
 vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
 
 import { GET, PUT } from '../route'
@@ -31,7 +31,7 @@ describe('GET /api/profile/notifications', () => {
   beforeEach(() => vi.clearAllMocks())
 
   it('returns prefs from DB merged with defaults', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue({
       notificationPrefs: { email: false, frequency: 'weekly' },
     })
@@ -56,20 +56,28 @@ describe('GET /api/profile/notifications', () => {
     })
   })
 
-  it('returns 404 when user not found', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+  it('returns default prefs when user not found in DB', async () => {
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(null)
 
     await GET()
 
-    expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Usuario no encontrado' },
-      { status: 404 }
-    )
+    expect(mockJson).toHaveBeenCalledWith({
+      prefs: {
+        email: true,
+        push: true,
+        frequency: 'daily',
+        categories: {
+          newActivities: true,
+          favoritesUpdates: true,
+          providerAnnouncements: false,
+        },
+      },
+    })
   })
 
   it('returns 401 when not authenticated', async () => {
-    mockRequireAuth.mockRejectedValue(new Error('No auth'))
+    mockGetSession.mockResolvedValue(null)
 
     await GET()
 
@@ -95,26 +103,28 @@ describe('PUT /api/profile/notifications', () => {
   }
 
   it('successfully updates prefs', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.update.mockResolvedValue({})
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
+    mockPrisma.user.upsert.mockResolvedValue({})
 
     await PUT(makeRequest(validBody) as any)
 
-    expect(mockPrisma.user.update).toHaveBeenCalledWith({
-      where: { supabaseAuthId: 'auth-user-123' },
-      data: {
-        notificationPrefs: {
-          email: true,
-          push: false,
-          frequency: 'weekly',
-          categories: {
-            newActivities: true,
-            favoritesUpdates: false,
-            providerAnnouncements: true,
+    expect(mockPrisma.user.upsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { supabaseAuthId: 'auth-user-123' },
+        update: {
+          notificationPrefs: {
+            email: true,
+            push: false,
+            frequency: 'weekly',
+            categories: {
+              newActivities: true,
+              favoritesUpdates: false,
+              providerAnnouncements: true,
+            },
           },
         },
-      },
-    })
+      })
+    )
     expect(mockJson).toHaveBeenCalledWith({
       success: true,
       prefs: {
@@ -131,7 +141,7 @@ describe('PUT /api/profile/notifications', () => {
   })
 
   it('returns 400 when email is not a boolean', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
 
     await PUT(makeRequest({ ...validBody, email: 'yes' }) as any)
 
@@ -139,11 +149,11 @@ describe('PUT /api/profile/notifications', () => {
       { error: 'email y push deben ser booleanos' },
       { status: 400 }
     )
-    expect(mockPrisma.user.update).not.toHaveBeenCalled()
+    expect(mockPrisma.user.upsert).not.toHaveBeenCalled()
   })
 
   it('returns 400 when frequency is invalid', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
 
     await PUT(makeRequest({ ...validBody, frequency: 'monthly' }) as any)
 
@@ -151,11 +161,11 @@ describe('PUT /api/profile/notifications', () => {
       { error: 'frequency debe ser daily, weekly o none' },
       { status: 400 }
     )
-    expect(mockPrisma.user.update).not.toHaveBeenCalled()
+    expect(mockPrisma.user.upsert).not.toHaveBeenCalled()
   })
 
   it('returns 400 when categories is not an object', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
 
     await PUT(makeRequest({ ...validBody, categories: 'invalid' }) as any)
 
@@ -163,17 +173,17 @@ describe('PUT /api/profile/notifications', () => {
       { error: 'categories debe ser un objeto' },
       { status: 400 }
     )
-    expect(mockPrisma.user.update).not.toHaveBeenCalled()
+    expect(mockPrisma.user.upsert).not.toHaveBeenCalled()
   })
 
-  it('returns 500 when not authenticated', async () => {
-    mockRequireAuth.mockRejectedValue(new Error('No auth'))
+  it('returns 401 when not authenticated', async () => {
+    mockGetSession.mockResolvedValue(null)
 
     await PUT(makeRequest(validBody) as any)
 
     expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Error al actualizar preferencias' },
-      { status: 500 }
+      { error: 'No autorizado' },
+      { status: 401 }
     )
   })
 })

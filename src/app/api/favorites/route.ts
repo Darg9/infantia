@@ -4,7 +4,7 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth'
+import { getSession, requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 export async function GET() {
@@ -34,7 +34,10 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await requireAuth()
+    const user = await getSession()
+    if (!user) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
+    }
 
     const dbUser = await prisma.user.findUnique({
       where: { supabaseAuthId: user.id },

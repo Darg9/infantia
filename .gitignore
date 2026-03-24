@@ -58,6 +58,11 @@ test-results.json
 ts-errors.txt
 ts-admin-errors.txt
 
+# ─── Playwright E2E ────────────────────────────────────────────
+/playwright-report/
+/test-results/
+e2e/.auth/
+
 # ─── Claude Code internals ─────────────────────────────────────
 .agents/
 .claude/

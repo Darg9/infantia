@@ -8,8 +8,9 @@ vi.mock('next/server', () => ({
   },
 }))
 
-const { mockRequireAuth, mockPrisma } = vi.hoisted(() => {
+const { mockRequireAuth, mockGetSession, mockPrisma } = vi.hoisted(() => {
   const mockRequireAuth = vi.fn()
+  const mockGetSession = vi.fn()
   const mockPrisma = {
     user: { findUnique: vi.fn() },
     activity: { findUnique: vi.fn() },
@@ -20,10 +21,10 @@ const { mockRequireAuth, mockPrisma } = vi.hoisted(() => {
       delete: vi.fn(),
     },
   }
-  return { mockRequireAuth, mockPrisma }
+  return { mockRequireAuth, mockGetSession, mockPrisma }
 })
 
-vi.mock('@/lib/auth', () => ({ requireAuth: mockRequireAuth }))
+vi.mock('@/lib/auth', () => ({ requireAuth: mockRequireAuth, getSession: mockGetSession }))
 vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
 
 import { NextResponse } from 'next/server'
@@ -125,6 +126,7 @@ describe('GET /api/favorites', () => {
 
 describe('POST /api/favorites', () => {
   beforeEach(() => {
+    mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1 })
@@ -208,12 +210,12 @@ describe('POST /api/favorites', () => {
   })
 
   it('retorna 401 si no hay sesión autenticada', async () => {
-    mockRequireAuth.mockRejectedValue(new Error('No auth'))
+    mockGetSession.mockResolvedValue(null)
     const req = makeRequest({ activityId: ACTIVITY_ID_1 })
 
     await POST(req as any)
 
-    expect(mockJson).toHaveBeenCalledWith({ error: 'Error al guardar favorito' }, { status: 500 })
+    expect(mockJson).toHaveBeenCalledWith({ error: 'No autorizado' }, { status: 401 })
     expect(mockPrisma.favorite.upsert).not.toHaveBeenCalled()
   })
 

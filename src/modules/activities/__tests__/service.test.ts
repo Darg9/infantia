@@ -6,16 +6,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // --- vi.hoisted garantiza que los mocks estén listos ANTES del hoisting de vi.mock ---
-const { mockFindMany, mockCount, mockFindUnique, mockCreate, mockUpdate } = vi.hoisted(() => ({
+const { mockFindMany, mockCount, mockFindUnique, mockCreate, mockUpdate, mockQueryRaw } = vi.hoisted(() => ({
   mockFindMany: vi.fn(),
   mockCount: vi.fn(),
   mockFindUnique: vi.fn(),
   mockCreate: vi.fn(),
   mockUpdate: vi.fn(),
+  mockQueryRaw: vi.fn(),
 }));
 
 vi.mock('@/lib/db', () => ({
   prisma: {
+    $queryRaw: mockQueryRaw,
     activity: {
       findMany: mockFindMany,
       count: mockCount,
@@ -146,20 +148,28 @@ describe('listActivities()', () => {
     );
   });
 
-  it('aplica búsqueda por texto al where', async () => {
+  it('aplica búsqueda por texto con pg_trgm (fuzzy)', async () => {
+    const matchingId = 'abc-123';
+    mockQueryRaw.mockResolvedValue([{ id: matchingId }]);
     await listActivities({ skip: 0, pageSize: 20, search: 'natación' });
+
+    // Verifica que se llamó a $queryRaw para la búsqueda fuzzy
+    expect(mockQueryRaw).toHaveBeenCalledTimes(1);
+
+    // Verifica que el where filtra por los IDs devueltos por pg_trgm
     const whereArg = mockFindMany.mock.calls[0][0].where;
-    // search va dentro de AND como condición OR (evita conflicto con filtros de age)
     expect(whereArg.AND).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          OR: expect.arrayContaining([
-            { title: { contains: 'natación', mode: 'insensitive' } },
-            { description: { contains: 'natación', mode: 'insensitive' } },
-          ]),
-        }),
+        { id: { in: [matchingId] } },
       ])
     );
+  });
+
+  it('retorna vacío si la búsqueda pg_trgm no encuentra coincidencias', async () => {
+    mockQueryRaw.mockResolvedValue([]);
+    const result = await listActivities({ skip: 0, pageSize: 20, search: 'xyznoexiste' });
+    expect(result).toEqual({ activities: [], total: 0 });
+    expect(mockFindMany).not.toHaveBeenCalled();
   });
 
   it('aplica solo priceMin cuando no hay priceMax', async () => {

@@ -81,12 +81,22 @@ export async function listActivities(params: ListParams) {
   }
 
   if (params.search) {
-    andConditions.push({
-      OR: [
-        { title: { contains: params.search, mode: 'insensitive' } },
-        { description: { contains: params.search, mode: 'insensitive' } },
-      ],
-    });
+    // pg_trgm: búsqueda fuzzy con tolerancia a errores tipográficos
+    // Combina ILIKE (coincidencia exacta de substring) + similarity (fuzzy)
+    const searchPattern = `%${params.search}%`;
+    const searchResults = await prisma.$queryRaw<{ id: string }[]>`
+      SELECT id FROM activities
+      WHERE
+        title ILIKE ${searchPattern}
+        OR description ILIKE ${searchPattern}
+        OR similarity(title, ${params.search}) > 0.2
+      LIMIT 500
+    `;
+    const matchingIds = searchResults.map((r) => r.id);
+    if (matchingIds.length === 0) {
+      return { activities: [], total: 0 };
+    }
+    andConditions.push({ id: { in: matchingIds } });
   }
 
   if (andConditions.length) {

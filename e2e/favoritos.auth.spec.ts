@@ -9,6 +9,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Favoritos (sin autenticación)', () => {
+  // Limpiar auth state para que este describe funcione en ambos proyectos
+  test.use({ storageState: { cookies: [], origins: [] } });
+
   test('clic en favorito redirige a login si no hay sesión', async ({ page }) => {
     await page.goto('/actividades');
     await page.waitForSelector('main');
@@ -78,8 +81,10 @@ test.describe('Favoritos (con autenticación)', () => {
       page.locator('[aria-label="Quitar de favoritos"]').first()
     ).toBeVisible({ timeout: 5_000 });
 
-    // Ir a perfil > favoritos
+    // Ir a perfil > favoritos — verificar que hay al menos un favorito
     await page.goto('/perfil/favoritos');
-    await expect(page.getByText(/favorit/i)).toBeVisible();
+    await expect(
+      page.locator('[aria-label="Quitar de favoritos"]').first()
+    ).toBeVisible({ timeout: 8_000 });
   });
 });

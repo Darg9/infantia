@@ -30,7 +30,7 @@ export const ActivityDigestEmail = ({
   activities,
   period = 'daily',
 }: ActivityDigestEmailProps) => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://infantia.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://infantia-activities.vercel.app';
   const periodLabel = period === 'daily' ? 'hoy' : 'esta semana';
 
   return (

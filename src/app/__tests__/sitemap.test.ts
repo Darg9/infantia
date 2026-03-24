@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import { SITE_URL } from '@/config/site';
 
 // vi.hoisted garantiza que las variables estén disponibles dentro del factory de vi.mock
 const { mockFindMany } = vi.hoisted(() => {
@@ -26,14 +27,14 @@ describe('sitemap()', () => {
 
   it('incluye la ruta raíz con prioridad 1', async () => {
     const result = await sitemap();
-    const home = result.find(r => r.url === 'https://infantia.app/');
+    const home = result.find(r => r.url === `${SITE_URL}/`);
     expect(home).toBeDefined();
     expect(home?.priority).toBe(1);
   });
 
   it('incluye /actividades con prioridad 0.9', async () => {
     const result = await sitemap();
-    const actividades = result.find(r => r.url === 'https://infantia.app/actividades');
+    const actividades = result.find(r => r.url === `${SITE_URL}/actividades`);
     expect(actividades).toBeDefined();
     expect(actividades?.priority).toBe(0.9);
   });
@@ -41,16 +42,16 @@ describe('sitemap()', () => {
   it('incluye rutas legales', async () => {
     const result = await sitemap();
     const urls = result.map(r => r.url);
-    expect(urls).toContain('https://infantia.app/privacidad');
-    expect(urls).toContain('https://infantia.app/terminos');
-    expect(urls).toContain('https://infantia.app/tratamiento-datos');
+    expect(urls).toContain(`${SITE_URL}/privacidad`);
+    expect(urls).toContain(`${SITE_URL}/terminos`);
+    expect(urls).toContain(`${SITE_URL}/tratamiento-datos`);
   });
 
   it('incluye rutas dinámicas de actividades', async () => {
     const result = await sitemap();
     const urls = result.map(r => r.url);
-    expect(urls).toContain('https://infantia.app/actividades/act-1');
-    expect(urls).toContain('https://infantia.app/actividades/act-2');
+    expect(urls).toContain(`${SITE_URL}/actividades/act-1`);
+    expect(urls).toContain(`${SITE_URL}/actividades/act-2`);
   });
 
   it('las rutas de actividades tienen prioridad 0.8', async () => {

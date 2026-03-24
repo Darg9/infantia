@@ -5,11 +5,12 @@
 
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
+import { SITE_URL } from '@/config/site';
 
 export const revalidate = 3600; // Revalidar cada hora
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://infantia.app';
+  const baseUrl = SITE_URL;
 
   // Rutas estáticas (siempre presentes)
   const staticRoutes: MetadataRoute.Sitemap = [

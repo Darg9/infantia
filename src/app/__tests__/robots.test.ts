@@ -9,9 +9,9 @@ describe('robots()', () => {
     expect(Array.isArray(result.rules) || typeof result.rules === 'object').toBe(true);
   });
 
-  it('apunta al sitemap de infantia.app', () => {
+  it('apunta a un sitemap.xml válido', () => {
     const result = robots();
-    expect(result.sitemap).toBe('https://infantia.app/sitemap.xml');
+    expect(result.sitemap).toMatch(/^https?:\/\/.+\/sitemap\.xml$/);
   });
 
   it('permite crawling en /', () => {

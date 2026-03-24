@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { SITE_URL } from '@/config/site'
 
 interface ShareButtonProps {
   id: string
@@ -26,8 +27,6 @@ export function ShareButton({
   useEffect(() => {
     setSupportsWebShare(!!navigator.share)
   }, [])
-
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://infantia.co'
 
   const ageLabel =
     ageMin != null && ageMax != null

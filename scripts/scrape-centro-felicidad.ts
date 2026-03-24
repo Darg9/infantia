@@ -59,12 +59,14 @@ function createActivityData(event: EventCard): ActivityNLPResult {
       {
         startDate,
         endDate: new Date(new Date(startDate).getTime() + 2 * 60 * 60 * 1000).toISOString(),
-        frequency: 'once',
-        timeSlot: '3:00 PM - 5:00 PM',
+        notes: '3:00 PM - 5:00 PM',
       }
     ],
     confidenceScore: 0.95,
-    location: 'Centro Felicidad Chapinero, Bogotá',
+    location: {
+      address: 'Centro Felicidad Chapinero',
+      city: 'Bogotá',
+    },
   };
 }
 

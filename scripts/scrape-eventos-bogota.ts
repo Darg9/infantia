@@ -84,7 +84,7 @@ async function scrapeEventsFromPage(): Promise<EventCard[]> {
         const title = titleMatch ? titleMatch[1].substring(0, 100) : `Evento ${idx + 1}`;
 
         // Extraer descripción (texto después del título)
-        const descMatch = text.match(/(?:^.{0,100})?([A-Z][^.]{20,200}\.)/s);
+        const descMatch = text.match(/(?:^[\s\S]{0,100})?([A-Z][^.]{20,200}\.)/);
         const description = descMatch ? descMatch[1].substring(0, 300) : text.substring(0, 300);
 
         // Filtrar: eventos de CEFEs o que mencionen Bogotá
@@ -289,12 +289,14 @@ function createActivityData(event: EventCard): ActivityNLPResult {
       {
         startDate: startDate.toISOString(),
         endDate: new Date(startDate.getTime() + 2 * 60 * 60 * 1000).toISOString(),
-        frequency: 'once',
-        timeSlot: '3:00 PM - 5:00 PM',
+        notes: '3:00 PM - 5:00 PM',
       }
     ],
     confidenceScore: 0.9,
-    location: 'Centro de Felicidad, Bogotá',
+    location: {
+      address: 'Centro de Felicidad',
+      city: 'Bogotá',
+    },
   };
 }
 
@@ -356,7 +358,7 @@ async function main() {
           activityData,
           sourceUrl,
           'kids',
-          { platform: 'WEBSITE', source: 'culturarecreacionydeporte.gov.co' }
+          { platform: 'WEBSITE' }
         );
 
         if (activityId) {

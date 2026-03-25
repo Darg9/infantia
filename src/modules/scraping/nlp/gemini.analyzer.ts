@@ -104,10 +104,26 @@ async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T>
 
 export class GeminiAnalyzer {
   private genAI: GoogleGenerativeAI | null;
+  private static lastRequestTime: number = 0;
+  private static readonly MIN_REQUEST_INTERVAL_MS = 12000; // 5 RPM = 1 request per 12 seconds
+  private static rateLimitEnabled = process.env.NODE_ENV !== 'test';
 
   constructor() {
     const apiKey = process.env.GOOGLE_AI_STUDIO_KEY || '';
     this.genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+  }
+
+  private async enforceRateLimit(): Promise<void> {
+    if (!GeminiAnalyzer.rateLimitEnabled) return;
+
+    const now = Date.now();
+    const timeSinceLastRequest = now - GeminiAnalyzer.lastRequestTime;
+    if (timeSinceLastRequest < GeminiAnalyzer.MIN_REQUEST_INTERVAL_MS) {
+      const delayMs = GeminiAnalyzer.MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest;
+      console.log(`[RATE-LIMIT] Esperando ${(delayMs / 1000).toFixed(1)}s para respetar 5 RPM...`);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+    GeminiAnalyzer.lastRequestTime = Date.now();
   }
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
@@ -116,7 +132,7 @@ export class GeminiAnalyzer {
       return this.mockAnalysis(url);
     }
 
-    const truncatedText = sourceText.substring(0, 15000);
+    const truncatedText = sourceText.substring(0, 6000);
     const userMessage = `URL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
 
     try {
@@ -126,10 +142,11 @@ export class GeminiAnalyzer {
         generationConfig: {
           responseMimeType: 'application/json',
           temperature: 0.1,
-          maxOutputTokens: 4096,
+          maxOutputTokens: 8192,
         },
       });
 
+      await this.enforceRateLimit();
       const result = await callWithRetry(
         () => model.generateContent(userMessage),
         'GEMINI',
@@ -149,6 +166,12 @@ export class GeminiAnalyzer {
         parsed = JSON.parse(jsonStr);
       } catch (parseErr: any) {
         throw new Error(`Gemini retornó JSON inválido (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
+      }
+
+      // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
+      if (Array.isArray(parsed)) {
+        console.warn('[GEMINI] Respuesta es array, tomando primer elemento.');
+        parsed = parsed[0];
       }
 
       // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
@@ -186,13 +209,27 @@ export class GeminiAnalyzer {
       return links.map((l) => l.url);
     }
 
-    const CHUNK_SIZE = 50;
-    const chunks: DiscoveredLink[][] = [];
-    for (let i = 0; i < links.length; i += CHUNK_SIZE) {
-      chunks.push(links.slice(i, i + CHUNK_SIZE));
+    // Pre-filtrar URLs que son claramente páginas de navegación/filtro, no actividades individuales
+    const filtered = links.filter((l) => {
+      try {
+        const u = new URL(l.url);
+        if (u.search.length > 0) return false; // excluir cualquier URL con query params (?f[0]=, ?page=, etc.)
+        return true;
+      } catch {
+        return true;
+      }
+    });
+    if (filtered.length < links.length) {
+      console.log(`[GEMINI-DISCOVER] Pre-filtro: ${links.length - filtered.length} URLs con query params excluidas.`);
     }
 
-    console.log(`[GEMINI-DISCOVER] Procesando ${links.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
+    const CHUNK_SIZE = 50;
+    const chunks: DiscoveredLink[][] = [];
+    for (let i = 0; i < filtered.length; i += CHUNK_SIZE) {
+      chunks.push(filtered.slice(i, i + CHUNK_SIZE));
+    }
+
+    console.log(`[GEMINI-DISCOVER] Procesando ${filtered.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
 
     const model = this.genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
@@ -228,6 +265,7 @@ LINKS:
 ${linksText}`;
 
       try {
+        await this.enforceRateLimit();
         const result = await callWithRetry(
           () => model.generateContent(prompt),
           `GEMINI-DISCOVER-lote${chunkIndex + 1}`,
@@ -299,6 +337,7 @@ ${profileBio}`;
         },
       });
 
+      await this.enforceRateLimit();
       const result = await callWithRetry(
         () => model.generateContent(userMessage),
         'GEMINI-IG',
@@ -317,6 +356,12 @@ ${profileBio}`;
         parsed = JSON.parse(jsonStr);
       } catch (parseErr: any) {
         throw new Error(`Gemini retornó JSON inválido para Instagram (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
+      }
+
+      // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
+      if (Array.isArray(parsed)) {
+        console.warn('[GEMINI-IG] Respuesta es array, tomando primer elemento.');
+        parsed = parsed[0];
       }
 
       const rawParsed = parsed as Record<string, unknown>;

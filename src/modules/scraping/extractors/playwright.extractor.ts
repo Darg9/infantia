@@ -331,8 +331,8 @@ export class PlaywrightExtractor {
     const page = await context.newPage();
     try {
       console.log(`[PLAYWRIGHT-WEB] Navegando a: ${url}`);
-      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 60000 });
-      await this.delay(6000, 8000);
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      await this.delay(2000, 3000);
 
       const links = await page.evaluate(() => {
         return Array.from(document.querySelectorAll('a[href]')).map((el) => ({

@@ -177,7 +177,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "DOCUMENTO FUNDACIONAL V13",
+        text: "DOCUMENTO FUNDACIONAL V14",
         bold: true,
         size: 40,
         font: "Arial",
@@ -563,6 +563,7 @@ children.push(
       ["V05", "2026-03-16", "Claude Code — Pipeline scraping funcional, 167 actividades en Supabase, fix chunking Gemini, verify-db"],
       ["V06-V12", "2026-03-16 a 2026-03-24", "Claude Code — UI, Instagram, Auth, Deduplicación, CI/CD, Certificación v0.6.1"],
       ["V13", "2026-03-24", "Claude Code — Tests mejorados: 531 tests, 90.53% coverage, deduplication.ts + send-notifications"],
+      ["V14", "2026-03-24", "Claude Code — v0.7.1: 581 tests, 98.32% stmts, 93.07% branches, playwright.extractor 100% branches/lines, auth.ts 100%, audit issues cerrados"],
     ],
     [10, 18, 72]
   )
@@ -574,7 +575,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "Documento generado automáticamente por Claude Code — Infantia v0.7 — 2026-03-24",
+        text: "Documento generado automáticamente por Claude Code — Infantia v0.7.1 — 2026-03-24",
         size: 16,
         font: "Arial",
         color: "999999",
@@ -619,7 +620,7 @@ const doc = new Document({
   ],
 });
 
-const outputPath = process.env.OUTPUT_PATH || String.raw`C:\Users\denys\OneDrive\Documents\DayJul\Denys\Infantia\Infantia_Claude\Infantia_Documento_Fundacional_V13.docx`;
+const outputPath = process.env.OUTPUT_PATH || String.raw`C:\Users\denys\OneDrive\Documents\DayJul\Denys\Infantia\Infantia_Claude\Infantia_Documento_Fundacional_V14.docx`;
 
 const buffer = await Packer.toBuffer(doc);
 writeFileSync(outputPath, buffer);

@@ -134,18 +134,21 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.0 — 2026-03-24)
+## Estado actual (v0.7.1 — 2026-03-24)
 - 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 531 tests / 36 archivos test — `npm test` pasa en ~4.3s
-- Cobertura real: 90.53% stmts / 82.9% branches (mejorado desde v0.6.1: 86.85% / 78.57%)
-  - `deduplication.ts`: 94.44% stmts / 95.23% branches / 100% funcs — NUEVO (42 tests)
-  - `send-notifications route`: completamente testeado — REESCRITO (21 tests)
-  - Gaps restantes: `storage.ts` (81.6%), `auth.ts` (91.3%), `pipeline.ts` (98.96%)
-- GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`, no `test:coverage`)
+- 581 tests / 37 archivos test — `npm test` pasa en ~12s
+- Cobertura real: **98.32% stmts / 93.07% branches** (mejorado desde v0.7.0: 90.53% / 82.9%)
+  - `expire-activities.ts`: 0% → 100% (cron crítico de producción)
+  - `auth.ts`: 91.3% stmts / 66.66% branches → 100% todo
+  - `storage.ts`: 81.6% stmts → 100% stmts / 93.75% branches
+  - `activities.service.ts`: 81.81% stmts → 100% todo
+  - `playwright.extractor.ts`: 41.66% funcs → 97.22% funcs / 100% branches / 100% lines
+- `npm run test:coverage` funcional — threshold cap ajustado a 85%
+- GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`)
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
 - Supabase Auth: Site URL y Redirect URLs corregidos a producción
 - Auth email delivery: VERIFICADO — emails de confirmación llegan y redirigen a producción
-- Doc Fundacional: V12 generado para v0.6.1 (`Infantia_V12_v0.6.1.docx`)
+- Doc Fundacional: V14 generado para v0.7.1
 - ⏸️ Bloqueado: scraping Idartes (~95 actividades) — cuota de Gemini API agotada
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)

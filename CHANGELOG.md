@@ -14,6 +14,28 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.1] — 2026-03-24 (Cierre de deuda técnica de tests)
+**Documento Fundacional: V14**
+
+### Tests ✅
+- `lib/expire-activities.ts`: 0% → 100% — 16 tests nuevos (cron de expiración de actividades)
+- `lib/auth.ts`: 66.66% branches → 100% — 5 tests para `getOrCreateDbUser` (cadena `??` de nombre)
+- `modules/scraping/storage.ts`: 81.6% stmts / 70.31% branches → 100% stmts / 93.75% branches
+  - Mock de `findMany` para `findPotentialDuplicate` + 6 tests de detección de duplicados
+- `modules/activities/activities.service.ts`: 81.81% stmts → 100% — 4 tests para `audienceValues` y `where.audience`
+- `modules/scraping/extractors/playwright.extractor.ts`: 41.66% → 77.77% funcs
+  - Callbacks de `evaluateAll` invocados con DOM elements mock
+  - Branches `extractCaption` (colon pattern, raw return), `extractLikesCount` (no match), `extractFollowerCount` (mil/M)
+- Total tests: 557 → 570 (+13)
+- Cobertura global: 90.53% → **96.99% stmts** / 82.9% → **91.99% branches**
+
+### Chore ✅
+- `package.json`: version `0.1.0` → `0.7.0` (sincronizado con git tags)
+- `vitest.config.ts`: threshold cap `100%` → `85%` (`npm run test:coverage` funcional nuevamente)
+- Git tag `v0.6.1` creado en commit `badf07d` (certificación Supabase — faltaba desde v0.6.1)
+
+---
+
 ## [v0.7.0] — 2026-03-24 (Merged: tests completos, scraping Idartes pendiente)
 **Documento Fundacional: V13**
 

@@ -14,6 +14,27 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.0] — 2026-03-24 (Merged: tests completos, scraping Idartes pendiente)
+**Documento Fundacional: V13**
+
+### Tests ✅
+- `src/modules/scraping/__tests__/deduplication.test.ts`: **nuevo** — 42 tests cubriendo las 6 funciones exportadas (`normalizeString`, `generateActivityFingerprint`, `calculateSimilarity`, `isProbablyDuplicate`, `logDuplicate`, `extractDateInfo`)
+  - Cobertura `deduplication.ts`: 2.77% → 94.44% stmts / 95.23% branches / 100% funcs
+- `src/app/api/admin/send-notifications/__tests__/send-notifications.test.ts`: **reescrito** — 21 tests con mocks reales del handler (`PrismaClient`, `sendActivityDigest`)
+  - Cubre: autenticación 401, parámetros dryRun/period, filtrado de usuarios, envío real, errores de DB, errores de usuario individual, múltiples usuarios
+  - Tests anteriores: solo lógica inline (0% cobertura del handler) → ahora importa y ejecuta `POST`
+- Total tests: 473 → 531 (+58 tests nuevos)
+- Cobertura general: 86.85% → 90.53% stmts / 78.57% → 82.9% branches
+
+### Blocked ⏸️
+- **Scraping Idartes**: cuota de Gemini API (Google AI Studio) agotada
+  - Estado: 94 links descubiertos en https://idartes.gov.co/es/agenda, pero filtrado con IA requiere cuota disponible
+  - Error: `[429 Too Many Requests] You exceeded your current quota`
+  - Comando bloqueado: `npx tsx scripts/test-scraper.ts --discover "https://idartes.gov.co/es/agenda" --save-db`
+  - Acción: Reintentarlo cuando se restablezca la cuota (puede requerir upgrade de Google Cloud)
+
+---
+
 ## [v0.6.1] — 2026-03-24 (sesión de certificación)
 **Documento Fundacional: V12**
 

@@ -1,145 +1,355 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-/**
- * Tests para la lógica de notificaciones
- *
- * El endpoint POST /api/admin/send-notifications:
- * 1. Valida cron secret
- * 2. Consulta usuarios con email habilitado
- * 3. Filtra por frecuencia (daily/weekly)
- * 4. Filtra por categoría newActivities
- * 5. Consulta actividades recientes por edad
- * 6. Envía digest con sendActivityDigest()
- * 7. Log y return {sent, skipped, errors}
- */
+// ── Mocks ──────────────────────────────────────────────────────────────────
 
-describe('/api/admin/send-notifications', () => {
-  describe('Logic validation', () => {
-    it('should process users with daily frequency and email enabled', () => {
-      const user = {
-        email: 'user@example.com',
-        notificationPrefs: {
-          email: true,
-          frequency: 'daily' as const,
-          categories: { newActivities: true },
-        },
-      }
+vi.mock('next/server', () => ({
+  NextResponse: {
+    json: vi.fn((data, init?) => ({ _data: data, _status: init?.status ?? 200 })),
+  },
+}))
 
-      const shouldProcess =
-        user.email &&
-        user.notificationPrefs?.email &&
-        user.notificationPrefs?.frequency === 'daily' &&
-        user.notificationPrefs?.categories?.newActivities
+const { mockPrisma, mockSendActivityDigest } = vi.hoisted(() => {
+  const mockPrisma = {
+    user: { findMany: vi.fn() },
+    child: { findMany: vi.fn() },
+    activity: { findMany: vi.fn() },
+    $disconnect: vi.fn().mockResolvedValue(undefined),
+  }
+  const mockSendActivityDigest = vi.fn()
+  return { mockPrisma, mockSendActivityDigest }
+})
 
-      expect(shouldProcess).toBe(true)
+vi.mock('@prisma/adapter-pg', () => ({
+  PrismaPg: class PrismaPg {
+    constructor(_options: unknown) {}
+  },
+}))
+
+vi.mock('@/generated/prisma/client', () => ({
+  // eslint-disable-next-line prefer-arrow-callback
+  PrismaClient: function PrismaClient() { return mockPrisma; },
+}))
+
+vi.mock('@/lib/email/resend', () => ({
+  sendWelcomeEmail: vi.fn(),
+  sendActivityDigest: mockSendActivityDigest,
+}))
+
+import { NextResponse } from 'next/server'
+import { POST } from '../route'
+
+const mockJson = vi.mocked(NextResponse.json)
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+
+function makeRequest(options?: {
+  authHeader?: string
+  period?: string
+  dryRun?: string
+}): any {
+  const params = new URLSearchParams()
+  if (options?.period) params.set('period', options.period)
+  if (options?.dryRun) params.set('dryRun', options.dryRun)
+
+  return {
+    headers: {
+      get: (key: string) => {
+        if (key === 'authorization') return options?.authHeader ?? null
+        return null
+      },
+    },
+    nextUrl: {
+      searchParams: params,
+    },
+  }
+}
+
+const VALID_AUTH = 'Bearer test-secret'
+
+const USER_DAILY = {
+  id: 'user-1',
+  email: 'daily@example.com',
+  name: 'Usuario Daily',
+  notificationPrefs: {
+    email: true,
+    frequency: 'daily',
+    categories: { newActivities: true },
+  },
+}
+
+const USER_WEEKLY = {
+  id: 'user-2',
+  email: 'weekly@example.com',
+  name: 'Usuario Weekly',
+  notificationPrefs: {
+    email: true,
+    frequency: 'weekly',
+    categories: { newActivities: true },
+  },
+}
+
+const USER_NO_EMAIL = {
+  id: 'user-3',
+  email: 'noemail@example.com',
+  name: 'Sin Email',
+  notificationPrefs: {
+    email: false,
+    frequency: 'daily',
+    categories: { newActivities: true },
+  },
+}
+
+const USER_NO_ACTIVITIES_PREF = {
+  id: 'user-4',
+  email: 'noact@example.com',
+  name: 'Sin Actividades',
+  notificationPrefs: {
+    email: true,
+    frequency: 'daily',
+    categories: { newActivities: false },
+  },
+}
+
+const SAMPLE_ACTIVITIES = [
+  {
+    id: 'act-1',
+    title: 'Taller de arte',
+    description: 'Descripción',
+    price: null,
+    ageMin: 5,
+    ageMax: 12,
+  },
+]
+
+// ── Tests ────────────────────────────────────────────────────────────────────
+
+beforeEach(() => {
+  vi.clearAllMocks()
+  process.env.CRON_SECRET = 'test-secret'
+  mockPrisma.child.findMany.mockResolvedValue([])
+  mockPrisma.activity.findMany.mockResolvedValue([])
+})
+
+describe('POST /api/admin/send-notifications', () => {
+  describe('Autenticación', () => {
+    it('retorna 401 si no hay header de autorización', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: undefined })
+      await POST(req)
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Unauthorized' }, { status: 401 })
     })
 
-    it('should skip users with email disabled', () => {
-      const user = {
-        email: 'user@example.com',
-        notificationPrefs: {
-          email: false,
-          frequency: 'daily' as const,
-          categories: { newActivities: true },
-        },
-      }
-
-      const shouldProcess = user.notificationPrefs?.email
-
-      expect(shouldProcess).toBe(false)
+    it('retorna 401 si el Bearer token es incorrecto', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: 'Bearer wrong-secret' })
+      await POST(req)
+      expect(mockJson).toHaveBeenCalledWith({ error: 'Unauthorized' }, { status: 401 })
     })
 
-    it('should skip users with newActivities disabled', () => {
-      const user = {
-        email: 'user@example.com',
-        notificationPrefs: {
-          email: true,
-          frequency: 'daily' as const,
-          categories: { newActivities: false },
-        },
-      }
-
-      const shouldProcess = user.notificationPrefs?.categories?.newActivities
-
-      expect(shouldProcess).toBe(false)
-    })
-
-    it('should skip weekly frequency on daily period', () => {
-      const user = {
-        notificationPrefs: {
-          frequency: 'weekly' as const,
-        },
-      }
-      const period = 'daily'
-
-      const shouldProcess =
-        period === 'daily' ? user.notificationPrefs?.frequency === 'daily' : true
-
-      expect(shouldProcess).toBe(false)
-    })
-
-    it('should process weekly frequency on daily period if user has weekly', () => {
-      const user = {
-        notificationPrefs: {
-          frequency: 'weekly' as const,
-        },
-      }
-      const period = 'daily'
-
-      // Actually: skip if period is daily AND user has weekly
-      const shouldSkip = period === 'daily' && user.notificationPrefs?.frequency === 'weekly'
-      expect(shouldSkip).toBe(true)
+    it('acepta una petición con el token correcto', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const call = mockJson.mock.calls[0]
+      expect(call[1]?.status ?? 200).not.toBe(401)
     })
   })
 
-  describe('Activity age filtering', () => {
-    it('should filter activities by user children ages', () => {
-      const children = [
-        { minAge: 5, maxAge: 8 },
-        { minAge: 10, maxAge: 12 },
-      ]
-
-      let userMinAge = 0
-      let userMaxAge = 18
-      if (children.length > 0) {
-        const ages = children.map((c) => c.minAge).filter((a) => a !== null) as number[]
-        const maxAges = children.map((c) => c.maxAge).filter((a) => a !== null) as number[]
-        if (ages.length > 0) userMinAge = Math.min(...ages)
-        if (maxAges.length > 0) userMaxAge = Math.max(...maxAges)
-      }
-
-      expect(userMinAge).toBe(5)
-      expect(userMaxAge).toBe(12)
+  describe('Parámetros y respuesta base', () => {
+    it('retorna success:true con sin usuarios', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.success).toBe(true)
+      expect(data.total).toBe(0)
+      expect(data.sent).toBe(0)
+      expect(data.skipped).toBe(0)
     })
 
-    it('should default to 0-18 if no children', () => {
-      const children: any[] = []
+    it('incluye dryRun:false por defecto', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.dryRun).toBe(false)
+    })
 
-      let userMinAge = 0
-      let userMaxAge = 18
-      if (children.length > 0) {
-        const ages = children.map((c) => c.minAge).filter((a) => a !== null) as number[]
-        const maxAges = children.map((c) => c.maxAge).filter((a) => a !== null) as number[]
-        if (ages.length > 0) userMinAge = Math.min(...ages)
-        if (maxAges.length > 0) userMaxAge = Math.max(...maxAges)
-      }
+    it('incluye dryRun:true cuando se pasa como parámetro', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH, dryRun: 'true' })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.dryRun).toBe(true)
+    })
 
-      expect(userMinAge).toBe(0)
-      expect(userMaxAge).toBe(18)
+    it('llama a $disconnect al finalizar', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      expect(mockPrisma.$disconnect).toHaveBeenCalled()
     })
   })
 
-  describe('Price formatting', () => {
-    it('should format free activities', () => {
-      const price = null
-      const priceLabel = price === 0 || price === null ? 'Gratis' : `$${price}`
-      expect(priceLabel).toBe('Gratis')
+  describe('Filtrado de usuarios', () => {
+    it('omite usuarios con email deshabilitado', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_NO_EMAIL])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.skipped).toBe(1)
+      expect(data.sent).toBe(0)
     })
 
-    it('should format paid activities in COP', () => {
-      const price = 50000
-      const priceLabel = price === 0 || price === null ? 'Gratis' : `$${price}`
-      expect(priceLabel).toBe('$50000')
+    it('omite usuarios sin la categoría newActivities habilitada', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_NO_ACTIVITIES_PREF])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.skipped).toBe(1)
+      expect(data.sent).toBe(0)
+    })
+
+    it('omite usuarios con frecuencia weekly en período daily', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_WEEKLY])
+      const req = makeRequest({ authHeader: VALID_AUTH, period: 'daily' })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.skipped).toBe(1)
+      expect(data.sent).toBe(0)
+    })
+
+    it('procesa usuarios con frecuencia daily en período daily', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: true })
+      const req = makeRequest({ authHeader: VALID_AUTH, period: 'daily' })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.sent).toBe(1)
+    })
+
+    it('omite usuario si no hay actividades recientes', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue([])
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.skipped).toBe(1)
+      expect(data.sent).toBe(0)
+    })
+
+    it('procesa usuarios weekly en período weekly', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_WEEKLY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: true })
+      const req = makeRequest({ authHeader: VALID_AUTH, period: 'weekly' })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.sent).toBe(1)
+    })
+  })
+
+  describe('Modo dryRun', () => {
+    it('no llama sendActivityDigest en modo dryRun', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      const req = makeRequest({ authHeader: VALID_AUTH, dryRun: 'true' })
+      await POST(req)
+      expect(mockSendActivityDigest).not.toHaveBeenCalled()
+    })
+
+    it('incrementa sentCount en modo dryRun (como si se enviara)', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      const req = makeRequest({ authHeader: VALID_AUTH, dryRun: 'true' })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.sent).toBe(1)
+    })
+  })
+
+  describe('Envío real', () => {
+    it('llama sendActivityDigest con los parámetros correctos', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: true })
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      expect(mockSendActivityDigest).toHaveBeenCalledWith(
+        expect.objectContaining({
+          to: USER_DAILY.email,
+          userName: USER_DAILY.name,
+          period: 'daily',
+        })
+      )
+    })
+
+    it('registra error si sendActivityDigest falla', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: false, error: 'SMTP error' })
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.errors).toBe(1)
+      expect(data.sent).toBe(0)
+    })
+  })
+
+  describe('Manejo de errores', () => {
+    it('retorna 500 si prisma.user.findMany lanza una excepción', async () => {
+      mockPrisma.user.findMany.mockRejectedValue(new Error('DB connection failed'))
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      expect(mockJson).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false }),
+        { status: 500 }
+      )
+    })
+
+    it('llama $disconnect incluso tras un error catastrófico', async () => {
+      mockPrisma.user.findMany.mockRejectedValue(new Error('DB down'))
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      expect(mockPrisma.$disconnect).toHaveBeenCalled()
+    })
+
+    it('captura error de usuario individual sin detener el resto', async () => {
+      const USER_THROWS = {
+        id: 'user-throws',
+        email: 'throws@example.com',
+        name: 'Throws',
+        notificationPrefs: {
+          email: true,
+          frequency: 'daily',
+          categories: { newActivities: true },
+        },
+      }
+      mockPrisma.user.findMany.mockResolvedValue([USER_THROWS, USER_DAILY])
+      mockPrisma.activity.findMany
+        .mockRejectedValueOnce(new Error('Query failed'))
+        .mockResolvedValueOnce(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: true })
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.errors).toBe(1)
+      expect(data.sent).toBe(1)
+    })
+  })
+
+  describe('Múltiples usuarios', () => {
+    it('procesa múltiples usuarios correctamente', async () => {
+      mockPrisma.user.findMany.mockResolvedValue([USER_DAILY, USER_NO_EMAIL, USER_NO_ACTIVITIES_PREF])
+      mockPrisma.activity.findMany.mockResolvedValue(SAMPLE_ACTIVITIES)
+      mockSendActivityDigest.mockResolvedValue({ success: true })
+      const req = makeRequest({ authHeader: VALID_AUTH })
+      await POST(req)
+      const data = mockJson.mock.calls[0][0] as any
+      expect(data.total).toBe(3)
+      expect(data.sent).toBe(1)
+      expect(data.skipped).toBe(2)
     })
   })
 })

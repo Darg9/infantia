@@ -134,15 +134,18 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.6.1 — certificado 2026-03-24)
+## Estado actual (v0.6.1 + rama feat/v0.7.0-scraping-tests — 2026-03-24)
 - 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 473 tests / 35 archivos test — `npm test` pasa al 100% en 4.94s
-- Cobertura real: 86.85% stmts / 78.57% branches (gap: deduplication.ts y send-notifications.ts sin tests)
+- 531 tests / 36 archivos test — `npm test` pasa al 100% en ~4.6s
+- Cobertura real: 90.53% stmts / 82.9% branches (mejorado desde 86.85% / 78.57%)
+  - `deduplication.ts`: 94.44% stmts / 95.23% branches / 100% funcs (antes: 2.77%)
+  - Gaps restantes: `storage.ts` (81.6%), `auth.ts` (91.3%), `pipeline.ts` (98.96%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`, no `test:coverage`)
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
 - Supabase Auth: Site URL y Redirect URLs corregidos a producción (corregido en sesión de certificación)
 - Auth email delivery: VERIFICADO — emails de confirmación llegan y redirigen a producción
 - Doc Fundacional: V12 generado (`Infantia_V12_v0.6.0.docx`, 16 secciones, 1,017 párrafos)
+- Pendiente v0.7.0: scraping Idartes (~95 actividades) — bloqueado por cuota Gemini API
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
 

@@ -1,7 +1,7 @@
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import { InstagramPost, InstagramProfileData } from '../types';
+import { InstagramPost, InstagramProfileData, DiscoveredLink, ScrapedRawData } from '../types';
 
 // Desktop UA — Instagram shows posts without login on desktop but blocks mobile
 const DESKTOP_USER_AGENT =
@@ -315,6 +315,83 @@ export class PlaywrightExtractor {
       );
 
     return [...new Set(imgs)];
+  }
+
+  /**
+   * Extract links from a SPA/JS-rendered page (non-Instagram).
+   * Launches a fresh browser context without Instagram session.
+   */
+  async extractWebLinks(url: string): Promise<DiscoveredLink[]> {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      userAgent: DESKTOP_USER_AGENT,
+      viewport: DESKTOP_VIEWPORT,
+      locale: 'es-CO',
+    });
+    const page = await context.newPage();
+    try {
+      console.log(`[PLAYWRIGHT-WEB] Navegando a: ${url}`);
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      await this.delay(2000, 3000);
+
+      const links = await page.evaluate(() => {
+        return Array.from(document.querySelectorAll('a[href]')).map((el) => ({
+          url: (el as HTMLAnchorElement).href,
+          anchorText: (el.textContent ?? '').trim().substring(0, 200),
+        }));
+      });
+
+      // Deduplicar y filtrar vacíos
+      const seen = new Set<string>();
+      return links.filter((l) => {
+        if (!l.url || seen.has(l.url)) return false;
+        seen.add(l.url);
+        return true;
+      });
+    } finally {
+      await page.close();
+      await context.close();
+      await browser.close();
+    }
+  }
+
+  /**
+   * Extract text content from a SPA/JS-rendered page (non-Instagram).
+   */
+  async extractWebText(url: string): Promise<ScrapedRawData> {
+    const browser = await chromium.launch({ headless: true });
+    const context = await browser.newContext({
+      userAgent: DESKTOP_USER_AGENT,
+      viewport: DESKTOP_VIEWPORT,
+      locale: 'es-CO',
+    });
+    const page = await context.newPage();
+    try {
+      console.log(`[PLAYWRIGHT-WEB] Extrayendo texto de: ${url}`);
+      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+      await this.delay(2000, 3000);
+
+      const text = await page.evaluate(() => {
+        // Eliminar nav, footer, scripts
+        document.querySelectorAll('nav, footer, script, style, noscript, svg').forEach((el) => el.remove());
+        return (document.body?.innerText ?? '').replace(/\s\s+/g, ' ').trim();
+      });
+
+      return {
+        url,
+        sourceText: text,
+        html: await page.content(),
+        extractedAt: new Date(),
+        status: text.length > 50 ? 'SUCCESS' : 'FAILED',
+        error: text.length <= 50 ? 'Texto insuficiente extraído por Playwright' : undefined,
+      };
+    } catch (error: any) {
+      return { url, sourceText: '', html: '', extractedAt: new Date(), status: 'FAILED', error: error.message };
+    } finally {
+      await page.close();
+      await context.close();
+      await browser.close();
+    }
   }
 
   private async extractLikesCount(page: Page): Promise<number | null> {

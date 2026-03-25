@@ -52,6 +52,8 @@ vi.mock('../extractors/playwright.extractor', () => ({
   PlaywrightExtractor: vi.fn(function(this: Record<string, unknown>) {
     this.extractProfile = mockExtractProfile;
     this.close = mockPlaywrightClose;
+    this.extractWebLinks = vi.fn().mockResolvedValue([]);
+    this.extractWebText = vi.fn().mockResolvedValue({ url: '', sourceText: '', html: '', extractedAt: new Date(), status: 'FAILED' as const });
   }),
 }));
 

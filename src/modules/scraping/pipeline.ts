@@ -25,7 +25,19 @@ export class ScrapingPipeline {
   async runPipeline(url: string): Promise<ActivityNLPResult> {
     console.log(`[PIPELINE] 1. Iniciando extracción desde: ${url}`);
 
-    const extractionResult = await this.extractor.extract(url);
+    let extractionResult = await this.extractor.extract(url);
+
+    // Fallback a Playwright si Cheerio falló o devolvió texto insuficiente (SPA)
+    if (extractionResult.status === 'FAILED' || (extractionResult.sourceText ?? '').length < 50) {
+      console.warn('[PIPELINE] Cheerio devolvió texto insuficiente. Intentando con Playwright...');
+      if (!this.playwrightExtractor) {
+        this.playwrightExtractor = new PlaywrightExtractor();
+      }
+      const playwrightResult = await this.playwrightExtractor.extractWebText(url);
+      if (playwrightResult.status === 'SUCCESS') {
+        extractionResult = playwrightResult;
+      }
+    }
 
     if (extractionResult.status === 'FAILED' || !extractionResult.sourceText) {
       throw new Error(`[PIPELINE] Falló la extracción inicial: ${extractionResult.error}`);
@@ -33,10 +45,6 @@ export class ScrapingPipeline {
 
     const textLength = extractionResult.sourceText.length;
     console.log(`[PIPELINE] 2. Extracción exitosa. Longitud de texto crudo: ${textLength} caracteres`);
-
-    if (textLength < 50) {
-      console.warn('[PIPELINE] Advertencia: Texto extraído demasiado corto. Posiblemente sitio SPA o bloqueado.');
-    }
 
     console.log(`[PIPELINE] 3. Enviando a NLP (Gemini) para estructurar datos...`);
     const finalData = await this.analyzer.analyze(extractionResult.sourceText, url);
@@ -73,11 +81,25 @@ export class ScrapingPipeline {
 
     // Fase 1: Extraer links de TODAS las páginas del listado
     console.log(`[BATCH] Fase 1: Extrayendo links (con paginación automática)...`);
-    const allLinks = await this.extractor.extractLinksAllPages(listingUrl, maxPages);
+    let allLinks = await this.extractor.extractLinksAllPages(listingUrl, maxPages);
     console.log(`[BATCH] Links totales encontrados: ${allLinks.length}`);
 
+    // Fallback a Playwright si Cheerio no encontró links (SPA / JS-rendered)
     if (allLinks.length === 0) {
-      console.warn('[BATCH] No se encontraron links. Posiblemente SPA o página sin enlaces.');
+      console.warn('[BATCH] Cheerio no encontró links. Intentando con Playwright (SPA fallback)...');
+      if (!this.playwrightExtractor) {
+        this.playwrightExtractor = new PlaywrightExtractor();
+      }
+      try {
+        allLinks = await this.playwrightExtractor.extractWebLinks(listingUrl);
+        console.log(`[BATCH] Playwright encontró: ${allLinks.length} links`);
+      } catch (err: any) {
+        console.error(`[BATCH] Playwright también falló: ${err.message}`);
+      }
+    }
+
+    if (allLinks.length === 0) {
+      console.warn('[BATCH] No se encontraron links ni con Cheerio ni con Playwright.');
       if (this.logger && logId && sourceId) {
         await this.logger.completeRun(logId, { itemsFound: 0, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: 0, errorMessage: 'No links found' });
         await this.logger.updateSourceStatus(sourceId, 'FAILED' as any, 0);

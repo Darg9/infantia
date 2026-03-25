@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.6.1 | **Status:** Production — certified 2026-03-24 | **Tests:** 473 passing / 35 files
+**Version:** v0.7.0 | **Status:** Production — merged 2026-03-24 | **Tests:** 531 passing / 36 files | **Coverage:** 90.53% statements
 
 ## Quick Start
 
@@ -49,7 +49,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 🤖 **AI-Powered:** Automatic activity extraction and classification with Gemini NLP
 - 📱 **Responsive:** Mobile-first design with Tailwind CSS
 - ♿ **Accessible:** WCAG-compliant components
-- 🧪 **Well-tested:** 473 unit tests, E2E tests, component tests
+- 🧪 **Well-tested:** 531 unit tests (90.53% coverage), E2E tests, component tests
 - 🚀 **Production-ready:** CI/CD pipeline, automated testing, static generation (robots.txt, sitemap.xml)
 
 ## Commands

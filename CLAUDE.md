@@ -134,18 +134,19 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.6.1 + rama feat/v0.7.0-scraping-tests — 2026-03-24)
+## Estado actual (v0.7.0 — 2026-03-24)
 - 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 531 tests / 36 archivos test — `npm test` pasa al 100% en ~4.6s
-- Cobertura real: 90.53% stmts / 82.9% branches (mejorado desde 86.85% / 78.57%)
-  - `deduplication.ts`: 94.44% stmts / 95.23% branches / 100% funcs (antes: 2.77%)
+- 531 tests / 36 archivos test — `npm test` pasa en ~4.3s
+- Cobertura real: 90.53% stmts / 82.9% branches (mejorado desde v0.6.1: 86.85% / 78.57%)
+  - `deduplication.ts`: 94.44% stmts / 95.23% branches / 100% funcs — NUEVO (42 tests)
+  - `send-notifications route`: completamente testeado — REESCRITO (21 tests)
   - Gaps restantes: `storage.ts` (81.6%), `auth.ts` (91.3%), `pipeline.ts` (98.96%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`, no `test:coverage`)
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
-- Supabase Auth: Site URL y Redirect URLs corregidos a producción (corregido en sesión de certificación)
+- Supabase Auth: Site URL y Redirect URLs corregidos a producción
 - Auth email delivery: VERIFICADO — emails de confirmación llegan y redirigen a producción
-- Doc Fundacional: V12 generado (`Infantia_V12_v0.6.0.docx`, 16 secciones, 1,017 párrafos)
-- Pendiente v0.7.0: scraping Idartes (~95 actividades) — bloqueado por cuota Gemini API
+- Doc Fundacional: V12 generado para v0.6.1 (`Infantia_V12_v0.6.1.docx`)
+- ⏸️ Bloqueado: scraping Idartes (~95 actividades) — cuota de Gemini API agotada
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
 
@@ -159,3 +160,4 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
 | v0.6.0 | V12 | robots.txt, sitemap.xml, EmptyState, 404, skeletons, CI/CD, Vercel |
 | v0.6.1 | V12 | Certificación: Supabase URLs corregidas, auth email verificado |
+| v0.7.0 | V13 | Tests mejorados: 531 tests (90.53% coverage), deduplication.ts + send-notifications |

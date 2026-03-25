@@ -177,7 +177,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "DOCUMENTO FUNDACIONAL V05",
+        text: "DOCUMENTO FUNDACIONAL V13",
         bold: true,
         size: 40,
         font: "Arial",
@@ -214,7 +214,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "Documento generado automáticamente por Claude Code — Infantia v0.5",
+        text: "Documento generado automáticamente por Claude Code — Infantia v0.7",
         size: 18,
         font: "Arial",
         color: "999999",
@@ -561,6 +561,8 @@ children.push(
       ["V03", "2026-03-16", "Gemini/Antigravity — Adiciones de estado real del proyecto (gaps detectados)"],
       ["V04", "2026-03-16", "Claude Code — Profundidad V02 + adiciones de estado real V03"],
       ["V05", "2026-03-16", "Claude Code — Pipeline scraping funcional, 167 actividades en Supabase, fix chunking Gemini, verify-db"],
+      ["V06-V12", "2026-03-16 a 2026-03-24", "Claude Code — UI, Instagram, Auth, Deduplicación, CI/CD, Certificación v0.6.1"],
+      ["V13", "2026-03-24", "Claude Code — Tests mejorados: 531 tests, 90.53% coverage, deduplication.ts + send-notifications"],
     ],
     [10, 18, 72]
   )
@@ -572,7 +574,7 @@ children.push(
   new Paragraph({
     children: [
       new TextRun({
-        text: "Documento generado automáticamente por Claude Code — Infantia v0.5 — 2026-03-16",
+        text: "Documento generado automáticamente por Claude Code — Infantia v0.7 — 2026-03-24",
         size: 16,
         font: "Arial",
         color: "999999",
@@ -617,7 +619,7 @@ const doc = new Document({
   ],
 });
 
-const outputPath = process.env.OUTPUT_PATH || String.raw`C:\Users\denys\OneDrive\Documents\DayJul\Denys\Infantia\Infantia_Claude\Infantia_Documento_Fundacional_V05.docx`;
+const outputPath = process.env.OUTPUT_PATH || String.raw`C:\Users\denys\OneDrive\Documents\DayJul\Denys\Infantia\Infantia_Claude\Infantia_Documento_Fundacional_V13.docx`;
 
 const buffer = await Packer.toBuffer(doc);
 writeFileSync(outputPath, buffer);

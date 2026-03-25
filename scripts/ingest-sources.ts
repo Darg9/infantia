@@ -11,17 +11,21 @@ import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
 interface Source {
   name: string;
   url: string;
+  cityName?: string;
+  verticalSlug?: string;
   sitemapPatterns?: string[];
 }
 
 const SOURCES: Source[] = [
-  { name: 'Cinemateca de Bogotá',   url: 'https://cinematecadebogota.gov.co/agenda/11' },
-  { name: 'Planetario de Bogotá',   url: 'https://planetariodebogota.gov.co/programate' },
-  { name: 'Jardín Botánico (JBB)',  url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/' },
-  { name: 'Maloka',                 url: 'https://maloka.org/programacion/' },
+  { name: 'Cinemateca de Bogotá',   url: 'https://cinematecadebogota.gov.co/agenda/11',             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Planetario de Bogotá',   url: 'https://planetariodebogota.gov.co/programate',             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Jardín Botánico (JBB)',  url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',   cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Maloka',                 url: 'https://maloka.org/programacion/',                         cityName: 'Bogotá', verticalSlug: 'kids' },
   {
     name: 'Banco de la República',
     url: 'https://www.banrepcultural.org/sitemap.xml',
+    cityName: 'Bogotá',
+    verticalSlug: 'kids',
     // Solo actividades y eventos en Bogotá
     sitemapPatterns: ['/bogota/actividad/', '/exposiciones/', '/multimedia/concierto', '/multimedia/taller', '/multimedia/conferencia'],
   },
@@ -45,7 +49,7 @@ async function main() {
     console.log(`  ${source.url}`);
     console.log('='.repeat(60));
 
-    const pipeline = new ScrapingPipeline({ saveToDb: !dryRun });
+    const pipeline = new ScrapingPipeline({ saveToDb: !dryRun, cityName: source.cityName, verticalSlug: source.verticalSlug });
     try {
       const result = await pipeline.runBatchPipeline(source.url, 3, maxPages, source.sitemapPatterns);
       const saved = result.results.filter((r) => r.data).length;

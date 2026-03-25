@@ -134,22 +134,18 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.1 — 2026-03-24)
+## Estado actual (v0.7.2 — 2026-03-25)
 - 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 581 tests / 37 archivos test — `npm test` pasa en ~12s
-- Cobertura real: **98.32% stmts / 93.07% branches** (mejorado desde v0.7.0: 90.53% / 82.9%)
-  - `expire-activities.ts`: 0% → 100% (cron crítico de producción)
-  - `auth.ts`: 91.3% stmts / 66.66% branches → 100% todo
-  - `storage.ts`: 81.6% stmts → 100% stmts / 93.75% branches
-  - `activities.service.ts`: 81.81% stmts → 100% todo
-  - `playwright.extractor.ts`: 41.66% funcs → 97.22% funcs / 100% branches / 100% lines
+- 244 tests (módulo scraping) / 581 tests totales — `npm test` pasa en ~12s
+- Cobertura real: **98.32% stmts / 93.07% branches**
 - `npm run test:coverage` funcional — threshold cap ajustado a 85%
-- GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`)
+- GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
-- Supabase Auth: Site URL y Redirect URLs corregidos a producción
-- Auth email delivery: VERIFICADO — emails de confirmación llegan y redirigen a producción
-- Doc Fundacional: V14 generado para v0.7.1
-- ⏸️ Bloqueado: scraping Idartes (~95 actividades) — cuota de Gemini API agotada
+- Supabase Auth: Site URL y Redirect URLs correctos, email delivery verificado
+- Doc Fundacional: V14 generado para v0.7.1 (v0.7.2 pendiente)
+- Pipeline multi-fuente listo: Cinemateca, Planetario, JBB, Maloka, Banrep (sitemap.xml)
+- Logger FK error resuelto (cityId lookup por nombre exacto con acento)
+- Próximo paso: ejecutar `npx tsx scripts/ingest-sources.ts` para ingestar las 5 fuentes
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
 
@@ -164,3 +160,5 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.6.0 | V12 | robots.txt, sitemap.xml, EmptyState, 404, skeletons, CI/CD, Vercel |
 | v0.6.1 | V12 | Certificación: Supabase URLs corregidas, auth email verificado |
 | v0.7.0 | V13 | Tests mejorados: 531 tests (90.53% coverage), deduplication.ts + send-notifications |
+| v0.7.1 | V14 | Deuda técnica tests: 581 tests, 98.32% stmts, playwright 97.22% funcs |
+| v0.7.2 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |

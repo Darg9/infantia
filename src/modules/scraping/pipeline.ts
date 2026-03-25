@@ -13,13 +13,17 @@ export class ScrapingPipeline {
   private cache: ScrapingCache;
   private storage: ScrapingStorage | null;
   private logger: ScrapingLogger | null;
+  private readonly cityName: string;
+  private readonly verticalSlug: string;
 
-  constructor(options?: { saveToDb?: boolean }) {
+  constructor(options?: { saveToDb?: boolean; cityName?: string; verticalSlug?: string }) {
     this.extractor = new CheerioExtractor();
     this.analyzer = new GeminiAnalyzer();
     this.cache = new ScrapingCache();
     this.storage = options?.saveToDb ? new ScrapingStorage() : null;
     this.logger = options?.saveToDb ? new ScrapingLogger() : null;
+    this.cityName = options?.cityName ?? 'Bogotá';
+    this.verticalSlug = options?.verticalSlug ?? 'kids';
   }
 
   async runPipeline(url: string): Promise<ActivityNLPResult> {
@@ -64,8 +68,8 @@ export class ScrapingPipeline {
     let sourceId: string | null = null;
     if (this.logger) {
       try {
-        const cityId = await this.getCityId('Bogotá');
-        const verticalId = await this.getVerticalId('kids');
+        const cityId = await this.getCityId(this.cityName);
+        const verticalId = await this.getVerticalId(this.verticalSlug);
         if (!cityId || !verticalId) {
           console.warn('[BATCH] Logger deshabilitado: cityId o verticalId no encontrados en BD.');
         } else {
@@ -240,8 +244,8 @@ export class ScrapingPipeline {
     if (this.logger) {
       try {
         const username = profileUrl.replace(/\/$/, '').split('/').pop() ?? 'unknown';
-        const cityId = await this.getCityId('Bogotá');
-        const verticalId = await this.getVerticalId('kids');
+        const cityId = await this.getCityId(this.cityName);
+        const verticalId = await this.getVerticalId(this.verticalSlug);
         if (!cityId || !verticalId) {
           console.warn('[IG-PIPELINE] Logger deshabilitado: cityId o verticalId no encontrados en BD.');
         } else {

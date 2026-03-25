@@ -224,3 +224,108 @@ describe('CheerioExtractor.extractLinksAllPages()', () => {
     expect(urls.some(u => u.includes('taller-2'))).toBe(true);
   });
 });
+
+// ── extractSitemapLinks() ─────────────────────────────────────────────────────
+
+const SITEMAP_INDEX = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap><loc>https://example.com/sitemap-1.xml</loc></sitemap>
+  <sitemap><loc>https://example.com/sitemap-2.xml</loc></sitemap>
+</sitemapindex>`;
+
+const SITEMAP_PAGE_1 = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/bogota/actividad/taller-pintura</loc></url>
+  <url><loc>https://example.com/bogota/actividad/curso-musica</loc></url>
+  <url><loc>https://example.com/nosotros</loc></url>
+</urlset>`;
+
+const SITEMAP_PAGE_2 = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/bogota/actividad/obra-teatro</loc></url>
+  <url><loc>https://example.com/contacto</loc></url>
+</urlset>`;
+
+const SITEMAP_PLAIN = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://example.com/actividad/taller-1</loc></url>
+  <url><loc>https://example.com/actividad/taller-2</loc></url>
+  <url><loc>https://example.com/about</loc></url>
+</urlset>`;
+
+describe('CheerioExtractor.extractSitemapLinks()', () => {
+  it('parsea sitemap index y recopila URLs de todos los sub-sitemaps', async () => {
+    mockFetchSequence([
+      { html: SITEMAP_INDEX },
+      { html: SITEMAP_PAGE_1 },
+      { html: SITEMAP_PAGE_2 },
+    ]);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml');
+    const urls = links.map(l => l.url);
+    expect(urls).toContain('https://example.com/bogota/actividad/taller-pintura');
+    expect(urls).toContain('https://example.com/bogota/actividad/obra-teatro');
+    expect(urls).toContain('https://example.com/nosotros');
+    expect(links.length).toBe(5);
+  });
+
+  it('parsea sitemap plano (sin índice) directamente', async () => {
+    mockFetch(SITEMAP_PLAIN);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml');
+    expect(links.length).toBe(3);
+    expect(links.some(l => l.url.includes('taller-1'))).toBe(true);
+    expect(links.some(l => l.url.includes('about'))).toBe(true);
+  });
+
+  it('filtra por urlPatterns cuando se proporcionan', async () => {
+    mockFetchSequence([
+      { html: SITEMAP_INDEX },
+      { html: SITEMAP_PAGE_1 },
+      { html: SITEMAP_PAGE_2 },
+    ]);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml', ['/bogota/actividad/']);
+    const urls = links.map(l => l.url);
+    expect(urls.every(u => u.includes('/bogota/actividad/'))).toBe(true);
+    expect(urls).not.toContain('https://example.com/nosotros');
+    expect(urls).not.toContain('https://example.com/contacto');
+    expect(links.length).toBe(3);
+  });
+
+  it('sin patrones devuelve todas las URLs', async () => {
+    mockFetch(SITEMAP_PLAIN);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml', []);
+    expect(links.length).toBe(3);
+  });
+
+  it('deduplica URLs repetidas entre sub-sitemaps', async () => {
+    const duplicateSitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset><url><loc>https://example.com/taller</loc></url><url><loc>https://example.com/taller</loc></url></urlset>`;
+    mockFetch(duplicateSitemap);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml');
+    expect(links.length).toBe(1);
+  });
+
+  it('lanza error si el fetch del sitemap raíz falla', async () => {
+    mockFetch('', false, 404);
+    const extractor = new CheerioExtractor();
+    await expect(extractor.extractSitemapLinks('https://example.com/sitemap.xml'))
+      .rejects.toThrow('HTTP 404');
+  });
+
+  it('continúa si un sub-sitemap falla (warn y sigue)', async () => {
+    mockFetchSequence([
+      { html: SITEMAP_INDEX },
+      { html: '', ok: false }, // sitemap-1 falla
+      { html: SITEMAP_PAGE_2 },
+    ]);
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractSitemapLinks('https://example.com/sitemap.xml');
+    // Solo URLs del sitemap-2 que sí cargó
+    expect(links.some(l => l.url.includes('obra-teatro'))).toBe(true);
+    expect(links.some(l => l.url.includes('taller-pintura'))).toBe(false);
+  });
+});

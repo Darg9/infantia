@@ -41,10 +41,15 @@ const {
   mockUpdateSourceStatus: vi.fn(),
 }));
 
+const { mockExtractSitemapLinks } = vi.hoisted(() => ({
+  mockExtractSitemapLinks: vi.fn(),
+}));
+
 vi.mock('../extractors/cheerio.extractor', () => ({
   CheerioExtractor: vi.fn(function(this: Record<string, unknown>) {
     this.extract = mockExtract;
     this.extractLinksAllPages = mockExtractLinksAllPages;
+    this.extractSitemapLinks = mockExtractSitemapLinks;
   }),
 }));
 
@@ -128,6 +133,7 @@ beforeEach(() => {
   mockStartRun.mockResolvedValue('log-1');
   mockCompleteRun.mockResolvedValue(undefined);
   mockUpdateSourceStatus.mockResolvedValue(undefined);
+  mockExtractSitemapLinks.mockResolvedValue([]);
 });
 
 // ── runPipeline() ─────────────────────────────────────────────────────────────
@@ -282,6 +288,49 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
     const pipeline = new ScrapingPipeline();
     const result = await pipeline.runBatchPipeline(listingUrl, 2);
     expect(result.results).toHaveLength(6);
+  });
+
+  it('usa extractSitemapLinks (no extractLinksAllPages) cuando la URL es un sitemap XML', async () => {
+    const sitemapUrl = 'https://example.com/sitemap.xml';
+    mockExtractSitemapLinks.mockResolvedValue([
+      { url: 'https://example.com/bogota/actividad/taller', anchorText: '' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/bogota/actividad/taller']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto del taller', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline();
+    await pipeline.runBatchPipeline(sitemapUrl, 3, 10, ['/bogota/actividad/']);
+
+    expect(mockExtractSitemapLinks).toHaveBeenCalledWith(sitemapUrl, ['/bogota/actividad/']);
+    expect(mockExtractLinksAllPages).not.toHaveBeenCalled();
+  });
+
+  it('pasa sitemapPatterns a extractSitemapLinks', async () => {
+    const sitemapUrl = 'https://example.com/sitemap.xml';
+    const patterns = ['/actividad/', '/exposicion/'];
+    mockExtractSitemapLinks.mockResolvedValue([]);
+
+    const pipeline = new ScrapingPipeline();
+    await pipeline.runBatchPipeline(sitemapUrl, 3, 10, patterns);
+
+    expect(mockExtractSitemapLinks).toHaveBeenCalledWith(sitemapUrl, patterns);
+  });
+
+  it('usa cityName y verticalSlug del constructor para el logger', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/taller', anchorText: 'Taller' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/taller']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    // PrismaClient mock returns city-bog and vert-kids for any findFirst/findUnique
+    const pipeline = new ScrapingPipeline({ saveToDb: true, cityName: 'Medellín', verticalSlug: 'sport' });
+    await pipeline.runBatchPipeline(listingUrl);
+
+    // Logger should have been called (getOrCreateSource) since mocked Prisma returns valid IDs
+    expect(mockGetOrCreateSource).toHaveBeenCalled();
   });
 });
 

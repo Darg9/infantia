@@ -14,6 +14,35 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.2] — 2026-03-25 (Scraping multi-fuente + sitemap Banrep)
+**Documento Fundacional: pendiente**
+
+### Fixed
+- `pipeline.ts`: logger FK error — `getCityId('bogota')` fallaba por mismatch de acento vs BD (`"Bogotá"`). Corregido usando el valor exacto de BD.
+- `gemini.analyzer.ts`: respuestas array de Gemini (`[{...}]` → `{...}`) manejadas correctamente.
+- `gemini.analyzer.ts`: JSON truncado — input reducido 15 000 → 6 000 chars, `maxOutputTokens` 4 096 → 8 192.
+- `gemini.analyzer.ts`: URLs con query params pre-filtradas antes de enviar a Gemini.
+
+### Added
+- `CheerioExtractor.extractSitemapLinks(url, patterns?)` — parsea sitemap XML index + sub-sitemaps, filtra por patrones de URL. Sin Playwright, sin bot-detection.
+- `ScrapingPipeline`: detección automática de sitemap XML en `runBatchPipeline` (usa `extractSitemapLinks` si la URL contiene `sitemap*.xml`).
+- `ScrapingPipeline`: parámetro `sitemapPatterns` en `runBatchPipeline` para filtrar URLs del sitemap.
+- `ScrapingPipeline`: opciones `cityName` y `verticalSlug` en el constructor — ya no hardcodeados como `'Bogotá'` / `'kids'`.
+- `PlaywrightExtractor.extractWebLinks()` + `extractWebText()` — fallback SPA para sitios JS-rendered.
+- `scripts/ingest-sources.ts` — ingesta secuencial de 5 fuentes con `--dry-run` y `--max-pages=N`.
+- Rate limiting Gemini: 12 s entre requests (desactivado en `NODE_ENV=test`).
+
+### Sources añadidas al pipeline
+- Banco de la República → `sitemap.xml` (evita Radware bot-protection)
+- Cinemateca de Bogotá, Planetario de Bogotá, Jardín Botánico (JBB), Maloka — en `ingest-sources.ts`
+
+### Tests ✅
+- `cheerio-extractor.test.ts`: 7 tests nuevos para `extractSitemapLinks` (index, plain, patrones, dedup, error raíz, sub-sitemap fallido)
+- `pipeline.test.ts`: 3 tests nuevos (sitemap routing, sitemapPatterns, cityName/verticalSlug)
+- Total: 234 → **244 tests** (+10)
+
+---
+
 ## [v0.7.1] — 2026-03-24 (Cierre de deuda técnica de tests)
 **Documento Fundacional: V14**
 

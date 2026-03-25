@@ -195,6 +195,30 @@ describe('listActivities()', () => {
     const whereArg = mockFindMany.mock.calls[0][0].where;
     expect(whereArg.categories).toEqual({ some: { categoryId: 'cat-001' } });
   });
+
+  it('filtra por audience KIDS incluyendo ALL', async () => {
+    await listActivities({ skip: 0, pageSize: 20, audience: 'KIDS' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.audience).toEqual({ in: ['KIDS', 'ALL'] });
+  });
+
+  it('filtra por audience FAMILY incluyendo ALL', async () => {
+    await listActivities({ skip: 0, pageSize: 20, audience: 'FAMILY' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.audience).toEqual({ in: ['FAMILY', 'ALL'] });
+  });
+
+  it('filtra por audience ADULTS incluyendo ALL', async () => {
+    await listActivities({ skip: 0, pageSize: 20, audience: 'ADULTS' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.audience).toEqual({ in: ['ADULTS', 'ALL'] });
+  });
+
+  it('no aplica filtro de audience cuando el valor no tiene mapping (ej: ALL)', async () => {
+    await listActivities({ skip: 0, pageSize: 20, audience: 'ALL' });
+    const whereArg = mockFindMany.mock.calls[0][0].where;
+    expect(whereArg.audience).toBeUndefined();
+  });
 });
 
 describe('getActivityById()', () => {

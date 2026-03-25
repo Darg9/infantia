@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => {
     mockCategoryFindMany: vi.fn().mockResolvedValue([]),
     mockActivityCategoryUpsert: vi.fn().mockResolvedValue({}),
     mockProviderCreate: vi.fn().mockResolvedValue({ id: 'ig-new', name: '@nuevo' }),
+    mockActivityFindMany: vi.fn().mockResolvedValue([]),
     mockDisconnect: vi.fn().mockResolvedValue(undefined),
   };
 });
@@ -47,6 +48,7 @@ vi.mock('../../../generated/prisma/client', () => ({
       },
       activity: {
         findFirst: mocks.mockActivityFindFirst,
+        findMany: mocks.mockActivityFindMany,
         create: mocks.mockActivityCreate,
         update: mocks.mockActivityUpdate,
       },
@@ -330,5 +332,105 @@ describe('ScrapingStorage.disconnect()', () => {
     const storage = new ScrapingStorage();
     await expect(storage.disconnect()).resolves.not.toThrow();
     expect(mocks.mockDisconnect).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)', () => {
+  let storage: ScrapingStorage;
+
+  // Actividad con el mismo título que actividadNLPBase → 100% Jaccard similarity
+  const duplicateBase = {
+    id: 'existing-dup-001',
+    title: 'Taller de arte para niños',
+    startDate: null as Date | null,
+    createdAt: new Date(),
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.mockVerticalFindUnique.mockResolvedValue(mocks.mockVertical);
+    mocks.mockProviderFindFirst.mockResolvedValue(null);
+    mocks.mockProviderUpsert.mockResolvedValue(mocks.mockProvider);
+    mocks.mockActivityFindFirst.mockResolvedValue(null);
+    mocks.mockActivityCreate.mockResolvedValue(mocks.mockActivity);
+    mocks.mockActivityFindMany.mockResolvedValue([]);
+    storage = new ScrapingStorage();
+  });
+
+  it('reutiliza ID existente cuando hay duplicado sin fechas (ninguna tiene startDate)', async () => {
+    mocks.mockActivityFindMany.mockResolvedValue([duplicateBase]);
+
+    const result = await storage.saveActivity(actividadNLPBase, 'https://ejemplo.com/dup');
+
+    expect(result).toBe('existing-dup-001');
+    expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
+  });
+
+  it('reutiliza ID cuando duplicado tiene startDate dentro de 30 días', async () => {
+    const dupWithDate = { ...duplicateBase, startDate: new Date('2026-04-02') };
+    mocks.mockActivityFindMany.mockResolvedValue([dupWithDate]);
+
+    const dataWithDate = {
+      ...actividadNLPBase,
+      schedules: [{ startDate: '2026-04-01', endDate: undefined, notes: undefined }],
+    };
+    const result = await storage.saveActivity(dataWithDate, 'https://ejemplo.com/dup-date');
+
+    expect(result).toBe('existing-dup-001');
+    expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
+  });
+
+  it('crea actividad nueva cuando título similar pero fechas con más de 30 días de diferencia', async () => {
+    const dupFarDate = { ...duplicateBase, startDate: new Date('2026-09-01') };
+    mocks.mockActivityFindMany.mockResolvedValue([dupFarDate]);
+
+    const dataWithDate = {
+      ...actividadNLPBase,
+      schedules: [{ startDate: '2026-04-01', endDate: undefined, notes: undefined }],
+    };
+    await storage.saveActivity(dataWithDate, 'https://ejemplo.com/no-dup');
+
+    expect(mocks.mockActivityCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('crea actividad nueva cuando no hay actividades recientes similares', async () => {
+    mocks.mockActivityFindMany.mockResolvedValue([
+      { ...duplicateBase, id: 'other', title: 'Curso de música avanzado' },
+    ]);
+
+    await storage.saveActivity(actividadNLPBase, 'https://ejemplo.com/nuevo');
+
+    expect(mocks.mockActivityCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it('continúa normalmente si findMany lanza un error (catch silencioso)', async () => {
+    mocks.mockActivityFindMany.mockRejectedValue(new Error('DB timeout'));
+
+    const result = await storage.saveActivity(actividadNLPBase, 'https://ejemplo.com/err');
+
+    // El catch en findPotentialDuplicate devuelve null → saveActivity crea la actividad
+    expect(mocks.mockActivityCreate).toHaveBeenCalledTimes(1);
+    expect(result).toBe('act-001');
+  });
+
+  it('activityData maneja campos opcionales nulos (price null, sin currency, pricePeriod no nulo, sin audience, sin maxAge)', async () => {
+    const dataConNulos: ActivityNLPResult = {
+      ...actividadNLPBase,
+      price: null,
+      currency: undefined,
+      pricePeriod: 'mensual',
+      audience: undefined,
+      maxAge: undefined,
+    };
+
+    const result = await storage.saveActivity(dataConNulos, 'https://ejemplo.com/nulos');
+
+    expect(result).toBe('act-001');
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.price).toBeNull();
+    expect(d.priceCurrency).toBe('COP');   // fallback cuando currency es falsy
+    expect(d.pricePeriod).toBe('mensual'); // pricePeriod ?? null → 'mensual'
+    expect(d.audience).toBe('ALL');        // audience ?? 'ALL'
+    expect(d.ageMax).toBeNull();           // maxAge ?? null
   });
 });

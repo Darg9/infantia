@@ -13,6 +13,7 @@ const SOURCES = [
   { name: 'Planetario de Bogotá',   url: 'https://planetariodebogota.gov.co/programate' },
   { name: 'Jardín Botánico (JBB)',  url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/' },
   { name: 'Maloka',                 url: 'https://maloka.org/programacion/' },
+  { name: 'Banco de la República',  url: 'https://www.banrepcultural.org/actividades' },
 ];
 
 async function main() {

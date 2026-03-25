@@ -2,18 +2,29 @@
 // Ingesta secuencial de múltiples fuentes con pausa entre cada una.
 // Uso: npx tsx scripts/ingest-sources.ts
 // Opciones:
-//   --dry-run   Descubre links pero NO guarda en BD
+//   --dry-run      Descubre links pero NO guarda en BD
 //   --max-pages=N  Páginas máximas por fuente (default: 10)
 
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
 
-const SOURCES = [
+interface Source {
+  name: string;
+  url: string;
+  sitemapPatterns?: string[];
+}
+
+const SOURCES: Source[] = [
   { name: 'Cinemateca de Bogotá',   url: 'https://cinematecadebogota.gov.co/agenda/11' },
   { name: 'Planetario de Bogotá',   url: 'https://planetariodebogota.gov.co/programate' },
   { name: 'Jardín Botánico (JBB)',  url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/' },
   { name: 'Maloka',                 url: 'https://maloka.org/programacion/' },
-  { name: 'Banco de la República',  url: 'https://www.banrepcultural.org/actividades' },
+  {
+    name: 'Banco de la República',
+    url: 'https://www.banrepcultural.org/sitemap.xml',
+    // Solo actividades y eventos en Bogotá
+    sitemapPatterns: ['/bogota/actividad/', '/exposiciones/', '/multimedia/concierto', '/multimedia/taller', '/multimedia/conferencia'],
+  },
 ];
 
 async function main() {
@@ -36,7 +47,7 @@ async function main() {
 
     const pipeline = new ScrapingPipeline({ saveToDb: !dryRun });
     try {
-      const result = await pipeline.runBatchPipeline(source.url, 3, maxPages);
+      const result = await pipeline.runBatchPipeline(source.url, 3, maxPages, source.sitemapPatterns);
       const saved = result.results.filter((r) => r.data).length;
       const failed = result.results.filter((r) => !r.data).length;
       const skipped = result.discoveredLinks - result.filteredLinks;

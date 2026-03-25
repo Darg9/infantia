@@ -209,4 +209,59 @@ export class CheerioExtractor implements Extractor {
 
     return null;
   }
+
+  /**
+   * Extract all URLs from a sitemap index (XML).
+   * Handles both sitemap indexes (with <sitemap> entries) and plain sitemaps (with <url> entries).
+   * @param sitemapUrl  URL of the sitemap index (e.g. https://example.com/sitemap.xml)
+   * @param urlPatterns Optional array of strings — only URLs containing at least one pattern are returned
+   */
+  async extractSitemapLinks(sitemapUrl: string, urlPatterns: string[] = []): Promise<DiscoveredLink[]> {
+    const headers = {
+      'User-Agent': 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      'Accept': 'application/xml,text/xml,*/*',
+    };
+
+    const fetchXml = async (url: string): Promise<string> => {
+      const res = await fetch(url, { headers });
+      if (!res.ok) throw new Error(`HTTP ${res.status} fetching sitemap: ${url}`);
+      return res.text();
+    };
+
+    const collectUrls = async (xmlText: string): Promise<string[]> => {
+      const $ = cheerio.load(xmlText, { xmlMode: true });
+      // Sitemap index: contains <sitemap><loc>...</loc></sitemap>
+      const childSitemaps = $('sitemap > loc').map((_, el) => $(el).text().trim()).get();
+      if (childSitemaps.length > 0) {
+        const nested: string[] = [];
+        for (const childUrl of childSitemaps) {
+          try {
+            const childXml = await fetchXml(childUrl);
+            nested.push(...(await collectUrls(childXml)));
+          } catch (err: any) {
+            console.warn(`[SITEMAP] Error fetching child sitemap ${childUrl}: ${err.message}`);
+          }
+        }
+        return nested;
+      }
+      // Plain sitemap: contains <url><loc>...</loc></url>
+      return $('url > loc').map((_, el) => $(el).text().trim()).get();
+    };
+
+    console.log(`[SITEMAP] Leyendo sitemap: ${sitemapUrl}`);
+    const xml = await fetchXml(sitemapUrl);
+    const allUrls = await collectUrls(xml);
+    console.log(`[SITEMAP] Total URLs en sitemap: ${allUrls.length}`);
+
+    const filtered = urlPatterns.length > 0
+      ? allUrls.filter((u) => urlPatterns.some((p) => u.includes(p)))
+      : allUrls;
+
+    console.log(`[SITEMAP] URLs tras filtro de patrones: ${filtered.length}`);
+
+    const seen = new Set<string>();
+    return filtered
+      .filter((u) => { if (seen.has(u)) return false; seen.add(u); return true; })
+      .map((u) => ({ url: u, anchorText: '' }));
+  }
 }

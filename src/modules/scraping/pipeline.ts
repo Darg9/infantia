@@ -54,7 +54,7 @@ export class ScrapingPipeline {
     return finalData;
   }
 
-  async runBatchPipeline(listingUrl: string, concurrency: number = 3, maxPages: number = 50): Promise<BatchPipelineResult> {
+  async runBatchPipeline(listingUrl: string, concurrency: number = 3, maxPages: number = 50, sitemapPatterns: string[] = []): Promise<BatchPipelineResult> {
     console.log(`\n[BATCH] ========== INICIO BATCH PIPELINE ==========`);
     console.log(`[BATCH] URL de listado: ${listingUrl}`);
     console.log(`[BATCH] Cache: ${this.cache.size} URLs ya scrapeadas`);
@@ -64,28 +64,39 @@ export class ScrapingPipeline {
     let sourceId: string | null = null;
     if (this.logger) {
       try {
-        sourceId = await this.logger.getOrCreateSource({
-          name: new URL(listingUrl).hostname.replace('www.', ''),
-          url: listingUrl,
-          platform: 'WEBSITE',
-          scraperType: 'cheerio-batch',
-          cityId: await this.getCityId('bogota'),
-          verticalId: await this.getVerticalId('kids'),
-        });
-        logId = await this.logger.startRun(sourceId);
-        console.log(`[BATCH] Logger: sourceId=${sourceId}, logId=${logId}`);
+        const cityId = await this.getCityId('Bogotá');
+        const verticalId = await this.getVerticalId('kids');
+        if (!cityId || !verticalId) {
+          console.warn('[BATCH] Logger deshabilitado: cityId o verticalId no encontrados en BD.');
+        } else {
+          sourceId = await this.logger.getOrCreateSource({
+            name: new URL(listingUrl).hostname.replace('www.', ''),
+            url: listingUrl,
+            platform: 'WEBSITE',
+            scraperType: 'cheerio-batch',
+            cityId,
+            verticalId,
+          });
+          logId = await this.logger.startRun(sourceId);
+          console.log(`[BATCH] Logger: sourceId=${sourceId}, logId=${logId}`);
+        }
       } catch (err: any) {
-        console.warn(`[BATCH] Logger init error (non-fatal): ${err.message}`);
+        console.warn(`[BATCH] Logger init error (non-fatal): ${err?.message ?? String(err)}`);
       }
     }
 
     // Fase 1: Extraer links de TODAS las páginas del listado
     console.log(`[BATCH] Fase 1: Extrayendo links (con paginación automática)...`);
-    let allLinks = await this.extractor.extractLinksAllPages(listingUrl, maxPages);
+
+    // Detección automática de sitemap XML
+    const isSitemap = listingUrl.includes('sitemap') && (listingUrl.endsWith('.xml') || listingUrl.includes('.xml'));
+    let allLinks = isSitemap
+      ? await this.extractor.extractSitemapLinks(listingUrl, sitemapPatterns)
+      : await this.extractor.extractLinksAllPages(listingUrl, maxPages);
     console.log(`[BATCH] Links totales encontrados: ${allLinks.length}`);
 
     // Fallback a Playwright si Cheerio no encontró links (SPA / JS-rendered)
-    if (allLinks.length === 0) {
+    if (allLinks.length === 0 && !isSitemap) {
       console.warn('[BATCH] Cheerio no encontró links. Intentando con Playwright (SPA fallback)...');
       if (!this.playwrightExtractor) {
         this.playwrightExtractor = new PlaywrightExtractor();
@@ -229,16 +240,22 @@ export class ScrapingPipeline {
     if (this.logger) {
       try {
         const username = profileUrl.replace(/\/$/, '').split('/').pop() ?? 'unknown';
+        const cityId = await this.getCityId('Bogotá');
+        const verticalId = await this.getVerticalId('kids');
+        if (!cityId || !verticalId) {
+          console.warn('[IG-PIPELINE] Logger deshabilitado: cityId o verticalId no encontrados en BD.');
+        } else {
         sourceId = await this.logger.getOrCreateSource({
           name: `@${username}`,
           url: profileUrl,
           platform: 'INSTAGRAM',
           scraperType: 'playwright-instagram',
-          cityId: await this.getCityId('bogota'),
-          verticalId: await this.getVerticalId('kids'),
+          cityId,
+          verticalId,
         });
         logId = await this.logger.startRun(sourceId);
         console.log(`[IG-PIPELINE] Logger: sourceId=${sourceId}, logId=${logId}`);
+        }
       } catch (err: any) {
         console.warn(`[IG-PIPELINE] Logger init error (non-fatal): ${err.message}`);
       }
@@ -356,31 +373,29 @@ export class ScrapingPipeline {
   /**
    * Helper: obtener cityId por nombre (cached).
    */
-  private cityCache: Record<string, string> = {};
-  private async getCityId(cityName: string): Promise<string> {
-    if (this.cityCache[cityName]) return this.cityCache[cityName];
+  private cityCache: Record<string, string | null> = {};
+  private async getCityId(cityName: string): Promise<string | null> {
+    if (cityName in this.cityCache) return this.cityCache[cityName];
 
-    // Import inline to avoid circular deps
     const { PrismaPg } = await import('@prisma/adapter-pg');
     const { PrismaClient } = await import('../../generated/prisma/client');
     const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
     const p = new PrismaClient({ adapter });
 
-    const city = await p.city.findFirst({
-      where: { name: { contains: cityName, mode: 'insensitive' } },
-    });
+    const city = await p.city.findFirst({ where: { name: cityName } });
     await p.$disconnect();
-    const id = city?.id ?? 'unknown';
+    const id = city?.id ?? null;
     this.cityCache[cityName] = id;
+    if (!id) console.warn(`[PIPELINE] Ciudad no encontrada: "${cityName}". Logger deshabilitado para esta fuente.`);
     return id;
   }
 
   /**
    * Helper: obtener verticalId por slug (cached).
    */
-  private verticalCache: Record<string, string> = {};
-  private async getVerticalId(slug: string): Promise<string> {
-    if (this.verticalCache[slug]) return this.verticalCache[slug];
+  private verticalCache: Record<string, string | null> = {};
+  private async getVerticalId(slug: string): Promise<string | null> {
+    if (slug in this.verticalCache) return this.verticalCache[slug];
 
     const { PrismaPg } = await import('@prisma/adapter-pg');
     const { PrismaClient } = await import('../../generated/prisma/client');
@@ -389,8 +404,9 @@ export class ScrapingPipeline {
 
     const vertical = await p.vertical.findUnique({ where: { slug } });
     await p.$disconnect();
-    const id = vertical?.id ?? 'unknown';
+    const id = vertical?.id ?? null;
     this.verticalCache[slug] = id;
+    if (!id) console.warn(`[PIPELINE] Vertical no encontrada: "${slug}". Logger deshabilitado para esta fuente.`);
     return id;
   }
 

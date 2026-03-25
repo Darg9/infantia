@@ -23,11 +23,12 @@ Relación con Documento Fundacional:
 - `modules/scraping/storage.ts`: 81.6% stmts / 70.31% branches → 100% stmts / 93.75% branches
   - Mock de `findMany` para `findPotentialDuplicate` + 6 tests de detección de duplicados
 - `modules/activities/activities.service.ts`: 81.81% stmts → 100% — 4 tests para `audienceValues` y `where.audience`
-- `modules/scraping/extractors/playwright.extractor.ts`: 41.66% → 77.77% funcs
+- `modules/scraping/extractors/playwright.extractor.ts`: 41.66% → **97.22% funcs / 100% branches / 100% lines**
   - Callbacks de `evaluateAll` invocados con DOM elements mock
-  - Branches `extractCaption` (colon pattern, raw return), `extractLikesCount` (no match), `extractFollowerCount` (mil/M)
-- Total tests: 557 → 570 (+13)
-- Cobertura global: 90.53% → **96.99% stmts** / 82.9% → **91.99% branches**
+  - Catch handlers (`h1.innerText`, `og:description`, `time[datetime]`, `meta[name]`, `header section`)
+  - Rama `else` de `existsSync`, arrow function real de `delay()`, hrefs absolutos, fallback `?? ''`
+- Total tests: 557 → **581** (+24)
+- Cobertura global: 90.53% → **98.32% stmts** / 82.9% → **93.07% branches** / 94.59% → **99.32% funcs**
 
 ### Chore ✅
 - `package.json`: version `0.1.0` → `0.7.0` (sincronizado con git tags)

@@ -1,12 +1,14 @@
 // ingest-sources.ts
-// Ingesta secuencial de múltiples fuentes con pausa entre cada una.
+// Ingesta de múltiples fuentes.
 // Uso: npx tsx scripts/ingest-sources.ts
 // Opciones:
 //   --dry-run      Descubre links pero NO guarda en BD
 //   --max-pages=N  Páginas máximas por fuente (default: 10)
+//   --queue        Encola jobs en Redis/BullMQ y sale (requiere worker corriendo)
 
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
+import { enqueueBatchJob, closeScrapingQueue, closeRedisConnection } from '../src/modules/scraping/queue';
 
 interface Source {
   name: string;
@@ -31,12 +33,7 @@ const SOURCES: Source[] = [
   },
 ];
 
-async function main() {
-  const args = process.argv.slice(2);
-  const dryRun = args.includes('--dry-run');
-  const maxPagesArg = args.find((a) => a.startsWith('--max-pages='));
-  const maxPages = maxPagesArg ? parseInt(maxPagesArg.split('=')[1], 10) : 10;
-
+async function runDirect(dryRun: boolean, maxPages: number) {
   console.log(`\n🚀 INGESTA SECUENCIAL — ${SOURCES.length} fuentes`);
   console.log(`   Modo: ${dryRun ? 'DRY RUN (sin guardar)' : 'GUARDAR EN BD'}`);
   console.log(`   Páginas máx por fuente: ${maxPages}\n`);
@@ -73,6 +70,41 @@ async function main() {
   }
   const totalSaved = summary.reduce((acc, s) => acc + s.saved, 0);
   console.log(`\n  TOTAL NUEVAS: ${totalSaved} actividades\n`);
+}
+
+async function runQueue(maxPages: number) {
+  console.log(`\n🚀 ENCOLANDO — ${SOURCES.length} fuentes en Redis/BullMQ`);
+  console.log(`   Páginas máx por fuente: ${maxPages}`);
+  console.log(`   Asegúrate de que el worker esté corriendo: npx tsx scripts/run-worker.ts\n`);
+
+  for (const source of SOURCES) {
+    const id = await enqueueBatchJob({
+      url: source.url,
+      cityName: source.cityName ?? 'Bogotá',
+      verticalSlug: source.verticalSlug ?? 'kids',
+      maxPages,
+      sitemapPatterns: source.sitemapPatterns,
+    });
+    console.log(`  ✅ ${source.name.padEnd(30)} → job ${id}`);
+  }
+
+  console.log(`\n  ${SOURCES.length} jobs encolados. El worker los procesa secuencialmente.\n`);
+  await closeScrapingQueue();
+  await closeRedisConnection();
+}
+
+async function main() {
+  const args = process.argv.slice(2);
+  const dryRun = args.includes('--dry-run');
+  const useQueue = args.includes('--queue');
+  const maxPagesArg = args.find((a) => a.startsWith('--max-pages='));
+  const maxPages = maxPagesArg ? parseInt(maxPagesArg.split('=')[1], 10) : 10;
+
+  if (useQueue) {
+    await runQueue(maxPages);
+  } else {
+    await runDirect(dryRun, maxPages);
+  }
 }
 
 main().catch((e) => {

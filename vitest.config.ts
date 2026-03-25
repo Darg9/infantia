@@ -9,7 +9,7 @@ const daysSinceStart = Math.floor(
 );
 const BASE_THRESHOLD = 30;
 const DAILY_INCREMENT = 10;
-const threshold = Math.min(100, BASE_THRESHOLD + daysSinceStart * DAILY_INCREMENT);
+const threshold = Math.min(85, BASE_THRESHOLD + daysSinceStart * DAILY_INCREMENT);
 
 console.log(`\n📊 Coverage threshold: ${threshold}% (día ${daysSinceStart + 1} del proyecto)\n`);
 

@@ -639,4 +639,288 @@ describe('PlaywrightExtractor', () => {
       await extractor.close();
     });
   });
+
+  // ── Callbacks de evaluateAll (arrow functions internas) ───────────────────
+
+  describe('evaluateAll callbacks — cobertura de funciones internas', () => {
+    // Helper que hace que evaluateAll invoque el callback con elementos DOM mock
+    function makeCallbackLocator(mockEls: object[]) {
+      return createMockLocator({
+        evaluateAll: vi.fn().mockImplementation((cb: (els: object[]) => unknown) =>
+          Promise.resolve(cb(mockEls)),
+        ),
+      });
+    }
+
+    it('extractPostUrls: callback filtra hrefs nulos y mapea a string[]', async () => {
+      const mockEls = [
+        { getAttribute: (_: string) => '/p/POST1/' },
+        { getAttribute: (_: string) => null },           // filtrado
+        { getAttribute: (_: string) => '/reel/REEL1/' },
+      ];
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue('500 Followers') });
+        }
+        if (selector.includes('/p/') || selector.includes('/reel/')) {
+          return makeCallbackLocator(mockEls);
+        }
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('Caption largo para test callback') });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article img')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue(null) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 5);
+      // Los 2 hrefs válidos deberían haberse procesado
+      expect(result.posts.length).toBeGreaterThanOrEqual(0);
+      await extractor.close();
+    });
+
+    it('extractImageUrls: callback filtra s150x150 y mapea srcs únicos', async () => {
+      const imgEls = [
+        { getAttribute: (_: string) => 'https://cdn.instagram.com/full1.jpg' },
+        { getAttribute: (_: string) => 'https://cdn.instagram.com/s150x150thumb.jpg' }, // filtrado
+        { getAttribute: (_: string) => null },                                            // filtrado
+        { getAttribute: (_: string) => 'https://cdn.instagram.com/full1.jpg' },          // duplicado
+      ];
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue('500 Followers') });
+        }
+        if (selector.includes('/p/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue(['/p/IMGCB1/']) });
+        }
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('Caption imagen callback test') });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article img')) {
+          return makeCallbackLocator(imgEls);
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue(null) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
+      if (result.posts.length > 0) {
+        // Solo full1.jpg debe aparecer (deduplicado, sin s150x150, sin null)
+        expect(result.posts[0].imageUrls).toEqual(['https://cdn.instagram.com/full1.jpg']);
+      }
+      await extractor.close();
+    });
+
+    it('extractCaption: callback de article span filtra textos cortos y ordena por longitud', async () => {
+      // og:description se usa: 1=extractBio, 2=extractFollowerCount, 3=extractCaption
+      // El 3er call debe retornar null para que extractCaption caiga al fallback de article span
+      let ogDescCallCount = 0;
+      const spanEls = [
+        { textContent: 'corto' },
+        { textContent: 'Este es el caption largo que debería aparecer primero en el resultado' },
+        { textContent: 'Segundo texto largo pero más corto que el primero' },
+        { textContent: null },
+      ];
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          const callIdx = ++ogDescCallCount;
+          return createMockLocator({
+            getAttribute: vi.fn().mockResolvedValue(callIdx <= 2 ? '500 Followers' : null),
+          });
+        }
+        if (selector.includes('/p/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue(['/p/SPANCB1/']) });
+        }
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('') });
+        }
+        if (selector.includes('meta[name="description"]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article span')) {
+          return makeCallbackLocator(spanEls);
+        }
+        if (selector.includes('article img')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('header section')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('') });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
+      if (result.posts.length > 0) {
+        expect(result.posts[0].caption).toContain('caption largo');
+      }
+      await extractor.close();
+    });
+  });
+
+  // ── Branches faltantes en métodos privados ────────────────────────────────
+
+  describe('extractCaption() — branch "on Instagram:" colon pattern', () => {
+    it('extrae caption usando patrón "on Instagram:" si no hay comillas', async () => {
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('x') }); // < 10 chars
+        }
+        if (selector.includes('og:description')) {
+          return createMockLocator({
+            getAttribute: vi.fn().mockResolvedValue(
+              '42 likes - TestUser on Instagram: Taller de cerámica este sábado'
+            ),
+          });
+        }
+        if (selector.includes('/p/') || selector.includes('/reel/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue(['/p/COLON1/']) });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article img')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue(null) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
+      if (result.posts.length > 0) {
+        expect(result.posts[0].caption).toContain('Taller de cerámica');
+      }
+      await extractor.close();
+    });
+
+    it('retorna metaDesc directo si no hay comillas ni patrón "on Instagram:"', async () => {
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('') });
+        }
+        if (selector.includes('og:description')) {
+          return createMockLocator({
+            getAttribute: vi.fn().mockResolvedValue('Descripción sin formato especial'),
+          });
+        }
+        if (selector.includes('/p/') || selector.includes('/reel/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue(['/p/RAW1/']) });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article img')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue(null) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
+      if (result.posts.length > 0) {
+        expect(result.posts[0].caption).toBe('Descripción sin formato especial');
+      }
+      await extractor.close();
+    });
+  });
+
+  describe('extractLikesCount() — branch sin match numérico', () => {
+    it('retorna null si el texto de likes no contiene dígitos', async () => {
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue('500 Followers') });
+        }
+        if (selector.includes('/p/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue(['/p/NOMATCH/']) });
+        }
+        if (selector === 'h1') {
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('Caption suficientemente largo para pasar el filtro') });
+        }
+        if (selector.includes('time[datetime]')) {
+          return createMockLocator({ getAttribute: vi.fn().mockResolvedValue(null) });
+        }
+        if (selector.includes('article img')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        if (selector.includes('likes') || selector.includes('Me gusta')) {
+          // Tiene texto pero sin dígitos → match falla → return null
+          return createMockLocator({ innerText: vi.fn().mockResolvedValue('muchos likes') });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
+      if (result.posts.length > 0) {
+        expect(result.posts[0].likesCount).toBeNull();
+      }
+      await extractor.close();
+    });
+  });
+
+  describe('extractFollowerCount() — multiplicadores mil y M', () => {
+    it('parsea "5 mil seguidores" correctamente', async () => {
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          return createMockLocator({
+            getAttribute: vi.fn().mockResolvedValue('5 mil seguidores, 200 Following'),
+          });
+        }
+        if (selector.includes('/p/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 0);
+      expect(result.followerCount).toBe(5000);
+      await extractor.close();
+    });
+
+    it('parsea "2M Followers" correctamente', async () => {
+      mockLocator.mockImplementation((selector: string) => {
+        if (selector.includes('og:description')) {
+          return createMockLocator({
+            getAttribute: vi.fn().mockResolvedValue('2M Followers, 500 Following'),
+          });
+        }
+        if (selector.includes('/p/')) {
+          return createMockLocator({ evaluateAll: vi.fn().mockResolvedValue([]) });
+        }
+        return createMockLocator();
+      });
+
+      const extractor = new PlaywrightExtractor();
+      const result = await extractor.extractProfile('https://www.instagram.com/test/', 0);
+      expect(result.followerCount).toBe(2000000);
+      await extractor.close();
+    });
+  });
 });

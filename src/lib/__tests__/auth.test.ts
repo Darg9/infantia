@@ -17,8 +17,16 @@ vi.mock('@/lib/supabase/server', () => ({
   }),
 }))
 
+// Mock de prisma para getOrCreateDbUser
+const { mockUpsert } = vi.hoisted(() => ({
+  mockUpsert: vi.fn().mockResolvedValue({ id: 'db-user-1', name: 'Test User' }),
+}))
+vi.mock('@/lib/db', () => ({
+  prisma: { user: { upsert: mockUpsert } },
+}))
+
 // Import after mocks
-import { getSession, getSessionWithRole, requireAuth, requireRole } from '../auth'
+import { getSession, getSessionWithRole, requireAuth, requireRole, getOrCreateDbUser } from '../auth'
 
 describe('auth utilities', () => {
   beforeEach(() => {
@@ -148,6 +156,81 @@ describe('auth utilities', () => {
 
       const result = await requireRole(['PARENT'])
       expect(result).toEqual({ user, role: 'unknown' })
+    })
+  })
+
+  // ── getOrCreateDbUser ──
+
+  describe('getOrCreateDbUser()', () => {
+    beforeEach(() => mockUpsert.mockResolvedValue({ id: 'db-1', name: 'Test' }))
+
+    it('usa full_name de user_metadata cuando está disponible', async () => {
+      const authUser = {
+        id: 'auth-1',
+        email: 'a@b.com',
+        user_metadata: { full_name: 'Juan Pérez', name: 'Juan' },
+      } as any
+
+      await getOrCreateDbUser(authUser)
+
+      const createArg = mockUpsert.mock.calls[0][0].create
+      expect(createArg.name).toBe('Juan Pérez')
+    })
+
+    it('usa user_metadata.name si no hay full_name', async () => {
+      const authUser = {
+        id: 'auth-2',
+        email: 'b@c.com',
+        user_metadata: { name: 'María' },
+      } as any
+
+      await getOrCreateDbUser(authUser)
+
+      const createArg = mockUpsert.mock.calls[0][0].create
+      expect(createArg.name).toBe('María')
+    })
+
+    it('usa la parte local del email si no hay user_metadata.name', async () => {
+      const authUser = {
+        id: 'auth-3',
+        email: 'carlos@example.com',
+        user_metadata: {},
+      } as any
+
+      await getOrCreateDbUser(authUser)
+
+      const createArg = mockUpsert.mock.calls[0][0].create
+      expect(createArg.name).toBe('carlos')
+    })
+
+    it('usa "Usuario" como fallback si no hay ningún dato de nombre', async () => {
+      const authUser = {
+        id: 'auth-4',
+        email: undefined,
+        user_metadata: {},
+      } as any
+
+      await getOrCreateDbUser(authUser)
+
+      const createArg = mockUpsert.mock.calls[0][0].create
+      expect(createArg.name).toBe('Usuario')
+    })
+
+    it('llama upsert con supabaseAuthId correcto y rol PARENT', async () => {
+      const authUser = {
+        id: 'auth-5',
+        email: 'x@y.com',
+        user_metadata: { full_name: 'Test' },
+      } as any
+
+      await getOrCreateDbUser(authUser)
+
+      expect(mockUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: { supabaseAuthId: 'auth-5' },
+          create: expect.objectContaining({ role: 'PARENT', supabaseAuthId: 'auth-5' }),
+        })
+      )
     })
   })
 })

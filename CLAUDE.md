@@ -134,9 +134,25 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.6.0)
-- ~211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 473 tests / 35 archivos test / 100% cobertura dinámica (threshold crece +10% por día desde 2026-03-16)
-- GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: configurado con cron jobs (expire activities 5AM UTC, send notifications 9AM UTC)
-- Doc Fundacional: V11 (pendiente generar V12 después de scraped Idartes/CEFEs)
+## Estado actual (v0.6.1 — certificado 2026-03-24)
+- 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
+- 473 tests / 35 archivos test — `npm test` pasa al 100% en 4.94s
+- Cobertura real: 86.85% stmts / 78.57% branches (gap: deduplication.ts y send-notifications.ts sin tests)
+- GitHub Actions CI/CD: tests + build automático en cada push a master (usa `npm test`, no `test:coverage`)
+- Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
+- Supabase Auth: Site URL y Redirect URLs corregidos a producción (corregido en sesión de certificación)
+- Auth email delivery: VERIFICADO — emails de confirmación llegan y redirigen a producción
+- Doc Fundacional: V12 generado (`Infantia_V12_v0.6.0.docx`, 16 secciones, 1,017 párrafos)
+
+## Tabla de versiones git ↔ Documento Fundacional (actualizada)
+
+| Git tag | Doc Fundacional | Descripción |
+|---|---|---|
+| v0.0.1 | V02 | Stack, arquitectura, modelo de datos |
+| v0.1.0 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
+| v0.2.0 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
+| v0.3.0 | V08 | Instagram scraping (Playwright, ig-session.json) |
+| v0.4.0 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
+| v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
+| v0.6.0 | V12 | robots.txt, sitemap.xml, EmptyState, 404, skeletons, CI/CD, Vercel |
+| v0.6.1 | V12 | Certificación: Supabase URLs corregidas, auth email verificado |

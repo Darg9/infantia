@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.6.0 | **Status:** Production-ready | **Test Coverage:** 473 tests / 100% threshold
+**Version:** v0.6.1 | **Status:** Production — certified 2026-03-24 | **Tests:** 473 passing / 35 files
 
 ## Quick Start
 
@@ -165,15 +165,16 @@ MIT — See LICENSE file for details
 
 ## Status
 
-**v0.6.0** (2026-03-24)
-- ✅ 473 tests passing
-- ✅ CI/CD pipeline live
-- ✅ Empty states & SEO features
-- ✅ Custom 404 page
-- ✅ Loading skeletons
-- 🔄 Awaiting Gemini API quota reset for Idartes/CEFE scraping
-- ⏳ Vercel deployment (ready)
-- 📝 Documento Fundacional V12 (pending)
+**v0.6.1** — certified 2026-03-24
+- ✅ 473/473 tests passing (4.94s)
+- ✅ CI/CD pipeline live (GitHub Actions → Vercel auto-deploy)
+- ✅ Production: https://infantia-activities.vercel.app — 211 activities
+- ✅ Supabase Auth email delivery verified (confirmation email working)
+- ✅ robots.txt + sitemap.xml generating correctly in production
+- ✅ Empty states, custom 404, loading skeletons
+- ✅ Documento Fundacional V12 generated (Infantia_V12_v0.6.0.docx)
+- ⚠️ Coverage gap: 86.85% stmts (threshold 100%) — deduplication.ts + send-notifications.ts need tests
+- 🔄 Awaiting Gemini API quota reset for Idartes/CEFE scraping (~95 activities)
 
 ## Contact
 

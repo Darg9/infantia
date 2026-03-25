@@ -14,8 +14,40 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.6.1] — 2026-03-24 (sesión de certificación)
+**Documento Fundacional: V12**
+
+### Fixed
+- Supabase Auth URL Configuration: `Site URL` corregido de `http://localhost:3000` a `https://infantia-activities.vercel.app`
+- Redirect URLs de Supabase: agregadas `https://infantia-activities.vercel.app/auth/callback` y `https://infantia-activities.vercel.app/**`
+- Flujo de confirmación de email ahora redirige correctamente a producción (antes redirigía a localhost)
+
+### Verified (Certificación)
+- 473/473 tests pasando en 4.94s
+- Build de producción sin errores (último deploy: rama master, commit `a47093f`)
+- Homepage producción: 211 actividades visibles
+- `/actividades`: listado con filtros funcionando, 211 resultados
+- `/robots.txt`: generado dinámicamente, bloqueos correctos (/admin/, /api/, /auth/, /perfil/, /login, /registro)
+- `/sitemap.xml`: generando con rutas estáticas + actividades dinámicas
+- Auth email delivery: confirmado funcionando (andresreyesg@gmail.com recibió email en <1 min)
+- Usuario andresreyesg@gmail.com: confirmado en Supabase (Confirmed at: 24 Mar, 2026 18:49)
+
+### Documentation
+- CHANGELOG.md: actualizado a V12
+- CLAUDE.md: actualizado a v0.6.1, estado de sesión de certificación
+- README.md: actualizado con estado de certificación
+- Documento Fundacional V12 generado: `Infantia_V12_v0.6.0.docx` (1,017 párrafos, 16 secciones)
+
+### Known Gaps
+- `npm run test:coverage` falla el threshold dinámico (100% en día 9): cobertura actual 86.85% stmts / 78.57% branches
+  - Archivos con baja cobertura: `deduplication.ts` (2.77%), `lib/send-notifications.ts` (0%)
+  - El CI usa `npm test` (sin cobertura), por lo que los builds pasan correctamente
+  - Acción requerida en v0.7.0: agregar tests para deduplication.ts y send-notifications.ts
+
+---
+
 ## [v0.6.0] — 2026-03-24
-**Documento Fundacional: V11**
+**Documento Fundacional: V12**
 
 ### Added
 - Componente `UserMenu`: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", "Salir" y enlace admin (condicional)

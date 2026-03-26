@@ -18,19 +18,35 @@ interface Source {
   sitemapPatterns?: string[];
 }
 
+// Ciudades principales con sede Banrep
+const BANREP_CITIES: { cityName: string; slug: string }[] = [
+  { cityName: 'Bogotá',       slug: 'bogota'       },
+  { cityName: 'Medellín',     slug: 'medellin'     },
+  { cityName: 'Cali',         slug: 'cali'         },
+  { cityName: 'Barranquilla', slug: 'barranquilla' },
+  { cityName: 'Cartagena',    slug: 'cartagena'    },
+  { cityName: 'Bucaramanga',  slug: 'bucaramanga'  },
+  { cityName: 'Manizales',    slug: 'manizales'    },
+  { cityName: 'Pereira',      slug: 'pereira'      },
+  { cityName: 'Ibagué',       slug: 'ibague'       },
+  { cityName: 'Santa Marta',  slug: 'santa-marta'  },
+];
+
 const SOURCES: Source[] = [
-  { name: 'Cinemateca de Bogotá',   url: 'https://cinematecadebogota.gov.co/agenda/11',             cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Planetario de Bogotá',   url: 'https://planetariodebogota.gov.co/programate',             cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Jardín Botánico (JBB)',  url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',   cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Maloka',                 url: 'https://maloka.org/programacion/',                         cityName: 'Bogotá', verticalSlug: 'kids' },
-  {
-    name: 'Banco de la República',
+  // ── Bogotá ────────────────────────────────────────────────────────────────
+  { name: 'Cinemateca de Bogotá',  url: 'https://cinematecadebogota.gov.co/agenda/11',           cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Planetario de Bogotá',  url: 'https://planetariodebogota.gov.co/programate',           cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Jardín Botánico (JBB)', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/', cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Maloka',                url: 'https://maloka.org/programacion/',                       cityName: 'Bogotá', verticalSlug: 'kids' },
+
+  // ── Banco de la República — un job por ciudad ─────────────────────────────
+  ...BANREP_CITIES.map(({ cityName, slug }) => ({
+    name: `Banrep — ${cityName}`,
     url: 'https://www.banrepcultural.org/sitemap.xml',
-    cityName: 'Bogotá',
+    cityName,
     verticalSlug: 'kids',
-    // Solo actividades y eventos en Bogotá
-    sitemapPatterns: ['/bogota/actividad/', '/exposiciones/', '/multimedia/concierto', '/multimedia/taller', '/multimedia/conferencia'],
-  },
+    sitemapPatterns: [`/${slug}/`],
+  })),
 ];
 
 async function runDirect(dryRun: boolean, maxPages: number) {

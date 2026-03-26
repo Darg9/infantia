@@ -6,7 +6,7 @@
 import Link from 'next/link';
 import { getSimilarActivities } from '@/modules/activities';
 import { activityPath } from '@/lib/activity-url';
-import { getCategoryEmoji } from '@/lib/category-utils';
+import { getCategoryEmoji, getCategoryGradient } from '@/lib/category-utils';
 
 interface Props {
   activityId: string;
@@ -22,7 +22,9 @@ export async function SimilarActivities({ activityId }: Props) {
       <h2 className="text-lg font-semibold text-gray-900 mb-4">Actividades similares</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {similar.map((act) => {
-          const emoji = getCategoryEmoji(act.categories[0]?.category.slug ?? '');
+          const catSlug = act.categories[0]?.category.slug ?? '';
+          const emoji = getCategoryEmoji(act.categories[0]?.category.name ?? catSlug);
+          const gradient = getCategoryGradient(catSlug);
           const priceNum = act.price !== null ? Number(act.price) : null;
           const priceLabel =
             priceNum === null
@@ -37,8 +39,11 @@ export async function SimilarActivities({ activityId }: Props) {
               href={activityPath(act.id, act.title)}
               className="group flex flex-col rounded-2xl border border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm transition-all overflow-hidden"
             >
-              {/* Imagen o emoji */}
-              <div className="relative h-28 bg-gray-50 shrink-0 overflow-hidden">
+              {/* Imagen o gradiente */}
+              <div
+                className="relative h-28 shrink-0 overflow-hidden flex items-center justify-center"
+                style={act.imageUrl ? undefined : { background: gradient }}
+              >
                 {act.imageUrl ? (
                   <img
                     src={act.imageUrl}
@@ -46,9 +51,7 @@ export async function SimilarActivities({ activityId }: Props) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <span className="text-3xl opacity-40">{emoji}</span>
-                  </div>
+                  <span className="text-4xl drop-shadow-sm">{emoji}</span>
                 )}
                 {priceLabel && (
                   <span

@@ -71,23 +71,7 @@ const PERIOD_LABELS: Record<string, string> = {
   FREE: '',
 };
 
-// Colores por categoría (mismo hash que ActivityCard)
-const CATEGORY_COLORS = [
-  'bg-indigo-100',
-  'bg-emerald-100',
-  'bg-amber-100',
-  'bg-rose-100',
-  'bg-cyan-100',
-  'bg-violet-100',
-  'bg-orange-100',
-  'bg-teal-100',
-];
-
-function getCategoryColor(slug: string): string {
-  let hash = 0;
-  for (let i = 0; i < slug.length; i++) hash = slug.charCodeAt(i) + ((hash << 5) - hash);
-  return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
-}
+import { getCategoryGradient, getCategoryEmoji } from '@/lib/category-utils';
 
 function formatDate(dateStr: Date | string | null): string {
   if (!dateStr) return '';
@@ -185,7 +169,8 @@ export default async function ActividadDetallePage({
   ]);
 
   const mainCategory = activity.categories[0]?.category;
-  const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
+  const gradient = getCategoryGradient(mainCategory?.slug ?? '');
+  const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
   const scheduleItems = parseSchedule(activity.schedule);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
 
@@ -316,20 +301,36 @@ export default async function ActividadDetallePage({
             </div>
           </div>
         ) : (
-          <div className={clsx('rounded-2xl border border-gray-100 overflow-hidden', bgColor)}>
-            <div className="px-5 py-3 flex flex-wrap gap-2 items-center">
-              <span className="rounded-full bg-white/80 border border-white/60 px-3 py-1 text-xs font-medium text-gray-700">
+          <div
+            className="relative h-44 sm:h-56 rounded-2xl overflow-hidden flex items-center justify-center"
+            style={{ background: gradient }}
+          >
+            {/* Emoji grande centrado */}
+            <span className="text-7xl sm:text-8xl drop-shadow-lg select-none">{categoryEmoji}</span>
+
+            {/* Badges superpuestos */}
+            <div className="absolute top-3 left-3 flex gap-2">
+              <span className="rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white shadow-sm">
                 {TYPE_LABELS[activity.type] ?? activity.type}
               </span>
               {priceLabel !== 'No disponible' && (
                 <span className={clsx(
-                  'rounded-full px-3 py-1 text-xs font-semibold',
-                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/80 text-gray-700'
+                  'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
+                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-black/30 backdrop-blur-sm text-white'
                 )}>
                   {priceLabel}
                 </span>
               )}
             </div>
+
+            {/* Nombre de categoría abajo */}
+            {mainCategory && (
+              <div className="absolute bottom-3 left-3">
+                <span className="rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white">
+                  {mainCategory.name}
+                </span>
+              </div>
+            )}
           </div>
         )}
 

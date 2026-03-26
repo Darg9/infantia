@@ -3,7 +3,7 @@
 // =============================================================================
 
 import clsx from 'clsx';
-import { getCategoryColor, getCategoryEmoji } from '@/lib/category-utils';
+import { getCategoryGradient, getCategoryEmoji } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { activityPath } from '@/lib/activity-url';
 
@@ -71,7 +71,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 export default function ActivityCard({ activity, isFavorited = false }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
-  const bgColor = mainCategory ? getCategoryColor(mainCategory.slug) : 'bg-indigo-100';
+  const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
   const ageLabel = formatAge(activity.ageMin, activity.ageMax);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
@@ -81,11 +81,13 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
     <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
       {/* Strip visual — siempre presente, h-20 */}
-      <div className={clsx(
-        'relative h-20 flex items-center justify-center overflow-hidden',
-        !activity.imageUrl && bgColor,
-        activity.status === 'EXPIRED' && 'opacity-60'
-      )}>
+      <div
+        className={clsx(
+          'relative h-20 flex items-center justify-center overflow-hidden',
+          activity.status === 'EXPIRED' && 'opacity-60'
+        )}
+        style={activity.imageUrl ? undefined : { background: gradient }}
+      >
         {activity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -95,7 +97,7 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
             loading="lazy"
           />
         ) : (
-          <span className="text-3xl select-none opacity-50">{categoryEmoji}</span>
+          <span className="text-4xl select-none drop-shadow-sm">{categoryEmoji}</span>
         )}
 
         {/* Badge tipo */}

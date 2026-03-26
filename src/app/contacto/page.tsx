@@ -27,11 +27,16 @@ export default function ContactoPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  // Preseleccionar motivo desde query param
+  // Preseleccionar motivo y URL desde query params
   useEffect(() => {
     const motivoParam = searchParams?.get('motivo')
     if (motivoParam === 'reportar') {
       setMotivo('Reportar error en una actividad')
+    }
+    const urlParam = searchParams?.get('url')
+    if (urlParam) {
+      const base = typeof window !== 'undefined' ? window.location.origin : 'https://infantia.co'
+      setActividadUrl(`${base}${urlParam}`)
     }
   }, [searchParams])
 

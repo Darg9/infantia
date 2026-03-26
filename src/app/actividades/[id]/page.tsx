@@ -586,7 +586,10 @@ export default async function ActividadDetallePage({
           La información de esta actividad fue recopilada de fuentes públicas con fines informativos.
           Los derechos del contenido original pertenecen a sus respectivos titulares.
           Recomendamos verificar los detalles directamente con el organizador.{' '}
-          <a href="/contacto?motivo=reportar" className="text-orange-500 hover:underline">
+          <a
+            href={`/contacto?motivo=reportar&url=${encodeURIComponent(canonicalPath)}`}
+            className="text-orange-500 hover:underline"
+          >
             Reportar error o solicitar remoción
           </a>
         </div>

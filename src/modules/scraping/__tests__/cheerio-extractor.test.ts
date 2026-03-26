@@ -352,3 +352,63 @@ describe('CheerioExtractor.extractSitemapLinks()', () => {
     expect(links.some(l => l.url.includes('taller-pintura'))).toBe(false);
   });
 });
+
+// ── fetchOptions / TLS relajado ───────────────────────────────────────────────
+
+describe('CheerioExtractor — TLS relajado para dominios .gov.co', () => {
+  it('pasa dispatcher a fetch para dominios en RELAXED_TLS_DOMAINS (jbb.gov.co)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, statusText: 'OK',
+      text: async () => '<html><body><a href="https://jbb.gov.co/taller">Taller</a></body></html>',
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const extractor = new CheerioExtractor();
+    await extractor.extractLinks('https://jbb.gov.co/eventos/agenda-cultural-academica/');
+
+    const callArgs = fetchMock.mock.calls[0];
+    expect(callArgs[1]).toHaveProperty('dispatcher');
+  });
+
+  it('pasa dispatcher a fetch para cinematecadebogota.gov.co', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, statusText: 'OK',
+      text: async () => '<html><body></body></html>',
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const extractor = new CheerioExtractor();
+    await extractor.extract('https://cinematecadebogota.gov.co/agenda/11');
+
+    const callArgs = fetchMock.mock.calls[0];
+    expect(callArgs[1]).toHaveProperty('dispatcher');
+  });
+
+  it('NO pasa dispatcher para dominios normales (example.com)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, statusText: 'OK',
+      text: async () => '<html><body><a href="https://example.com/taller">Taller</a></body></html>',
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const extractor = new CheerioExtractor();
+    await extractor.extractLinks('https://example.com/actividades');
+
+    const callArgs = fetchMock.mock.calls[0];
+    expect(callArgs[1]).not.toHaveProperty('dispatcher');
+  });
+
+  it('NO pasa dispatcher para planetariodebogota — espera dispatcher en fetch', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, status: 200, statusText: 'OK',
+      text: async () => '<html><body></body></html>',
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const extractor = new CheerioExtractor();
+    await extractor.extract('https://planetariodebogota.gov.co/programate');
+
+    const callArgs = fetchMock.mock.calls[0];
+    expect(callArgs[1]).toHaveProperty('dispatcher');
+  });
+});

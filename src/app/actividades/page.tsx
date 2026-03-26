@@ -35,6 +35,7 @@ interface SearchParams {
   ageMin?: string;
   ageMax?: string;
   categoryId?: string;
+  cityId?: string;
   type?: string;
   audience?: string;
   price?: string;
@@ -46,6 +47,7 @@ interface ActiveFilters {
   ageMin?: number;
   ageMax?: number;
   categoryId?: string;
+  cityId?: string;
   type?: string;
   audience?: string;
   price?: string; // 'free' | 'paid' | ''
@@ -65,6 +67,10 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
 
   if (f.categoryId && exclude !== 'categoryId') {
     where.categories = { some: { categoryId: f.categoryId } };
+  }
+
+  if (f.cityId && exclude !== 'cityId') {
+    where.location = { cityId: f.cityId };
   }
 
   if (f.audience && exclude !== 'audience') {
@@ -114,7 +120,7 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
 // Para cada filtro, usa todos los demás filtros activos → 0 combinaciones vacías
 // =============================================================================
 async function getFacets(filters: ActiveFilters) {
-  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount] =
+  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount, availableCities] =
     await Promise.all([
       // Tipos disponibles: con todos los filtros EXCEPTO type
       prisma.activity.groupBy({
@@ -157,6 +163,21 @@ async function getFacets(filters: ActiveFilters) {
           ],
         },
       }),
+
+      // Ciudades con actividades (excluyendo filtro de ciudad para mostrar todas las opciones)
+      prisma.city.findMany({
+        where: {
+          locations: {
+            some: {
+              activities: {
+                some: buildWhere(filters, 'cityId'),
+              },
+            },
+          },
+        },
+        select: { id: true, name: true },
+        orderBy: { name: 'asc' },
+      }),
     ]);
 
   return {
@@ -164,6 +185,7 @@ async function getFacets(filters: ActiveFilters) {
     audienceCounts: { KIDS: audienceKids, FAMILY: audienceFamily, ADULTS: audienceAdults },
     validCategories,
     priceCounts: { free: freeCount, paid: paidCount },
+    availableCities,
   };
 }
 
@@ -194,6 +216,7 @@ export default async function ActividadesPage({
     ageMin: parseAge(params.ageMin),
     ageMax: parseAge(params.ageMax),
     categoryId: params.categoryId || undefined,
+    cityId: params.cityId || undefined,
     type: params.type && VALID_TYPES.includes(params.type) ? params.type : undefined,
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
     price: params.price && VALID_PRICES.includes(params.price) ? params.price : undefined,
@@ -255,6 +278,7 @@ export default async function ActividadesPage({
             ageMin={params.ageMin ?? ''}
             ageMax={params.ageMax ?? ''}
             categoryId={params.categoryId ?? ''}
+            cityId={params.cityId ?? ''}
             type={params.type ?? ''}
             audience={params.audience ?? ''}
             price={params.price ?? ''}

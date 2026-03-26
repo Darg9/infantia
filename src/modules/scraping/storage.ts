@@ -86,6 +86,7 @@ export class ScrapingStorage {
         priceCurrency: data.currency || 'COP',
         pricePeriod: data.pricePeriod ?? null,
         audience: (data.audience ?? 'ALL') as 'KIDS' | 'FAMILY' | 'ADULTS' | 'ALL',
+        imageUrl: data.imageUrl ?? null,
         providerId: provider.id,
         verticalId: vertical.id,
         sourceType: 'SCRAPING' as const,
@@ -98,9 +99,13 @@ export class ScrapingStorage {
       let activityId: string;
 
       if (existing) {
+        // No sobreescribir imageUrl si ya existe (puede haber sido enriquecida por backfill)
+        const updateData = existing.imageUrl
+          ? { ...activityData, imageUrl: existing.imageUrl }
+          : activityData;
         const updated = await prisma.activity.update({
           where: { id: existing.id },
-          data: activityData,
+          data: updateData,
         });
         activityId = updated.id;
         console.log(`[STORAGE] Actualizada: "${data.title}" (${activityId})`);

@@ -15,11 +15,17 @@ interface Category {
   _count: { activities: number };
 }
 
+interface City {
+  id: string;
+  name: string;
+}
+
 interface Facets {
   availableTypes: { type: string; count: number }[];
   audienceCounts: { KIDS: number; FAMILY: number; ADULTS: number };
   validCategories: Category[];
   priceCounts: { free: number; paid: number };
+  availableCities: City[];
 }
 
 interface FiltersProps {
@@ -27,6 +33,7 @@ interface FiltersProps {
   ageMin: string;
   ageMax: string;
   categoryId: string;
+  cityId: string;
   type: string;
   audience: string;
   price: string;
@@ -57,7 +64,7 @@ const ALL_AUDIENCES = [
 ];
 
 export default function Filters({
-  search, ageMin, ageMax, categoryId, type, audience, price, facets, total,
+  search, ageMin, ageMax, categoryId, cityId, type, audience, price, facets, total,
 }: FiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -80,29 +87,33 @@ export default function Filters({
     setSearchValue(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      navigate({ search: value, ageMin, ageMax, categoryId, type, audience, price });
+      navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price });
     }, 400);
   }
 
   function handleAgeChange(index: number) {
     const option = AGE_OPTIONS[index];
-    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, type, audience, price });
+    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, cityId, type, audience, price });
   }
 
   function handleCategoryChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, type, audience, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, cityId, type, audience, price });
+  }
+
+  function handleCityChange(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price });
   }
 
   function handleTypeChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, type: value, audience, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price });
   }
 
   function handleAudienceChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, type, audience: value, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price });
   }
 
   function handlePriceChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, type, audience, price: value });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value });
   }
 
   function handleReset() {
@@ -110,7 +121,7 @@ export default function Filters({
     navigate({});
   }
 
-  const hasFilters = search || ageMin || ageMax || categoryId || type || audience || price;
+  const hasFilters = search || ageMin || ageMax || categoryId || cityId || type || audience || price;
 
   function selectCls(active: boolean, width = '') {
     const base = 'rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
@@ -212,6 +223,20 @@ export default function Filters({
           <option value="free">🟢 Gratis ({facets.priceCounts.free})</option>
           <option value="paid">💳 De pago ({facets.priceCounts.paid})</option>
         </select>
+
+        {/* Ciudad — solo si hay más de 1 opción */}
+        {facets.availableCities.length > 1 && (
+          <select
+            value={cityId}
+            onChange={e => handleCityChange(e.target.value)}
+            className={selectCls(cityId !== '', 'sm:w-44')}
+          >
+            <option value="">🏙 Todas las ciudades</option>
+            {facets.availableCities.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
 
         {/* Limpiar */}
         {hasFilters && (

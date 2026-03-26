@@ -55,6 +55,12 @@ export class ScrapingPipeline {
 
     console.log(`[PIPELINE] 4. Análisis IA completado con confianza: ${finalData.confidenceScore}`);
 
+    // Enriquecer con og:image extraída por el scraper (si Gemini no proveyó una)
+    if (!finalData.imageUrl && extractionResult.ogImage) {
+      finalData.imageUrl = extractionResult.ogImage;
+      console.log(`[PIPELINE] 4b. og:image adjuntada desde scraper: ${extractionResult.ogImage}`);
+    }
+
     return finalData;
   }
 

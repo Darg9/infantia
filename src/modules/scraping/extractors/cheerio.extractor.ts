@@ -53,6 +53,17 @@ export class CheerioExtractor implements Extractor {
         } catch { /* ignorar JSON-LD inválido */ }
       });
 
+      // Extraer og:image antes de limpiar el HTML
+      const rawOgImage =
+        $('meta[property="og:image"]').attr('content') ||
+        $('meta[name="twitter:image"]').attr('content') ||
+        undefined;
+      // Descartar imágenes de placeholder comunes (logotipos institucionales, fondos blancos)
+      const PLACEHOLDER_PATTERNS = ['blanco', 'logobogota', 'placeholder', 'logo-bogota', 'default-image'];
+      const ogImage = rawOgImage && !PLACEHOLDER_PATTERNS.some((p) => rawOgImage.toLowerCase().includes(p))
+        ? rawOgImage
+        : undefined;
+
       // Limpiar etiquetas ruidosas
       $('script, style, noscript, iframe, svg, path, nav, footer, header').remove();
 
@@ -70,6 +81,7 @@ export class CheerioExtractor implements Extractor {
         url,
         sourceText: cleanText,
         html,
+        ogImage,
         extractedAt: new Date(),
         status: 'SUCCESS',
       };

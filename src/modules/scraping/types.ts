@@ -3,6 +3,7 @@ import { z } from 'zod';
 export type ScrapedRawData = {
   url: string;
   html?: string;
+  ogImage?: string;
   sourceText: string;
   extractedAt: Date;
   status: 'SUCCESS' | 'FAILED';
@@ -38,6 +39,7 @@ export const activityNLPResultSchema = z.object({
     notes: coerceString,
   })).nullable().optional(),
   confidenceScore: z.number().min(0).max(1),
+  imageUrl: z.string().url().nullable().optional(),
 });
 
 export type ActivityNLPResult = z.infer<typeof activityNLPResultSchema>;

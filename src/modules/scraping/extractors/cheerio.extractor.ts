@@ -11,7 +11,8 @@ function fetchOptions(url: string): RequestInit {
   try {
     const host = new URL(url).hostname;
     if (RELAXED_TLS_DOMAINS.some((d) => host.endsWith(d))) {
-      // @ts-expect-error — dispatcher es undici, no está en tipos DOM fetch
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore — dispatcher es undici (Node.js 18+), no está en tipos DOM fetch
       return { dispatcher: relaxedDispatcher } as RequestInit;
     }
   } catch { /* url inválida */ }

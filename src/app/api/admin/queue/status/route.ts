@@ -25,7 +25,7 @@ export async function GET() {
       recentFailed: recentFailed.map((j) => ({
         id: j.id,
         name: j.name,
-        data: { type: j.data.type, url: j.data.url ?? (j.data as any).profileUrl },
+        data: { type: j.data.type, url: j.data.type === 'batch' ? j.data.url : j.data.profileUrl },
         attemptsMade: j.attemptsMade,
         failedReason: j.failedReason,
         finishedOn: j.finishedOn,
@@ -33,7 +33,7 @@ export async function GET() {
       recentCompleted: recentCompleted.map((j) => ({
         id: j.id,
         name: j.name,
-        data: { type: j.data.type, url: j.data.url ?? (j.data as any).profileUrl },
+        data: { type: j.data.type, url: j.data.type === 'batch' ? j.data.url : j.data.profileUrl },
         returnvalue: j.returnvalue,
         finishedOn: j.finishedOn,
       })),

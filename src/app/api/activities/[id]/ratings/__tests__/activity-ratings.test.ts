@@ -28,10 +28,10 @@ beforeEach(() => {
   vi.clearAllMocks()
 })
 
-function makeRequest(searchParams: Record<string, string> = {}): Request {
+function makeRequest(searchParams: Record<string, string> = {}): import('next/server').NextRequest {
   const url = new URL('http://localhost/api/activities/act-1/ratings')
   Object.entries(searchParams).forEach(([k, v]) => url.searchParams.set(k, v))
-  return { url: url.toString() } as unknown as Request
+  return { url: url.toString(), nextUrl: url } as unknown as import('next/server').NextRequest
 }
 
 const ACTIVITY_ID = 'act-uuid-001'

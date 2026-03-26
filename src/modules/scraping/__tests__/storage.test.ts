@@ -414,14 +414,14 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
   });
 
   it('activityData maneja campos opcionales nulos (price null, sin currency, pricePeriod no nulo, sin audience, sin maxAge)', async () => {
-    const dataConNulos: ActivityNLPResult = {
+    const dataConNulos = {
       ...actividadNLPBase,
       price: null,
-      currency: undefined,
-      pricePeriod: 'mensual',
-      audience: undefined,
+      currency: undefined,       // undefined → fallback 'COP'
+      pricePeriod: 'mensual',    // valor no-enum → pasa tal cual al storage
+      audience: undefined,       // undefined → fallback 'ALL'
       maxAge: undefined,
-    };
+    } as unknown as ActivityNLPResult;
 
     const result = await storage.saveActivity(dataConNulos, 'https://ejemplo.com/nulos');
 

@@ -13,7 +13,7 @@ async function processJob(
   const start = Date.now();
   const { data } = job;
 
-  console.log(`[WORKER] Procesando job ${job.id} — tipo: ${data.type}, url: ${data.url ?? (data as any).profileUrl}`);
+  console.log(`[WORKER] Procesando job ${job.id} — tipo: ${data.type}, url: ${data.type === 'batch' ? data.url : data.profileUrl}`);
 
   const pipeline = new ScrapingPipeline({
     saveToDb: true,

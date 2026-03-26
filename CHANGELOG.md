@@ -14,6 +14,42 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.3] — 2026-03-25 (Deuda técnica: queue tests + cobertura scraping)
+**Documento Fundacional: V15**
+
+### Tests ✅
+- `queue/connection.ts`: 0% → **100%** — `queue-connection.test.ts` nuevo (6 tests)
+  - Singleton behavior, `quit` on close, idempotent close, new connection after close
+  - Patrón clave: `closeRedisConnection()` ANTES de `vi.clearAllMocks()` en `beforeEach`
+- `queue/scraping.worker.ts`: 0% → **100%** — `queue-worker.test.ts` nuevo (5 tests)
+  - `capturedProcessor` pattern para probar el worker processor de BullMQ sin Redis real
+  - Event handlers (`completed`, `failed`, `error`), batch job, instagram job
+- `queue/scraping.queue.ts`: rama `if (queue)` → **100% branches** — test de idempotencia añadido
+- `extractors/cheerio.extractor.ts`: test `maxPages` limit — verifica que no fetch page 3 cuando `maxPages=2`
+- `extractors/playwright.extractor.ts`: `extractWebLinks` + `extractWebText` — 8 tests nuevos
+  - Links retornados, deduplicación, filtrado URL vacía, resultados vacíos
+  - `extractWebText`: SUCCESS con texto largo, FAILED con texto corto, FAILED en error de goto
+- `nlp/gemini.analyzer.ts`: 4 tests nuevos de branches
+  - Query params pre-filter (línea 223 log branch)
+  - URL inválida en pre-filter catch handler (línea 219)
+  - `analyze()` respuesta array → toma primer elemento (línea 173)
+  - `analyzeInstagramPost()` respuesta array → toma primer elemento (líneas 363-364)
+- `pipeline.ts`: 4 tests de branches
+  - Línea 42: Cheerio FAILED → fallback Playwright SUCCESS
+  - Línea 74: logger desactivado cuando cityId no encontrado en BD
+  - Línea 112: `extractWebLinks` throws en fallback SPA → continúa
+  - Línea 250: IG logger desactivado cuando verticalId no encontrado
+- `storage.ts`: 4 tests de branches
+  - `description: ''` → string vacío; `minAge: undefined` → null; `startDate: undefined` → null; `audience: null` → 'ALL'
+- **Total tests:** 581 → **636** (+55)
+- **Cobertura global:** 97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines
+
+### Chore ✅
+- `queue/connection.ts`, `queue/producer.ts`, `queue/scraping.queue.ts`, `queue/scraping.worker.ts`: todos a **100%** cobertura
+- `queue/types.ts`: sin runtime, 0% — aceptado (sólo tipos TypeScript)
+
+---
+
 ## [v0.7.2] — 2026-03-25 (Scraping multi-fuente + sitemap Banrep)
 **Documento Fundacional: pendiente**
 

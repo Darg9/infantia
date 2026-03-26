@@ -223,6 +223,29 @@ describe('CheerioExtractor.extractLinksAllPages()', () => {
     expect(urls.some(u => u.includes('taller-1'))).toBe(true);
     expect(urls.some(u => u.includes('taller-2'))).toBe(true);
   });
+
+  it('se detiene al alcanzar el límite de maxPages (branch break)', async () => {
+    const pageHtml = (n: number, next: number) => `<html><body>
+      <a href="/taller-${n}">Taller ${n}</a>
+      <a href="/actividades?page=${next}">Siguiente</a>
+    </body></html>`;
+
+    mockFetchSequence([
+      { html: pageHtml(1, 2) },  // pág 1: extractLinks
+      { html: pageHtml(1, 2) },  // pág 1: findNextPage → retorna pág 2
+      { html: pageHtml(2, 3) },  // pág 2: extractLinks
+      { html: pageHtml(2, 3) },  // pág 2: findNextPage → retorna pág 3 (pero maxPages=2)
+    ]);
+
+    const extractor = new CheerioExtractor();
+    const links = await extractor.extractLinksAllPages('https://example.com/actividades', 2);
+    const urls = links.map(l => l.url);
+
+    expect(urls.some(u => u.includes('taller-1'))).toBe(true);
+    expect(urls.some(u => u.includes('taller-2'))).toBe(true);
+    expect(urls.some(u => u.includes('taller-3'))).toBe(false);
+  });
+
 });
 
 // ── extractSitemapLinks() ─────────────────────────────────────────────────────

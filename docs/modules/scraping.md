@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.5.0
-**Última actualización:** 2026-03-23
+**Versión actual:** v0.7.3
+**Última actualización:** 2026-03-25
 
 ## ¿Qué hace?
 
@@ -41,10 +41,15 @@ Username de cuenta (@handle)
 | `storage.ts` | Guarda actividades + deduplicación Nivel 1 (Jaccard >75%) |
 | `deduplication.ts` | Utilidades de normalización, fingerprint y similitud |
 | `logger.ts` | Logging estructurado con niveles (debug/info/warn/error) |
-| `extractors/cheerio.extractor.ts` | Descubre links + paginación automática |
-| `extractors/playwright.extractor.ts` | Scraping Instagram (sesión persistente) |
+| `extractors/cheerio.extractor.ts` | Descubre links + paginación automática + sitemap XML |
+| `extractors/playwright.extractor.ts` | Scraping Instagram + extractWebLinks/extractWebText (SPA fallback) |
 | `nlp/gemini.analyzer.ts` | NLP con Gemini 2.5 Flash (activo) |
 | `nlp/claude.analyzer.ts` | Alternativa con Claude API (backup, no activo) |
+| `queue/connection.ts` | Singleton de conexión Redis (IORedis) |
+| `queue/scraping.queue.ts` | Queue BullMQ singleton para jobs de scraping |
+| `queue/scraping.worker.ts` | Worker BullMQ: procesa batch + Instagram jobs |
+| `queue/producer.ts` | `enqueueBatchJob()` + `enqueueInstagramJob()` |
+| `queue/types.ts` | Tipos TypeScript para jobs de la queue |
 
 ## Paginación automática (CheerioExtractor)
 
@@ -114,22 +119,47 @@ npx tsx scripts/verify-db.ts
 - **Confianza mínima:** actividades con `sourceConfidence < 0.7` se guardan en estado `DRAFT`.
 - **Retry automático:** 3 intentos con backoff exponencial.
 
-## Tests
+## Queue asíncrona (BullMQ + Redis)
+
+```
+queue/
+  connection.ts       → Singleton Redis (IORedis) con getRedisConnection/closeRedisConnection
+  scraping.queue.ts   → Queue BullMQ singleton "scraping-jobs"
+  scraping.worker.ts  → Worker que procesa batch e instagram jobs
+  producer.ts         → enqueueBatchJob({ url, cityName, verticalSlug, maxPages?, sitemapPatterns? })
+                        enqueueInstagramJob({ profileUrl, cityName, verticalSlug }, { delay?, priority? })
+  types.ts            → BatchJobData | InstagramJobData
+```
+
+### Flujo de job de scraping asíncrono
+
+```
+Producer.enqueueBatchJob(opts)
+   → BullMQ Queue "scraping-jobs".add("batch", data)
+   → Worker recibe job
+   → runBatchPipeline(url, cityName, verticalSlug, { maxPages, sitemapPatterns })
+   → disconnect()
+```
+
+## Tests (v0.7.3)
 
 ```
 src/modules/scraping/__tests__/
   cache.test.ts              → 14 tests — 100%
-  types.test.ts              → schemas Zod — 100%
-  storage.test.ts            → saveActivity, dedup, disconnect — ~95%
-  deduplication.test.ts      → normalizeString, Jaccard, fingerprint — 100%
-  cheerio-extractor.test.ts  → extract, extractLinks, paginación — ~91%
-  claude-analyzer.test.ts    → ClaudeAnalyzer mock/real — 100%
-  gemini-analyzer.test.ts    → GeminiAnalyzer web + Instagram — ~99%
-  pipeline.test.ts           → runBatchPipeline, runInstagramPipeline — 100%
-  logger.test.ts             → niveles, contexto, formato — 100%
+  types.test.ts              → 17 tests, schemas Zod — 100%
+  storage.test.ts            → 24 tests, saveActivity, dedup, disconnect — 100% stmts
+  deduplication.test.ts      → 42 tests, normalizeString, Jaccard, fingerprint — 94%
+  cheerio-extractor.test.ts  → 16 tests, extract, extractLinks, sitemap, maxPages — 94%
+  claude-analyzer.test.ts    → 11 tests, ClaudeAnalyzer mock/real — 100%
+  gemini-analyzer.test.ts    → 30 tests, GeminiAnalyzer web + Instagram — 94%
+  pipeline.test.ts           → 34 tests, runBatchPipeline, runInstagramPipeline — 98%
+  logger.test.ts             → 10 tests, niveles, contexto, formato — 100%
+  queue-connection.test.ts   → 6 tests, singleton Redis, close — 100%
+  queue-worker.test.ts       → 5 tests, Worker, processors — 100%
+  queue.test.ts              → 9 tests, producer, queue singleton — 100%
 ```
 
-Cobertura v0.5.0: ~95% statements globales
+Cobertura v0.7.3: 97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines
 
 ## Fuentes activas
 

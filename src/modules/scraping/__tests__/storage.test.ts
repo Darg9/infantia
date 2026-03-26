@@ -433,4 +433,54 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
     expect(d.audience).toBe('ALL');        // audience ?? 'ALL'
     expect(d.ageMax).toBeNull();           // maxAge ?? null
   });
+
+  it('description vacía se mapea a string vacío (branch || del campo description)', async () => {
+    const dataConDescVacia: ActivityNLPResult = {
+      ...actividadNLPBase,
+      description: '',
+    };
+
+    await storage.saveActivity(dataConDescVacia, 'https://ejemplo.com/descvacia');
+
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.description).toBe('');
+  });
+
+  it('ageMin undefined se mapea a null (branch ?? del campo minAge)', async () => {
+    const dataConEdadUndefined: ActivityNLPResult = {
+      ...actividadNLPBase,
+      minAge: undefined,
+    };
+
+    await storage.saveActivity(dataConEdadUndefined, 'https://ejemplo.com/edadundefined');
+
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.ageMin).toBeNull();
+  });
+
+  it('startDate es null cuando schedules existe pero schedules[0].startDate es undefined', async () => {
+    const dataConSchedulesSinFechas: ActivityNLPResult = {
+      ...actividadNLPBase,
+      schedules: [{ startDate: undefined as any, endDate: undefined as any, notes: undefined }],
+    };
+
+    const result = await storage.saveActivity(dataConSchedulesSinFechas, 'https://ejemplo.com/sinfechas');
+
+    expect(result).toBe('act-001');
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.startDate).toBeNull();
+    expect(d.endDate).toBeNull();
+  });
+
+  it('audience null se mapea a ALL (branch null del operador ??)', async () => {
+    const dataAudienceNull: ActivityNLPResult = {
+      ...actividadNLPBase,
+      audience: null as any,
+    };
+
+    await storage.saveActivity(dataAudienceNull, 'https://ejemplo.com/audiencenull');
+
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.audience).toBe('ALL');
+  });
 });

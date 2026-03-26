@@ -121,6 +121,15 @@ describe('GeminiAnalyzer', () => {
         await expect(analyzer.analyze('texto', 'https://example.com'))
           .rejects.toThrow('Gemini service unavailable');
       });
+
+      it('maneja respuesta array de Gemini — toma primer elemento (línea 173)', async () => {
+        // Gemini retorna [objeto] en vez de objeto directo
+        mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify([validNLPResult])));
+        const analyzer = new GeminiAnalyzer();
+        const result = await analyzer.analyze('texto', 'https://example.com');
+        expect(result.title).toBe('Taller de Ciencias');
+        expect(result.confidenceScore).toBe(0.88);
+      });
     });
 
     describe('discoverActivityLinks()', () => {
@@ -195,6 +204,29 @@ describe('GeminiAnalyzer', () => {
         await analyzer.discoverActivityLinks(links, 'https://x.com');
         // 110 links → 3 lotes (50, 50, 10)
         expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+      });
+
+      it('excluye URLs con query params en pre-filtro y registra log (línea 223)', async () => {
+        const links = [
+          { url: 'https://x.com/taller', anchorText: 'Taller' },
+          { url: 'https://x.com/actividades?page=2', anchorText: 'Pág 2' },
+          { url: 'https://x.com/curso?f[0]=arte', anchorText: 'Filtro' },
+        ];
+        mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1] })));
+        const analyzer = new GeminiAnalyzer();
+        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        expect(result).toEqual(['https://x.com/taller']);
+      });
+
+      it('incluye URL inválida en pre-filtro (catch branch línea 219)', async () => {
+        const links = [
+          { url: 'https://x.com/taller', anchorText: 'Taller' },
+          { url: 'not-a-valid-url', anchorText: 'Inválido' },
+        ];
+        mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1, 2] })));
+        const analyzer = new GeminiAnalyzer();
+        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        expect(result.length).toBeGreaterThanOrEqual(1);
       });
     });
   });
@@ -279,6 +311,22 @@ describe('GeminiAnalyzer', () => {
       const analyzer = new GeminiAnalyzer();
       await expect(analyzer.analyzeInstagramPost(samplePost, profileBio))
         .rejects.toThrow('Gemini API error');
+    });
+
+    it('maneja respuesta array de Gemini — toma primer elemento (líneas 363-364)', async () => {
+      const validIGResult = {
+        title: 'Taller de Pintura Infantil',
+        description: 'Aprende pintura',
+        categories: ['Arte'],
+        confidenceScore: 0.85,
+        currency: 'COP',
+      };
+      // Gemini retorna un array en lugar de objeto
+      mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify([validIGResult])));
+      const analyzer = new GeminiAnalyzer();
+      const result = await analyzer.analyzeInstagramPost(samplePost, profileBio);
+      expect(result.title).toBe('Taller de Pintura Infantil');
+      expect(result.confidenceScore).toBe(0.85);
     });
   });
 

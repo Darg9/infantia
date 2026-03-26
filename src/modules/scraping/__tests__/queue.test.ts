@@ -119,6 +119,15 @@ describe('ScrapingQueue — queue singleton', () => {
     await closeScrapingQueue();
     expect(mockQueueClose).toHaveBeenCalledTimes(1);
   });
+
+  it('closeScrapingQueue es idempotente (llamarla dos veces no falla)', async () => {
+    // Llama close dos veces: la segunda vez queue ya es null
+    getScrapingQueue();
+    await closeScrapingQueue(); // queue → null, close llamado
+    const callsAfterFirst = mockQueueClose.mock.calls.length;
+    await closeScrapingQueue(); // queue es null → no llama close de nuevo
+    expect(mockQueueClose.mock.calls.length).toBe(callsAfterFirst);
+  });
 });
 
 describe('ScrapingJobData — tipos', () => {

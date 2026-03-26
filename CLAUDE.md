@@ -26,7 +26,7 @@ Infantia is a multi-source activity discovery platform for families. It aggregat
 - **Scraping:** Playwright (Instagram) + Cheerio (web) — auto-pagination via CheerioExtractor
 - **AI/NLP:** Gemini 2.5 Flash (Google AI Studio) — NOT Claude API
 - **Email:** Resend
-- **Queue:** BullMQ + Redis (planned)
+- **Queue:** BullMQ + Redis (implementado — `src/modules/scraping/queue/`)
 
 ## Project Structure
 ```
@@ -134,17 +134,17 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.2 — 2026-03-25)
+## Estado actual (v0.7.3 — 2026-03-25)
 - 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- 244 tests (módulo scraping) / 581 tests totales — `npm test` pasa en ~12s
-- Cobertura real: **98.32% stmts / 93.07% branches**
+- **636 tests** en 40 archivos — `npm test` pasa en ~6s
+- Cobertura real: **97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines**
 - `npm run test:coverage` funcional — threshold cap ajustado a 85%
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
 - Supabase Auth: Site URL y Redirect URLs correctos, email delivery verificado
-- Doc Fundacional: V14 generado para v0.7.1 (v0.7.2 pendiente)
+- Doc Fundacional: V14 generado para v0.7.1 (V15 pendiente para v0.7.3)
 - Pipeline multi-fuente listo: Cinemateca, Planetario, JBB, Maloka, Banrep (sitemap.xml)
-- Logger FK error resuelto (cityId lookup por nombre exacto con acento)
+- BullMQ + Redis queue: sistema asíncrono de scraping implementado y con 100% cobertura
 - Próximo paso: ejecutar `npx tsx scripts/ingest-sources.ts` para ingestar las 5 fuentes
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
@@ -162,3 +162,4 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.7.0 | V13 | Tests mejorados: 531 tests (90.53% coverage), deduplication.ts + send-notifications |
 | v0.7.1 | V14 | Deuda técnica tests: 581 tests, 98.32% stmts, playwright 97.22% funcs |
 | v0.7.2 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |
+| v0.7.3 | V15 | Deuda técnica queue tests: 636 tests, 97.41% stmts, queue/* 100% cobertura |

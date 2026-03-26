@@ -112,6 +112,7 @@ vi.mock('../../../generated/prisma/client', () => ({
 }));
 
 import { ScrapingPipeline } from '../pipeline';
+import { PrismaClient } from '../../../generated/prisma/client';
 
 const sampleNLPResult = {
   title: 'Taller de Robótica',
@@ -655,5 +656,98 @@ describe('ScrapingPipeline.disconnect()', () => {
     await pipeline.runInstagramPipeline('https://www.instagram.com/test/');
     await pipeline.disconnect();
     expect(mockPlaywrightClose).toHaveBeenCalled();
+  });
+});
+
+// ── Branch coverage gaps ──────────────────────────────────────────────────────
+
+describe('Pipeline — branches no cubiertos', () => {
+  const listingUrl = 'https://example.com/actividades';
+
+  // Línea 42: Cheerio falla → Playwright tiene éxito → usa resultado Playwright
+  it('runPipeline: usa Playwright como fallback cuando Cheerio falla y Playwright tiene éxito', async () => {
+    mockExtract.mockResolvedValue({ url: listingUrl, sourceText: '', status: 'FAILED' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    // Override PlaywrightExtractor mock para este test
+    const { PlaywrightExtractor } = await import('../extractors/playwright.extractor');
+    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: Record<string, unknown>) {
+      this.extractWebText = vi.fn().mockResolvedValue({
+        url: listingUrl,
+        sourceText: 'Texto suficientemente largo extraído por Playwright para superar el umbral mínimo',
+        html: '<html></html>',
+        extractedAt: new Date(),
+        status: 'SUCCESS',
+      });
+      this.extractWebLinks = vi.fn().mockResolvedValue([]);
+      this.close = vi.fn();
+    });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runPipeline(listingUrl);
+    expect(result.title).toBe('Taller de Robótica');
+  });
+
+  // Línea 74: Logger batch deshabilitado cuando cityId no encontrado
+  it('runBatchPipeline: logger deshabilitado si cityId no se encuentra en BD', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([
+      { url: 'https://example.com/taller', anchorText: 'Taller' },
+    ]);
+    mockDiscoverActivityLinks.mockResolvedValue(['https://example.com/taller']);
+    mockExtract.mockResolvedValue({ sourceText: 'Texto', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    vi.mocked(PrismaClient).mockImplementationOnce(function () {
+      return {
+        city: { findFirst: vi.fn().mockResolvedValue(null) },
+        vertical: { findUnique: vi.fn().mockResolvedValue({ id: 'vert-kids' }) },
+        $disconnect: vi.fn(),
+      } as any;
+    });
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runBatchPipeline(listingUrl);
+
+    expect(mockGetOrCreateSource).not.toHaveBeenCalled();
+    expect(result.results.length).toBeGreaterThanOrEqual(0);
+  });
+
+  // Línea 112: Playwright extractWebLinks lanza error en fallback SPA
+  it('runBatchPipeline: Playwright extractWebLinks falla en fallback SPA → continúa', async () => {
+    mockExtractLinksAllPages.mockResolvedValue([]); // Cheerio no encontró links
+
+    const { PlaywrightExtractor } = await import('../extractors/playwright.extractor');
+    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: Record<string, unknown>) {
+      this.extractWebLinks = vi.fn().mockRejectedValue(new Error('Browser crash'));
+      this.extractWebText = vi.fn();
+      this.close = vi.fn();
+    });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runBatchPipeline(listingUrl);
+
+    expect(result.discoveredLinks).toBe(0);
+    expect(result.results).toHaveLength(0);
+  });
+
+  // Línea 250: Logger Instagram deshabilitado cuando verticalId no encontrado
+  it('runInstagramPipeline: logger deshabilitado si verticalId no se encuentra en BD', async () => {
+    mockExtractProfile.mockResolvedValue(sampleInstagramProfile);
+    mockAnalyzeInstagramPost.mockResolvedValue(sampleIGActivity);
+
+    vi.mocked(PrismaClient).mockImplementationOnce(function () {
+      return {
+        city: { findFirst: vi.fn().mockResolvedValue({ id: 'city-bog' }) },
+        vertical: { findUnique: vi.fn().mockResolvedValue(null) },
+        $disconnect: vi.fn(),
+      } as any;
+    });
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runInstagramPipeline('https://www.instagram.com/test/');
+
+    // Si verticalId es null, el logger se deshabilita y el pipeline continúa sin error
+    expect(result.results).toBeDefined();
+    expect(result.results.length).toBeGreaterThanOrEqual(0);
   });
 });

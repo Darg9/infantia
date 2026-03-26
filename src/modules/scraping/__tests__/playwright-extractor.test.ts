@@ -1259,3 +1259,134 @@ describe('PlaywrightExtractor', () => {
     });
   });
 });
+
+// ── extractWebLinks (líneas 325-358) ─────────────────────────────────────────
+
+describe('extractWebLinks — SPA/JS-rendered page', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(PlaywrightExtractor.prototype as any, 'delay').mockResolvedValue(undefined);
+
+    const mockPage = {
+      goto: mockGoto.mockResolvedValue(undefined),
+      close: mockClose.mockResolvedValue(undefined),
+      locator: mockLocator,
+      evaluate: mockEvaluate,
+      content: vi.fn().mockResolvedValue('<html></html>'),
+    };
+    mockNewPage.mockResolvedValue(mockPage);
+    mockNewContext.mockResolvedValue({
+      newPage: mockNewPage,
+      close: mockContextClose.mockResolvedValue(undefined),
+    });
+  });
+
+  it('retorna links extraídos de la página', async () => {
+    mockEvaluate.mockResolvedValue([
+      { url: 'https://example.com/evento/1', anchorText: 'Evento 1' },
+      { url: 'https://example.com/evento/2', anchorText: 'Evento 2' },
+    ]);
+
+    const extractor = new PlaywrightExtractor();
+    const links = await extractor.extractWebLinks('https://example.com/agenda');
+
+    expect(links).toHaveLength(2);
+    expect(links[0].url).toBe('https://example.com/evento/1');
+    expect(links[0].anchorText).toBe('Evento 1');
+  });
+
+  it('deduplica URLs repetidas', async () => {
+    mockEvaluate.mockResolvedValue([
+      { url: 'https://example.com/evento/1', anchorText: 'Evento A' },
+      { url: 'https://example.com/evento/1', anchorText: 'Evento A duplicado' },
+      { url: 'https://example.com/evento/2', anchorText: 'Evento B' },
+    ]);
+
+    const extractor = new PlaywrightExtractor();
+    const links = await extractor.extractWebLinks('https://example.com/agenda');
+
+    expect(links).toHaveLength(2);
+  });
+
+  it('filtra URLs vacías', async () => {
+    mockEvaluate.mockResolvedValue([
+      { url: '', anchorText: 'vacío' },
+      { url: 'https://example.com/evento/1', anchorText: 'Válido' },
+    ]);
+
+    const extractor = new PlaywrightExtractor();
+    const links = await extractor.extractWebLinks('https://example.com/agenda');
+
+    expect(links).toHaveLength(1);
+    expect(links[0].url).toBe('https://example.com/evento/1');
+  });
+
+  it('retorna array vacío si no hay links', async () => {
+    mockEvaluate.mockResolvedValue([]);
+
+    const extractor = new PlaywrightExtractor();
+    const links = await extractor.extractWebLinks('https://example.com/agenda');
+
+    expect(links).toHaveLength(0);
+  });
+});
+
+// ── extractWebText (líneas 360-393) ──────────────────────────────────────────
+
+describe('extractWebText — SPA/JS-rendered page', () => {
+  let mockContent: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.spyOn(PlaywrightExtractor.prototype as any, 'delay').mockResolvedValue(undefined);
+    mockContent = vi.fn().mockResolvedValue('<html><body>contenido</body></html>');
+
+    const mockPage = {
+      goto: mockGoto.mockResolvedValue(undefined),
+      close: mockClose.mockResolvedValue(undefined),
+      locator: mockLocator,
+      evaluate: mockEvaluate,
+      content: mockContent,
+    };
+    mockNewPage.mockResolvedValue(mockPage);
+    mockNewContext.mockResolvedValue({
+      newPage: mockNewPage,
+      close: mockContextClose.mockResolvedValue(undefined),
+    });
+  });
+
+  it('retorna SUCCESS con texto extraído', async () => {
+    const textoLargo = 'Evento de actividades para niños en Bogotá ' + 'x'.repeat(60);
+    mockEvaluate.mockResolvedValue(textoLargo);
+
+    const extractor = new PlaywrightExtractor();
+    const result = await extractor.extractWebText('https://example.com/evento/1');
+
+    expect(result.status).toBe('SUCCESS');
+    expect(result.sourceText).toBe(textoLargo);
+    expect(result.url).toBe('https://example.com/evento/1');
+    expect(result.html).toBe('<html><body>contenido</body></html>');
+    expect(result.extractedAt).toBeInstanceOf(Date);
+  });
+
+  it('retorna FAILED si texto es menor a 50 caracteres', async () => {
+    mockEvaluate.mockResolvedValue('Texto corto');
+
+    const extractor = new PlaywrightExtractor();
+    const result = await extractor.extractWebText('https://example.com/evento/1');
+
+    expect(result.status).toBe('FAILED');
+    expect(result.error).toContain('insuficiente');
+  });
+
+  it('retorna FAILED si page.goto lanza error', async () => {
+    mockGoto.mockRejectedValue(new Error('Navigation timeout'));
+
+    const extractor = new PlaywrightExtractor();
+    const result = await extractor.extractWebText('https://example.com/evento/1');
+
+    expect(result.status).toBe('FAILED');
+    expect(result.error).toBe('Navigation timeout');
+    expect(result.sourceText).toBe('');
+  });
+});

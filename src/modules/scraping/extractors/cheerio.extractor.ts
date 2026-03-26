@@ -1,10 +1,28 @@
 import * as cheerio from 'cheerio';
+import { Agent } from 'undici';
 import { Extractor, ScrapedRawData, DiscoveredLink } from '../types';
+
+// Algunos sitios .gov.co tienen cadena SSL incompleta (UNABLE_TO_VERIFY_LEAF_SIGNATURE).
+// Node.js 24 (undici) los rechaza. Para dominios conocidos usamos dispatcher relajado.
+const RELAXED_TLS_DOMAINS = ['jbb.gov.co', 'cinematecadebogota.gov.co', 'planetariodebogota.gov.co'];
+const relaxedDispatcher = new Agent({ connect: { rejectUnauthorized: false } });
+
+function fetchOptions(url: string): RequestInit {
+  try {
+    const host = new URL(url).hostname;
+    if (RELAXED_TLS_DOMAINS.some((d) => host.endsWith(d))) {
+      // @ts-expect-error — dispatcher es undici, no está en tipos DOM fetch
+      return { dispatcher: relaxedDispatcher } as RequestInit;
+    }
+  } catch { /* url inválida */ }
+  return {};
+}
 
 export class CheerioExtractor implements Extractor {
   async extract(url: string): Promise<ScrapedRawData> {
     try {
       const response = await fetch(url, {
+        ...fetchOptions(url),
         headers: {
           'User-Agent':
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -67,6 +85,7 @@ export class CheerioExtractor implements Extractor {
 
   async extractLinks(url: string): Promise<DiscoveredLink[]> {
     const response = await fetch(url, {
+      ...fetchOptions(url),
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -164,6 +183,7 @@ export class CheerioExtractor implements Extractor {
 
   private async findNextPage(currentUrl: string, currentPage: number): Promise<string | null> {
     const response = await fetch(currentUrl, {
+      ...fetchOptions(currentUrl),
       headers: {
         'User-Agent':
           'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
@@ -223,7 +243,7 @@ export class CheerioExtractor implements Extractor {
     };
 
     const fetchXml = async (url: string): Promise<string> => {
-      const res = await fetch(url, { headers });
+      const res = await fetch(url, { ...fetchOptions(url), headers });
       if (!res.ok) throw new Error(`HTTP ${res.status} fetching sitemap: ${url}`);
       return res.text();
     };

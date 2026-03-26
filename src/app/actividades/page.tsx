@@ -37,6 +37,7 @@ interface SearchParams {
   categoryId?: string;
   type?: string;
   audience?: string;
+  price?: string;
   page?: string;
 }
 
@@ -47,6 +48,7 @@ interface ActiveFilters {
   categoryId?: string;
   type?: string;
   audience?: string;
+  price?: string; // 'free' | 'paid' | ''
 }
 
 // =============================================================================
@@ -89,6 +91,20 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
     });
   }
 
+  if (f.price && exclude !== 'price') {
+    if (f.price === 'free') {
+      andConditions.push({ OR: [{ price: 0 }, { pricePeriod: 'FREE' }] });
+    } else if (f.price === 'paid') {
+      andConditions.push({
+        AND: [
+          { price: { not: null } },
+          { price: { gt: 0 } },
+          { NOT: { pricePeriod: 'FREE' } },
+        ],
+      });
+    }
+  }
+
   if (andConditions.length) where.AND = andConditions;
   return where;
 }
@@ -98,7 +114,7 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
 // Para cada filtro, usa todos los demás filtros activos → 0 combinaciones vacías
 // =============================================================================
 async function getFacets(filters: ActiveFilters) {
-  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories] =
+  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount] =
     await Promise.all([
       // Tipos disponibles: con todos los filtros EXCEPTO type
       prisma.activity.groupBy({
@@ -124,12 +140,30 @@ async function getFacets(filters: ActiveFilters) {
         orderBy: { name: 'asc' },
         select: { id: true, name: true, _count: { select: { activities: true } } },
       }),
+
+      // Precio: gratis (price=0 o pricePeriod=FREE)
+      prisma.activity.count({
+        where: { ...buildWhere(filters, 'price'), OR: [{ price: 0 }, { pricePeriod: 'FREE' }] },
+      }),
+
+      // Precio: de pago (price>0 y pricePeriod!=FREE)
+      prisma.activity.count({
+        where: {
+          ...buildWhere(filters, 'price'),
+          AND: [
+            { price: { not: null } },
+            { price: { gt: 0 } },
+            { NOT: { pricePeriod: 'FREE' } },
+          ],
+        },
+      }),
     ]);
 
   return {
     availableTypes: typeGroups.map((g) => ({ type: g.type as string, count: g._count._all })),
     audienceCounts: { KIDS: audienceKids, FAMILY: audienceFamily, ADULTS: audienceAdults },
     validCategories,
+    priceCounts: { free: freeCount, paid: paidCount },
   };
 }
 
@@ -153,6 +187,7 @@ export default async function ActividadesPage({
 
   const VALID_TYPES = ['ONE_TIME', 'RECURRING', 'WORKSHOP', 'CAMP'];
   const VALID_AUDIENCES = ['KIDS', 'FAMILY', 'ADULTS', 'ALL'];
+  const VALID_PRICES = ['free', 'paid'];
 
   const filters: ActiveFilters = {
     search: params.search?.trim() || undefined,
@@ -161,6 +196,7 @@ export default async function ActividadesPage({
     categoryId: params.categoryId || undefined,
     type: params.type && VALID_TYPES.includes(params.type) ? params.type : undefined,
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
+    price: params.price && VALID_PRICES.includes(params.price) ? params.price : undefined,
   };
 
   // Cargar actividades, facets, sesión y categorías populares en paralelo
@@ -221,6 +257,7 @@ export default async function ActividadesPage({
             categoryId={params.categoryId ?? ''}
             type={params.type ?? ''}
             audience={params.audience ?? ''}
+            price={params.price ?? ''}
             facets={facets}
             total={total}
           />

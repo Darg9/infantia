@@ -28,6 +28,8 @@ interface ListParams {
   ageMax?: number;
   priceMin?: number;
   priceMax?: number;
+  /** 'free' | 'paid' | undefined */
+  price?: string;
   status?: string;
   type?: string;
   audience?: string;
@@ -78,6 +80,18 @@ export async function listActivities(params: ListParams) {
     where.price = {};
     if (params.priceMin !== undefined) where.price.gte = params.priceMin;
     if (params.priceMax !== undefined) where.price.lte = params.priceMax;
+  }
+
+  if (params.price === 'free') {
+    andConditions.push({ OR: [{ price: 0 }, { pricePeriod: 'FREE' }] });
+  } else if (params.price === 'paid') {
+    andConditions.push({
+      AND: [
+        { price: { not: null } },
+        { price: { gt: 0 } },
+        { NOT: { pricePeriod: 'FREE' } },
+      ],
+    });
   }
 
   if (params.search) {

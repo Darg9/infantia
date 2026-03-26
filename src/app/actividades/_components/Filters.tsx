@@ -19,6 +19,7 @@ interface Facets {
   availableTypes: { type: string; count: number }[];
   audienceCounts: { KIDS: number; FAMILY: number; ADULTS: number };
   validCategories: Category[];
+  priceCounts: { free: number; paid: number };
 }
 
 interface FiltersProps {
@@ -28,6 +29,7 @@ interface FiltersProps {
   categoryId: string;
   type: string;
   audience: string;
+  price: string;
   facets: Facets;
   total: number;
 }
@@ -55,7 +57,7 @@ const ALL_AUDIENCES = [
 ];
 
 export default function Filters({
-  search, ageMin, ageMax, categoryId, type, audience, facets, total,
+  search, ageMin, ageMax, categoryId, type, audience, price, facets, total,
 }: FiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -78,25 +80,29 @@ export default function Filters({
     setSearchValue(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      navigate({ search: value, ageMin, ageMax, categoryId, type, audience });
+      navigate({ search: value, ageMin, ageMax, categoryId, type, audience, price });
     }, 400);
   }
 
   function handleAgeChange(index: number) {
     const option = AGE_OPTIONS[index];
-    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, type, audience });
+    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, type, audience, price });
   }
 
   function handleCategoryChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, type, audience });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, type, audience, price });
   }
 
   function handleTypeChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, type: value, audience });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, type: value, audience, price });
   }
 
   function handleAudienceChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, type, audience: value });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, type, audience: value, price });
+  }
+
+  function handlePriceChange(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, type, audience, price: value });
   }
 
   function handleReset() {
@@ -104,7 +110,7 @@ export default function Filters({
     navigate({});
   }
 
-  const hasFilters = search || ageMin || ageMax || categoryId || type || audience;
+  const hasFilters = search || ageMin || ageMax || categoryId || type || audience || price;
 
   function selectCls(active: boolean, width = '') {
     const base = 'rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
@@ -166,8 +172,8 @@ export default function Filters({
         </select>
       </div>
 
-      {/* Fila 2: tipo + categoría + limpiar */}
-      <div className="flex flex-col sm:flex-row gap-2">
+      {/* Fila 2: tipo + categoría + precio + limpiar */}
+      <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
 
         {/* Tipo — facetado */}
         <select
@@ -194,6 +200,17 @@ export default function Filters({
           {facets.validCategories.map(c => (
             <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
           ))}
+        </select>
+
+        {/* Precio */}
+        <select
+          value={price}
+          onChange={e => handlePriceChange(e.target.value)}
+          className={selectCls(price !== '', 'sm:w-44')}
+        >
+          <option value="">💰 Todos los precios</option>
+          <option value="free">🟢 Gratis ({facets.priceCounts.free})</option>
+          <option value="paid">💳 De pago ({facets.priceCounts.paid})</option>
         </select>
 
         {/* Limpiar */}

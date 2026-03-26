@@ -4,7 +4,7 @@
 // =============================================================================
 
 import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import { getActivityById } from '@/modules/activities';
 import { ShareButton } from '@/components/ShareButton';
 import { FavoriteButton } from '@/components/FavoriteButton';
@@ -13,6 +13,7 @@ import { StarRating } from '@/components/StarRating';
 import { ActivityHistoryTracker } from '@/components/profile/ActivityHistoryTracker';
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { extractActivityId, activityPath } from '@/lib/activity-url';
 import clsx from 'clsx';
 
 export async function generateMetadata({
@@ -20,7 +21,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = extractActivityId(rawId);
   const activity = await getActivityById(id);
   if (!activity) return {};
 
@@ -49,7 +51,7 @@ export async function generateMetadata({
       description,
     },
     alternates: {
-      canonical: `/actividades/${id}`,
+      canonical: activityPath(id, activity.title),
     },
   };
 }
@@ -124,13 +126,23 @@ export default async function ActividadDetallePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { id } = await params;
+  const { id: rawId } = await params;
+  const id = extractActivityId(rawId);
+
+  // Redirect a URL canónica si se accedió con UUID bare (sin slug de título)
+  // Esto normaliza URLs antiguas y mejora SEO al unificar la canonical
   const [activity, sessionUser] = await Promise.all([
     getActivityById(id),
     getSession(),
   ]);
 
   if (!activity) notFound();
+
+  // Redirect a URL canónica si el param no incluye el slug del título
+  const canonicalPath = activityPath(id, activity.title);
+  if (`/actividades/${rawId}` !== canonicalPath) {
+    redirect(canonicalPath);
+  }
 
   // Comprobar favorito + rating del usuario autenticado
   let isFavorited = false;

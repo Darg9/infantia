@@ -10,6 +10,7 @@ import {
   Section,
   Text,
 } from '@react-email/components';
+import { activityPath } from '@/lib/activity-url';
 
 interface ActivityDigestEmailProps {
   userName?: string;
@@ -75,7 +76,7 @@ export const ActivityDigestEmail = ({
                 </Row>
                 <Row style={ctaRow}>
                   <Link
-                    href={`${baseUrl}/actividades/${activity.id}`}
+                    href={`${baseUrl}${activityPath(activity.id, activity.title)}`}
                     style={smallButton}
                   >
                     Ver detalles

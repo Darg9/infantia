@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useActivityHistory } from '@/hooks/useActivityHistory'
+import { activityPath } from '@/lib/activity-url'
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -61,7 +62,7 @@ export default function HistorialPage() {
           {history.map((entry) => (
             <Link
               key={entry.activityId}
-              href={`/actividades/${entry.activityId}`}
+              href={activityPath(entry.activityId, entry.title)}
               className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-3 hover:border-orange-300 transition-colors group"
             >
               {entry.imageUrl ? (

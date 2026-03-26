@@ -3,6 +3,7 @@ import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { StarRating } from '@/components/StarRating'
+import { activityPath } from '@/lib/activity-url'
 
 export const metadata: Metadata = {
   title: 'Mis calificaciones | Infantia',
@@ -53,7 +54,7 @@ export default async function CalificacionesPage() {
           {ratings.map((rating) => (
             <Link
               key={rating.id}
-              href={`/actividades/${rating.activity.id}`}
+              href={activityPath(rating.activity.id, rating.activity.title)}
               className="flex items-start gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:border-orange-300 transition-colors group"
             >
               {/* Image or placeholder */}

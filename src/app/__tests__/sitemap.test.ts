@@ -4,8 +4,8 @@ import { SITE_URL } from '@/config/site';
 // vi.hoisted garantiza que las variables estén disponibles dentro del factory de vi.mock
 const { mockFindMany } = vi.hoisted(() => {
   const mockFindMany = vi.fn().mockResolvedValue([
-    { id: 'act-1', updatedAt: new Date('2026-03-20') },
-    { id: 'act-2', updatedAt: new Date('2026-03-21') },
+    { id: 'act-1', title: 'Taller de Pintura', updatedAt: new Date('2026-03-20') },
+    { id: 'act-2', title: 'Club de Lectura', updatedAt: new Date('2026-03-21') },
   ]);
   return { mockFindMany };
 });
@@ -50,8 +50,9 @@ describe('sitemap()', () => {
   it('incluye rutas dinámicas de actividades', async () => {
     const result = await sitemap();
     const urls = result.map(r => r.url);
-    expect(urls).toContain(`${SITE_URL}/actividades/act-1`);
-    expect(urls).toContain(`${SITE_URL}/actividades/act-2`);
+    // Las URLs incluyen el UUID + slug del título (formato canónico)
+    expect(urls.some(u => u.includes('/actividades/act-1'))).toBe(true);
+    expect(urls.some(u => u.includes('/actividades/act-2'))).toBe(true);
   });
 
   it('las rutas de actividades tienen prioridad 0.8', async () => {

@@ -6,6 +6,7 @@
 import type { MetadataRoute } from 'next';
 import { prisma } from '@/lib/db';
 import { SITE_URL } from '@/config/site';
+import { activityPath } from '@/lib/activity-url';
 
 export const revalidate = 3600; // Revalidar cada hora
 
@@ -61,12 +62,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Rutas dinámicas: actividades individuales (ACTIVE solamente, no EXPIRED)
   const activities = await prisma.activity.findMany({
     where: { status: 'ACTIVE' },
-    select: { id: true, updatedAt: true },
+    select: { id: true, title: true, updatedAt: true },
     orderBy: { updatedAt: 'desc' },
   });
 
   const dynamicRoutes = activities.map((activity) => ({
-    url: `${baseUrl}/actividades/${activity.id}`,
+    url: `${baseUrl}${activityPath(activity.id, activity.title)}`,
     lastModified: activity.updatedAt,
     changeFrequency: 'weekly' as const,
     priority: 0.8,

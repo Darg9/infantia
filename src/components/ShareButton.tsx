@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { SITE_URL } from '@/config/site'
+import { activityPath } from '@/lib/activity-url'
 
 interface ShareButtonProps {
   id: string
@@ -38,7 +39,7 @@ export function ShareButton({
           : 'Todas las edades'
 
   const shareText = `${title} — ${ageLabel} · Descubre más en Infantia`
-  const shareUrl = `${SITE_URL}/actividades/${id}`
+  const shareUrl = `${SITE_URL}${activityPath(id, title)}`
 
   const handleWebShare = async () => {
     if (navigator.share) {

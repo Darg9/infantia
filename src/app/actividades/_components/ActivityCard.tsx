@@ -5,6 +5,7 @@
 import clsx from 'clsx';
 import { getCategoryColor, getCategoryEmoji } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
+import { activityPath } from '@/lib/activity-url';
 
 // Tipo local inferido desde lo que devuelve listActivities
 // Prisma retorna price como Decimal (objeto con toNumber()), no como number primitivo
@@ -187,9 +188,9 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
     </div>
   );
 
-  // La tarjeta siempre enlaza a la página de detalle interna
+  // La tarjeta siempre enlaza a la página de detalle interna (URL canónica)
   return (
-    <a href={`/actividades/${activity.id}`} className="block h-full">
+    <a href={activityPath(activity.id, activity.title)} className="block h-full">
       {cardContent}
     </a>
   );

@@ -14,6 +14,7 @@ import { ActivityHistoryTracker } from '@/components/profile/ActivityHistoryTrac
 import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractActivityId, activityPath } from '@/lib/activity-url';
+import { SimilarActivities } from '@/components/SimilarActivities';
 import clsx from 'clsx';
 
 export async function generateMetadata({
@@ -594,6 +595,11 @@ export default async function ActividadDetallePage({
           </a>
         </div>
       </div>
+      </div>
+
+      {/* Actividades similares */}
+      <div className="mx-auto max-w-5xl px-4 pb-12">
+        <SimilarActivities activityId={id} />
       </div>
 
       {/* Track activity view in browser history */}

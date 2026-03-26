@@ -141,6 +141,51 @@ export async function getActivityById(id: string) {
   });
 }
 
+/**
+ * Devuelve hasta `limit` actividades similares a la dada.
+ * Criterio: comparten al menos una categoría, misma ciudad preferida.
+ * Excluye la actividad actual y las EXPIRED/DRAFT.
+ */
+export async function getSimilarActivities(activityId: string, limit = 4) {
+  // 1. Obtener categorías y ciudad de la actividad base
+  const base = await prisma.activity.findUnique({
+    where: { id: activityId },
+    select: {
+      categories: { select: { categoryId: true } },
+      location: { select: { cityId: true } },
+    },
+  });
+
+  if (!base) return [];
+
+  const categoryIds = base.categories.map((c) => c.categoryId);
+  const cityId = base.location?.cityId;
+
+  if (categoryIds.length === 0) return [];
+
+  // 2. Buscar por categorías compartidas (misma ciudad tiene prioridad vía orderBy score)
+  const candidates = await prisma.activity.findMany({
+    where: {
+      id: { not: activityId },
+      status: 'ACTIVE',
+      categories: { some: { categoryId: { in: categoryIds } } },
+    },
+    include: activityIncludes,
+    take: limit * 3, // Traer más para poder reordenar
+  });
+
+  // 3. Puntuar: +2 por misma ciudad, +1 por cada categoría compartida
+  const scored = candidates.map((act) => {
+    const sharedCats = act.categories.filter((c) => categoryIds.includes(c.category.id)).length;
+    const sameCity = cityId && act.location?.city.id === cityId ? 2 : 0;
+    return { act, score: sharedCats + sameCity };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+
+  return scored.slice(0, limit).map((s) => s.act);
+}
+
 export async function createActivity(data: CreateActivityInput) {
   const { categoryIds, ...activityData } = data;
 

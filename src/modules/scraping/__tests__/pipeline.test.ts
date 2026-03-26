@@ -671,7 +671,7 @@ describe('Pipeline — branches no cubiertos', () => {
 
     // Override PlaywrightExtractor mock para este test
     const { PlaywrightExtractor } = await import('../extractors/playwright.extractor');
-    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: Record<string, unknown>) {
+    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: InstanceType<typeof PlaywrightExtractor>) {
       this.extractWebText = vi.fn().mockResolvedValue({
         url: listingUrl,
         sourceText: 'Texto suficientemente largo extraído por Playwright para superar el umbral mínimo',
@@ -717,7 +717,7 @@ describe('Pipeline — branches no cubiertos', () => {
     mockExtractLinksAllPages.mockResolvedValue([]); // Cheerio no encontró links
 
     const { PlaywrightExtractor } = await import('../extractors/playwright.extractor');
-    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: Record<string, unknown>) {
+    vi.mocked(PlaywrightExtractor).mockImplementationOnce(function (this: InstanceType<typeof PlaywrightExtractor>) {
       this.extractWebLinks = vi.fn().mockRejectedValue(new Error('Browser crash'));
       this.extractWebText = vi.fn();
       this.close = vi.fn();

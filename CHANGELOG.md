@@ -14,6 +14,37 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.5] — 2026-03-26 (URLs canónicas, imágenes, UX mejoras)
+**Documento Fundacional: V16 pendiente**
+
+### Added
+- **URLs canónicas de actividades** — formato `/actividades/{uuid}-{slug-titulo}`
+  - `src/lib/activity-url.ts`: `slugifyTitle`, `activityPath`, `extractActivityId`
+  - Detail page extrae UUID via regex y redirige URLs bare → canónica
+  - Todos los links internos (tarjetas, ShareButton, sitemap, perfiles, email) actualizados
+  - `<link rel="canonical">` apunta a URL con slug
+- **Imágenes reales en tarjetas y detalle** — `scripts/backfill-images.ts`
+  - Extrae `og:image` / `twitter:image` de cada `sourceUrl` (Cheerio + fetch)
+  - 77/230 actividades con imagen real (idartes.gov.co, culturarecreacionydeporte.gov.co, bogota.gov.co, Instagram CDN)
+  - Rate limiting 200ms entre requests, soporte TLS relajado para .gov.co
+  - Filtro de imágenes blancos/logo conocidas
+- **Reportar error → contacto precompletado** — link en detalle pasa `?motivo=reportar&url=<ruta-canónica>`; formulario lee params y pre-rellena motivo + URL automáticamente
+- **Filtro de precio** en listado (Gratis / De pago) con facetado
+- **API admin/queue** — `GET /api/admin/queue/status` y `POST /api/admin/queue/enqueue`
+- `scripts/clean-queue.ts` — limpia jobs BullMQ acumulados (`--dry-run` disponible)
+
+### Fixed
+- TLS `UNABLE_TO_VERIFY_LEAF_SIGNATURE` en jbb.gov.co, cinematecadebogota.gov.co, planetariodebogota.gov.co — `undici.Agent({ rejectUnauthorized: false })`
+- Eliminados todos los errores TypeScript del proyecto (0 errores `tsc --noEmit`)
+
+### Tests
+- 661 tests pasando (42 archivos)
+- 12 tests nuevos: `activity-url.test.ts` (slugifyTitle, activityPath, extractActivityId)
+- 4 tests TLS dispatcher en cheerio-extractor
+- 9 tests queue status/enqueue API
+
+---
+
 ## [v0.7.4] — 2026-03-26 (BullMQ + Upstash Redis + multi-ciudad Banrep)
 **Documento Fundacional: V16 pendiente**
 

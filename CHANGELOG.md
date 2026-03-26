@@ -14,6 +14,41 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.7.4] — 2026-03-26 (BullMQ + Upstash Redis + multi-ciudad Banrep)
+**Documento Fundacional: V16 pendiente**
+
+### Added
+- `src/modules/scraping/queue/`: BullMQ + Redis — sistema asíncrono de scraping completamente operativo con Upstash Redis (Free Tier)
+  - `connection.ts`: singleton ioredis con soporte `rediss://` (TLS)
+  - `scraping.queue.ts`: Queue con reintentos exponenciales (3 intentos, backoff 5s)
+  - `scraping.worker.ts`: Worker concurrencia=1 (respeta rate limit Gemini)
+  - `producer.ts`: `enqueueBatchJob` + `enqueueInstagramJob`
+  - `types.ts`: tipado completo `BatchJobData`, `InstagramJobData`, `ScrapingJobResult`
+- `scripts/run-worker.ts`: proceso worker con shutdown limpio (SIGINT/SIGTERM)
+- `scripts/test-redis.ts`: script de verificación de conexión Redis
+- `REDIS_URL` en `.env`: Upstash Redis `modern-bat-84669.upstash.io:6379` (TLS)
+- `scripts/ingest-sources.ts`: modo `--queue` para encolar jobs sin procesarlos
+
+### Changed
+- `pipeline.ts`: `runBatchPipeline(url, opts)` — firma refactorizada a options object
+  - **Fix crítico**: `sitemapPatterns` nunca llegaba al extractor (se pasaba como `concurrency`)
+  - `opts = { maxPages?, sitemapPatterns?, concurrency? }`
+- `scripts/ingest-sources.ts`: Banrep expandido a **10 ciudades principales** (un job por ciudad)
+  - Bogotá, Medellín, Cali, Barranquilla, Cartagena, Bucaramanga, Manizales, Pereira, Ibagué, Santa Marta
+  - Cada job filtra el sitemap por `/<ciudad-slug>/` → cityName correcto por actividad
+  - Total fuentes: **14** (4 Bogotá + 10 Banrep por ciudad)
+- `gemini.analyzer.ts`: modelo actualizado a `gemini-2.5-flash` (estable)
+- Banrep sitemap: de 16.614 → **684 URLs** con filtro `/bogota/` (fix sitemapPatterns)
+
+### Fixed
+- `pipeline.test.ts`: tipo TS en mocks de `PlaywrightExtractor` — `InstanceType<typeof PlaywrightExtractor>` en lugar de `Record<string, unknown>`
+
+### Tests
+- 636 tests pasando (sin regresiones)
+- Callers de `runBatchPipeline` actualizados al nuevo options object
+
+---
+
 ## [v0.7.3] — 2026-03-25 (Deuda técnica: queue tests + cobertura scraping)
 **Documento Fundacional: V15**
 

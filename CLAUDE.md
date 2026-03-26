@@ -134,18 +134,16 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.3 — 2026-03-25)
-- 211 actividades en BD (5 fuentes: BibloRed, IDARTES, CEFEs, Centro Felicidad, Eventos Bogotá)
-- **636 tests** en 40 archivos — `npm test` pasa en ~6s
+## Estado actual (v0.7.4 — 2026-03-26)
+- ~230 actividades en BD (scraping Banrep Bogotá en curso — 168/684 procesadas)
+- **636 tests** en 40 archivos — `npm test` pasa en ~7s
 - Cobertura real: **97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines**
-- `npm run test:coverage` funcional — threshold cap ajustado a 85%
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app` — cron jobs configurados
-- Supabase Auth: Site URL y Redirect URLs correctos, email delivery verificado
-- Doc Fundacional: V14 generado para v0.7.1 (V15 pendiente para v0.7.3)
-- Pipeline multi-fuente listo: Cinemateca, Planetario, JBB, Maloka, Banrep (sitemap.xml)
-- BullMQ + Redis queue: sistema asíncrono de scraping implementado y con 100% cobertura
-- Próximo paso: ejecutar `npx tsx scripts/ingest-sources.ts` para ingestar las 5 fuentes
+- Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
+- BullMQ + Upstash Redis: OPERATIVO — `rediss://modern-bat-84669.upstash.io:6379`
+- 14 fuentes configuradas: 4 Bogotá + 10 Banrep por ciudad (multi-ciudad)
+- Gemini: `gemini-2.5-flash`, 20 RPD free tier — quota se renueva medianoche UTC
+- Próximo paso: con quota fresca → `npx tsx scripts/ingest-sources.ts --queue` + `npx tsx scripts/run-worker.ts`
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
 
@@ -163,3 +161,4 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.7.1 | V14 | Deuda técnica tests: 581 tests, 98.32% stmts, playwright 97.22% funcs |
 | v0.7.2 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |
 | v0.7.3 | V15 | Deuda técnica queue tests: 636 tests, 97.41% stmts, queue/* 100% cobertura |
+| v0.7.4 | V16 | BullMQ + Upstash Redis operativo, Banrep multi-ciudad (10 ciudades), fix sitemapPatterns |

@@ -287,7 +287,7 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
     mockAnalyze.mockResolvedValue(sampleNLPResult);
 
     const pipeline = new ScrapingPipeline();
-    const result = await pipeline.runBatchPipeline(listingUrl, 2);
+    const result = await pipeline.runBatchPipeline(listingUrl, { maxPages: 2 });
     expect(result.results).toHaveLength(6);
   });
 
@@ -301,7 +301,7 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
     mockAnalyze.mockResolvedValue(sampleNLPResult);
 
     const pipeline = new ScrapingPipeline();
-    await pipeline.runBatchPipeline(sitemapUrl, 3, 10, ['/bogota/actividad/']);
+    await pipeline.runBatchPipeline(sitemapUrl, { maxPages: 10, sitemapPatterns: ['/bogota/actividad/'] });
 
     expect(mockExtractSitemapLinks).toHaveBeenCalledWith(sitemapUrl, ['/bogota/actividad/']);
     expect(mockExtractLinksAllPages).not.toHaveBeenCalled();
@@ -313,7 +313,7 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
     mockExtractSitemapLinks.mockResolvedValue([]);
 
     const pipeline = new ScrapingPipeline();
-    await pipeline.runBatchPipeline(sitemapUrl, 3, 10, patterns);
+    await pipeline.runBatchPipeline(sitemapUrl, { maxPages: 10, sitemapPatterns: patterns });
 
     expect(mockExtractSitemapLinks).toHaveBeenCalledWith(sitemapUrl, patterns);
   });

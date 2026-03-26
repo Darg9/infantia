@@ -31,7 +31,7 @@ async function main() {
   try {
     if (discoverMode) {
       console.log(`\n🔍 Modo DISCOVER — Descubriendo actividades en: ${url} (máx ${maxPages} páginas)\n`);
-      const result = await pipeline.runBatchPipeline(url, 3, maxPages);
+      const result = await pipeline.runBatchPipeline(url, { maxPages });
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
       console.log('\n✅ ================= RESULTADO BATCH ================= ✅\n');

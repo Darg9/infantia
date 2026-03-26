@@ -48,7 +48,7 @@ async function runDirect(dryRun: boolean, maxPages: number) {
 
     const pipeline = new ScrapingPipeline({ saveToDb: !dryRun, cityName: source.cityName, verticalSlug: source.verticalSlug });
     try {
-      const result = await pipeline.runBatchPipeline(source.url, 3, maxPages, source.sitemapPatterns);
+      const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
       const saved = result.results.filter((r) => r.data).length;
       const failed = result.results.filter((r) => !r.data).length;
       const skipped = result.discoveredLinks - result.filteredLinks;

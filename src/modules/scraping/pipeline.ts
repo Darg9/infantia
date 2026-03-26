@@ -58,7 +58,8 @@ export class ScrapingPipeline {
     return finalData;
   }
 
-  async runBatchPipeline(listingUrl: string, concurrency: number = 3, maxPages: number = 50, sitemapPatterns: string[] = []): Promise<BatchPipelineResult> {
+  async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
+    const { maxPages = 50, sitemapPatterns = [], concurrency = 3 } = opts;
     console.log(`\n[BATCH] ========== INICIO BATCH PIPELINE ==========`);
     console.log(`[BATCH] URL de listado: ${listingUrl}`);
     console.log(`[BATCH] Cache: ${this.cache.size} URLs ya scrapeadas`);

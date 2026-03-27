@@ -100,10 +100,11 @@ model User {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt @default(now())
 
-  city      City?      @relation(fields: [cityId], references: [id])
-  children  Child[]
-  favorites Favorite[]
-  ratings   Rating[]
+  city              City?              @relation(fields: [cityId], references: [id])
+  children          Child[]
+  favorites         Favorite[]
+  ratings           Rating[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -262,6 +263,20 @@ model Rating {
   @@unique([userId, activityId])
   @@index([activityId])
   @@map("ratings")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }
 
 // =============================================================================

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { PushButton } from '@/components/PushButton'
 
 interface NotificationPrefs {
   email: boolean
@@ -143,16 +144,11 @@ export default function NotificacionesPage() {
           </div>
 
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div>
-                <p className="text-sm font-medium text-gray-400">Push</p>
-                <p className="text-xs text-gray-300">Notificaciones en el navegador</p>
-              </div>
-              <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-medium text-gray-500">
-                Proximamente
-              </span>
+            <div>
+              <p className="text-sm font-medium text-gray-700">Push</p>
+              <p className="text-xs text-gray-400">Notificaciones en el navegador</p>
             </div>
-            <Toggle checked={false} onChange={() => {}} disabled />
+            <PushButton />
           </div>
         </div>
       </section>

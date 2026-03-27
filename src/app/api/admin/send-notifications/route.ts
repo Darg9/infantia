@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@/generated/prisma/client';
 import { sendWelcomeEmail, sendActivityDigest } from '@/lib/email/resend';
+import { sendPushToMany } from '@/lib/push';
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -54,6 +55,12 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[NOTIFICATIONS] Found ${users.length} users with notification prefs`);
+
+    // Obtener todas las suscripciones push (para envío masivo al final)
+    const allPushSubs = await prisma.pushSubscription.findMany({
+      where: { userId: { in: users.map((u) => u.id) } },
+      select: { endpoint: true, p256dh: true, auth: true },
+    });
 
     let sentCount = 0;
     let skippedCount = 0;
@@ -187,9 +194,35 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Enviar push notification a todos los suscriptores (si hay actividades nuevas globales)
+    let pushSent = 0;
+    if (!dryRun && allPushSubs.length > 0 && sentCount > 0) {
+      const recentCount = await prisma.activity.count({
+        where: { status: 'ACTIVE', createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      });
+      if (recentCount > 0) {
+        const expiredEndpoints = await sendPushToMany(allPushSubs, {
+          title: '🎉 Nuevas actividades en Infantia',
+          body: `${recentCount} actividad${recentCount !== 1 ? 'es' : ''} nueva${recentCount !== 1 ? 's' : ''} disponible${recentCount !== 1 ? 's' : ''} hoy`,
+          url: '/actividades',
+          tag: 'digest',
+        });
+        pushSent = allPushSubs.length - expiredEndpoints.length;
+        // Limpiar suscripciones expiradas
+        if (expiredEndpoints.length > 0) {
+          await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expiredEndpoints } } });
+          console.log(`[NOTIFICATIONS] Push: ${expiredEndpoints.length} suscripciones expiradas eliminadas`);
+        }
+      }
+    } else if (dryRun && allPushSubs.length > 0) {
+      console.log(`[NOTIFICATIONS] DRY-RUN: Would send push to ${allPushSubs.length} devices`);
+      pushSent = allPushSubs.length;
+    }
+
     console.log(`[NOTIFICATIONS] ========== RESULTADO ==========`);
     console.log(`[NOTIFICATIONS] Total usuarios: ${users.length}`);
-    console.log(`[NOTIFICATIONS] Enviados: ${sentCount}`);
+    console.log(`[NOTIFICATIONS] Enviados (email): ${sentCount}`);
+    console.log(`[NOTIFICATIONS] Enviados (push): ${pushSent}`);
     console.log(`[NOTIFICATIONS] Omitidos: ${skippedCount}`);
     console.log(`[NOTIFICATIONS] Errores: ${errors.length}`);
 
@@ -202,6 +235,7 @@ export async function POST(request: NextRequest) {
         success: true,
         total: users.length,
         sent: sentCount,
+        pushSent,
         skipped: skippedCount,
         errors: errors.length,
         dryRun,

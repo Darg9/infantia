@@ -8,15 +8,17 @@ vi.mock('next/server', () => ({
   },
 }))
 
-const { mockPrisma, mockSendActivityDigest } = vi.hoisted(() => {
+const { mockPrisma, mockSendActivityDigest, mockSendPushToMany } = vi.hoisted(() => {
   const mockPrisma = {
     user: { findMany: vi.fn() },
     child: { findMany: vi.fn() },
-    activity: { findMany: vi.fn() },
+    activity: { findMany: vi.fn(), count: vi.fn().mockResolvedValue(0) },
+    pushSubscription: { findMany: vi.fn().mockResolvedValue([]), deleteMany: vi.fn().mockResolvedValue({}) },
     $disconnect: vi.fn().mockResolvedValue(undefined),
   }
   const mockSendActivityDigest = vi.fn()
-  return { mockPrisma, mockSendActivityDigest }
+  const mockSendPushToMany = vi.fn().mockResolvedValue([])
+  return { mockPrisma, mockSendActivityDigest, mockSendPushToMany }
 })
 
 vi.mock('@prisma/adapter-pg', () => ({
@@ -33,6 +35,10 @@ vi.mock('@/generated/prisma/client', () => ({
 vi.mock('@/lib/email/resend', () => ({
   sendWelcomeEmail: vi.fn(),
   sendActivityDigest: mockSendActivityDigest,
+}))
+
+vi.mock('@/lib/push', () => ({
+  sendPushToMany: mockSendPushToMany,
 }))
 
 import { NextResponse } from 'next/server'
@@ -128,6 +134,10 @@ beforeEach(() => {
   process.env.CRON_SECRET = 'test-secret'
   mockPrisma.child.findMany.mockResolvedValue([])
   mockPrisma.activity.findMany.mockResolvedValue([])
+  mockPrisma.activity.count.mockResolvedValue(0)
+  mockPrisma.pushSubscription.findMany.mockResolvedValue([])
+  mockPrisma.pushSubscription.deleteMany.mockResolvedValue({})
+  mockSendPushToMany.mockResolvedValue([])
 })
 
 describe('POST /api/admin/send-notifications', () => {

@@ -3,6 +3,7 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { ActivityNLPResult, BatchPipelineResult } from './types';
 import { calculateSimilarity, normalizeString } from './deduplication';
+import { geocodeAddress } from '../../lib/geocoding';
 
 // Prisma client propio para scripts standalone (no usa el singleton de Next.js)
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -96,6 +97,21 @@ export class ScrapingStorage {
         sourceCapturedAt: new Date(),
       };
 
+      // 4. Obtener o crear Location (con geocoding)
+      let locationId: string | null = null;
+      if (data.location?.address || data.location?.city) {
+        const cityName = data.location.city || 'Bogotá';
+        const locId = await this.getOrCreateLocation(
+          data.location.address || cityName,
+          cityName,
+        );
+        locationId = locId;
+      }
+
+      if (locationId) {
+        (activityData as any).locationId = locationId;
+      }
+
       let activityId: string;
 
       if (existing) {
@@ -117,7 +133,7 @@ export class ScrapingStorage {
         console.log(`[STORAGE] Creada: "${data.title}" (${activityId})`);
       }
 
-      // 4. Asociar categorías
+      // 5. Asociar categorías
       await this.linkCategories(activityId, data.categories, vertical.id);
 
       return activityId;
@@ -279,6 +295,55 @@ export class ScrapingStorage {
       return null;
     } catch {
       return null; // En caso de error, permitir crear la actividad
+    }
+  }
+
+  /**
+   * Obtiene o crea un registro Location para una dirección dada.
+   * Geocodifica via Nominatim si no existe ya una location con esa dirección.
+   */
+  private async getOrCreateLocation(address: string, cityName: string): Promise<string | null> {
+    try {
+      // Buscar la ciudad en BD
+      const city = await prisma.city.findFirst({
+        where: { name: { contains: cityName.split(',')[0].trim(), mode: 'insensitive' } },
+      });
+      if (!city) {
+        // Intentar con Bogotá como fallback
+        const bogota = await prisma.city.findFirst({ where: { name: { contains: 'Bogotá', mode: 'insensitive' } } });
+        if (!bogota) return null;
+        return this.getOrCreateLocation(address, 'Bogotá');
+      }
+
+      // Buscar location existente con la misma dirección + ciudad
+      const existing = await prisma.location.findFirst({
+        where: { address, cityId: city.id },
+      });
+      if (existing) return existing.id;
+
+      // Geocodificar
+      const geoResult = await geocodeAddress(address, city.name);
+
+      const location = await prisma.location.create({
+        data: {
+          name: address.substring(0, 255),
+          address: address.substring(0, 500),
+          cityId: city.id,
+          latitude: geoResult?.latitude ?? 0,
+          longitude: geoResult?.longitude ?? 0,
+        },
+      });
+
+      if (geoResult) {
+        console.log(`[STORAGE] 📍 Geocodificado: "${address}" → [${geoResult.latitude.toFixed(4)}, ${geoResult.longitude.toFixed(4)}]`);
+      } else {
+        console.log(`[STORAGE] ⚠️ Sin coords para: "${address}" — guardado con lat/lng=0`);
+      }
+
+      return location.id;
+    } catch (err: any) {
+      console.error('[STORAGE] Error creando location:', err.message);
+      return null;
     }
   }
 

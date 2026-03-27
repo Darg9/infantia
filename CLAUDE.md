@@ -134,7 +134,7 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.6 — 2026-03-26)
+## Estado actual (v0.7.7 — 2026-03-27)
 - ~230 actividades en BD (scraping Banrep Bogotá pendiente — necesita quota Gemini fresca)
 - **661 tests** en 42 archivos — `npm test` pasa en ~7s
 - Cobertura real: **97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines**
@@ -144,6 +144,12 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - 14 fuentes configuradas: 4 Bogotá + 10 Banrep por ciudad (multi-ciudad)
 - Gemini: `gemini-2.5-flash`, 20 RPD free tier — quota se renueva medianoche UTC
 - Próximo paso: con quota fresca → `npx tsx scripts/ingest-sources.ts --queue` + `npx tsx scripts/run-worker.ts`
+
+### Features v0.7.7
+- **Web Push:** VAPID + ServiceWorker (`public/sw.js`) + PushButton + API `/api/push/subscribe` + modelo `PushSubscription`
+- **Admin actividades:** `/admin/actividades` (listar/filtrar/ocultar) + `/admin/actividades/[id]/editar` + API PATCH
+- **Página proveedor:** `/proveedores/[slug]` — perfil público con actividades del proveedor
+- **slug en Provider:** campo único, generado automáticamente, links desde tarjetas y detalle
 
 ### Features v0.7.5 – v0.7.6
 - **URLs canónicas:** `/actividades/{uuid}-{slug-titulo}` — `src/lib/activity-url.ts`
@@ -174,3 +180,4 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.7.4 | V16 | BullMQ + Upstash Redis operativo, Banrep multi-ciudad (10 ciudades), fix sitemapPatterns |
 | v0.7.5 | V16 | URLs canónicas, backfill imágenes, reportar error, filtro precio, API queue |
 | v0.7.6 | V16 | Mapa Leaflet, actividades similares, og:image pipeline, filtro ciudad, gradientes |
+| v0.7.7 | V17 | Web Push, admin actividades, página proveedor /proveedores/[slug] |

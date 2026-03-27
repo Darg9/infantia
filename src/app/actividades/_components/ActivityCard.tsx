@@ -25,6 +25,7 @@ interface Activity {
   pricePeriod: string | null;
   imageUrl: string | null;
   sourceUrl: string | null;
+  createdAt: Date;
   provider: { name: string; isVerified: boolean } | null;
   location: {
     name: string;
@@ -69,6 +70,8 @@ const TYPE_LABELS: Record<string, string> = {
   WORKSHOP: 'Taller',
 };
 
+const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
+
 export default function ActivityCard({ activity, isFavorited = false }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
@@ -76,6 +79,8 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
   const ageLabel = formatAge(activity.ageMin, activity.ageMax);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
   const locationLabel = activity.location?.neighborhood ?? activity.location?.city?.name ?? '';
+  const isNew = activity.status !== 'EXPIRED'
+    && Date.now() - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
 
   const cardContent = (
     <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
@@ -119,6 +124,13 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
         {activity.status === 'EXPIRED' && (
           <span className="absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
             Verificar disponibilidad
+          </span>
+        )}
+
+        {/* Badge Nuevo — actividades de los últimos 7 días */}
+        {isNew && (
+          <span className="absolute bottom-1.5 left-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+            🆕 Nuevo
           </span>
         )}
       </div>

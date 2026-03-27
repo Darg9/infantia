@@ -26,6 +26,8 @@ const baseActivity = {
   pricePeriod: 'FREE',
   imageUrl: null,
   sourceUrl: 'https://example.com',
+  // createdAt hace 1 día → entra dentro de los 7 días
+  createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
   provider: { name: 'BibloRed', isVerified: true },
   location: { name: 'Biblioteca Tintal', neighborhood: 'Tintal', city: { name: 'Bogotá' } },
   categories: [{ category: { id: 'c1', name: 'Arte y Creatividad', slug: 'arte-y-creatividad' } }],
@@ -150,6 +152,38 @@ describe('ActivityCard', () => {
     it('pasa isFavorited=true cuando se indica', () => {
       render(<ActivityCard activity={baseActivity} isFavorited={true} />);
       expect(screen.getByRole('button', { name: 'Quitar de favoritos' })).toBeInTheDocument();
+    });
+  });
+
+  describe('badge Nuevo', () => {
+    it('muestra "Nuevo" cuando createdAt < 7 días y status=ACTIVE', () => {
+      render(<ActivityCard activity={baseActivity} />);
+      expect(screen.getByText(/Nuevo/i)).toBeInTheDocument();
+    });
+
+    it('NO muestra "Nuevo" cuando createdAt > 7 días', () => {
+      const oldActivity = {
+        ...baseActivity,
+        createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+      };
+      render(<ActivityCard activity={oldActivity} />);
+      expect(screen.queryByText(/Nuevo/i)).not.toBeInTheDocument();
+    });
+
+    it('NO muestra "Nuevo" cuando status=EXPIRED aunque sea reciente', () => {
+      const expiredNew = { ...baseActivity, status: 'EXPIRED' };
+      render(<ActivityCard activity={expiredNew} />);
+      expect(screen.queryByText(/🆕 Nuevo/i)).not.toBeInTheDocument();
+    });
+
+    it('muestra "Nuevo" exactamente en el límite de 7 días (< threshold)', () => {
+      const borderActivity = {
+        ...baseActivity,
+        // 6 días y 23 horas → dentro del umbral
+        createdAt: new Date(Date.now() - (7 * 24 * 60 * 60 * 1000 - 3600_000)),
+      };
+      render(<ActivityCard activity={borderActivity} />);
+      expect(screen.getByText(/Nuevo/i)).toBeInTheDocument();
     });
   });
 

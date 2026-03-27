@@ -5,6 +5,7 @@
 
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getActivityById } from '@/modules/activities';
 import { ShareButton } from '@/components/ShareButton';
 import { FavoriteButton } from '@/components/FavoriteButton';
@@ -399,9 +400,15 @@ export default async function ActividadDetallePage({
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-indigo-700">
                     {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
                   </div>
-                  <div>
+                  <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
-                      <span className="font-medium text-gray-900">{activity.provider.name}</span>
+                      {activity.provider.slug ? (
+                        <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-900 hover:text-orange-600 transition-colors">
+                          {activity.provider.name}
+                        </Link>
+                      ) : (
+                        <span className="font-medium text-gray-900">{activity.provider.name}</span>
+                      )}
                       {activity.provider.isVerified && (
                         <span className="text-xs text-indigo-500 font-medium">✓ Verificado</span>
                       )}
@@ -410,6 +417,11 @@ export default async function ActividadDetallePage({
                       {({ ACADEMY: 'Academia', INDEPENDENT: 'Independiente', INSTITUTION: 'Institución', GOVERNMENT: 'Entidad pública' } as Record<string,string>)[activity.provider.type] ?? activity.provider.type}
                     </span>
                   </div>
+                  {activity.provider.slug && (
+                    <Link href={`/proveedores/${activity.provider.slug}`} className="shrink-0 text-xs text-orange-500 hover:underline">
+                      Ver más →
+                    </Link>
+                  )}
                 </div>
               </div>
             )}

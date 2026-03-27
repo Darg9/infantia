@@ -35,6 +35,14 @@ interface Facets {
   availableCities: City[];
 }
 
+const SORT_OPTIONS = [
+  { value: 'relevance',  label: '⭐ Relevancia'       },
+  { value: 'date',       label: '📅 Próximas primero'  },
+  { value: 'newest',     label: '🆕 Recién agregadas'  },
+  { value: 'price_asc',  label: '💰 Precio: menor'    },
+  { value: 'price_desc', label: '💰 Precio: mayor'    },
+] as const;
+
 interface FiltersProps {
   search: string;
   ageMin: string;
@@ -44,6 +52,7 @@ interface FiltersProps {
   type: string;
   audience: string;
   price: string;
+  sort: string;
   facets: Facets;
   total: number;
 }
@@ -85,7 +94,7 @@ function highlightMatch(title: string, query: string): React.ReactNode {
 }
 
 export default function Filters({
-  search, ageMin, ageMax, categoryId, cityId, type, audience, price, facets, total,
+  search, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, facets, total,
 }: FiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -148,7 +157,7 @@ export default function Filters({
     setShowSuggestions(false);
     setSuggestions([]);
     setActiveIndex(-1);
-    navigate({ search: title, ageMin, ageMax, categoryId, cityId, type, audience, price });
+    navigate({ search: title, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
   }
 
   // Navegar con teclado en el dropdown
@@ -184,33 +193,37 @@ export default function Filters({
     fetchSuggestions(value);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
-      navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price });
+      navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
     }, 400);
   }
 
   function handleAgeChange(index: number) {
     const option = AGE_OPTIONS[index];
-    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, cityId, type, audience, price });
+    navigate({ search: searchValue, ageMin: option.min, ageMax: option.max, categoryId, cityId, type, audience, price, sort });
   }
 
   function handleCategoryChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, cityId, type, audience, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, cityId, type, audience, price, sort });
   }
 
   function handleCityChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price, sort });
   }
 
   function handleTypeChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price, sort });
   }
 
   function handleAudienceChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price, sort });
   }
 
   function handlePriceChange(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value, sort });
+  }
+
+  function handleSortChange(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort: value });
   }
 
   function handleReset() {
@@ -218,7 +231,7 @@ export default function Filters({
     navigate({});
   }
 
-  const hasFilters = search || ageMin || ageMax || categoryId || cityId || type || audience || price;
+  const hasFilters = search || ageMin || ageMax || categoryId || cityId || type || audience || price || (sort && sort !== 'relevance');
 
   function selectCls(active: boolean, width = '') {
     const base = 'rounded-xl border px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
@@ -383,6 +396,17 @@ export default function Filters({
             ))}
           </select>
         )}
+
+        {/* Ordenar */}
+        <select
+          value={sort}
+          onChange={e => handleSortChange(e.target.value)}
+          className={selectCls(sort !== 'relevance', 'sm:w-48 ml-auto')}
+        >
+          {SORT_OPTIONS.map(o => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
+        </select>
 
         {/* Limpiar */}
         {hasFilters && (

@@ -18,6 +18,9 @@ const activityIncludes = {
   categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
 } satisfies Prisma.ActivityInclude;
 
+export const VALID_SORT_VALUES = ['relevance', 'date', 'price_asc', 'price_desc', 'newest'] as const;
+export type SortValue = (typeof VALID_SORT_VALUES)[number];
+
 interface ListParams {
   skip: number;
   pageSize: number;
@@ -34,6 +37,8 @@ interface ListParams {
   type?: string;
   audience?: string;
   search?: string;
+  /** 'relevance' | 'date' | 'price_asc' | 'price_desc' | 'newest' */
+  sortBy?: SortValue;
 }
 
 // Valores de audience que aplican a cada opción de filtro
@@ -42,6 +47,27 @@ function audienceValues(audience: string): string[] {
   if (audience === 'FAMILY') return ['FAMILY', 'ALL'];
   if (audience === 'ADULTS') return ['ADULTS', 'ALL'];
   return [];
+}
+
+function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInput[] {
+  switch (sortBy) {
+    case 'date':
+      // Próximas primero; actividades sin fecha al final
+      return [{ startDate: { sort: 'asc', nulls: 'last' } }, { status: 'asc' }];
+    case 'price_asc':
+      // Más económico primero; sin precio al final
+      return [{ price: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }];
+    case 'price_desc':
+      // Más caro primero; sin precio al final
+      return [{ price: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
+    case 'newest':
+      // Recién agregadas a Infantia
+      return [{ createdAt: 'desc' }];
+    case 'relevance':
+    default:
+      // Activas primero, luego por confianza del scraper
+      return [{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }];
+  }
 }
 
 export async function listActivities(params: ListParams) {
@@ -117,11 +143,14 @@ export async function listActivities(params: ListParams) {
     where.AND = andConditions;
   }
 
+  // Ordenamiento dinámico
+  const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(params.sortBy);
+
   const [activities, total] = await Promise.all([
     prisma.activity.findMany({
       where,
       include: activityIncludes,
-      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }],
+      orderBy,
       skip: params.skip,
       take: params.pageSize,
     }),

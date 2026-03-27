@@ -5,7 +5,7 @@
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';
-import { listActivities } from '@/modules/activities';
+import { listActivities, VALID_SORT_VALUES, type SortValue } from '@/modules/activities';
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import type { Prisma } from '@/generated/prisma/client';
@@ -39,6 +39,7 @@ interface SearchParams {
   type?: string;
   audience?: string;
   price?: string;
+  sort?: string;
   page?: string;
 }
 
@@ -211,6 +212,10 @@ export default async function ActividadesPage({
   const VALID_AUDIENCES = ['KIDS', 'FAMILY', 'ADULTS', 'ALL'];
   const VALID_PRICES = ['free', 'paid'];
 
+  const sortBy = (params.sort && (VALID_SORT_VALUES as readonly string[]).includes(params.sort)
+    ? params.sort
+    : 'relevance') as SortValue;
+
   const filters: ActiveFilters = {
     search: params.search?.trim() || undefined,
     ageMin: parseAge(params.ageMin),
@@ -230,6 +235,7 @@ export default async function ActividadesPage({
       skip,
       pageSize: PAGE_SIZE,
       ...filters,
+      sortBy,
     }),
     getFacets(filters),
     getSession(),
@@ -282,6 +288,7 @@ export default async function ActividadesPage({
             type={params.type ?? ''}
             audience={params.audience ?? ''}
             price={params.price ?? ''}
+            sort={sortBy}
             facets={facets}
             total={total}
           />

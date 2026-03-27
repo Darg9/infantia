@@ -35,6 +35,7 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
+  VALID_SORT_VALUES,
 } from '../activities.service';
 
 // ---------------------------------------------------------------------------
@@ -218,6 +219,52 @@ describe('listActivities()', () => {
     await listActivities({ skip: 0, pageSize: 20, audience: 'ALL' });
     const whereArg = mockFindMany.mock.calls[0][0].where;
     expect(whereArg.audience).toBeUndefined();
+  });
+
+  // --- sortBy ---
+  it('sortBy=relevance usa status asc + sourceConfidence desc (default)', async () => {
+    await listActivities({ skip: 0, pageSize: 20, sortBy: 'relevance' });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy).toEqual([{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
+  });
+
+  it('sin sortBy usa ordenamiento por relevancia (default)', async () => {
+    await listActivities({ skip: 0, pageSize: 20 });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy).toEqual([{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
+  });
+
+  it('sortBy=date ordena por startDate asc nulls last', async () => {
+    await listActivities({ skip: 0, pageSize: 20, sortBy: 'date' });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy[0]).toEqual({ startDate: { sort: 'asc', nulls: 'last' } });
+  });
+
+  it('sortBy=price_asc ordena por price asc nulls last', async () => {
+    await listActivities({ skip: 0, pageSize: 20, sortBy: 'price_asc' });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy[0]).toEqual({ price: { sort: 'asc', nulls: 'last' } });
+  });
+
+  it('sortBy=price_desc ordena por price desc nulls last', async () => {
+    await listActivities({ skip: 0, pageSize: 20, sortBy: 'price_desc' });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy[0]).toEqual({ price: { sort: 'desc', nulls: 'last' } });
+  });
+
+  it('sortBy=newest ordena por createdAt desc', async () => {
+    await listActivities({ skip: 0, pageSize: 20, sortBy: 'newest' });
+    const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+    expect(orderBy).toEqual([{ createdAt: 'desc' }]);
+  });
+
+  it('VALID_SORT_VALUES contiene exactamente los 5 valores esperados', () => {
+    expect(VALID_SORT_VALUES).toContain('relevance');
+    expect(VALID_SORT_VALUES).toContain('date');
+    expect(VALID_SORT_VALUES).toContain('price_asc');
+    expect(VALID_SORT_VALUES).toContain('price_desc');
+    expect(VALID_SORT_VALUES).toContain('newest');
+    expect(VALID_SORT_VALUES).toHaveLength(5);
   });
 });
 

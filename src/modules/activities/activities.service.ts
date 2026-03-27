@@ -7,7 +7,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import type { CreateActivityInput, UpdateActivityInput } from './activities.schemas';
 
 const activityIncludes = {
-  provider: { select: { id: true, name: true, type: true, logoUrl: true, isVerified: true } },
+  provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true } },
   location: {
     select: {
       id: true, name: true, address: true, neighborhood: true,

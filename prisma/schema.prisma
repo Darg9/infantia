@@ -62,6 +62,7 @@ model Activity {
 model Provider {
   id               String       @id @default(uuid())
   name             String       @db.VarChar(255)
+  slug             String?      @unique @db.VarChar(100)
   type             ProviderType @default(ACADEMY)
   description      String?      @db.Text
   email            String?      @db.VarChar(255)

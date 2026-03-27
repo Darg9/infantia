@@ -134,9 +134,9 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.4 — 2026-03-26)
-- ~230 actividades en BD (scraping Banrep Bogotá en curso — 168/684 procesadas)
-- **636 tests** en 40 archivos — `npm test` pasa en ~7s
+## Estado actual (v0.7.6 — 2026-03-26)
+- ~230 actividades en BD (scraping Banrep Bogotá pendiente — necesita quota Gemini fresca)
+- **661 tests** en 42 archivos — `npm test` pasa en ~7s
 - Cobertura real: **97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines**
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
@@ -144,6 +144,16 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 - 14 fuentes configuradas: 4 Bogotá + 10 Banrep por ciudad (multi-ciudad)
 - Gemini: `gemini-2.5-flash`, 20 RPD free tier — quota se renueva medianoche UTC
 - Próximo paso: con quota fresca → `npx tsx scripts/ingest-sources.ts --queue` + `npx tsx scripts/run-worker.ts`
+
+### Features v0.7.5 – v0.7.6
+- **URLs canónicas:** `/actividades/{uuid}-{slug-titulo}` — `src/lib/activity-url.ts`
+- **Mapa Leaflet:** `/mapa` con pins por categoría (sin API key, OpenStreetMap)
+- **Actividades similares:** sección en detalle de actividad (scoring por categoría + ciudad)
+- **Reportar error:** link en detalle → `/contacto?motivo=reportar&url=<ruta>` precompletado
+- **Imágenes:** backfill og:image (77/230 enriquecidas) + og:image en pipeline futuro
+- **Gradientes placeholder:** 14 gradientes por categoría para actividades sin imagen
+- **Filtro de ciudad:** dropdown en `/actividades` (aparece automático con >1 ciudad)
+- **API queue admin:** `GET/POST /api/admin/queue/status` y `/api/admin/queue/enqueue`
 
 ## Tabla de versiones git ↔ Documento Fundacional (actualizada)
 
@@ -162,3 +172,5 @@ Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero
 | v0.7.2 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |
 | v0.7.3 | V15 | Deuda técnica queue tests: 636 tests, 97.41% stmts, queue/* 100% cobertura |
 | v0.7.4 | V16 | BullMQ + Upstash Redis operativo, Banrep multi-ciudad (10 ciudades), fix sitemapPatterns |
+| v0.7.5 | V16 | URLs canónicas, backfill imágenes, reportar error, filtro precio, API queue |
+| v0.7.6 | V16 | Mapa Leaflet, actividades similares, og:image pipeline, filtro ciudad, gradientes |

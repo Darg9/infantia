@@ -65,7 +65,7 @@ export class ScrapingPipeline {
   }
 
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
-    const { maxPages = 50, sitemapPatterns = [], concurrency = 3 } = opts;
+    const { maxPages = 50, sitemapPatterns = [], concurrency = 1 } = opts;
     console.log(`\n[BATCH] ========== INICIO BATCH PIPELINE ==========`);
     console.log(`[BATCH] URL de listado: ${listingUrl}`);
     console.log(`[BATCH] Cache: ${this.cache.size} URLs ya scrapeadas`);
@@ -164,29 +164,43 @@ export class ScrapingPipeline {
       };
     }
 
-    // Fase 3: Scrapear solo actividades NUEVAS con paralelismo controlado
+    // Fase 3: Scrapear solo actividades NUEVAS secuencialmente (concurrencia=1 respeta 5 RPM Gemini)
     console.log(`[BATCH] Fase 3: Scrapeando ${newUrls.length} actividades nuevas (concurrencia: ${concurrency})...`);
     const results: BatchPipelineResult['results'] = [];
 
-    for (let i = 0; i < newUrls.length; i += concurrency) {
-      const batch = newUrls.slice(i, i + concurrency);
-      const batchPromises = batch.map(async (actUrl) => {
+    if (concurrency <= 1) {
+      // Procesamiento secuencial — sin bursts, respeta rate limit de Gemini
+      for (let i = 0; i < newUrls.length; i++) {
+        const actUrl = newUrls[i];
         try {
           const data = await this.runPipeline(actUrl);
-          // Guardar en cache si fue exitoso
           this.cache.add(actUrl, data.title);
-          return { url: actUrl, data };
+          results.push({ url: actUrl, data });
         } catch (error: any) {
           console.error(`[BATCH] Error en ${actUrl}: ${error.message}`);
-          return { url: actUrl, data: null, error: error.message };
+          results.push({ url: actUrl, data: null, error: error.message });
         }
-      });
-
-      const batchResults = await Promise.all(batchPromises);
-      results.push(...batchResults);
-
-      const processed = Math.min(i + concurrency, newUrls.length);
-      console.log(`[BATCH] Progreso: ${processed}/${newUrls.length} procesadas`);
+        console.log(`[BATCH] Progreso: ${i + 1}/${newUrls.length} procesadas`);
+      }
+    } else {
+      // Procesamiento en paralelo controlado (solo si concurrency > 1 explícito)
+      for (let i = 0; i < newUrls.length; i += concurrency) {
+        const batch = newUrls.slice(i, i + concurrency);
+        const batchPromises = batch.map(async (actUrl) => {
+          try {
+            const data = await this.runPipeline(actUrl);
+            this.cache.add(actUrl, data.title);
+            return { url: actUrl, data };
+          } catch (error: any) {
+            console.error(`[BATCH] Error en ${actUrl}: ${error.message}`);
+            return { url: actUrl, data: null, error: error.message };
+          }
+        });
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+        const processed = Math.min(i + concurrency, newUrls.length);
+        console.log(`[BATCH] Progreso: ${processed}/${newUrls.length} procesadas`);
+      }
     }
 
     // Persistir cache al disco

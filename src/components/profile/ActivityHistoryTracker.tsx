@@ -11,7 +11,11 @@ interface ActivityHistoryTrackerProps {
 
 export function ActivityHistoryTracker({ activityId, title, imageUrl }: ActivityHistoryTrackerProps) {
   useEffect(() => {
-    addToHistory({ activityId, title, imageUrl })
+    // Historial local (localStorage)
+    addToHistory({ activityId, title, imageUrl });
+
+    // Registro anónimo de vista en el servidor (fire-and-forget)
+    fetch(`/api/activities/${activityId}/view`, { method: 'POST' }).catch(() => {});
   }, [activityId, title, imageUrl])
 
   return null

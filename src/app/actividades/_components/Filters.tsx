@@ -194,6 +194,14 @@ export default function Filters({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+      // Registra la búsqueda (fire-and-forget, solo si tiene contenido)
+      if (value.trim().length >= 2) {
+        fetch('/api/search/log', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: value.trim(), resultCount: total }),
+        }).catch(() => {});
+      }
     }, 400);
   }
 

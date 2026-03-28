@@ -37,6 +37,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-gray-900">Gestión de actividades</h2>
           <p className="text-sm text-gray-500 mt-1">Editar, ocultar y revisar actividades</p>
         </Link>
+
+        <Link
+          href="/admin/metricas"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-indigo-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">📊</div>
+          <h2 className="font-semibold text-gray-900">Métricas</h2>
+          <p className="text-sm text-gray-500 mt-1">Vistas, búsquedas frecuentes y distribución</p>
+        </Link>
       </div>
     </div>
   )

@@ -50,6 +50,7 @@ model Activity {
   categories ActivityCategory[]
   favorites  Favorite[]
   ratings    Rating[]
+  views      ActivityView[]
 
   @@index([verticalId, status])
   @@index([providerId])
@@ -365,6 +366,33 @@ enum SourceType {
   MANUAL
   PROVIDER
   SCRAPING
+}
+
+// =============================================================================
+// Métricas / Analytics
+// =============================================================================
+
+model ActivityView {
+  id         String   @id @default(uuid())
+  activityId String
+  viewedAt   DateTime @default(now())
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
+  @@index([activityId])
+  @@index([viewedAt])
+  @@map("activity_views")
+}
+
+model SearchLog {
+  id          String   @id @default(uuid())
+  query       String   @db.VarChar(300)
+  resultCount Int      @default(0)
+  searchedAt  DateTime @default(now())
+
+  @@index([searchedAt])
+  @@index([query])
+  @@map("search_logs")
 }
 
 enum ProviderType {

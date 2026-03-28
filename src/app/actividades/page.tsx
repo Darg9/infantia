@@ -13,6 +13,8 @@ import ActivityCard from './_components/ActivityCard';
 import Filters from './_components/Filters';
 import Pagination from './_components/Pagination';
 import { EmptyState } from './_components/EmptyState';
+import { MapView } from './_components/MapView';
+import { ViewToggle } from './_components/ViewToggle';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -40,6 +42,7 @@ interface SearchParams {
   audience?: string;
   price?: string;
   sort?: string;
+  view?: string;
   page?: string;
 }
 
@@ -216,6 +219,8 @@ export default async function ActividadesPage({
     ? params.sort
     : 'relevance') as SortValue;
 
+  const view = params.view === 'map' ? 'map' : 'list';
+
   const filters: ActiveFilters = {
     search: params.search?.trim() || undefined,
     ageMin: parseAge(params.ageMin),
@@ -294,43 +299,68 @@ export default async function ActividadesPage({
           />
         </Suspense>
 
-        {/* Grid */}
-        {activities.length === 0 ? (
-          <EmptyState
-            search={filters.search}
-            ageMin={filters.ageMin}
-            ageMax={filters.ageMax}
-            categoryId={filters.categoryId}
-            categoryName={
-              filters.categoryId
-                ? facets.validCategories.find((c) => c.id === filters.categoryId)?.name
-                : undefined
-            }
-            type={filters.type}
-            audience={filters.audience}
-            popularCategories={topCategories}
+        {/* Toggle Lista / Mapa */}
+        <div className="flex items-center justify-end">
+          <Suspense>
+            <ViewToggle view={view} />
+          </Suspense>
+        </div>
+
+        {/* Vista Mapa */}
+        {view === 'map' && (
+          <MapView
+            search={params.search ?? ''}
+            ageMin={params.ageMin ?? ''}
+            ageMax={params.ageMax ?? ''}
+            categoryId={params.categoryId ?? ''}
+            cityId={params.cityId ?? ''}
+            type={params.type ?? ''}
+            audience={params.audience ?? ''}
+            price={params.price ?? ''}
           />
-        ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                activity={activity}
-                isFavorited={favoriteIds.has(activity.id)}
-              />
-            ))}
-          </div>
         )}
 
-        {/* Paginación */}
-        <Suspense>
-          <Pagination page={page} totalPages={totalPages} />
-        </Suspense>
+        {/* Vista Lista */}
+        {view === 'list' && (
+          <>
+            {activities.length === 0 ? (
+              <EmptyState
+                search={filters.search}
+                ageMin={filters.ageMin}
+                ageMax={filters.ageMax}
+                categoryId={filters.categoryId}
+                categoryName={
+                  filters.categoryId
+                    ? facets.validCategories.find((c) => c.id === filters.categoryId)?.name
+                    : undefined
+                }
+                type={filters.type}
+                audience={filters.audience}
+                popularCategories={topCategories}
+              />
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    isFavorited={favoriteIds.has(activity.id)}
+                  />
+                ))}
+              </div>
+            )}
 
-        {activities.length > 0 && (
-          <p className="text-center text-xs text-gray-400 pb-4">
-            Mostrando {skip + 1}–{Math.min(skip + PAGE_SIZE, total)} de {total} actividades
-          </p>
+            {/* Paginación */}
+            <Suspense>
+              <Pagination page={page} totalPages={totalPages} />
+            </Suspense>
+
+            {activities.length > 0 && (
+              <p className="text-center text-xs text-gray-400 pb-4">
+                Mostrando {skip + 1}–{Math.min(skip + PAGE_SIZE, total)} de {total} actividades
+              </p>
+            )}
+          </>
         )}
       </div>
     </div>

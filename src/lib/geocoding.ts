@@ -1,7 +1,10 @@
 // =============================================================================
-// geocoding.ts — Geocoder via Nominatim (OpenStreetMap, sin API key)
-// Rate limit: 1 req/seg según ToS de Nominatim.
+// geocoding.ts — Geocoder con lookup de venues curados + Nominatim (fallback)
+// Flujo: venue-dictionary → Nominatim → geocodeCityFallback → null
+// Rate limit Nominatim: 1 req/seg según ToS.
 // =============================================================================
+
+import { lookupVenue } from './venue-dictionary';
 
 export interface GeocodingResult {
   latitude: number;
@@ -36,6 +39,14 @@ export async function geocodeAddress(
   city: string,
   country = 'Colombia',
 ): Promise<GeocodingResult | null> {
+  // 1. Buscar primero en el diccionario de venues curados (sin API call)
+  const known = lookupVenue(address);
+  if (known) {
+    console.log(`[geocoding] 📚 Venue conocido: "${known.name}" → [${known.lat}, ${known.lng}]`);
+    return { latitude: known.lat, longitude: known.lng, displayName: known.name };
+  }
+
+  // 2. Fallback: Nominatim (OpenStreetMap)
   await throttle();
 
   // Construye la query — intenta dirección completa primero

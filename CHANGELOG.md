@@ -10,7 +10,96 @@ Relación con Documento Fundacional:
 ---
 
 ## [Unreleased]
-<!-- Agregar aquí cada cambio antes de hacer el tag de release -->
+
+### Added
+- **Mapa mini-Leaflet en detalle de actividad** — sidebar de `/actividades/[id]`
+  - `ActivityDetailMap.tsx`: wrapper `next/dynamic` con `ssr: false` + skeleton animado
+  - `ActivityDetailMapInner.tsx`: implementación Leaflet (zoom 15, scroll desactivado, popup nombre/dirección)
+  - Solo se muestra cuando la actividad tiene coordenadas reales (lat/lng ≠ 0)
+  - Mismo pin índigo que el mapa de lista
+- **Diccionario de venues curados** — `src/lib/venue-dictionary.ts`
+  - 40+ venues de Bogotá con coords exactas verificadas en OSM
+  - BibloRed ×15 sedes, Centros de Felicidad ×10, Planetario, Jardín Botánico, Maloka, Parque Simón Bolívar, Museo de los Niños, Cinemateca, Museo Nacional, Idartes, Teatro Mayor, García Márquez, Colsubsidio, Parque Nacional
+  - `lookupVenue()`: matching normalizado (sin tildes, minúsculas, AND de keywords) — ~0ms, sin API call
+  - `geocoding.ts` actualizado: flujo `venue-dictionary → Nominatim → cityFallback → null`
+  - `activities.service.ts`: `latitude` y `longitude` añadidos al `activityIncludes` select
+
+### Tests
+- 26 tests nuevos en `venue-dictionary.test.ts` (normalizeVenue, lookupVenue — venues, variantes, case, falsos positivos)
+- **721 tests total (47 archivos)**
+
+---
+
+## [v0.8.0] — 2026-03-27 (Autocompletado, ordenamiento, mapa pines, badge Nuevo, métricas admin)
+**Documento Fundacional: V18**
+
+### Added
+- **Geocoding real via Nominatim** — `src/lib/geocoding.ts`
+  - Rate limit 1.1s entre requests (ToS Nominatim)
+  - Fallback a ciudad si la dirección falla
+  - Todas las locations en DB geocodificadas con coords reales
+- **Búsqueda con autocompletado** — `GET /api/activities/suggestions`
+  - Sugerencias con debounce 300ms
+  - Navegación con teclado (↑↓ + Enter + Escape)
+  - Máx. 6 sugerencias, highlight del término buscado
+- **Ordenamiento en `/actividades`** — selector con 5 opciones
+  - `relevance` (por defecto): ACTIVE primero + confianza Gemini
+  - `date`: próximas primero, sin fecha al final
+  - `price_asc` / `price_desc`: precio nulo al final
+  - `newest`: recién agregadas a Infantia
+- **Página de inicio mejorada** — stats reales desde DB
+  - Contador de actividades ACTIVE, categorías y ciudades
+  - Filtros rápidos (Gratis, Para niños, Este fin de semana)
+  - Grid de categorías populares con emojis
+- **Badge "Nuevo"** en tarjetas — actividades creadas en los últimos 7 días
+- **Mapa de actividades** — `/mapa` con pines Leaflet + toggle Lista/Mapa en `/actividades`
+  - `GET /api/activities/map`: hasta 500 actividades ACTIVE con coords reales (filtra lat/lng = 0)
+  - Pines índigo con popup (nombre, barrio, precio, categoría)
+  - Toggle Lista/Mapa persiste filtros activos
+- **Panel métricas admin** — `/admin/metricas`
+  - `POST /api/activities/[id]/view` + `POST /api/search/log` para captura de eventos
+  - Top actividades más vistas y búsquedas frecuentes
+
+### Fixed
+- `fix(scraping)`: concurrencia reducida de 3 → 1 para respetar límite 5 RPM de Gemini Free
+
+### Tests
+- **695 tests (46 archivos)**
+
+---
+
+## [v0.7.7] — 2026-03-27 (Docs)
+**Documento Fundacional: V17**
+
+### Changed
+- CLAUDE.md actualizado a estado v0.7.7
+- Documento Fundacional V17 generado (`scripts/generate_v17.mjs`)
+
+---
+
+## [v0.7.6] — 2026-03-26 (Proveedores, Web Push, admin actividades, placeholders)
+**Documento Fundacional: V16**
+
+### Added
+- **Actividades similares** en detalle — sección al pie con hasta 4 actividades de la misma categoría y ciudad
+- **Mapa interactivo en detalle** — mini-mapa Leaflet en `/actividades/[id]` (versión previa, sin geocoding real)
+- **`og:image` en pipeline de scraping** — extrae imagen OG al guardar actividad; filter de imágenes logo/blancas
+- **Filtro de ciudad** en `/actividades` — selector dinámico desde DB
+- **Gradient placeholders** — fondo degradado por categoría cuando no hay imagen real
+- **Web Push Notifications** — `POST /api/push/subscribe`, VAPID keys, ServiceWorker, `PushButton` component
+- **Panel admin — gestión de actividades** `/admin/actividades`
+  - Listar con paginación, editar inline, ocultar (→ EXPIRED)
+  - `GET/PATCH /api/admin/activities/[id]`
+- **Página de proveedor** `/proveedores/[slug]`
+  - Header con logo, nombre, tipo, isVerified
+  - Grid de actividades del proveedor
+  - `slug` field en Provider (db push)
+
+### Fixed
+- Slug de `activityIncludes` revertido y re-aplicado tras `db push` exitoso
+
+### Tests
+- **661 tests** (sin regresiones respecto a v0.7.5)
 
 ---
 

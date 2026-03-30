@@ -1,4 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
+import { config } from 'dotenv';
+
+// Cargar variables de entorno E2E (.env.e2e tiene credenciales de test)
+config({ path: '.env.e2e' });
 
 export default defineConfig({
   testDir: './e2e',
@@ -23,7 +27,8 @@ export default defineConfig({
     {
       name: 'sin-auth',
       use: { ...devices['Desktop Chrome'] },
-      testMatch: /.*\.spec\.ts/,
+      // Excluye *.auth.spec.ts — esos tests requieren sesión y los maneja 'con-auth'
+      testMatch: /^(?!.*\.auth\.spec\.ts).*\.spec\.ts$/,
     },
     {
       name: 'con-auth',

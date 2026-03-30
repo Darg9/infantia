@@ -14,13 +14,14 @@ test.describe('Favoritos (sin autenticación)', () => {
 
   test('clic en favorito redirige a login si no hay sesión', async ({ page }) => {
     await page.goto('/actividades');
-    await page.waitForSelector('main');
+    // Esperar hidratación React — el aria-label lo pone useState en cliente
+    await page.waitForLoadState('networkidle');
 
-    const heartBtn = page
-      .locator('[aria-label="Guardar en favoritos"]')
-      .first();
-    if ((await heartBtn.count()) === 0) {
-      test.skip(); // No hay actividades visibles
+    const heartBtn = page.locator('[aria-label="Guardar en favoritos"]').first();
+    try {
+      await heartBtn.waitFor({ timeout: 5_000 });
+    } catch {
+      test.skip(); // No hay actividades con botón de favorito
       return;
     }
     await heartBtn.click();
@@ -38,13 +39,13 @@ test.describe('Favoritos (con autenticación)', () => {
 
   test('agregar y quitar favorito', async ({ page }) => {
     await page.goto('/actividades');
-    await page.waitForSelector('main');
+    await page.waitForLoadState('networkidle');
 
-    const heartBtn = page
-      .locator('[aria-label="Guardar en favoritos"]')
-      .first();
-    if ((await heartBtn.count()) === 0) {
-      test.skip(); // No hay actividades visibles
+    const heartBtn = page.locator('[aria-label="Guardar en favoritos"]').first();
+    try {
+      await heartBtn.waitFor({ timeout: 5_000 });
+    } catch {
+      test.skip(); // No hay actividades con botón de favorito
       return;
     }
 
@@ -66,13 +67,13 @@ test.describe('Favoritos (con autenticación)', () => {
 
   test('favorito guardado aparece en /perfil/favoritos', async ({ page }) => {
     await page.goto('/actividades');
-    await page.waitForSelector('main');
+    await page.waitForLoadState('networkidle');
 
-    const heartBtn = page
-      .locator('[aria-label="Guardar en favoritos"]')
-      .first();
-    if ((await heartBtn.count()) === 0) {
-      test.skip();
+    const heartBtn = page.locator('[aria-label="Guardar en favoritos"]').first();
+    try {
+      await heartBtn.waitFor({ timeout: 5_000 });
+    } catch {
+      test.skip(); // No hay actividades con botón de favorito
       return;
     }
 

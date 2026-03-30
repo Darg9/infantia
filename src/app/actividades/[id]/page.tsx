@@ -16,6 +16,7 @@ import { getSession } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
+import { ActivityDetailMap } from '@/components/ActivityDetailMap';
 import clsx from 'clsx';
 
 export async function generateMetadata({
@@ -534,6 +535,16 @@ export default async function ActividadDetallePage({
                   )}
                   {activity.location.city && (
                     <span className="text-gray-400 text-xs">{activity.location.city.name}</span>
+                  )}
+                  {activity.location.latitude != null && activity.location.longitude != null && (
+                    <div className="mt-3">
+                      <ActivityDetailMap
+                        lat={Number(activity.location.latitude)}
+                        lng={Number(activity.location.longitude)}
+                        locationName={activity.location.name}
+                        address={activity.location.address}
+                      />
+                    </div>
                   )}
                 </div>
               )}

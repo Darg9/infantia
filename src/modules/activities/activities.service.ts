@@ -11,6 +11,7 @@ const activityIncludes = {
   location: {
     select: {
       id: true, name: true, address: true, neighborhood: true,
+      latitude: true, longitude: true,
       city: { select: { id: true, name: true } },
     },
   },

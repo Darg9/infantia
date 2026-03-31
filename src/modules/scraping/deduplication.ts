@@ -1,4 +1,7 @@
 import crypto from 'crypto';
+import { createLogger } from '../../lib/logger';
+
+const log = createLogger('scraping:dedup');
 
 /**
  * Normaliza un string para comparación
@@ -103,9 +106,9 @@ export function logDuplicate(
   potential: { title: string; source: string },
   similarity: number
 ) {
-  console.log(`[DEDUP] Duplicado detectado (${similarity}% similar)`);
-  console.log(`  Original: ${original.title} (${original.source})`);
-  console.log(`  Potencial: ${potential.title} (${potential.source})`);
+  log.info(`Duplicado detectado (${similarity}% similar)`);
+  log.info(`  Original: ${original.title} (${original.source})`);
+  log.info(`  Potencial: ${potential.title} (${potential.source})`);
 }
 
 /**

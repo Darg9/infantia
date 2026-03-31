@@ -4,6 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:scraping:logs');
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,7 +40,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('GET /api/admin/scraping/logs error:', error)
+    log.error('GET /api/admin/scraping/logs', { error })
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

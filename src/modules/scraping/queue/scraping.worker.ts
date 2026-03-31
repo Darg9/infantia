@@ -3,6 +3,9 @@ import { getRedisConnection } from './connection';
 import { QUEUE_NAME } from './scraping.queue';
 import type { ScrapingJobData, ScrapingJobResult } from './types';
 import { ScrapingPipeline } from '../pipeline';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:worker');
 
 // Concurrency = 1: respeta el rate limit de Gemini (20 RPD / 5 RPM)
 const WORKER_CONCURRENCY = 1;
@@ -13,7 +16,7 @@ async function processJob(
   const start = Date.now();
   const { data } = job;
 
-  console.log(`[WORKER] Procesando job ${job.id} — tipo: ${data.type}, url: ${data.type === 'batch' ? data.url : data.profileUrl}`);
+  log.info(`Procesando job ${job.id} — tipo: ${data.type}, url: ${data.type === 'batch' ? data.url : data.profileUrl}`);
 
   const pipeline = new ScrapingPipeline({
     saveToDb: true,
@@ -71,19 +74,19 @@ export function startScrapingWorker(): Worker<ScrapingJobData, ScrapingJobResult
   );
 
   worker.on('completed', (job, result) => {
-    console.log(
+    log.info(
       `[WORKER] ✅ Job ${job.id} completado — guardados: ${result.saved}, fallidos: ${result.failed}, tiempo: ${(result.durationMs / 1000).toFixed(1)}s`,
     );
   });
 
   worker.on('failed', (job, err) => {
-    console.error(`[WORKER] ❌ Job ${job?.id} falló (intento ${job?.attemptsMade}): ${err.message}`);
+    log.error(`❌ Job ${job?.id} falló (intento ${job?.attemptsMade}): ${err.message}`);
   });
 
   worker.on('error', (err) => {
-    console.error(`[WORKER] Error inesperado: ${err.message}`);
+    log.error(`Error inesperado: ${err.message}`);
   });
 
-  console.log(`[WORKER] Iniciado. Escuchando queue "${QUEUE_NAME}" (concurrencia: ${WORKER_CONCURRENCY})`);
+  log.info(`Iniciado. Escuchando queue "${QUEUE_NAME}" (concurrencia: ${WORKER_CONCURRENCY})`);
   return worker;
 }

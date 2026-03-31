@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { sendWelcomeEmail } from '@/lib/email/resend'
 import { prisma } from '@/lib/db'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('auth:callback');
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
             role: 'PARENT',
           },
           update: {},
-        }).catch((err) => console.error('[CALLBACK] User upsert error:', err))
+        }).catch((err) => log.error('User upsert error', { error: err, userId: user.id }))
 
         // Enviar email de bienvenida si es la primera confirmación
         if (user.email && user.email_confirmed_at) {
@@ -39,7 +42,7 @@ export async function GET(request: NextRequest) {
             sendWelcomeEmail({
               to: user.email,
               userName: user.user_metadata?.name,
-            }).catch((err) => console.error('[CALLBACK] Welcome email error:', err))
+            }).catch((err) => log.error('Welcome email error', { error: err, email: user.email }))
           }
         }
       }

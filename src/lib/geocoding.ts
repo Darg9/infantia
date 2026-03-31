@@ -5,6 +5,9 @@
 // =============================================================================
 
 import { lookupVenue } from './venue-dictionary';
+import { createLogger } from './logger';
+
+const log = createLogger('geocoding');
 
 export interface GeocodingResult {
   latitude: number;
@@ -42,7 +45,7 @@ export async function geocodeAddress(
   // 1. Buscar primero en el diccionario de venues curados (sin API call)
   const known = lookupVenue(address);
   if (known) {
-    console.log(`[geocoding] 📚 Venue conocido: "${known.name}" → [${known.lat}, ${known.lng}]`);
+    log.info('Venue conocido en diccionario', { name: known.name, lat: known.lat, lng: known.lng });
     return { latitude: known.lat, longitude: known.lng, displayName: known.name };
   }
 
@@ -68,7 +71,7 @@ export async function geocodeAddress(
     });
 
     if (!res.ok) {
-      console.error(`[geocoding] HTTP ${res.status} para "${query}"`);
+      log.error(`HTTP ${res.status} para query`, { query });
       return null;
     }
 
@@ -86,7 +89,7 @@ export async function geocodeAddress(
       displayName: result.display_name,
     };
   } catch (err) {
-    console.error('[geocoding] Error de red:', err);
+    log.error('Error de red en geocodeAddress', { query, error: err });
     return null;
   }
 }

@@ -2,6 +2,9 @@ import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { InstagramPost, InstagramProfileData, DiscoveredLink, ScrapedRawData } from '../types';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:playwright');
 
 // Desktop UA — Instagram shows posts without login on desktop but blocks mobile
 const DESKTOP_USER_AGENT =
@@ -26,7 +29,7 @@ function buildProxyConfig(): ProxyConfig | undefined {
   const config: ProxyConfig = { server };
   if (process.env.PLAYWRIGHT_PROXY_USER) config.username = process.env.PLAYWRIGHT_PROXY_USER;
   if (process.env.PLAYWRIGHT_PROXY_PASS) config.password = process.env.PLAYWRIGHT_PROXY_PASS;
-  console.log(`[PLAYWRIGHT] Proxy activo: ${server}`);
+  log.info(`Proxy activo: ${server}`);
   return config;
 }
 
@@ -48,9 +51,9 @@ export class PlaywrightExtractor {
     // Load saved session if available
     if (existsSync(SESSION_FILE)) {
       contextOptions.storageState = SESSION_FILE;
-      console.log('[PLAYWRIGHT] Sesión de Instagram cargada desde ig-session.json');
+      log.info('Sesión de Instagram cargada desde ig-session.json');
     } else {
-      console.warn('[PLAYWRIGHT] No se encontró ig-session.json. Ejecuta: npx tsx scripts/ig-login.ts');
+      log.warn('No se encontró ig-session.json. Ejecuta: npx tsx scripts/ig-login.ts');
     }
 
     this.context = await this.browser.newContext(contextOptions);
@@ -82,7 +85,7 @@ export class PlaywrightExtractor {
     const page = await this.context!.newPage();
 
     try {
-      console.log(`[PLAYWRIGHT] Navegando a perfil: ${profileUrl}`);
+      log.info(`Navegando a perfil: ${profileUrl}`);
       await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       // Wait for Instagram SPA to render post grid
       await this.delay(4000, 6000);
@@ -95,14 +98,14 @@ export class PlaywrightExtractor {
 
       // Extract profile bio from meta tags (works without login)
       const bio = await this.extractBio(page);
-      console.log(`[PLAYWRIGHT] Bio extraída: ${bio.substring(0, 100)}...`);
+      log.info(`Bio extraída: ${bio.substring(0, 100)}...`);
 
       // Extract follower count from meta description
       const followerCount = await this.extractFollowerCount(page);
 
       // Collect post URLs from the profile grid
       const postUrls = await this.extractPostUrls(page, maxPosts);
-      console.log(`[PLAYWRIGHT] Posts encontrados en grid: ${postUrls.length}`);
+      log.info(`Posts encontrados en grid: ${postUrls.length}`);
 
       // Visit each post to extract full data
       const posts: InstagramPost[] = [];
@@ -111,9 +114,9 @@ export class PlaywrightExtractor {
           await this.delay(2000, 5000);
           const post = await this.extractPost(page, postUrl);
           posts.push(post);
-          console.log(`[PLAYWRIGHT] Post extraído: ${postUrl} (caption: ${post.caption.substring(0, 60)}...)`);
+          log.info(`Post extraído: ${postUrl} (caption: ${post.caption.substring(0, 60)}...)`);
         } catch (error: any) {
-          console.error(`[PLAYWRIGHT] Error en post ${postUrl}: ${error.message}`);
+          log.error(`Error en post ${postUrl}: ${error.message}`);
         }
       }
 
@@ -348,7 +351,7 @@ export class PlaywrightExtractor {
     });
     const page = await context.newPage();
     try {
-      console.log(`[PLAYWRIGHT-WEB] Navegando a: ${url}`);
+      log.info(`Navegando a: ${url}`);
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       await this.delay(2000, 3000);
 
@@ -385,7 +388,7 @@ export class PlaywrightExtractor {
     });
     const page = await context.newPage();
     try {
-      console.log(`[PLAYWRIGHT-WEB] Extrayendo texto de: ${url}`);
+      log.info(`Extrayendo texto de: ${url}`);
       await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
       await this.delay(2000, 3000);
 

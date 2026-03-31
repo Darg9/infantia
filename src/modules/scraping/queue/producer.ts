@@ -1,5 +1,8 @@
 import { getScrapingQueue } from './scraping.queue';
 import type { BatchJobData, InstagramJobData } from './types';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:producer');
 
 export async function enqueueBatchJob(
   data: Omit<BatchJobData, 'type'>,
@@ -11,7 +14,7 @@ export async function enqueueBatchJob(
     { type: 'batch', ...data },
     { delay: opts?.delay, priority: opts?.priority },
   );
-  console.log(`[PRODUCER] Job batch encolado: ${job.id} — ${data.url}`);
+  log.info(`Job batch encolado: ${job.id} — ${data.url}`);
   return job.id!;
 }
 
@@ -25,6 +28,6 @@ export async function enqueueInstagramJob(
     { type: 'instagram', ...data },
     { delay: opts?.delay, priority: opts?.priority },
   );
-  console.log(`[PRODUCER] Job instagram encolado: ${job.id} — ${data.profileUrl}`);
+  log.info(`Job instagram encolado: ${job.id} — ${data.profileUrl}`);
   return job.id!;
 }

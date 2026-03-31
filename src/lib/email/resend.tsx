@@ -2,9 +2,11 @@ import { Resend } from 'resend';
 import { WelcomeEmail } from './templates/welcome';
 import { ActivityDigestEmail } from './templates/activity-digest';
 import { render as renderAsync } from '@react-email/components';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('email');
 
 const resend = new Resend(process.env.RESEND_API_KEY || 'placeholder');
-
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 
 export interface SendWelcomeEmailParams {
@@ -42,14 +44,14 @@ export async function sendWelcomeEmail({ to, userName }: SendWelcomeEmailParams)
     });
 
     if (result.error) {
-      console.error('[EMAIL] Error enviando welcome:', result.error);
+      log.error('Error enviando welcome', { to, error: result.error });
       return { success: false, error: result.error.message };
     }
 
-    console.log(`[EMAIL] Welcome email enviado a ${to}`);
+    log.info('Welcome email enviado', { to });
     return { success: true, messageId: result.data?.id };
   } catch (error: any) {
-    console.error('[EMAIL] Exception en sendWelcomeEmail:', error.message);
+    log.error('Exception en sendWelcomeEmail', { to, error });
     return { success: false, error: error.message };
   }
 }
@@ -65,7 +67,7 @@ export async function sendActivityDigest({
 }: SendActivityDigestParams) {
   try {
     if (activities.length === 0) {
-      console.warn('[EMAIL] No hay actividades para enviar digest a', to);
+      log.warn('Sin actividades para digest', { to });
       return { success: false, error: 'Sin actividades' };
     }
 
@@ -82,14 +84,14 @@ export async function sendActivityDigest({
     });
 
     if (result.error) {
-      console.error('[EMAIL] Error enviando digest:', result.error);
+      log.error('Error enviando digest', { to, error: result.error });
       return { success: false, error: result.error.message };
     }
 
-    console.log(`[EMAIL] Digest email enviado a ${to} (${activities.length} actividades)`);
+    log.info('Digest email enviado', { to, count: activities.length });
     return { success: true, messageId: result.data?.id };
   } catch (error: any) {
-    console.error('[EMAIL] Exception en sendActivityDigest:', error.message);
+    log.error('Exception en sendActivityDigest', { to, error });
     return { success: false, error: error.message };
   }
 }

@@ -8,6 +8,9 @@ import { successResponse, paginatedResponse, errorResponse } from '@/lib/api-res
 import { listActivities, createActivity } from '@/modules/activities';
 import { listActivitiesSchema, createActivitySchema } from '@/modules/activities';
 import { Prisma } from '@/generated/prisma/client';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:activities');
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +32,7 @@ export async function GET(request: NextRequest) {
       totalPages: Math.ceil(total / pageSize),
     });
   } catch (error) {
-    console.error('GET /api/activities error:', error);
+    log.error('GET /api/activities', { error });
     return errorResponse('Error interno del servidor', 500);
   }
 }
@@ -51,7 +54,7 @@ export async function POST(request: NextRequest) {
         return errorResponse('Referencia inválida: proveedor, ubicación o vertical no existe', 400);
       }
     }
-    console.error('POST /api/activities error:', error);
+    log.error('POST /api/activities', { error });
     return errorResponse('Error interno del servidor', 500);
   }
 }

@@ -4,6 +4,9 @@
 
 import { NextResponse } from 'next/server'
 import { getScrapingQueue, closeScrapingQueue } from '@/modules/scraping/queue'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:queue:status');
 
 export async function GET() {
   try {
@@ -39,7 +42,7 @@ export async function GET() {
       })),
     })
   } catch (error) {
-    console.error('GET /api/admin/queue/status error:', error)
+    log.error('GET /api/admin/queue/status', { error })
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

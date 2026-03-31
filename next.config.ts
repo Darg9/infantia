@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   // ===========================================================================
-  // Security Headers
-  // Aplican a todas las rutas de la aplicación
+  // Security Headers — aplican a todas las rutas
   // ===========================================================================
   async headers() {
     return [
@@ -11,48 +11,25 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: [
           // Evita que el navegador "adivine" el Content-Type
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          // Prohíbe que la app sea embebida en iframes (clickjacking)
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          // Fuerza HTTPS por 1 año (incluye subdominios)
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains",
-          },
-          // Controla info enviada en el Referer header
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          // Limita acceso a APIs del navegador (geolocation, camera, etc.)
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
-          },
-          // Content Security Policy básico
-          // unsafe-inline requerido para Tailwind CSS v4 (genera estilos inline)
-          // unsafe-eval requerido para Next.js dev mode y Leaflet
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Prohíbe embebido en iframes (clickjacking)
+          { key: "X-Frame-Options", value: "DENY" },
+          // Fuerza HTTPS por 1 año
+          { key: "Strict-Transport-Security", value: "max-age=31536000; includeSubDomains" },
+          // Controla info enviada en Referer header
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          // Limita APIs del navegador
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()" },
+          // CSP básico — unsafe-inline requerido por Tailwind v4, unsafe-eval por Next.js/Leaflet
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              // Scripts: self + inline (Tailwind) + eval (Next.js/Leaflet)
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-              // Estilos: self + inline (Tailwind v4)
               "style-src 'self' 'unsafe-inline'",
-              // Imágenes: self + data URIs + HTTPS externas (og:image de fuentes)
               "img-src 'self' data: https:",
-              // Fuentes: solo self
               "font-src 'self'",
-              // Conectividad: self + Supabase + Nominatim + Resend
-              "connect-src 'self' https://*.supabase.co https://nominatim.openstreetmap.org",
-              // Tiles de mapa (Leaflet / OpenStreetMap)
+              "connect-src 'self' https://*.supabase.co https://nominatim.openstreetmap.org https://*.sentry.io",
               "frame-src 'none'",
               "object-src 'none'",
               "base-uri 'self'",
@@ -65,4 +42,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Sentry solo activo si SENTRY_DSN está configurado
+export default process.env.SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      // Silencia logs de Sentry CLI durante el build
+      silent: true,
+      // Desactiva source map upload (requiere SENTRY_AUTH_TOKEN separado)
+      sourcemaps: { disable: true },
+      // No inyectar Sentry en el bundle del cliente si no hay DSN público
+      autoInstrumentServerFunctions: true,
+    })
+  : nextConfig;

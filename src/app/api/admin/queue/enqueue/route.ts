@@ -5,6 +5,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { enqueueBatchJob, enqueueInstagramJob } from '@/modules/scraping/queue'
 import { z } from 'zod'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:queue:enqueue');
 
 const batchSchema = z.object({
   type: z.literal('batch'),
@@ -57,7 +60,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ jobId, message: `Job ${jobId} encolado correctamente` }, { status: 201 })
   } catch (error) {
-    console.error('POST /api/admin/queue/enqueue error:', error)
+    log.error('POST /api/admin/queue/enqueue', { error })
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

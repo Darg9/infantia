@@ -1,6 +1,9 @@
 import * as cheerio from 'cheerio';
 import { Agent } from 'undici';
 import { Extractor, ScrapedRawData, DiscoveredLink } from '../types';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:cheerio');
 
 // Algunos sitios .gov.co tienen cadena SSL incompleta (UNABLE_TO_VERIFY_LEAF_SIGNATURE).
 // Node.js 24 (undici) los rechaza. Para dominios conocidos usamos dispatcher relajado.
@@ -161,7 +164,7 @@ export class CheerioExtractor implements Extractor {
     let pageNum = 1;
 
     while (true) {
-      console.log(`[CHEERIO] Extrayendo links de página ${pageNum}: ${currentUrl}`);
+      log.info(`Extrayendo links de página ${pageNum}: ${currentUrl}`);
       const pageLinks = await this.extractLinks(currentUrl);
 
       let newCount = 0;
@@ -172,12 +175,12 @@ export class CheerioExtractor implements Extractor {
           newCount++;
         }
       }
-      console.log(`[CHEERIO] Página ${pageNum}: ${newCount} links nuevos (${allLinks.length} total acumulado)`);
+      log.info(`Página ${pageNum}: ${newCount} links nuevos (${allLinks.length} total acumulado)`);
 
       // Buscar link a siguiente página
       const nextPageUrl = await this.findNextPage(currentUrl, pageNum);
       if (!nextPageUrl) {
-        console.log(`[CHEERIO] No se encontró página siguiente. Total páginas: ${pageNum}`);
+        log.info(`No se encontró página siguiente. Total páginas: ${pageNum}`);
         break;
       }
 
@@ -186,7 +189,7 @@ export class CheerioExtractor implements Extractor {
 
       // Seguridad: respetar límite de páginas
       if (pageNum > maxPages) {
-        console.warn(`[CHEERIO] Límite de ${maxPages} páginas alcanzado.`);
+        log.warn(`Límite de ${maxPages} páginas alcanzado.`);
         break;
       }
     }
@@ -272,7 +275,7 @@ export class CheerioExtractor implements Extractor {
             const childXml = await fetchXml(childUrl);
             nested.push(...(await collectUrls(childXml)));
           } catch (err: any) {
-            console.warn(`[SITEMAP] Error fetching child sitemap ${childUrl}: ${err.message}`);
+            log.warn(`Error fetching child sitemap ${childUrl}: ${err.message}`);
           }
         }
         return nested;
@@ -281,16 +284,16 @@ export class CheerioExtractor implements Extractor {
       return $('url > loc').map((_, el) => $(el).text().trim()).get();
     };
 
-    console.log(`[SITEMAP] Leyendo sitemap: ${sitemapUrl}`);
+    log.info(`Leyendo sitemap: ${sitemapUrl}`);
     const xml = await fetchXml(sitemapUrl);
     const allUrls = await collectUrls(xml);
-    console.log(`[SITEMAP] Total URLs en sitemap: ${allUrls.length}`);
+    log.info(`Total URLs en sitemap: ${allUrls.length}`);
 
     const filtered = urlPatterns.length > 0
       ? allUrls.filter((u) => urlPatterns.some((p) => u.includes(p)))
       : allUrls;
 
-    console.log(`[SITEMAP] URLs tras filtro de patrones: ${filtered.length}`);
+    log.info(`URLs tras filtro de patrones: ${filtered.length}`);
 
     const seen = new Set<string>();
     return filtered

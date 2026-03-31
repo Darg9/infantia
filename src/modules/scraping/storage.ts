@@ -4,6 +4,9 @@ import { Prisma, PrismaClient } from '../../generated/prisma/client';
 import { ActivityNLPResult, BatchPipelineResult } from './types';
 import { calculateSimilarity, normalizeString } from './deduplication';
 import { geocodeAddress } from '../../lib/geocoding';
+import { createLogger } from '../../lib/logger';
+
+const log = createLogger('scraping:storage');
 
 // Prisma client propio para scripts standalone (no usa el singleton de Next.js)
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
@@ -32,7 +35,7 @@ export class ScrapingStorage {
       // 1. Obtener vertical
       const vertical = await prisma.vertical.findUnique({ where: { slug: verticalSlug } });
       if (!vertical) {
-        console.error(`[STORAGE] Vertical "${verticalSlug}" no encontrada. Ejecuta el seed primero.`);
+        log.error(`Vertical "${verticalSlug}" no encontrada. Ejecuta el seed primero.`);
         return null;
       }
 
@@ -63,8 +66,8 @@ export class ScrapingStorage {
       );
 
       if (potentialDuplicate) {
-        console.log(`[STORAGE] ⚠️ Duplicado detectado: "${data.title}" es similar a "${potentialDuplicate.title}"`);
-        console.log(`          Reutilizando ID existente: ${potentialDuplicate.id}`);
+        log.info(`⚠️ Duplicado detectado: "${data.title}" es similar a "${potentialDuplicate.title}"`);
+        log.info(`          Reutilizando ID existente: ${potentialDuplicate.id}`);
         return potentialDuplicate.id;
       }
 
@@ -124,13 +127,13 @@ export class ScrapingStorage {
           data: updateData,
         });
         activityId = updated.id;
-        console.log(`[STORAGE] Actualizada: "${data.title}" (${activityId})`);
+        log.info(`Actualizada: "${data.title}" (${activityId})`);
       } else {
         const created = await prisma.activity.create({
           data: activityData,
         });
         activityId = created.id;
-        console.log(`[STORAGE] Creada: "${data.title}" (${activityId})`);
+        log.info(`Creada: "${data.title}" (${activityId})`);
       }
 
       // 5. Asociar categorías
@@ -138,7 +141,7 @@ export class ScrapingStorage {
 
       return activityId;
     } catch (error: any) {
-      console.error(`[STORAGE] Error guardando "${data.title}":`, error.message);
+      log.error(`Error guardando "${data.title}":`, error.message);
       return null;
     }
   }
@@ -169,7 +172,7 @@ export class ScrapingStorage {
       }
     }
 
-    console.log(`[STORAGE] Batch: ${result.saved} guardadas, ${result.skipped} omitidas, ${result.errors.length} errores`);
+    log.info(`Batch: ${result.saved} guardadas, ${result.skipped} omitidas, ${result.errors.length} errores`);
     return result;
   }
 
@@ -335,14 +338,14 @@ export class ScrapingStorage {
       });
 
       if (geoResult) {
-        console.log(`[STORAGE] 📍 Geocodificado: "${address}" → [${geoResult.latitude.toFixed(4)}, ${geoResult.longitude.toFixed(4)}]`);
+        log.info(`📍 Geocodificado: "${address}" → [${geoResult.latitude.toFixed(4)}, ${geoResult.longitude.toFixed(4)}]`);
       } else {
-        console.log(`[STORAGE] ⚠️ Sin coords para: "${address}" — guardado con lat/lng=0`);
+        log.info(`⚠️ Sin coords para: "${address}" — guardado con lat/lng=0`);
       }
 
       return location.id;
     } catch (err: any) {
-      console.error('[STORAGE] Error creando location:', err.message);
+      log.error('Error creando location:', err.message);
       return null;
     }
   }

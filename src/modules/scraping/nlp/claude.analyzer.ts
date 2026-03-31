@@ -1,4 +1,7 @@
 import { ActivityNLPResult, activityNLPResultSchema } from '../types';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:claude');
 
 const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
@@ -37,7 +40,7 @@ export class ClaudeAnalyzer {
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
     if (!this.apiKey) {
-      console.warn('⚠️ ANTHROPIC_API_KEY no encontrada. Usando resultado MOCK.');
+      log.warn('⚠️ ANTHROPIC_API_KEY no encontrada. Usando resultado MOCK.');
       return this.mockAnalysis(url);
     }
 
@@ -78,13 +81,13 @@ export class ClaudeAnalyzer {
 
       const validated = activityNLPResultSchema.safeParse(parsed);
       if (!validated.success) {
-        console.error('Zod validation errors:', validated.error.issues);
+        log.error('Zod validation errors', { issues: validated.error.issues });
         throw new Error(`Respuesta de Claude no cumple el schema: ${validated.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join(', ')}`);
       }
 
       return validated.data;
     } catch (error: any) {
-      console.error('Error en ClaudeAnalyzer:', error.message);
+      log.error('Error en ClaudeAnalyzer:', error.message);
       throw error;
     }
   }

@@ -6,6 +6,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { expireActivities } from '@/lib/expire-activities'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('cron:expire');
 
 export async function GET(req: NextRequest) {
   // Verificar que la llamada viene de Vercel Cron o es autorizada
@@ -18,10 +21,10 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await expireActivities()
-    console.log(`[cron] expire-activities: ${result.expired} actividades expiradas`)
+    log.info('Actividades expiradas', { count: result.expired })
     return NextResponse.json({ ok: true, ...result })
   } catch (err) {
-    console.error('[cron] expire-activities error:', err)
+    log.error('expire-activities falló', { error: err })
     return NextResponse.json({ error: 'Error interno' }, { status: 500 })
   }
 }

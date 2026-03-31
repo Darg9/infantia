@@ -5,6 +5,9 @@
 // =============================================================================
 
 import { useEffect, useState } from 'react'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('push-button');
 
 type PushState = 'loading' | 'unsupported' | 'denied' | 'subscribed' | 'unsubscribed'
 
@@ -62,7 +65,7 @@ export function PushButton() {
 
       if (res.ok) setState('subscribed')
     } catch (err) {
-      console.error('[PushButton] subscribe error:', err)
+      log.error('Subscribe error', { error: err })
     } finally {
       setBusy(false)
     }
@@ -83,7 +86,7 @@ export function PushButton() {
       }
       setState('unsubscribed')
     } catch (err) {
-      console.error('[PushButton] unsubscribe error:', err)
+      log.error('Unsubscribe error', { error: err })
     } finally {
       setBusy(false)
     }

@@ -3,6 +3,9 @@
 import { useState, useEffect } from 'react'
 import { SITE_URL } from '@/config/site'
 import { activityPath } from '@/lib/activity-url'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('share-button');
 
 interface ShareButtonProps {
   id: string
@@ -53,7 +56,7 @@ export function ShareButton({
       } catch (err) {
         // Usuario canceló el share
         if ((err as Error).name !== 'AbortError') {
-          console.error('Error compartiendo:', err)
+          log.error('Error compartiendo', { error: err })
         }
       }
     }
@@ -66,7 +69,7 @@ export function ShareButton({
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
       alert('No se pudo copiar al portapapeles')
-      console.error(err)
+      log.error(String(err), { error: err })
     }
   }
 

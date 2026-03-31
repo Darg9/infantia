@@ -3,6 +3,9 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@/generated/prisma/client';
 import { sendWelcomeEmail, sendActivityDigest } from '@/lib/email/resend';
 import { sendPushToMany } from '@/lib/push';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('notifications');
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
   const period = (searchParams.get('period') || 'daily') as 'daily' | 'weekly';
   const dryRun = searchParams.get('dryRun') === 'true';
 
-  console.log(`[NOTIFICATIONS] Starting send-notifications cron (period: ${period}, dryRun: ${dryRun})`);
+  log.info(`Starting send-notifications cron (period: ${period}, dryRun: ${dryRun})`);
 
   try {
     // Get all users (email and notificationPrefs are always present per schema)
@@ -54,7 +57,7 @@ export async function POST(request: NextRequest) {
       childrenByUser[child.userId].push(child.birthDate);
     }
 
-    console.log(`[NOTIFICATIONS] Found ${users.length} users with notification prefs`);
+    log.info(`Found ${users.length} users with notification prefs`);
 
     // Obtener todas las suscripciones push (para envío masivo al final)
     const allPushSubs = await prisma.pushSubscription.findMany({
@@ -146,7 +149,7 @@ export async function POST(request: NextRequest) {
         });
 
         if (activities.length === 0) {
-          console.log(`[NOTIFICATIONS] No new activities for ${user.email}`);
+          log.info(`No new activities for ${user.email}`);
           skippedCount++;
           continue;
         }
@@ -170,7 +173,7 @@ export async function POST(request: NextRequest) {
 
         // Send digest (or just log in dry run)
         if (dryRun) {
-          console.log(
+          log.info(
             `[NOTIFICATIONS] DRY-RUN: Would send ${activities.length} activities to ${user.email}`
           );
           sentCount++;
@@ -189,7 +192,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (error: any) {
-        console.error(`[NOTIFICATIONS] Error processing user ${user.email}:`, error.message);
+        log.error(`Error processing user ${user.email}:`, error.message);
         errors.push({ email: user.email, error: error.message });
       }
     }
@@ -211,23 +214,23 @@ export async function POST(request: NextRequest) {
         // Limpiar suscripciones expiradas
         if (expiredEndpoints.length > 0) {
           await prisma.pushSubscription.deleteMany({ where: { endpoint: { in: expiredEndpoints } } });
-          console.log(`[NOTIFICATIONS] Push: ${expiredEndpoints.length} suscripciones expiradas eliminadas`);
+          log.info(`Push: ${expiredEndpoints.length} suscripciones expiradas eliminadas`);
         }
       }
     } else if (dryRun && allPushSubs.length > 0) {
-      console.log(`[NOTIFICATIONS] DRY-RUN: Would send push to ${allPushSubs.length} devices`);
+      log.info(`DRY-RUN: Would send push to ${allPushSubs.length} devices`);
       pushSent = allPushSubs.length;
     }
 
-    console.log(`[NOTIFICATIONS] ========== RESULTADO ==========`);
-    console.log(`[NOTIFICATIONS] Total usuarios: ${users.length}`);
-    console.log(`[NOTIFICATIONS] Enviados (email): ${sentCount}`);
-    console.log(`[NOTIFICATIONS] Enviados (push): ${pushSent}`);
-    console.log(`[NOTIFICATIONS] Omitidos: ${skippedCount}`);
-    console.log(`[NOTIFICATIONS] Errores: ${errors.length}`);
+    log.info(`========== RESULTADO ==========`);
+    log.info(`Total usuarios: ${users.length}`);
+    log.info(`Enviados (email): ${sentCount}`);
+    log.info(`Enviados (push): ${pushSent}`);
+    log.info(`Omitidos: ${skippedCount}`);
+    log.info(`Errores: ${errors.length}`);
 
     if (errors.length > 0) {
-      console.error('[NOTIFICATIONS] Error details:', errors);
+      log.error('Error details', { errors });
     }
 
     return NextResponse.json(
@@ -243,7 +246,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   } catch (error: any) {
-    console.error('[NOTIFICATIONS] Catastrophic error:', error);
+    log.error('Catastrophic error:', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

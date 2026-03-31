@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendWelcomeEmail } from '@/lib/email/resend'
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:send-welcome');
 
 /**
  * POST /api/auth/send-welcome
@@ -21,7 +24,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.success) {
-      console.warn(`[WELCOME-EMAIL] Error enviando a ${email}:`, result.error)
+      log.warn('Error enviando welcome email', { email, error: result.error })
       // No fallar la API si el email falla — el usuario ya se registró
       return NextResponse.json(
         { success: false, warning: result.error },
@@ -34,7 +37,7 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     )
   } catch (error: any) {
-    console.error('[WELCOME-EMAIL] Exception:', error.message)
+    log.error('Exception en send-welcome', { error })
     // No fallar — el signup ya sucedió
     return NextResponse.json(
       { success: false, error: error.message },

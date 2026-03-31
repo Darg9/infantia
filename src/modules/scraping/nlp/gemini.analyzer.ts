@@ -1,5 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema, InstagramPost } from '../types';
+import { createLogger } from '../../../lib/logger';
+
+const log = createLogger('scraping:gemini');
 
 const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
@@ -92,7 +95,7 @@ async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T>
 
       if (isRetryable && attempt < MAX_RETRIES) {
         const delay = RETRY_BASE_MS * Math.pow(2, attempt - 1);
-        console.warn(`[${label}] Error ${status || 'retryable'} (intento ${attempt}/${MAX_RETRIES}). Reintentando en ${delay}ms...`);
+        log.warn(`[${label}] Error ${status || 'retryable'} (intento ${attempt}/${MAX_RETRIES}). Reintentando en ${delay}ms...`);
         await new Promise((r) => setTimeout(r, delay));
         continue;
       }
@@ -120,7 +123,7 @@ export class GeminiAnalyzer {
     const timeSinceLastRequest = now - GeminiAnalyzer.lastRequestTime;
     if (timeSinceLastRequest < GeminiAnalyzer.MIN_REQUEST_INTERVAL_MS) {
       const delayMs = GeminiAnalyzer.MIN_REQUEST_INTERVAL_MS - timeSinceLastRequest;
-      console.log(`[RATE-LIMIT] Esperando ${(delayMs / 1000).toFixed(1)}s para respetar 5 RPM...`);
+      log.info(`Esperando ${(delayMs / 1000).toFixed(1)}s para respetar 5 RPM...`);
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
     GeminiAnalyzer.lastRequestTime = Date.now();
@@ -128,7 +131,7 @@ export class GeminiAnalyzer {
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
     if (!this.genAI) {
-      console.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
+      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
       return this.mockAnalysis(url);
     }
 
@@ -159,7 +162,7 @@ export class GeminiAnalyzer {
         .replace(/\s*```\s*$/, '')
         .trim();
 
-      console.log(`[GEMINI] Respuesta raw (primeros 500 chars): ${rawText.substring(0, 500)}`);
+      log.info(`Respuesta raw (primeros 500 chars): ${rawText.substring(0, 500)}`);
 
       let parsed: unknown;
       try {
@@ -170,14 +173,14 @@ export class GeminiAnalyzer {
 
       // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
       if (Array.isArray(parsed)) {
-        console.warn('[GEMINI] Respuesta es array, tomando primer elemento.');
+        log.warn('Respuesta es array, tomando primer elemento.');
         parsed = parsed[0];
       }
 
       // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
       const rawParsed = parsed as Record<string, unknown>;
       if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
-        console.warn('[GEMINI] Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
+        log.warn('Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
         return {
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${url}`,
@@ -190,7 +193,7 @@ export class GeminiAnalyzer {
 
       const validated = activityNLPResultSchema.safeParse(parsed);
       if (!validated.success) {
-        console.error('Zod validation errors:', validated.error.issues);
+        log.error('Zod validation errors', { issues: validated.error.issues });
         throw new Error(
           `Respuesta de Gemini no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
         );
@@ -198,14 +201,14 @@ export class GeminiAnalyzer {
 
       return validated.data;
     } catch (error: any) {
-      console.error('Error en GeminiAnalyzer:', error.message);
+      log.error('Error en GeminiAnalyzer:', error.message);
       throw error;
     }
   }
 
   async discoverActivityLinks(links: DiscoveredLink[], sourceUrl: string): Promise<string[]> {
     if (!this.genAI) {
-      console.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Retornando todos los links.');
+      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Retornando todos los links.');
       return links.map((l) => l.url);
     }
 
@@ -220,7 +223,7 @@ export class GeminiAnalyzer {
       }
     });
     if (filtered.length < links.length) {
-      console.log(`[GEMINI-DISCOVER] Pre-filtro: ${links.length - filtered.length} URLs con query params excluidas.`);
+      log.info(`Pre-filtro: ${links.length - filtered.length} URLs con query params excluidas.`);
     }
 
     const CHUNK_SIZE = 50;
@@ -229,7 +232,7 @@ export class GeminiAnalyzer {
       chunks.push(filtered.slice(i, i + CHUNK_SIZE));
     }
 
-    console.log(`[GEMINI-DISCOVER] Procesando ${filtered.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
+    log.info(`Procesando ${filtered.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
 
     const model = this.genAI.getGenerativeModel({
       model: 'gemini-2.5-flash',
@@ -280,13 +283,13 @@ ${linksText}`;
         try {
           parsed = JSON.parse(jsonStr);
         } catch (parseErr: any) {
-          console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}: JSON inválido (${parseErr.message})`);
+          log.error(`Lote ${chunkIndex + 1}: JSON inválido (${parseErr.message})`);
           continue;
         }
 
         const validated = discoveredActivityUrlsSchema.safeParse(parsed);
         if (!validated.success) {
-          console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}: Validación falló`);
+          log.error(`Lote ${chunkIndex + 1}: Validación falló`);
           continue;
         }
 
@@ -294,14 +297,14 @@ ${linksText}`;
         const found = validated.data.indices
           .filter((idx) => idx >= 1 && idx <= chunk.length)
           .map((idx) => chunk[idx - 1].url);
-        console.log(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
+        log.info(`Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
         allActivityUrls.push(...found);
       } catch (error: any) {
-        console.error(`[GEMINI-DISCOVER] Lote ${chunkIndex + 1} Error:`, error.message);
+        log.error(`Lote ${chunkIndex + 1} Error:`, error.message);
       }
     }
 
-    console.log(`[GEMINI-DISCOVER] Total actividades identificadas: ${allActivityUrls.length}`);
+    log.info(`Total actividades identificadas: ${allActivityUrls.length}`);
     return allActivityUrls;
   }
 
@@ -311,7 +314,7 @@ ${linksText}`;
    */
   async analyzeInstagramPost(post: InstagramPost, profileBio: string): Promise<ActivityNLPResult> {
     if (!this.genAI) {
-      console.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
+      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
       return this.mockAnalysis(post.url);
     }
 
@@ -349,7 +352,7 @@ ${profileBio}`;
         .replace(/\s*```\s*$/, '')
         .trim();
 
-      console.log(`[GEMINI-IG] Respuesta raw (primeros 300 chars): ${rawText.substring(0, 300)}`);
+      log.info(`Respuesta raw (primeros 300 chars): ${rawText.substring(0, 300)}`);
 
       let parsed: unknown;
       try {
@@ -360,13 +363,13 @@ ${profileBio}`;
 
       // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
       if (Array.isArray(parsed)) {
-        console.warn('[GEMINI-IG] Respuesta es array, tomando primer elemento.');
+        log.warn('Respuesta es array, tomando primer elemento.');
         parsed = parsed[0];
       }
 
       const rawParsed = parsed as Record<string, unknown>;
       if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
-        console.warn('[GEMINI-IG] Confianza < 0.1 — el post no parece ser una actividad infantil.');
+        log.warn('Confianza < 0.1 — el post no parece ser una actividad infantil.');
         return {
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${post.url}`,
@@ -379,7 +382,7 @@ ${profileBio}`;
 
       const validated = activityNLPResultSchema.safeParse(parsed);
       if (!validated.success) {
-        console.error('Zod validation errors:', validated.error.issues);
+        log.error('Zod validation errors', { issues: validated.error.issues });
         throw new Error(
           `Respuesta de Gemini-IG no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
         );
@@ -387,7 +390,7 @@ ${profileBio}`;
 
       return validated.data;
     } catch (error: any) {
-      console.error('Error en GeminiAnalyzer (Instagram):', error.message);
+      log.error('Error en GeminiAnalyzer (Instagram):', error.message);
       throw error;
     }
   }

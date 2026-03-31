@@ -28,7 +28,7 @@ const baseActivity = {
   sourceUrl: 'https://example.com',
   // createdAt hace 1 día → entra dentro de los 7 días
   createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-  provider: { name: 'BibloRed', isVerified: true },
+  provider: { name: 'BibloRed', isVerified: true, isPremium: false },
   location: { name: 'Biblioteca Tintal', neighborhood: 'Tintal', city: { name: 'Bogotá' } },
   categories: [{ category: { id: 'c1', name: 'Arte y Creatividad', slug: 'arte-y-creatividad' } }],
 };

@@ -24,7 +24,7 @@ export default async function FavoritosPage() {
     include: {
       activity: {
         include: {
-          provider: { select: { name: true, isVerified: true } },
+          provider: { select: { name: true, isVerified: true, isPremium: true } },
           location: {
             select: {
               name: true,

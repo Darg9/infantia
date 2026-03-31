@@ -222,16 +222,16 @@ describe('listActivities()', () => {
   });
 
   // --- sortBy ---
-  it('sortBy=relevance usa status asc + sourceConfidence desc (default)', async () => {
+  it('sortBy=relevance usa status asc + isPremium desc + sourceConfidence desc (default)', async () => {
     await listActivities({ skip: 0, pageSize: 20, sortBy: 'relevance' });
     const orderBy = mockFindMany.mock.calls[0][0].orderBy;
-    expect(orderBy).toEqual([{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
+    expect(orderBy).toEqual([{ status: 'asc' }, { provider: { isPremium: 'desc' } }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
   });
 
   it('sin sortBy usa ordenamiento por relevancia (default)', async () => {
     await listActivities({ skip: 0, pageSize: 20 });
     const orderBy = mockFindMany.mock.calls[0][0].orderBy;
-    expect(orderBy).toEqual([{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
+    expect(orderBy).toEqual([{ status: 'asc' }, { provider: { isPremium: 'desc' } }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]);
   });
 
   it('sortBy=date ordena por startDate asc nulls last', async () => {

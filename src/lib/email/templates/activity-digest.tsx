@@ -12,6 +12,13 @@ import {
 } from '@react-email/components';
 import { activityPath } from '@/lib/activity-url';
 
+interface Sponsor {
+  name: string;
+  tagline: string;
+  logoUrl?: string;
+  url: string;
+}
+
 interface ActivityDigestEmailProps {
   userName?: string;
   activities: Array<{
@@ -24,12 +31,15 @@ interface ActivityDigestEmailProps {
     maxAge?: number | null;
   }>;
   period: 'daily' | 'weekly';
+  /** Bloque de patrocinador opcional — se muestra entre actividades y CTA final */
+  sponsor?: Sponsor;
 }
 
 export const ActivityDigestEmail = ({
   userName = 'amigo',
   activities,
   period = 'daily',
+  sponsor,
 }: ActivityDigestEmailProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://infantia-activities.vercel.app';
   const periodLabel = period === 'daily' ? 'hoy' : 'esta semana';
@@ -91,6 +101,28 @@ export const ActivityDigestEmail = ({
                 Ver todas las actividades
               </Link>
             </Row>
+
+            {/* Bloque patrocinador — solo si viene en props */}
+            {sponsor && (
+              <>
+                <Hr style={hr} />
+                <Section style={sponsorBox}>
+                  <Text style={sponsorLabel}>Patrocinado por</Text>
+                  {sponsor.logoUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={sponsor.logoUrl} alt={sponsor.name} style={sponsorLogo} />
+                  )}
+                  <Text style={sponsorName}>{sponsor.name}</Text>
+                  <Text style={sponsorTagline}>{sponsor.tagline}</Text>
+                  <Link
+                    href={`${sponsor.url}?utm_source=infantia&utm_medium=email&utm_campaign=newsletter`}
+                    style={sponsorCta}
+                  >
+                    Conocer más →
+                  </Link>
+                </Section>
+              </>
+            )}
 
             <Hr style={hr} />
 
@@ -227,4 +259,50 @@ const footer = {
   fontSize: '12px',
   lineHeight: '16px',
   margin: '16px 0 0 0',
+};
+
+const sponsorBox = {
+  backgroundColor: '#fffbeb',
+  border: '1px solid #fcd34d',
+  borderRadius: '8px',
+  padding: '16px',
+  textAlign: 'center' as const,
+  marginBottom: '8px',
+};
+
+const sponsorLabel = {
+  color: '#92400e',
+  fontSize: '11px',
+  fontWeight: '600',
+  textTransform: 'uppercase' as const,
+  letterSpacing: '0.05em',
+  margin: '0 0 8px 0',
+};
+
+const sponsorLogo = {
+  maxHeight: '40px',
+  maxWidth: '120px',
+  margin: '0 auto 8px auto',
+  display: 'block',
+};
+
+const sponsorName = {
+  color: '#1f2937',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  margin: '0 0 4px 0',
+};
+
+const sponsorTagline = {
+  color: '#6b7280',
+  fontSize: '13px',
+  lineHeight: '18px',
+  margin: '0 0 12px 0',
+};
+
+const sponsorCta = {
+  color: '#d97706',
+  fontSize: '14px',
+  fontWeight: '600',
+  textDecoration: 'none',
 };

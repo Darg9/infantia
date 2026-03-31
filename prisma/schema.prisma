@@ -74,6 +74,8 @@ model Provider {
   logoUrl          String?
   isVerified       Boolean      @default(false)
   isClaimed        Boolean      @default(false)
+  isPremium        Boolean      @default(false)
+  premiumSince     DateTime?
   verificationDate DateTime?
   ratingAvg        Float?
   ratingCount      Int          @default(0)

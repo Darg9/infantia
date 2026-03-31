@@ -32,6 +32,11 @@ export function Footer() {
                   Contacto
                 </Link>
               </li>
+              <li>
+                <Link href="/anunciate" className="text-sm text-orange-500 font-medium hover:text-orange-600 transition-colors">
+                  Anúnciate
+                </Link>
+              </li>
             </ul>
           </div>
 

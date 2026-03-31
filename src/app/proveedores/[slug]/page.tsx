@@ -36,7 +36,7 @@ async function getProvider(slug: string) {
               city: { select: { id: true, name: true } },
             },
           },
-          provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true } },
+          provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
         },
       },
       _count: { select: { activities: true } },

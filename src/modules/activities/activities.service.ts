@@ -7,7 +7,7 @@ import type { Prisma } from '@/generated/prisma/client';
 import type { CreateActivityInput, UpdateActivityInput } from './activities.schemas';
 
 const activityIncludes = {
-  provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true } },
+  provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
   location: {
     select: {
       id: true, name: true, address: true, neighborhood: true,
@@ -66,8 +66,8 @@ function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInp
       return [{ createdAt: 'desc' }];
     case 'relevance':
     default:
-      // Activas primero, luego por confianza del scraper
-      return [{ status: 'asc' }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }];
+      // Activas primero, premium dentro de activas, luego por confianza del scraper
+      return [{ status: 'asc' }, { provider: { isPremium: 'desc' } }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }];
   }
 }
 

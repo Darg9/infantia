@@ -26,7 +26,7 @@ interface Activity {
   imageUrl: string | null;
   sourceUrl: string | null;
   createdAt: Date;
-  provider: { name: string; isVerified: boolean } | null;
+  provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
   location: {
     name: string;
     neighborhood: string | null;
@@ -127,8 +127,15 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
           </span>
         )}
 
-        {/* Badge Nuevo — actividades de los últimos 7 días */}
-        {isNew && (
+        {/* Badge Destacado — proveedor premium */}
+        {activity.provider?.isPremium && (
+          <span className="absolute bottom-1.5 left-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-sm">
+            ⭐ Destacado
+          </span>
+        )}
+
+        {/* Badge Nuevo — actividades de los últimos 7 días (solo si no es destacado) */}
+        {isNew && !activity.provider?.isPremium && (
           <span className="absolute bottom-1.5 left-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
             🆕 Nuevo
           </span>

@@ -2,12 +2,12 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.7.3 | **Status:** Production — 2026-03-25 | **Tests:** 636 passing / 40 files | **Coverage:** 97.41% statements
+**Version:** v0.8.1+ | **Status:** Production — 2026-03-31 | **Tests:** 748 passing / 49 files | **Coverage:** ~97% statements
 
 ## Quick Start
 
 ### Prerequisites
-- Node.js 20+
+- Node.js 24+
 - PostgreSQL database (via Supabase)
 - `.env` file configured with required secrets
 
@@ -17,8 +17,12 @@ A multi-source activity discovery platform for families in Bogotá, Colombia. Ag
 # Install dependencies
 npm install
 
-# Set up database
-npx prisma migrate dev
+# Generate Prisma client
+npx prisma generate
+
+# Run DB migrations (raw SQL via scripts — Supabase pgbouncer incompatible with prisma migrate dev)
+npx tsx scripts/migrate-premium.ts    # isPremium/premiumSince on Provider
+npx tsx scripts/migrate-sponsors.ts   # Sponsor table
 
 # Seed initial data
 npx tsx prisma/seed.ts
@@ -32,150 +36,128 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## Tech Stack
 
-- **Framework:** Next.js 16.1.6 (App Router) + TypeScript
-- **Styling:** Tailwind CSS
-- **Database:** PostgreSQL + Prisma ORM
-- **Auth:** Supabase Auth (SSR)
-- **AI/NLP:** Google Gemini 2.5 Flash (Activity extraction)
-- **Scraping:** Playwright (Instagram) + Cheerio (web)
-- **Testing:** Vitest 1.0 + React Testing Library
-- **CI/CD:** GitHub Actions
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16.1.6 (App Router) + TypeScript strict |
+| Styling | Tailwind CSS |
+| Database | PostgreSQL via Supabase + Prisma 7 (adapter-pg) |
+| Auth | Supabase Auth (SSR cookies) |
+| AI/NLP | Google Gemini 2.5 Flash (20 RPD free tier) |
+| Scraping | Playwright (Instagram) + Cheerio (web) + optional proxy (IPRoyal) |
+| Queue | BullMQ + Upstash Redis |
+| Email | Resend + react-email |
+| Maps | Leaflet + OpenStreetMap |
+| Geocoding | venue-dictionary.ts (~0ms) + Nominatim fallback |
+| Search | Meilisearch Cloud (activate at +1,000 active activities) |
+| Testing | Vitest + @vitest/coverage-v8 |
+| CI/CD | GitHub Actions → Vercel |
 
 ## Core Features
 
-- 🔍 **Search & Filter:** Full-text search + faceted filters (category, age, price, audience type)
-- 👥 **User Profiles:** Signup/login via Supabase Auth, manage children, favorite activities
-- ⭐ **Favorites:** Bookmark activities with timestamps, view history
+- 🔍 **Search & Filter:** Full-text search + faceted filters (category, age, price, audience, city) + sorting (5 options)
+- 🗺️ **Interactive Map:** Leaflet map with category pins + mini-map in activity detail
+- 👥 **User Profiles:** Signup/login via Supabase Auth, manage children (Ley 1581 compliance), favorites, history
+- ⭐ **Ratings:** 1–5 star ratings with comments per activity
 - 🤖 **AI-Powered:** Automatic activity extraction and classification with Gemini NLP
-- 📱 **Responsive:** Mobile-first design with Tailwind CSS
-- ♿ **Accessible:** WCAG-compliant components
-- 🧪 **Well-tested:** 636 unit tests (97.41% coverage), E2E tests, component tests
-- 🚀 **Production-ready:** CI/CD pipeline, automated testing, static generation (robots.txt, sitemap.xml)
+- 📧 **Email Digest:** Daily/weekly digests with UTM tracking + optional sponsor block
+- 🔔 **Web Push:** Real push notifications via VAPID + Service Worker
+- 💰 **Monetization:** isPremium providers (badge + priority ordering), sponsor newsletter blocks, /anunciate landing
+- 🏢 **Provider Dashboard:** `/proveedores/[slug]/dashboard` — views, premium status, activity table (ADMIN or owner)
+- 🔒 **Admin Panel:** Sponsors CRUD, activity management, metrics, scraping queue
+- 📱 **Responsive:** Mobile-first design
+- 🧪 **Well-tested:** 748 unit tests (~97% coverage), E2E tests
 
 ## Commands
 
 ```bash
-npm run dev          # Start development server
-npm run build        # Build for production
-npm test             # Run all tests
-npm run test:watch   # Run tests in watch mode
-npm run lint         # Run ESLint
-npm run format       # Format code with Prettier
+npm run dev                    # Start development server
+npm run build                  # Build for production
+npm test                       # Run all tests (748 tests)
+npm run test:coverage          # Tests + coverage report (threshold: 85%)
+
+# Scraping
+npx tsx scripts/ingest-sources.ts --save-db     # Direct ingest to DB
+npx tsx scripts/ingest-sources.ts --queue        # Queue jobs via BullMQ
+npx tsx scripts/run-worker.ts                    # Start BullMQ worker
+
+# Maintenance
+npx tsx scripts/promote-admin.ts <email>         # Grant ADMIN role
+npx tsx scripts/verify-db.ts                     # Verify DB state
+npx tsx scripts/backfill-geocoding.ts [--dry-run] # Geocode 0,0 locations
+npx tsx scripts/backfill-images.ts               # Backfill og:image from sourceUrl
+npx tsx scripts/expire-activities.ts             # Manually expire activities
 ```
 
-## Project Structure
+## Environment Variables
+
+```bash
+# Database
+DATABASE_URL=postgresql://...
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=...
+NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+SUPABASE_SERVICE_ROLE_KEY=...
+
+# AI
+GEMINI_API_KEY=...
+
+# Email
+RESEND_API_KEY=...
+
+# Queue
+REDIS_URL=rediss://...
+
+# Site
+NEXT_PUBLIC_SITE_URL=https://infantia-activities.vercel.app
+
+# Proxy (optional — IPRoyal residential, pay-as-you-go $7/GB)
+PLAYWRIGHT_PROXY_SERVER=http://geo.iproyal.com:12321
+PLAYWRIGHT_PROXY_USER=...
+PLAYWRIGHT_PROXY_PASS=...
+
+# Cron auth
+CRON_SECRET=...
+```
+
+## Architecture
 
 ```
 src/
-├── app/              # Next.js App Router (pages, layouts, API)
-├── modules/          # Domain modules (activities, scraping, users, etc.)
-├── components/       # Reusable React components
-├── lib/              # Shared utilities and helpers
-├── types/            # TypeScript type definitions
-├── config/           # App configuration
-└── hooks/            # Custom React hooks
+  app/                    # Next.js App Router
+    actividades/          # Activity listing + detail
+    admin/                # Admin panel (sponsors, activities, metrics, scraping)
+    anunciate/            # Monetization landing
+    perfil/               # User zone (profile, favorites, children, notifications)
+    proveedores/[slug]/   # Public provider page + dashboard
+    api/                  # REST endpoints
+  modules/
+    activities/           # Activity domain (service, schemas)
+    scraping/             # Scraping pipeline (Cheerio, Playwright, Gemini, BullMQ)
+  components/
+    layout/               # Header (with providerSlug logic), Footer, UserMenu
+  lib/
+    auth.ts               # Supabase Auth helpers (getSession, requireRole)
+    db.ts                 # Prisma singleton
+    activity-url.ts       # Canonical URL helpers
+    venue-dictionary.ts   # 40+ Bogotá venues with exact coords (~0ms lookup)
+    geocoding.ts          # venue-dictionary → Nominatim → cityFallback → null
+    email/templates/      # react-email templates with UTM tracking
 ```
 
-## Testing
+## Monetization
 
-- **Unit tests:** 636 tests / 40 files
-- **Coverage threshold:** 85% (cap — all thresholds met)
-- **Test frameworks:** Vitest 4.1.0, React Testing Library, Playwright (E2E)
-
-Run tests:
-```bash
-npm test              # Run once
-npm run test:watch    # Watch mode
-npm run test:coverage # With coverage report
-```
-
-## Scraping
-
-### Test a scraper
-
-```bash
-# Single page (extract activity from URL)
-npx tsx scripts/test-scraper.ts "https://example.com/activity"
-
-# Discovery mode (find all activities on a listing page)
-npx tsx scripts/test-scraper.ts --discover "https://example.com/events" --max-pages=5
-
-# Save to database
-npx tsx scripts/test-scraper.ts --discover "https://example.com/events" --save-db
-```
-
-### Scraping sources
-
-Currently configured sources:
-1. **BibloRed** (Bogotá public library events)
-2. **Bogotá.gov.co** (City culture & recreation)
-3. **Centro Felicidad Chapinero** (Municipal center)
-4. **Idartes** (Bogotá Institute of Culture)
-5. **Instagram:** fcecolombia
-6. **Instagram:** quehaypahacerenbogota
+| Phase | Feature | Status |
+|-------|---------|--------|
+| Mes 1-5 | Audience building | In progress |
+| Mes 6 | Newsletter sponsorships (COP 200k-500k/edition) | Infrastructure ready |
+| Mes 9 | Premium listings (COP 150k-300k/month) | Infrastructure ready |
+| Pending | Wompi payment gateway | Awaiting first client + bank account |
 
 ## Deployment
 
-### Prerequisites
-- Vercel account
-- Environment variables configured in GitHub secrets:
-  - `DATABASE_URL` (PostgreSQL connection)
-  - `NEXT_PUBLIC_SUPABASE_URL` (Supabase project URL)
-  - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase anon key)
-  - `GOOGLE_AI_STUDIO_KEY` (Gemini API key)
-  - `RESEND_API_KEY` (Email API key)
-  - `RESEND_FROM_EMAIL` (Sender email)
-
-### Deploy to Vercel
-
-```bash
-# Connect to Vercel and push to master branch
-git push origin master
-```
-
-The CI/CD pipeline will:
-1. Run all 473 tests
-2. Build production bundle
-3. Deploy to Vercel (if all checks pass)
-
-### Cron Jobs (Vercel)
-
-- **5:00 AM UTC**: Expire past activities (`/api/admin/expire-activities`)
-- **9:00 AM UTC**: Send daily notifications (`/api/admin/send-notifications`)
-
-## Documentation
-
-- **CLAUDE.md** — Project guidelines, conventions, and tech decisions
-- **ARCHITECTURE.md** — System design and module documentation
-- **CHANGELOG.md** — Version history and release notes
-- **TEST_PLAN.md** — Testing strategy and coverage goals
-- **DEDUPLICATION-STRATEGY.md** — 3-level activity deduplication algorithm
-
-## Contributing
-
-See `CLAUDE.md` for:
-- Code conventions (TypeScript strict, Spanish for UI)
-- Git workflow (branches, commits, versioning)
-- Testing requirements (mandatory for `src/modules/` and `src/lib/`)
-- Documentation standards
-
-## License
-
-MIT — See LICENSE file for details
-
-## Status
-
-**v0.6.1** — certified 2026-03-24
-- ✅ 473/473 tests passing (4.94s)
-- ✅ CI/CD pipeline live (GitHub Actions → Vercel auto-deploy)
-- ✅ Production: https://infantia-activities.vercel.app — 211 activities
-- ✅ Supabase Auth email delivery verified (confirmation email working)
-- ✅ robots.txt + sitemap.xml generating correctly in production
-- ✅ Empty states, custom 404, loading skeletons
-- ✅ Documento Fundacional V12 generated (Infantia_V12_v0.6.0.docx)
-- ⚠️ Coverage gap: 86.85% stmts (threshold 100%) — deduplication.ts + send-notifications.ts need tests
-- 🔄 Awaiting Gemini API quota reset for Idartes/CEFE scraping (~95 activities)
-
-## Contact
-
-Built with ❤️ for families in Bogotá exploring activities and events with their children.
+- **Production:** https://infantia-activities.vercel.app
+- **Repo:** https://github.com/Darg9/infantia (private)
+- **Branch:** master — auto-deploy on push via GitHub Actions → Vercel
+- **DB:** Supabase PostgreSQL (Free Tier)
+- **Queue:** Upstash Redis (Free Tier)

@@ -1,11 +1,11 @@
 # Módulo: Activities
 
-**Versión actual:** v0.5.0
-**Última actualización:** 2026-03-23
+**Versión actual:** v0.8.1+
+**Última actualización:** 2026-03-31
 
 ## ¿Qué hace?
 
-Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el módulo central de Infantia — todo lo que el scraping guarda, la API lo sirve.
+Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el módulo central de Infantia — todo lo que el scraping guarda, la API lo sirve con filtros facetados, ordenamiento, geocoding y soporte de monetización (isPremium).
 
 ## Endpoints de actividades
 
@@ -16,6 +16,10 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
 | PUT | `/api/activities/:id` | No | Actualiza una actividad |
 | DELETE | `/api/activities/:id` | No | Elimina una actividad |
+| GET | `/api/activities/suggestions` | No | Autocompletado de búsqueda (debounce 300ms, máx 6) |
+| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500) |
+| POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
+| GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |
 
 ## Endpoints de favoritos
 
@@ -25,12 +29,14 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | POST | `/api/favorites` | Sí | Añade favorito `{ activityId }` (upsert, idempotente) |
 | DELETE | `/api/favorites/:activityId` | Sí | Elimina favorito (404 si no existe) |
 
-## Endpoints de hijos
+## Endpoints de perfil / hijos / notificaciones
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| GET | `/api/children` | Sí | Lista hijos del usuario autenticado |
-| POST | `/api/children` | Sí | Crea perfil de hijo con consentimiento parental |
+| GET/PUT | `/api/profile` | Sí | Perfil del usuario autenticado (upsert) |
+| PUT | `/api/profile/avatar` | Sí | Sube avatar a Supabase Storage |
+| GET/PUT | `/api/profile/notifications` | Sí | Preferencias de notificaciones |
+| GET/POST | `/api/children` | Sí | Lista/crea perfiles de hijos |
 | DELETE | `/api/children/:id` | Sí | Elimina perfil de hijo |
 
 ## Endpoints de administración
@@ -40,6 +46,14 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |
 | GET | `/api/admin/scraping/logs` | Admin | Logs de scraping con filtros |
 | POST | `/api/admin/expire-activities` | Cron | Expira actividades con fecha pasada (5AM UTC) |
+| POST | `/api/admin/send-notifications` | Cron | Envía digest de email a usuarios suscritos |
+| GET | `/api/admin/queue/status` | Admin | Estado de la cola BullMQ |
+| POST | `/api/admin/queue/enqueue` | Admin | Encola un job de scraping |
+| GET | `/api/admin/metrics` | Admin | Vistas, búsquedas frecuentes, distribución |
+| **GET** | **`/api/admin/sponsors`** | **Admin** | **Lista sponsors (NUEVO v0.8.1)** |
+| **POST** | **`/api/admin/sponsors`** | **Admin** | **Crea sponsor (NUEVO v0.8.1)** |
+| **PATCH** | **`/api/admin/sponsors/:id`** | **Admin** | **Actualiza sponsor parcialmente (NUEVO v0.8.1)** |
+| **DELETE** | **`/api/admin/sponsors/:id`** | **Admin** | **Elimina sponsor (NUEVO v0.8.1)** |
 
 ## Filtros disponibles (GET /api/activities)
 
@@ -52,57 +66,104 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | `cityId` | UUID | Filtrar por ciudad |
 | `ageMin` / `ageMax` | number | Rango de edad (0–120) |
 | `priceMin` / `priceMax` | number | Rango de precio |
+| `free` | boolean | Solo actividades gratuitas |
 | `status` | enum | `ACTIVE`, `PAUSED`, `EXPIRED`, `DRAFT` |
 | `type` | enum | `RECURRING`, `ONE_TIME`, `CAMP`, `WORKSHOP` |
 | `audience` | enum | `KIDS`, `FAMILY`, `ADULTS`, `ALL` |
 | `search` | string | Búsqueda por texto (1–200 chars) |
+| `sortBy` | enum | `relevance` \| `date` \| `price_asc` \| `price_desc` \| `newest` |
 
 Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo su propia selección, garantizando 0 combinaciones vacías.
 
-## Archivos clave
+## Ordenamiento (sortBy)
 
-| Archivo | Responsabilidad |
-|---|---|
-| `activities.schemas.ts` | Validación Zod de todos los inputs |
-| `activities.service.ts` | Lógica de negocio + queries a Prisma |
-| `src/app/api/activities/route.ts` | Handler GET + POST |
-| `src/app/api/activities/[id]/route.ts` | Handler GET + PUT + DELETE |
-| `src/app/api/favorites/route.ts` | GET + POST favoritos |
-| `src/app/api/favorites/[activityId]/route.ts` | DELETE favorito |
-| `src/app/api/children/route.ts` | GET + POST hijos |
-| `src/app/api/children/[id]/route.ts` | DELETE hijo |
+| Valor | Criterio |
+|-------|---------|
+| `relevance` (default) | ACTIVE primero → `isPremium desc` → sourceConfidence → createdAt |
+| `date` | Próximas primero, sin fecha al final |
+| `price_asc` | Precio ascendente, gratis y sin precio al final |
+| `price_desc` | Precio descendente, gratis y sin precio al final |
+| `newest` | Recién agregadas a Infantia |
 
-## Reglas de negocio
+> **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
 
-- `ageMin` debe ser ≤ `ageMax` si ambos están presentes (0–120, no 0–18)
-- `priceMin` debe ser ≤ `priceMax` si ambos están presentes
-- `status` default: `DRAFT` (actividades scrapeadas empiezan en draft)
-- `audience` default: `ALL`
-- `priceCurrency` default: `COP`
-- `sourceConfidence` default: `0.5`
-- Edad calculada por fecha exacta (no solo por año)
-- `ageMin=0` se trata como valor válido (no falsy)
+## Modelo Sponsor (NUEVO v0.8.1)
 
-## Tests
+Gestiona patrocinadores del newsletter. Un sponsor activo (`isActive=true`) se muestra en el email digest entre la lista de actividades y el CTA final.
 
-```
-src/modules/activities/__tests__/
-  schemas.test.ts  → listActivitiesSchema, createActivitySchema, updateActivitySchema
-                     audience, ageMax=120, falsy-zero guards — 100%
-  service.test.ts  → listActivities (filtros+paginación+audience), CRUD — 94% stmts
-
-src/app/api/children/__tests__/
-  children.test.ts → GET/POST/DELETE, auth, consentimiento, edad — 224 líneas
-
-src/app/api/favorites/ (sin archivo de test separado — cubierto en pipeline)
+```typescript
+interface Sponsor {
+  id: string           // UUID
+  name: string         // Nombre del sponsor (max 255)
+  tagline: string      // Descripción corta (max 500)
+  logoUrl?: string     // URL del logo (opcional)
+  url: string          // URL destino (con UTM en el email)
+  isActive: boolean    // Default: false
+  campaignStart?: Date // Inicio de campaña (opcional)
+  campaignEnd?: Date   // Fin de campaña (opcional)
+  createdAt: Date
+  updatedAt: Date
+}
 ```
 
-Cobertura v0.5.0: schemas 100% · service 94% stmts / 100% funcs
+**Tabla:** `sponsors` — creada via `scripts/migrate-sponsors.ts` (raw SQL).
+**CRUD:** `/admin/sponsors` (UI) + `/api/admin/sponsors` (API).
 
-## Pendiente
+## isPremium en Provider (NUEVO v0.8.1)
 
-- [ ] Endpoint de búsqueda full-text con Meilisearch (módulo stub existe, no activo)
-- [ ] Paginación tipo cursor (más eficiente que offset para listados grandes)
-- [ ] Endpoint de actividades destacadas / recomendadas
-- [ ] Ratings de actividades (modelo `ActivityRating` existe en schema, falta API)
-- [ ] Soft delete (`deletedAt`) en lugar de borrado real
+```typescript
+// Provider model additions
+isPremium    Boolean   @default(false)
+premiumSince DateTime?
+```
+
+- **Badge:** "⭐ Destacado" (ambar) en `ActivityCard` — prioridad sobre badge "Nuevo"
+- **Ordering:** `{ provider: { isPremium: 'desc' } }` en relevance sort
+- **Dashboard:** `/proveedores/[slug]/dashboard` muestra estado premium con fecha
+
+## URL canónica de actividades
+
+Formato: `/actividades/{uuid}-{slug-titulo}`
+
+```typescript
+// src/lib/activity-url.ts
+activityPath(id, title)  // → "/actividades/{uuid}-{slug}"
+extractActivityId(param) // → UUID (desde param con o sin slug)
+```
+
+- UUID como clave de lookup en BD (backward compatible con URLs bare)
+- Redirect server-side: `/actividades/{uuid}` → `/actividades/{uuid}-{slug}`
+- `<link rel="canonical">` apunta siempre a URL con slug
+
+## Email digest con UTM
+
+`activity-digest.tsx` incluye:
+- UTM en links de actividades: `?utm_source=infantia&utm_medium=email&utm_campaign=digest_{daily|weekly}`
+- UTM en CTA "Ver todas": mismo parámetro
+- Bloque sponsor opcional (prop `sponsor?`): link con `utm_campaign=newsletter`
+
+## Geocoding por actividad
+
+Cada actividad en detalle y mapa expone `location.latitude` / `location.longitude`. El pipeline garantiza coords reales via:
+
+1. `venue-dictionary.ts` — 40+ venues Bogotá (~0ms)
+2. Nominatim (OpenStreetMap) — rate limit 1.1s
+3. cityFallback
+4. null (actividad sin pin)
+
+## Datos actuales (2026-03-31)
+
+| Proveedor | Actividades |
+|-----------|------------|
+| BibloRed | 150 |
+| Sec. Cultura | 29 |
+| Planetario | 25 |
+| Alcaldía Bogotá | 20 |
+| IDARTES | 19 |
+| FCE Colombia | 10 |
+| JBB | 4 |
+| Cinemateca | 1 |
+| **Total** | **260** |
+
+- 29/29 locations con coordenadas reales ✅
+- Mayoría EXPIRED (pendiente: Banrep ingest para actividades con fechas futuras)

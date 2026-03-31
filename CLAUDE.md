@@ -113,6 +113,11 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.3.0 | V08 | Instagram scraping (Playwright, ig-session.json) |
 | v0.4.0 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
 | v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
+| v0.6.1 | V12 | Auth SSR, admin, SEO, Web Push, /proveedores |
+| v0.7.3 | V15 | BullMQ + Redis, 14 fuentes, 636 tests |
+| v0.8.0 | V18 | Geocoding, mapa, autocompletado, ordenamiento, métricas |
+| v0.8.1 | V19 | Mini-mapa detalle, venue-dictionary, backfill-geocoding |
+| v0.8.1+ | V20 | Monetización A-G, proxy IPRoyal, dashboard proveedor |
 
 ### Regla para Documento Fundacional
 
@@ -121,42 +126,50 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v05.mjs` (actualizar número de versión primero)
+Comando: `node scripts/generate_v20.mjs` (actualizar número de versión primero)
 
 ## Notas de arquitectura críticas
 
 - **Prisma config:** `DATABASE_URL` va en `prisma.config.ts` (no en `schema.prisma`). Usar `PrismaClient` con `PrismaPg` adapter.
+- **DDL en Supabase:** pgbouncer (transaction mode) es incompatible con `prisma migrate dev`. Usar `scripts/migrate-*.ts` con `$executeRawUnsafe()` para ALTER TABLE / CREATE TABLE.
 - **Scraping pagination:** `CheerioExtractor.extractLinksAllPages()` sigue paginación automáticamente buscando texto "Siguiente/Next/›/»" o parámetro `?page=N+1`.
-- **Instagram:** `PlaywrightExtractor` usa desktop UA, evento `domcontentloaded`, sesión persistente en `data/ig-session.json`.
-- **NLP:** `GeminiNLPService` — cuota de Google AI Studio puede agotarse. Si falla, revisar cuota antes de debuggear código.
-- **Deduplicación:** 3 niveles — (1) real-time Jaccard >75% en saveActivity, (2) cron diario auto-clean exactos, (3) manual review 70-90%.
+- **Instagram:** `PlaywrightExtractor` usa desktop UA, evento `domcontentloaded`, sesión persistente en `data/ig-session.json`. Proxy: `PLAYWRIGHT_PROXY_SERVER/USER/PASS` en `.env`.
+- **NLP:** `GeminiNLPService` — 20 RPD free tier. Quota se renueva medianoche UTC (19:00 COL). Si falla con 429, esperar reset antes de debuggear código.
+- **Geocoding:** venue-dictionary.ts (~0ms) → Nominatim (rate limit 1.1s) → cityFallback → null.
+- **Deduplicación:** 3 niveles — (1) real-time Jaccard >75% en saveActivity, (2) cron diario, (3) manual review.
 - **Zod schema ActivityNLPResult:** `schedules[].notes` (string), NO `frequency` ni `timeSlot`. `location` es `{address, city}`, NO string.
+- **Sponsor en email:** se pasa como prop opcional `sponsor?` a `ActivityDigestEmail` — si no se pasa, el bloque no aparece.
+- **isPremium ordering:** `{ provider: { isPremium: 'desc' } }` en relevance sort — actividades de providers premium aparecen primero sin queries extra.
+- **Provider dashboard access:** `getSessionWithRole()` → si ADMIN permite; si role=provider, verifica `provider.email === session.user.email && provider.isClaimed`.
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
-- **@types/jsdom:** Requerido como devDependency para scripts que usan jsdom.
 
-## Estado actual (v0.7.7 — 2026-03-27)
-- ~230 actividades en BD (scraping Banrep Bogotá pendiente — necesita quota Gemini fresca)
-- **661 tests** en 42 archivos — `npm test` pasa en ~7s
-- Cobertura real: **97.41% stmts / 92.5% branches / 96.7% funcs / 98.17% lines**
+## Estado actual (v0.8.1+ — 2026-03-31)
+- **260 actividades** en BD — mayoría EXPIRED (pendiente: Banrep ingest con Gemini quota fresca)
+- **748 tests** en 49 archivos — `npm test` pasa en ~12s — 0 errores TypeScript
+- Cobertura real: **~97% stmts / ~93% branches / ~99% funcs**
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
-- BullMQ + Upstash Redis: OPERATIVO — `rediss://modern-bat-84669.upstash.io:6379`
-- 14 fuentes configuradas: 4 Bogotá + 10 Banrep por ciudad (multi-ciudad)
-- Gemini: `gemini-2.5-flash`, 20 RPD free tier — quota se renueva medianoche UTC
-- Próximo paso: con quota fresca → `npx tsx scripts/ingest-sources.ts --queue` + `npx tsx scripts/run-worker.ts`
+- BullMQ + Upstash Redis: OPERATIVO
+- 14 fuentes configuradas, 29/29 locations geocodificadas
+- Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
+- Documento Fundacional: **V20** (2026-03-31)
 
-### Features v0.7.7
-- **Web Push:** VAPID + ServiceWorker (`public/sw.js`) + PushButton + API `/api/push/subscribe` + modelo `PushSubscription`
-- **Admin actividades:** `/admin/actividades` (listar/filtrar/ocultar) + `/admin/actividades/[id]/editar` + API PATCH
-- **Página proveedor:** `/proveedores/[slug]` — perfil público con actividades del proveedor
-- **slug en Provider:** campo único, generado automáticamente, links desde tarjetas y detalle
+### Features v0.8.1+ (monetización + proxy)
+- **isPremium Provider:** badge "⭐ Destacado" en ActivityCard + ordering preferencial en relevance sort
+- **Sponsor model:** CRUD en `/admin/sponsors` + bloque en email digest + UTM tracking
+- **Página /anunciate:** landing de monetización con stats y precios orientativos
+- **Dashboard proveedor:** `/proveedores/[slug]/dashboard` — acceso ADMIN o owner (email + isClaimed)
+- **UserMenu:** muestra "Mi panel" si `providerSlug` presente (role=provider + isClaimed)
+- **UTM tracking email:** todos los links del digest con `?utm_source=infantia&utm_medium=email&utm_campaign=...`
+- **Proxy Playwright:** `PLAYWRIGHT_PROXY_SERVER/USER/PASS` — sin vars = sin proxy (backward compatible)
 
-### Features v0.7.5 – v0.7.6
-- **URLs canónicas:** `/actividades/{uuid}-{slug-titulo}` — `src/lib/activity-url.ts`
-- **Mapa Leaflet:** `/mapa` con pins por categoría (sin API key, OpenStreetMap)
-- **Actividades similares:** sección en detalle de actividad (scoring por categoría + ciudad)
-- **Reportar error:** link en detalle → `/contacto?motivo=reportar&url=<ruta>` precompletado
-- **Imágenes:** backfill og:image (77/230 enriquecidas) + og:image en pipeline futuro
+### Features v0.8.0 – v0.8.1
+- **Geocoding Nominatim:** coords reales para locations, venue-dictionary 40+ venues Bogotá
+- **Mini-mapa Leaflet:** en sidebar de `/actividades/[id]`
+- **Autocompletado búsqueda:** sugerencias con debounce 300ms + navegación teclado
+- **Ordenamiento:** 5 criterios (relevance, date, price_asc/desc, newest)
+- **Mapa `/mapa`:** pines por categoría, popup con CTA
+- **Métricas admin:** `/admin/metricas` con vistas + búsquedas frecuentes
 - **Gradientes placeholder:** 14 gradientes por categoría para actividades sin imagen
 - **Filtro de ciudad:** dropdown en `/actividades` (aparece automático con >1 ciudad)
 - **API queue admin:** `GET/POST /api/admin/queue/status` y `/api/admin/queue/enqueue`

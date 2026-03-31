@@ -13,6 +13,44 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.8.1+] — 2026-03-31 (Monetización A-G, Proxy residencial, Dashboard proveedor)
+**Documento Fundacional: V20** | Commits: c355246, 53f4961, 4772444
+
+### Added
+- **Modelo Sponsor** — tabla `sponsors` creada via `scripts/migrate-sponsors.ts` (raw SQL — patrón DDL para Supabase pgbouncer)
+  - Campos: id, name, tagline, logoUrl, url, isActive, campaignStart, campaignEnd
+- **isPremium en Provider** — columnas `isPremium` y `premiumSince` via `scripts/migrate-premium.ts`
+  - Efecto en ordenamiento: `{ provider: { isPremium: 'desc' } }` en relevance sort
+  - Badge "⭐ Destacado" (ambar) en `ActivityCard` — prioridad sobre badge "Nuevo"
+- **Panel admin sponsors** — `/admin/sponsors` (ADMIN only)
+  - API: `GET/POST /api/admin/sponsors`, `PATCH/DELETE /api/admin/sponsors/[id]`
+  - UI CRUD: crear, activar/desactivar, editar, eliminar
+  - Card "Patrocinadores" agregada al dashboard `/admin`
+- **Bloque sponsor en email** — `activity-digest.tsx`
+  - Sección entre lista de actividades y CTA final (opcional vía prop `sponsor?`)
+  - Logo, tagline, link con `utm_campaign=newsletter`
+- **UTM tracking en email digest** — todos los links de actividades y CTA "Ver todas"
+  - `?utm_source=infantia&utm_medium=email&utm_campaign=digest_{daily|weekly}`
+- **Página `/anunciate`** — landing de monetización
+  - Stats (260+ actividades, 14 fuentes, ~35% open rate)
+  - Opciones: Newsletter Sponsorship (COP 200k-500k/edición) y Listing Destacado (COP 150k-300k/mes)
+  - Link "Anúnciate" en naranja en Footer
+- **Dashboard de proveedor** — `/proveedores/[slug]/dashboard`
+  - Acceso: ADMIN o proveedor con `isClaimed=true` y `email` coincidente con sesión
+  - Muestra: estado premium (con fecha), 4 métricas (vistas, activas, expiradas, borradores), tabla actividades
+  - Header busca `providerSlug` si `role=provider` — `UserMenu` muestra "Mi panel"
+- **Proxy residencial en Playwright** — `playwright.extractor.ts`
+  - Lee `PLAYWRIGHT_PROXY_SERVER / _USER / _PASS` del `.env`
+  - Aplicado a todos los `chromium.launch()` (Instagram + web)
+  - Sin vars = comportamiento anterior sin proxy (backward compatible)
+  - Proveedor recomendado: IPRoyal pay-as-you-go ($7/GB)
+
+### Tests
+- 27 nuevos: `sponsors.test.ts` (API CRUD completo) + `activity-digest.test.tsx` (UTM + bloque sponsor)
+- **748 tests total (49 archivos)**
+
+---
+
 ## [v0.8.1] — 2026-03-31 (Mapa detalle, venue-dictionary, geocoding retroactivo)
 
 ### Added

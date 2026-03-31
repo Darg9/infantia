@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.6.0 (released 2026-03-24) | Actualizado: 2026-03-24
+> Versión: v0.8.1+ | Actualizado: 2026-03-31
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -31,6 +31,9 @@
 | Email | Resend + react-email | ^6.9.4 | Transaccional |
 | Validación | Zod | ^4.3.6 | Schemas runtime |
 | Tests | Vitest | ^4.1.0 | + @vitest/coverage-v8 |
+| Cola | BullMQ + Upstash Redis | — | Jobs de scraping asincrono |
+| Geocoding | venue-dictionary.ts + Nominatim | — | 40+ venues Bogota ~0ms, sin API key |
+| Proxy | IPRoyal (opcional) | — | IPs residenciales para Instagram/TikTok |
 | Despliegue | Vercel | — | Crons integrados |
 | CI/CD | GitHub → Vercel | — | Auto-deploy en push a master |
 
@@ -73,6 +76,9 @@ infantia/
 │   │       └── admin/
 │   │           ├── expire-activities/     # Marcar actividades vencidas
 │   │           ├── send-notifications/    # Envío masivo de notificaciones
+│   │           ├── sponsors/              # CRUD de sponsors newsletter (NUEVO v0.8.1)
+│   │           │   └── [id]/             # PATCH / DELETE por id
+│   │           ├── queue/                 # Estado y encolado de jobs BullMQ
 │   │           └── scraping/
 │   │               ├── sources/           # CRUD de fuentes de scraping
 │   │               └── logs/              # Historial de ejecuciones
@@ -87,13 +93,16 @@ infantia/
 │   │
 │   ├── lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
-│   │   ├── auth.ts                 # Helpers de Supabase Auth
+│   │   ├── auth.ts                 # Helpers de Supabase Auth (getSession, requireRole)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
 │   │   ├── utils.ts                # Utilidades generales
 │   │   ├── category-utils.ts       # Emojis y helpers de categorías
-│   │   ├── expire-activities.ts    # Lógica de expiración
-│   │   ├── email/                  # Templates y envío con Resend
+│   │   ├── activity-url.ts         # URLs canónicas: slugifyTitle, activityPath, extractActivityId
+│   │   ├── venue-dictionary.ts     # 40+ venues Bogotá con coords exactas — lookupVenue() ~0ms (NUEVO v0.8.1)
+│   │   ├── geocoding.ts            # venue-dictionary → Nominatim → cityFallback → null
+│   │   ├── expire-activities.ts    # Lógica de expiración de actividades
+│   │   ├── email/                  # Templates react-email con UTM tracking + bloque sponsor
 │   │   └── supabase/               # Clientes SSR de Supabase
 │   │
 │   ├── generated/
@@ -102,19 +111,23 @@ infantia/
 │   └── types/                      # Tipos globales de TypeScript
 │
 ├── scripts/                        # Scripts de mantenimiento y scraping
+│   ├── ingest-sources.ts           # Ingesta multi-fuente (--save-db / --queue / --dry-run)
+│   ├── run-worker.ts               # Worker BullMQ (procesa jobs de scraping)
 │   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
 │   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts)
 │   ├── ig-login.ts                 # Login manual Instagram → genera ig-session.json
-│   ├── debug-instagram.ts          # Diagnóstico de extracción de Instagram
-│   ├── scrape-centro-felicidad.ts  # Datos hardcodeados CEFEs Chapinero
-│   ├── scrape-eventos-bogota.ts    # CEFEs múltiples + scraping real JSDOM
-│   ├── daily-dedup-check.ts        # Validación diaria de duplicados (Nivel 2)
-│   ├── find-all-duplicates.ts      # Análisis exhaustivo de duplicados
-│   ├── remove-duplicates.ts        # Limpieza batch de duplicados
-│   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
-│   ├── expire-activities.ts        # Marca actividades vencidas
+│   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0 (NUEVO v0.8.1)
+│   ├── backfill-images.ts          # Extrae og:image de sourceUrl para actividades sin imagen
+│   ├── migrate-premium.ts          # DDL: isPremium/premiumSince en Provider (raw SQL)
+│   ├── migrate-sponsors.ts         # DDL: tabla sponsors (raw SQL)
+│   ├── promote-admin.ts            # Da rol ADMIN a un usuario
 │   ├── verify-db.ts                # Reporte de estado de la BD
-│   └── seed-scraping-sources.ts    # Seed de fuentes de scraping
+│   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
+│   ├── expire-activities.ts        # Marca actividades vencidas manualmente
+│   ├── clean-queue.ts              # Limpia jobs BullMQ acumulados
+│   ├── seed-scraping-sources.ts    # Seed de fuentes de scraping
+│   ├── generate_v19.mjs            # Genera Documento Fundacional V19 (.docx)
+│   └── generate_v20.mjs            # Genera Documento Fundacional V20 (.docx)
 │
 ├── prisma/
 │   ├── schema.prisma               # Fuente de verdad del modelo de datos

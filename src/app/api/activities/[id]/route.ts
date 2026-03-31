@@ -1,7 +1,7 @@
 // =============================================================================
 // GET /api/activities/[id] — Get activity by ID
-// PUT /api/activities/[id] — Update activity
-// DELETE /api/activities/[id] — Soft delete (set status EXPIRED)
+// PUT /api/activities/[id] — Update activity (requiere ADMIN)
+// DELETE /api/activities/[id] — Soft delete (requiere ADMIN)
 // =============================================================================
 
 import { NextRequest } from 'next/server';
@@ -9,7 +9,8 @@ import { successResponse, errorResponse } from '@/lib/api-response';
 import { uuidSchema } from '@/lib/validation';
 import { getActivityById, updateActivity, deleteActivity } from '@/modules/activities';
 import { updateActivitySchema } from '@/modules/activities';
-import { Prisma } from '@/generated/prisma/client';
+import { Prisma, UserRole } from '@/generated/prisma/client';
+import { requireRole } from '@/lib/auth';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -34,6 +35,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireRole([UserRole.ADMIN]);
+
     const { id } = await params;
     if (!uuidSchema.safeParse(id).success) {
       return errorResponse('ID inválido', 400);
@@ -60,6 +63,8 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
+    await requireRole([UserRole.ADMIN]);
+
     const { id } = await params;
     if (!uuidSchema.safeParse(id).success) {
       return errorResponse('ID inválido', 400);

@@ -18,11 +18,11 @@ const prisma = new PrismaClient({ adapter });
  * - dryRun: 'true' to skip actual sending
  */
 export async function POST(request: NextRequest) {
-  // Validate cron secret
+  // Validate cron secret — falla si CRON_SECRET no está configurado
   const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET || 'test-secret';
+  const cronSecret = process.env.CRON_SECRET;
 
-  if (authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

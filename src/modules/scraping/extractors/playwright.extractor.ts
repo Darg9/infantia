@@ -12,13 +12,31 @@ const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 /** Path where Instagram session cookies are stored */
 const SESSION_FILE = resolve(process.cwd(), 'data', 'ig-session.json');
 
+/**
+ * Builds proxy config from env vars (optional).
+ * Set PLAYWRIGHT_PROXY_SERVER, PLAYWRIGHT_PROXY_USER, PLAYWRIGHT_PROXY_PASS in .env
+ * to route all Playwright traffic through a residential proxy (e.g. IPRoyal).
+ * If vars are absent the extractor runs without proxy (default behavior).
+ */
+type ProxyConfig = { server: string; username?: string; password?: string };
+
+function buildProxyConfig(): ProxyConfig | undefined {
+  const server = process.env.PLAYWRIGHT_PROXY_SERVER;
+  if (!server) return undefined;
+  const config: ProxyConfig = { server };
+  if (process.env.PLAYWRIGHT_PROXY_USER) config.username = process.env.PLAYWRIGHT_PROXY_USER;
+  if (process.env.PLAYWRIGHT_PROXY_PASS) config.password = process.env.PLAYWRIGHT_PROXY_PASS;
+  console.log(`[PLAYWRIGHT] Proxy activo: ${server}`);
+  return config;
+}
+
 export class PlaywrightExtractor {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
 
   async launch(): Promise<void> {
     if (this.browser) return;
-    this.browser = await chromium.launch({ headless: true });
+    this.browser = await chromium.launch({ headless: true, proxy: buildProxyConfig() });
 
     const contextOptions: Parameters<Browser['newContext']>[0] = {
       userAgent: DESKTOP_USER_AGENT,
@@ -322,7 +340,7 @@ export class PlaywrightExtractor {
    * Launches a fresh browser context without Instagram session.
    */
   async extractWebLinks(url: string): Promise<DiscoveredLink[]> {
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: true, proxy: buildProxyConfig() });
     const context = await browser.newContext({
       userAgent: DESKTOP_USER_AGENT,
       viewport: DESKTOP_VIEWPORT,
@@ -359,7 +377,7 @@ export class PlaywrightExtractor {
    * Extract text content from a SPA/JS-rendered page (non-Instagram).
    */
   async extractWebText(url: string): Promise<ScrapedRawData> {
-    const browser = await chromium.launch({ headless: true });
+    const browser = await chromium.launch({ headless: true, proxy: buildProxyConfig() });
     const context = await browser.newContext({
       userAgent: DESKTOP_USER_AGENT,
       viewport: DESKTOP_VIEWPORT,

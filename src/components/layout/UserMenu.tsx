@@ -9,9 +9,10 @@ interface UserMenuProps {
   email: string
   avatarUrl?: string
   isAdmin?: boolean
+  providerSlug?: string | null
 }
 
-export function UserMenu({ email, avatarUrl, isAdmin }: UserMenuProps) {
+export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const router = useRouter()
@@ -70,6 +71,15 @@ export function UserMenu({ email, avatarUrl, isAdmin }: UserMenuProps) {
               className="block px-4 py-2 text-sm text-orange-600 font-medium hover:bg-orange-50 transition-colors"
             >
               Admin
+            </Link>
+          )}
+          {providerSlug && (
+            <Link
+              href={`/proveedores/${providerSlug}/dashboard`}
+              onClick={() => setOpen(false)}
+              className="block px-4 py-2 text-sm text-indigo-600 font-medium hover:bg-indigo-50 transition-colors"
+            >
+              Mi panel
             </Link>
           )}
           <Link

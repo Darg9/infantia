@@ -2,11 +2,10 @@
 // /proveedores/[slug]/dashboard — Panel interno del proveedor (solo ADMIN)
 // =============================================================================
 
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { prisma } from '@/lib/db'
-import { requireRole } from '@/lib/auth'
-import { UserRole } from '@/generated/prisma/client'
+import { getSessionWithRole } from '@/lib/auth'
 
 type PageProps = { params: Promise<{ slug: string }> }
 
@@ -27,9 +26,19 @@ async function getProviderData(slug: string) {
 }
 
 export default async function ProviderDashboardPage({ params }: PageProps) {
-  await requireRole([UserRole.ADMIN])
+  const session = await getSessionWithRole()
+  if (!session) redirect('/login')
+
   const { slug } = await params
   const provider = await getProviderData(slug)
+
+  const isAdmin = session.role === 'admin'
+  const isOwner =
+    session.role === 'provider' &&
+    provider?.email != null &&
+    provider.email === session.user.email
+
+  if (!isAdmin && !isOwner) redirect('/')
 
   if (!provider) notFound()
 

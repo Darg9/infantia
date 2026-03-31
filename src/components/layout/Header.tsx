@@ -1,10 +1,20 @@
 import Link from 'next/link'
 import { getSessionWithRole } from '@/lib/auth'
+import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
 
 export async function Header() {
   const session = await getSessionWithRole()
   const avatarUrl = session?.user?.user_metadata?.avatar_url as string | undefined
+
+  let providerSlug: string | null = null
+  if (session?.role === 'provider' && session.user.email) {
+    const provider = await prisma.provider.findFirst({
+      where: { email: session.user.email, isClaimed: true },
+      select: { slug: true },
+    })
+    providerSlug = provider?.slug ?? null
+  }
 
   return (
     <header className="bg-white border-b border-gray-100">
@@ -28,6 +38,7 @@ export async function Header() {
               email={session.user.email ?? ''}
               avatarUrl={avatarUrl}
               isAdmin={session.role === 'admin'}
+              providerSlug={providerSlug}
             />
           ) : (
             <div className="flex items-center gap-3">

@@ -24,8 +24,11 @@ const PREFIXES: Record<Level, string> = {
 function formatLine(level: Level, message: string, meta?: LogMeta): string {
   const ts  = new Date().toISOString();
   const ctx = meta?.ctx ? `[${meta.ctx}] ` : '';
+  // Guard: si meta no es un objeto plano (e.g. se pasó un string o un Error directamente)
+  // lo ignoramos para no serializar como array de caracteres {"0":"x","1":"y"...}
+  const safeMeta = meta && typeof meta === 'object' && !Array.isArray(meta) ? meta : {};
   // Extra data: todo menos ctx y error (que se loguea por separado)
-  const { ctx: _ctx, error: _err, ...rest } = meta ?? {};
+  const { ctx: _ctx, error: _err, ...rest } = safeMeta;
   const extras = Object.keys(rest).length > 0 ? ` ${JSON.stringify(rest)}` : '';
   return `${ts} ${PREFIXES[level]} ${ctx}${message}${extras}`;
 }

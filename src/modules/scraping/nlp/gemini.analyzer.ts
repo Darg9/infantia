@@ -201,7 +201,7 @@ export class GeminiAnalyzer {
 
       return validated.data;
     } catch (error: any) {
-      log.error('Error en GeminiAnalyzer:', error.message);
+      log.error('Error en GeminiAnalyzer', { error });
       throw error;
     }
   }
@@ -212,18 +212,22 @@ export class GeminiAnalyzer {
       return links.map((l) => l.url);
     }
 
+    // Extensiones de archivo que nunca son páginas de actividades
+    const IMAGE_OR_BINARY_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|pdf|mp4|mp3|zip|doc[x]?|xls[x]?|ppt[x]?)$/i;
+
     // Pre-filtrar URLs que son claramente páginas de navegación/filtro, no actividades individuales
     const filtered = links.filter((l) => {
       try {
         const u = new URL(l.url);
-        if (u.search.length > 0) return false; // excluir cualquier URL con query params (?f[0]=, ?page=, etc.)
+        if (u.search.length > 0) return false;          // query params → navegación/filtro
+        if (IMAGE_OR_BINARY_EXT.test(u.pathname)) return false; // imágenes y archivos binarios
         return true;
       } catch {
         return true;
       }
     });
     if (filtered.length < links.length) {
-      log.info(`Pre-filtro: ${links.length - filtered.length} URLs con query params excluidas.`);
+      log.info(`Pre-filtro: ${links.length - filtered.length} URLs excluidas (query params o archivos binarios).`);
     }
 
     const CHUNK_SIZE = 50;
@@ -300,7 +304,7 @@ ${linksText}`;
         log.info(`Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
         allActivityUrls.push(...found);
       } catch (error: any) {
-        log.error(`Lote ${chunkIndex + 1} Error:`, error.message);
+        log.error(`Lote ${chunkIndex + 1} Error: ${error.message}`, { error });
       }
     }
 
@@ -390,7 +394,7 @@ ${profileBio}`;
 
       return validated.data;
     } catch (error: any) {
-      log.error('Error en GeminiAnalyzer (Instagram):', error.message);
+      log.error('Error en GeminiAnalyzer (Instagram)', { error });
       throw error;
     }
   }

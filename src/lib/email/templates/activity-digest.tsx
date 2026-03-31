@@ -86,7 +86,7 @@ export const ActivityDigestEmail = ({
                 </Row>
                 <Row style={ctaRow}>
                   <Link
-                    href={`${baseUrl}${activityPath(activity.id, activity.title)}`}
+                    href={`${baseUrl}${activityPath(activity.id, activity.title)}?utm_source=infantia&utm_medium=email&utm_campaign=digest_${period}`}
                     style={smallButton}
                   >
                     Ver detalles
@@ -97,7 +97,7 @@ export const ActivityDigestEmail = ({
             ))}
 
             <Row style={ctaRow}>
-              <Link href={`${baseUrl}/actividades`} style={button}>
+              <Link href={`${baseUrl}/actividades?utm_source=infantia&utm_medium=email&utm_campaign=digest_${period}`} style={button}>
                 Ver todas las actividades
               </Link>
             </Row>

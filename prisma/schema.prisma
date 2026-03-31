@@ -397,6 +397,21 @@ model SearchLog {
   @@map("search_logs")
 }
 
+model Sponsor {
+  id            String    @id @default(uuid())
+  name          String    @db.VarChar(255)
+  tagline       String    @db.VarChar(500)
+  logoUrl       String?
+  url           String
+  isActive      Boolean   @default(false)
+  campaignStart DateTime?
+  campaignEnd   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("sponsors")
+}
+
 enum ProviderType {
   ACADEMY
   INDEPENDENT

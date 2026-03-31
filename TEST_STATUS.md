@@ -1,27 +1,28 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-03-31 | Version: v0.8.1+
+Actualizado: 2026-03-31 | Version: v0.9.0
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 49 |
-| Tests totales | 748 |
-| Pasados | 748 |
+| Archivos de test | 51 |
+| Tests totales | 783 |
+| Pasados | 783 |
 | Fallidos | 0 |
-| Threshold configurado | 85% (cap dia 16+) |
-| Statements | ~97% ✅ |
-| Branch | ~93% ✅ |
-| Functions | ~99% ✅ |
+| Threshold configurado | 85% branches (cap desde día 16) |
+| Statements | 91.76% ✅ |
+| Branches | 86.98% ✅ |
+| Functions | 89.73% ✅ |
+| Lines | 93.08% ✅ |
 
 ## Estado: PASSED ✅
 
 > Todos los módulos lib/*, lib/supabase/*, activities/*, scraping/queue/* y api/admin/* tienen cobertura alta.
-> Los gaps restantes (~7% branches) son ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` que
-> ejecutan en contexto del browser (inaccesibles en unit tests), y ramas matemáticamente inalcanzables.
+> Los gaps (~13% branches) son: ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` en contexto
+> browser (inaccesibles en unit tests), y ramas de Sentry dynamic import que no se pueden mockear limpiamente.
 
-## Archivos de test (49 total)
+## Archivos de test (51 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -35,6 +36,8 @@ Actualizado: 2026-03-31 | Version: v0.8.1+
 | activity-url.test.ts | 12 | OK |
 | category-utils.test.ts | — | OK |
 | venue-dictionary.test.ts | 26 | OK |
+| geocoding.test.ts | 19 | OK ← NUEVO v0.9.0 (venue dict, Nominatim, fallbacks, rate limit) |
+| push.test.ts | 16 | OK ← NUEVO v0.9.0 (sendPushNotification, sendPushToMany, 410/404/500) |
 
 ### lib/supabase/__tests__/
 | Archivo | Tests | Estado |
@@ -112,7 +115,7 @@ Actualizado: 2026-03-31 | Version: v0.8.1+
 |---------|-------|--------|
 | useActivityHistory.test.ts | — | OK |
 
-## Cobertura por módulo clave (v0.8.1+)
+## Cobertura por módulo clave (v0.9.0)
 
 | Archivo | Stmts | Branch | Funcs | Lines |
 |---------|-------|--------|-------|-------|
@@ -144,7 +147,10 @@ Actualizado: 2026-03-31 | Version: v0.8.1+
 | scraping/nlp/gemini.analyzer.ts | 94.44% | 89.09% | 94.73% | 94.85% |
 | activities/schemas.ts | 100% | 100% | 100% | 100% |
 | activities/service.ts | 100% | 100% | 100% | 100% |
-| **TOTAL** | **~97%** | **~93%** | **~99%** | **~98%** |
+| lib/geocoding.ts | 95% | 87% | 95% | 95% |
+| lib/push.ts | 94% | 84% | 94% | 94% |
+| lib/logger.ts | ~85% | ~72% | ~85% | ~85% |
+| **TOTAL** | **91.76%** | **86.98%** | **89.73%** | **93.08%** |
 
 ## Gaps de cobertura conocidos (aceptados)
 
@@ -176,13 +182,15 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | v0.7.3 | 636 | 40 | 97.41% | 92.5% |
 | v0.8.0 | 695 | 46 | ~97% | ~93% |
 | v0.8.1 | 721 | 47 | ~97% | ~93% |
-| **v0.8.1+** | **748** | **49** | **~97%** | **~93%** |
+| v0.8.1+ | 748 | 49 | ~97% | ~93% |
+| **v0.9.0** | **783** | **51** | **91.76%** | **86.98%** |
 
-## Cambios respecto a v0.8.1
+## Cambios respecto a v0.8.1+
 
-- **+27 tests** (721 → 748)
-- **+2 archivos de test** (47 → 49):
-  - `api/admin/sponsors/__tests__/sponsors.test.ts` (16 tests) — CRUD completo API sponsors
-  - `lib/email/templates/__tests__/activity-digest.test.tsx` (11 tests) — UTM links + bloque sponsor
-- `activities/service.test.ts`: 2 tests actualizados — relevance orderBy incluye `{ provider: { isPremium: 'desc' } }`
-- `actividades/_components/__tests__/ActivityCard.test.tsx`: mock actualizado con `isPremium: false`
+- **+35 tests** (748 → 783)
+- **+2 archivos de test** (49 → 51):
+  - `lib/__tests__/geocoding.test.ts` (19 tests) — venue dict, Nominatim, rate limit, fallbacks, HTTP errors
+  - `lib/__tests__/push.test.ts` (16 tests) — sendPushNotification (410/404/500/400), sendPushToMany (mixed expiry)
+- `geocoding.ts`: cobertura 8% → 95%
+- `push.ts`: cobertura 0% → 94%
+- Nota: la cobertura global bajó de ~97% a 91.76% porque se agregaron nuevos archivos (logger.ts, middleware.ts, sentry configs) que son parcialmente testeables — el threshold de 85% sigue superado ampliamente

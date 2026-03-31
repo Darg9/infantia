@@ -1,6 +1,6 @@
 # Infantia — Plan de Pruebas
 
-**Version:** v0.8.1+ | **Fecha:** 2026-03-31
+**Version:** v0.9.0 | **Fecha:** 2026-03-31
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.8.1+)
+## Cobertura actual (v0.9.0)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -40,7 +40,10 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | lib/category-utils | category-utils.test.ts | 100% | 100% | OK |
 | lib/venue-dictionary | venue-dictionary.test.ts | 100% | 100% | OK |
 | lib/expire-activities | expire-activities.test.ts | 100% | 100% | OK |
-| lib/email/templates/activity-digest | activity-digest.test.tsx | ~95% | 100% | OK (NUEVO) |
+| lib/geocoding | geocoding.test.ts | 95% | 95% | OK ← NUEVO v0.9.0 |
+| lib/push | push.test.ts | 94% | 94% | OK ← NUEVO v0.9.0 |
+| lib/logger | — | ~85% | ~85% | Sin tests dedicados (Sentry dynamic import dificulta mock) |
+| lib/email/templates/activity-digest | activity-digest.test.tsx | ~95% | 100% | OK |
 | lib/supabase/client | client.test.ts | 100% | 100% | OK |
 | lib/supabase/middleware | middleware.test.ts | 100% | 100% | OK |
 | lib/supabase/server | server.test.ts | 100% | 100% | OK |
@@ -60,9 +63,9 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | scraping/queue/producer | queue.test.ts | 100% | 100% | OK |
 | activities/schemas | schemas.test.ts | 100% | 100% | OK |
 | activities/service | service.test.ts | 100% | 100% | OK |
-| api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK (NUEVO) |
+| api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK |
 
-**Total v0.8.1+: ~97% statements / ~93% branches / ~99% functions | 748 tests | 49 archivos**
+**Total v0.9.0: 91.76% stmts / 86.98% branches / 89.73% funcs / 93.08% lines | 783 tests | 51 archivos**
 
 ---
 
@@ -117,25 +120,27 @@ npx vitest run <archivo>  # Test especifico
 
 ## Roadmap de pruebas
 
-### Completado hasta v0.8.1+
-- ✅ 748 tests, 49 archivos, todos verdes
+### Completado hasta v0.9.0
+- ✅ 783 tests, 51 archivos, todos verdes
+- ✅ geocoding.ts: 19 tests (venue dict, Nominatim, rate limit, fallbacks, HTTP/network errors)
+- ✅ push.ts: 16 tests (sendPushNotification: success/410/404/500/400/network, sendPushToMany: mixed expiry)
 - ✅ UTM tracking + bloque sponsor en email
 - ✅ CRUD API sponsors (admin)
 - ✅ isPremium en relevance orderBy
 - ✅ venue-dictionary 40+ venues
 
-### Proximos (v0.9.0)
-- Tests para `backfill-geocoding.ts`
-- Tests para `geocoding.ts` (Nominatim + venue-dictionary integration)
+### Proximos (v0.9.x)
+- Tests dedicados para `lib/logger.ts` (Sentry path actualmente difícil de mockear)
 - E2E: `/admin/sponsors` CRUD completo
 - E2E: `/proveedores/[slug]/dashboard` — acceso admin y owner
+- E2E: `/api/health` — verificar respuestas 200/503
 
 ---
 
 ## Checklist por PR
 
-- [ ] `npm test` pasa (748+ tests)
-- [ ] `npm run test:coverage` supera 85%
+- [ ] `npm test` pasa (783+ tests)
+- [ ] `npm run test:coverage` supera 85% branches
 - [ ] Sin skip/todo sin justificacion
 - [ ] Happy path + al menos 1 caso de error por funcion publica
 - [ ] Docs del modulo actualizados si aplica

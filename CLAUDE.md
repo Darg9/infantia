@@ -17,7 +17,7 @@
 Infantia is a multi-source activity discovery platform for families. It aggregates activities from websites, social media, and messaging platforms into a single searchable interface.
 
 ## Tech Stack
-- **Framework:** Next.js 16.1.6 (App Router) + TypeScript (strict)
+- **Framework:** Next.js 16.2.1 (App Router) + TypeScript (strict)
 - **Styling:** Tailwind CSS
 - **Database:** PostgreSQL via Supabase
 - **ORM:** Prisma 7 (adapter-pg — DATABASE_URL in `prisma.config.ts`, NOT schema.prisma)
@@ -118,6 +118,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.8.0 | V18 | Geocoding, mapa, autocompletado, ordenamiento, métricas |
 | v0.8.1 | V19 | Mini-mapa detalle, venue-dictionary, backfill-geocoding |
 | v0.8.1+ | V20 | Monetización A-G, proxy IPRoyal, dashboard proveedor |
+| v0.9.0 | V21 | Seguridad (C-01/C-02/npm), observabilidad (logger/Sentry/health), scraping canales |
 
 ### Regla para Documento Fundacional
 
@@ -142,17 +143,36 @@ Comando: `node scripts/generate_v20.mjs` (actualizar número de versión primero
 - **isPremium ordering:** `{ provider: { isPremium: 'desc' } }` en relevance sort — actividades de providers premium aparecen primero sin queries extra.
 - **Provider dashboard access:** `getSessionWithRole()` → si ADMIN permite; si role=provider, verifica `provider.email === session.user.email && provider.isClaimed`.
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
+- **Logger:** `createLogger(ctx)` en `src/lib/logger.ts`. NO usar console.* en producción. `log.error(msg, { error })` — nunca `log.error(msg, errorObject)` directo (serializa como array de chars).
+- **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.
+- **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
+- **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead.
+- **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
+- **npm audit:** 0 vulnerabilidades. Si aparecen nuevas, correr `npm audit fix` antes de desplegar.
 
-## Estado actual (v0.8.1+ — 2026-03-31)
-- **260 actividades** en BD — mayoría EXPIRED (pendiente: Banrep ingest con Gemini quota fresca)
-- **748 tests** en 49 archivos — `npm test` pasa en ~12s — 0 errores TypeScript
-- Cobertura real: **~97% stmts / ~93% branches / ~99% funcs**
+## Estado actual (v0.9.0 — 2026-03-31)
+- **277+ actividades** en BD (260 base + 17 nuevas hoy: Cinemateca 13, JBB 3, Banrep Cartagena 1)
+- **783 tests** en 51 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
+- Cobertura real: **91.76% stmts / 86.98% branches / 89.73% funcs**
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
 - BullMQ + Upstash Redis: OPERATIVO
 - 14 fuentes configuradas, 29/29 locations geocodificadas
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
-- Documento Fundacional: **V20** (2026-03-31)
+- Documento Fundacional: **V21** (2026-03-31)
+- **0 vulnerabilidades npm** (era 15 en auditoría S25)
+- **0 console.*** en producción (migrado a logger estructurado)
+
+### Features v0.9.0 (seguridad + observabilidad + scraping)
+- **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)
+- **Health check:** `GET /api/health` — estado DB + Redis en tiempo real (listo para UptimeRobot)
+- **Logger estructurado:** `createLogger(ctx)` en `src/lib/logger.ts` — reemplaza todos los console.*
+- **Sentry integrado:** `@sentry/nextjs` — activo solo si `SENTRY_DSN` en env (zero overhead sin var)
+- **Security headers:** CSP, HSTS, X-Frame-Options, Referrer-Policy en `next.config.ts`
+- **Seguridad API:** PUT/DELETE /api/activities/:id requieren ADMIN (fix C-01)
+- **Seguridad cron:** CRON_SECRET sin fallback inseguro (fix C-02)
+- **ingest-sources.ts:** sistema de canales (`--channel`, `--source`, `--list`) + Banrep primero
+- **Bug fix scraping:** pre-filtro excluye imágenes/binarios antes de Gemini (ahorra cuota)
 
 ### Features v0.8.1+ (monetización + proxy)
 - **isPremium Provider:** badge "⭐ Destacado" en ActivityCard + ordering preferencial en relevance sort

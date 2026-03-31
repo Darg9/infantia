@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.8.1+ | **Status:** Production — 2026-03-31 | **Tests:** 748 passing / 49 files | **Coverage:** ~97% statements
+**Version:** v0.9.0 | **Status:** Production — 2026-03-31 | **Tests:** 783 passing / 51 files | **Coverage:** 91.76% stmts / 86.98% branches
 
 ## Quick Start
 
@@ -38,7 +38,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 
 | Layer | Technology |
 |-------|-----------|
-| Framework | Next.js 16.1.6 (App Router) + TypeScript strict |
+| Framework | Next.js 16.2.1 (App Router) + TypeScript strict |
 | Styling | Tailwind CSS |
 | Database | PostgreSQL via Supabase + Prisma 7 (adapter-pg) |
 | Auth | Supabase Auth (SSR cookies) |
@@ -65,20 +65,25 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 🏢 **Provider Dashboard:** `/proveedores/[slug]/dashboard` — views, premium status, activity table (ADMIN or owner)
 - 🔒 **Admin Panel:** Sponsors CRUD, activity management, metrics, scraping queue
 - 📱 **Responsive:** Mobile-first design
-- 🧪 **Well-tested:** 748 unit tests (~97% coverage), E2E tests
+- 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
+- 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
+- 🧪 **Well-tested:** 783 unit tests (91.76% stmts / 86.98% branches), E2E tests
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production
-npm test                       # Run all tests (748 tests)
+npm test                       # Run all tests (783 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 
 # Scraping
-npx tsx scripts/ingest-sources.ts --save-db     # Direct ingest to DB
-npx tsx scripts/ingest-sources.ts --queue        # Queue jobs via BullMQ
-npx tsx scripts/run-worker.ts                    # Start BullMQ worker
+npx tsx scripts/ingest-sources.ts --list                       # Ver fuentes por canal
+npx tsx scripts/ingest-sources.ts --save-db                    # Ingest completo
+npx tsx scripts/ingest-sources.ts --channel=web --save-db      # Solo fuentes web
+npx tsx scripts/ingest-sources.ts --source=banrep --save-db    # Solo Banrep
+npx tsx scripts/ingest-sources.ts --queue                      # Queue via BullMQ
+npx tsx scripts/run-worker.ts                                  # Start BullMQ worker
 
 # Maintenance
 npx tsx scripts/promote-admin.ts <email>         # Grant ADMIN role
@@ -139,10 +144,14 @@ src/
   lib/
     auth.ts               # Supabase Auth helpers (getSession, requireRole)
     db.ts                 # Prisma singleton
+    logger.ts             # createLogger(ctx) — structured logger + Sentry integration
     activity-url.ts       # Canonical URL helpers
     venue-dictionary.ts   # 40+ Bogotá venues with exact coords (~0ms lookup)
     geocoding.ts          # venue-dictionary → Nominatim → cityFallback → null
+    push.ts               # Web Push VAPID notifications
     email/templates/      # react-email templates with UTM tracking
+  middleware.ts           # Global admin route protection (/api/admin/*)
+  app/api/health/         # DB + Redis health check endpoint
 ```
 
 ## Monetization

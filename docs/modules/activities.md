@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión actual:** v0.8.1+
+**Versión actual:** v0.9.0
 **Última actualización:** 2026-03-31
 
 ## ¿Qué hace?
@@ -14,8 +14,8 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities` | No | Lista actividades con filtros y paginación |
 | POST | `/api/activities` | No | Crea una actividad |
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
-| PUT | `/api/activities/:id` | No | Actualiza una actividad |
-| DELETE | `/api/activities/:id` | No | Elimina una actividad |
+| PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |
+| DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.9.0) |
 | GET | `/api/activities/suggestions` | No | Autocompletado de búsqueda (debounce 300ms, máx 6) |
 | GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500) |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
@@ -43,6 +43,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
+| **GET** | **`/api/health`** | **Pública** | **Health check DB + Redis (NUEVO v0.9.0)** |
 | GET | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |
 | GET | `/api/admin/scraping/logs` | Admin | Logs de scraping con filtros |
 | POST | `/api/admin/expire-activities` | Cron | Expira actividades con fecha pasada (5AM UTC) |
@@ -161,9 +162,10 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 | Alcaldía Bogotá | 20 |
 | IDARTES | 19 |
 | FCE Colombia | 10 |
-| JBB | 4 |
-| Cinemateca | 1 |
-| **Total** | **260** |
+| Cinemateca | 14 (+13 hoy) |
+| JBB | 7 (+3 hoy) |
+| Banrep Cartagena | 1 (+1 hoy) |
+| **Total** | **~277** |
 
 - 29/29 locations con coordenadas reales ✅
-- Mayoría EXPIRED (pendiente: Banrep ingest para actividades con fechas futuras)
+- Mayoría EXPIRED — pendiente: ingest Banrep (reset Gemini 19:00 COL) para fechas futuras

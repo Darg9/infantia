@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.8.1+ | Actualizado: 2026-03-31
+> Versión: v0.9.0 | Actualizado: 2026-03-31
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -19,7 +19,7 @@
 
 | Capa | Tecnología | Versión | Notas |
 |---|---|---|---|
-| Framework web | Next.js (App Router) | 16.1.6 | SSR + RSC |
+| Framework web | Next.js (App Router) | 16.2.1 | SSR + RSC |
 | Lenguaje | TypeScript | ^5 | Strict mode |
 | UI | Tailwind CSS | v4 | Sin componentes externos |
 | Base de datos | PostgreSQL (Supabase) | — | Hosted en AWS |
@@ -73,10 +73,11 @@ infantia/
 │   │       │   └── notifications/
 │   │       ├── auth/
 │   │       │   └── send-welcome/   # Email de bienvenida post-registro
-│   │       └── admin/
-│   │           ├── expire-activities/     # Marcar actividades vencidas
-│   │           ├── send-notifications/    # Envío masivo de notificaciones
-│   │           ├── sponsors/              # CRUD de sponsors newsletter (NUEVO v0.8.1)
+│   │       ├── health/                    # Health check DB + Redis — GET (NUEVO v0.9.0)
+│   │       └── admin/                     # Protegidas por middleware.ts (ADMIN o CRON_SECRET)
+│   │           ├── expire-activities/     # Marcar actividades vencidas (cron 5AM UTC)
+│   │           ├── send-notifications/    # Envío masivo de notificaciones (cron 9AM UTC)
+│   │           ├── sponsors/              # CRUD de sponsors newsletter
 │   │           │   └── [id]/             # PATCH / DELETE por id
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
 │   │           └── scraping/
@@ -94,13 +95,15 @@ infantia/
 │   ├── lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
 │   │   ├── auth.ts                 # Helpers de Supabase Auth (getSession, requireRole)
+│   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.9.0)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
 │   │   ├── utils.ts                # Utilidades generales
 │   │   ├── category-utils.ts       # Emojis y helpers de categorías
 │   │   ├── activity-url.ts         # URLs canónicas: slugifyTitle, activityPath, extractActivityId
-│   │   ├── venue-dictionary.ts     # 40+ venues Bogotá con coords exactas — lookupVenue() ~0ms (NUEVO v0.8.1)
+│   │   ├── venue-dictionary.ts     # 40+ venues Bogotá con coords exactas — lookupVenue() ~0ms
 │   │   ├── geocoding.ts            # venue-dictionary → Nominatim → cityFallback → null
+│   │   ├── push.ts                 # Web Push VAPID — sendPushNotification, sendPushToMany
 │   │   ├── expire-activities.ts    # Lógica de expiración de actividades
 │   │   ├── email/                  # Templates react-email con UTM tracking + bloque sponsor
 │   │   └── supabase/               # Clientes SSR de Supabase
@@ -110,8 +113,15 @@ infantia/
 │   │
 │   └── types/                      # Tipos globales de TypeScript
 │
+├── middleware.ts                    # Middleware global Next.js — protege /api/admin/* (NUEVO v0.9.0)
+│                                   #   Sin sesión → 401 | sin ADMIN → 403 | cron paths → CRON_SECRET
+├── sentry.server.config.ts         # Sentry server-side (activo si SENTRY_DSN en env) (NUEVO v0.9.0)
+├── sentry.client.config.ts         # Sentry client-side (activo si NEXT_PUBLIC_SENTRY_DSN) (NUEVO v0.9.0)
+├── .env.example                    # Documentación de las 14+ variables de entorno requeridas
 ├── scripts/                        # Scripts de mantenimiento y scraping
-│   ├── ingest-sources.ts           # Ingesta multi-fuente (--save-db / --queue / --dry-run)
+│   ├── ingest-sources.ts           # Ingesta multi-fuente con canales (NUEVO v0.9.0)
+│   │                               #   --list | --channel=web|social|instagram | --source=banrep
+│   │                               #   --save-db | --queue | --dry-run | --max-pages=N
 │   ├── run-worker.ts               # Worker BullMQ (procesa jobs de scraping)
 │   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
 │   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts)
@@ -396,14 +406,23 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | `GET` | `/api/ratings` |
 | `POST` | `/api/ratings/[activityId]` |
 
-### Admin
-| Método | Ruta |
-|---|---|
-| `POST` | `/api/auth/send-welcome` |
-| `POST` | `/api/admin/expire-activities` |
-| `POST` | `/api/admin/send-notifications` |
-| `GET` | `/api/admin/scraping/sources` |
-| `GET` | `/api/admin/scraping/logs` |
+### Monitoreo
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/health` | Pública | Estado DB + Redis en tiempo real (para UptimeRobot) |
+
+### Admin (protegidas por middleware.ts global)
+| Método | Ruta | Auth |
+|---|---|---|
+| `POST` | `/api/auth/send-welcome` | Pública (post-registro) |
+| `POST` | `/api/admin/expire-activities` | CRON_SECRET |
+| `POST` | `/api/admin/send-notifications` | CRON_SECRET |
+| `GET` | `/api/admin/scraping/sources` | ADMIN |
+| `GET` | `/api/admin/scraping/logs` | ADMIN |
+| `GET/POST` | `/api/admin/sponsors` | ADMIN |
+| `PATCH/DELETE` | `/api/admin/sponsors/[id]` | ADMIN |
+| `GET/POST` | `/api/admin/queue/status` | ADMIN |
+| `GET` | `/api/admin/metrics` | ADMIN |
 
 ---
 
@@ -416,14 +435,27 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 
 ### Variables de entorno requeridas
 
+Ver `.env.example` en la raíz del proyecto para documentación completa.
+
 ```env
-DATABASE_URL                    # PostgreSQL Supabase
+DATABASE_URL                    # PostgreSQL Supabase (pgbouncer transaction mode)
 NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
-SUPABASE_SERVICE_ROLE_KEY
-GEMINI_API_KEY                  # Google AI Studio
+GOOGLE_AI_STUDIO_KEY            # Gemini 2.5 Flash — 20 RPD free tier
 RESEND_API_KEY                  # Email transaccional
-CRON_SECRET                     # Autenticación de crons Vercel
+RESEND_FROM_EMAIL               # Remitente (ej: Infantia <hola@infantia.co>)
+UPSTASH_REDIS_URL               # BullMQ queue (rediss://...)
+NEXT_PUBLIC_VAPID_PUBLIC_KEY    # Web Push
+VAPID_PRIVATE_KEY
+VAPID_SUBJECT
+CRON_SECRET                     # Auth de crons Vercel (openssl rand -hex 32)
+NEXT_PUBLIC_APP_URL             # URL pública de la app
+# Opcionales:
+PLAYWRIGHT_PROXY_SERVER         # IPRoyal proxy residencial
+PLAYWRIGHT_PROXY_USER
+PLAYWRIGHT_PROXY_PASS
+SENTRY_DSN                      # Error tracking (activa Sentry si está definido)
+NEXT_PUBLIC_SENTRY_DSN
 ```
 
 ### Comandos
@@ -441,11 +473,11 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 402 tests, 28 archivos, 0 fallos
-- **Cobertura:** ~95% statements / ~88% branch / ~84% functions / ~96% lines
-- **Threshold dinámico:** +10%/día desde 2026-03-16 (configurado en `vitest.config.ts`)
-- **Módulos al 100%:** `lib/utils`, `lib/validation`, `scraping/cache`, `scraping/types`, `activities/schemas`, `activities/service`
-- **Gap justificado:** `playwright.extractor.ts` (~42% functions) — callbacks de browser no testeables en unit tests
+- **Estado actual:** 783 tests, 51 archivos, 0 fallos
+- **Cobertura:** 91.76% stmts / 86.98% branches / 89.73% funcs / 93.08% lines
+- **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
+- **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`
+- **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests
 
 **Patrón crítico para mocks:**
 ```typescript
@@ -506,38 +538,41 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Prisma 7 con adapter-pg | Prisma 7 requiere adapter explícito para conexión directa a PostgreSQL |
 | `DATABASE_URL` en `prisma.config.ts` (no en `schema.prisma`) | Requisito de Prisma 7 |
 | `getOrCreateDbUser()` con upsert | Garantiza DB record en primer acceso, sin "Usuario no encontrado" |
-| Encabezados compactos sin imagen | Respeta el tiempo del usuario — si no hay contenido visual real, no mostrar placeholder |
+| Encabezados compactos sin imagen | Respeta el tiempo del usuario — sin contenido visual real, sin placeholder gigante |
+| `createLogger(ctx)` en lugar de console.* | Logs estructurados con timestamp + nivel + contexto — listo para Sentry y Vercel Logs |
+| Middleware global para /api/admin/* | Una sola capa de defensa — cualquier ruta nueva queda protegida automáticamente |
+| Sentry condicional (solo si SENTRY_DSN) | Sin var = cero overhead; con var = error tracking completo sin cambios de código |
+| Filtro pre-Gemini de URLs binarias | Ahorra cuota del free tier (20 RPD) evitando procesar .jpg/.pdf/.mp4 |
+| `--channel` en ingest-sources.ts | Permite ejecutar solo redes sociales o solo web sin listar fuentes manualmente |
 
 ---
 
 ## 15. Roadmap Técnico Pendiente
 
-### Corto plazo
-- [ ] Idartes y Jardín Botánico como fuentes activas
-- [x] Tests E2E con Playwright (autenticación, filtros, favoritos) — 19 tests
-- [x] Búsqueda fuzzy con pg_trgm (reemplaza ILIKE básico)
-- [x] Git tags v0.2.0–v0.5.0 creados y pusheados
-- [x] CHANGELOG completo para versiones v0.2.0–v0.5.0
-- [x] UserMenu component con dropdown
-- [x] Dos filas de filtros en /actividades (búsqueda ancha en desktop)
-- [x] Filtro visual active state (border indigo + bg)
-- [x] Counts en todas las opciones de filtro
-- [x] Encabezados compactos en detalle sin imagen
-- [x] Ocultar badges "No disponible" en tarjetas y detalle
-- [x] Ordenar ACTIVE antes de EXPIRED en listado
-- [x] getOrCreateDbUser() en auth callback + páginas de perfil
-- [x] Auditoría de pruebas generales (home, /actividades, detalle, auth, mobile)
+### Corto plazo (v0.9.x)
+- [ ] **Activar Sentry** — crear cuenta sentry.io → agregar `SENTRY_DSN` en Vercel Dashboard
+- [ ] **UptimeRobot** — monitorear `/api/health` (gratuito, alertas por email)
+- [ ] **Proxy IPRoyal** — activar vars `PLAYWRIGHT_PROXY_SERVER/USER/PASS` en Vercel ($7/GB)
+- [ ] **Banrep Cartagena** — reintentar ingest tras reset cuota Gemini (19:00 COL diario)
+- [x] Seguridad: PUT/DELETE activities protegidos con requireRole(ADMIN)
+- [x] Seguridad: CRON_SECRET sin fallback inseguro
+- [x] Seguridad: 0 vulnerabilidades npm (era 15)
+- [x] Observabilidad: logger estructurado, 0 console.* en producción
+- [x] Middleware global /api/admin/*
+- [x] /api/health health check
+- [x] Security headers (CSP, HSTS, X-Frame-Options)
+- [x] Filtro pre-Gemini de URLs binarias (ahorro de cuota)
+- [x] Sistema de canales en ingest-sources.ts
 
-### Mediano plazo
-- [ ] BullMQ + Redis para colas de scraping asíncronas
-- [ ] Proxy rotation para anti-blocking
-- [ ] Geocodificación automática de direcciones
-- [ ] Segunda vertical (ej: adultos mayores)
+### Mediano plazo (v1.0.0)
+- [ ] Segunda vertical (ej: adultos mayores o mascotas)
+- [ ] Meilisearch Cloud (cuando +1.000 actividades activas)
+- [ ] Wompi pagos (mes 6, primer cliente con cuenta bancaria)
 
 ### Largo plazo
-- [ ] Facebook Graph API y Telegram Bot API como fuentes
-- [ ] Expansión a Medellín y Cali
-- [ ] Modelo de monetización (pendiente de definir)
+- [ ] Facebook Pages y TikTok como fuentes (channel ya preparado)
+- [ ] Expansión a Medellín y Cali como verticales de ciudad
+- [ ] App móvil (React Native o PWA mejorada)
 
 ---
 

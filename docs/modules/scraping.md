@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.8.1+
+**Versión actual:** v0.9.0
 **Última actualización:** 2026-03-31
 
 ## ¿Qué hace?
@@ -125,15 +125,30 @@ El pipeline integra geocoding automático en cada actividad guardada:
 ## Comandos
 
 ```bash
-# Ingesta directa (sin queue)
+# Ver inventario de fuentes por canal
+npx tsx scripts/ingest-sources.ts --list
+
+# Ingesta completa (todas las fuentes)
 npx tsx scripts/ingest-sources.ts --save-db
 
-# Ingesta via queue (asíncrona)
+# Por canal
+npx tsx scripts/ingest-sources.ts --channel=web --save-db
+npx tsx scripts/ingest-sources.ts --channel=social          # todas las redes sociales
+npx tsx scripts/ingest-sources.ts --channel=instagram       # solo Instagram
+
+# Por fuente puntual (parcial, sin importar mayúsculas)
+npx tsx scripts/ingest-sources.ts --source=banrep --save-db
+npx tsx scripts/ingest-sources.ts --source=banrep,cinemateca --save-db
+
+# Combinado (canal + fuente)
+npx tsx scripts/ingest-sources.ts --channel=web --source=banrep --save-db
+
+# Dry run (descubre pero NO guarda)
+npx tsx scripts/ingest-sources.ts --dry-run
+
+# Ingesta via queue BullMQ (asíncrona)
 npx tsx scripts/ingest-sources.ts --queue
 npx tsx scripts/run-worker.ts
-
-# Dry run (ver qué haría sin guardar)
-npx tsx scripts/ingest-sources.ts --dry-run
 
 # Geocodificación retroactiva
 npx tsx scripts/backfill-geocoding.ts [--dry-run]
@@ -149,9 +164,20 @@ npx tsx scripts/backfill-geocoding.ts [--dry-run]
 | 2 — Cron | Diario | Auto-clean de duplicados exactos |
 | 3 — Manual | Ad-hoc | Review 70-90% similitud |
 
+## Pre-filtro de URLs binarias (NUEVO v0.9.0)
+
+`GeminiAnalyzer.discoverActivityLinks()` excluye automáticamente antes de enviar a Gemini:
+- Imágenes: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.bmp`, `.tiff`
+- Documentos: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`
+- Media: `.mp4`, `.mp3`, `.zip`
+
+Esto evita consumir cuota del free tier (20 RPD) en archivos que nunca son actividades.
+**Caso real que motivó el fix:** JBB publica su agenda como imágenes JPG — eran 4 requests perdidos por ejecución.
+
 ## Limitaciones conocidas
 
 - Gemini 2.5 Flash free tier: **20 RPD** — quota renueva medianoche UTC (19:00 COL)
 - Rate limit en pipeline: 12s entre requests a Gemini
 - Instagram puede bloquear IPs sin proxy tras uso intensivo → activar IPRoyal
 - `scraping/queue/types.ts`: 0% cobertura en tests (solo tipos TypeScript, sin runtime)
+- JBB publica parte de su agenda como imágenes JPG — el scraper obtiene metadata pero no el contenido detallado

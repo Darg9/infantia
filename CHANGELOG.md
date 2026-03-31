@@ -13,6 +13,50 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.0] — 2026-03-31 (Seguridad, Observabilidad, Scraping inteligente)
+**Documento Fundacional: V21** | Commits: 50c7f97 → 50da7ec
+
+### Security
+- **C-01:** `PUT/DELETE /api/activities/:id` — agregado `requireRole([ADMIN])` (estaban sin auth)
+- **C-02:** `CRON_SECRET` — eliminado fallback inseguro `|| 'test-secret'` + check `!cronSecret`
+- **npm audit:** 0 vulnerabilidades (era 15) — picomatch ReDoS + Next.js 16.1.6→16.2.1
+- **Security headers** en `next.config.ts` — CSP, X-Content-Type-Options, X-Frame-Options, HSTS, Referrer-Policy, Permissions-Policy
+
+### Observability
+- **`src/lib/logger.ts`** — logger estructurado universal `createLogger(ctx)`
+  - Formato: `ISO timestamp + LEVEL + [ctx] + mensaje + extras JSON`
+  - `log.error()` captura a Sentry (import dinámico) si `SENTRY_DSN` configurado
+  - Guard: meta no-plano (string, Error) ignorado sin serializar como array de chars
+- **Sentry** — `@sentry/nextjs` integrado, activo solo si `SENTRY_DSN` en env
+  - `sentry.server.config.ts`, `sentry.client.config.ts`, `src/instrumentation.ts`
+- **0 console.*** en producción — 166 llamadas migradas a `createLogger(ctx)` en 24 archivos
+- **`src/middleware.ts`** — middleware global, protege `/api/admin/*` automáticamente
+  - Sin sesión → 401 | sin rol ADMIN → 403 | cron routes pasan con CRON_SECRET
+- **`GET /api/health`** — health check DB + Redis en tiempo real
+  - `200 {status:"ok"}` | `503 {status:"degraded"|"down"}` — listo para UptimeRobot
+
+### Quality
+- **Tests nuevos:** `geocoding.test.ts` (19) + `push.test.ts` (16) = +35 tests
+- **Coverage branches:** 83.45% → 87.29% ✅ (umbral 85%)
+- **`geocoding.ts`:** 8% → 95% | **`push.ts`:** 0% → 94%
+- **`.env.example`** — 14+ variables documentadas
+
+### Scraping (S26)
+- **`scripts/ingest-sources.ts`** — reescritura con sistema de canales
+  - `channel: 'web' | 'instagram' | 'tiktok' | 'facebook'` en cada fuente
+  - `--list` | `--channel=web` | `--channel=social` (alias redes) | `--source=banrep`
+  - Combinable: `--channel=web --source=banrep`
+  - Banrep primero en orden (mayor prioridad de cuota Gemini)
+- **Bug fix:** `gemini.analyzer.ts` — pre-filtro excluye imágenes/binarios antes de Gemini
+  - Elimina consumo de cuota en JPGs de agenda (JBB: 4 requests por imágenes)
+- **Bug fix:** logger — serialización correcta de errores (`{"0":"[","1":"G"...}` eliminado)
+
+### Tests
+- **783 tests — 51 archivos** (era 748/49)
+- **91.76% stmts / 86.98% branches / 89.73% funcs / 93.08% lines** ✅
+
+---
+
 ## [v0.8.1+] — 2026-03-31 (Monetización A-G, Proxy residencial, Dashboard proveedor)
 **Documento Fundacional: V20** | Commits: c355246, 53f4961, 4772444
 

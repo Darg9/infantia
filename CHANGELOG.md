@@ -11,6 +11,10 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+---
+
+## [v0.8.1] — 2026-03-31 (Mapa detalle, venue-dictionary, geocoding retroactivo)
+
 ### Added
 - **Mapa mini-Leaflet en detalle de actividad** — sidebar de `/actividades/[id]`
   - `ActivityDetailMap.tsx`: wrapper `next/dynamic` con `ssr: false` + skeleton animado
@@ -23,6 +27,9 @@ Relación con Documento Fundacional:
   - `lookupVenue()`: matching normalizado (sin tildes, minúsculas, AND de keywords) — ~0ms, sin API call
   - `geocoding.ts` actualizado: flujo `venue-dictionary → Nominatim → cityFallback → null`
   - `activities.service.ts`: `latitude` y `longitude` añadidos al `activityIncludes` select
+- **Script geocoding retroactivo** — `scripts/backfill-geocoding.ts`
+  - Detecta locations con coords 0,0 y las geocodifica usando venue-dictionary + Nominatim
+  - Resultado inicial: 29/29 locations ya con coords válidas gracias al pipeline de ingest
 
 ### Tests
 - 26 tests nuevos en `venue-dictionary.test.ts` (normalizeVenue, lookupVenue — venues, variantes, case, falsos positivos)

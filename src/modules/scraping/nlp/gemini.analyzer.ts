@@ -230,7 +230,9 @@ export class GeminiAnalyzer {
       log.info(`Pre-filtro: ${links.length - filtered.length} URLs excluidas (query params o archivos binarios).`);
     }
 
-    const CHUNK_SIZE = 50;
+    // 200 URLs por lote: Banrep Bogotá (1.083 URLs) → 6 lotes en vez de 22
+    // Gemini 2.5 Flash soporta 1M tokens de contexto; output {"indices":[...]} ≤ 1200 tokens con 200 URLs
+    const CHUNK_SIZE = 200;
     const chunks: DiscoveredLink[][] = [];
     for (let i = 0; i < filtered.length; i += CHUNK_SIZE) {
       chunks.push(filtered.slice(i, i + CHUNK_SIZE));

@@ -165,8 +165,8 @@ describe('GeminiAnalyzer', () => {
       });
 
       it('continúa con otros lotes si un lote falla con JSON inválido', async () => {
-        // 55 links → 2 lotes. El primero falla, el segundo ok (índice 1 → link 51)
-        const links = Array.from({ length: 55 }, (_, i) => ({
+        // 250 links → 2 lotes (200, 50). El primero falla, el segundo ok (índice 1 → link 201)
+        const links = Array.from({ length: 250 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
@@ -175,7 +175,7 @@ describe('GeminiAnalyzer', () => {
           .mockResolvedValueOnce(makeResponse(JSON.stringify({ indices: [1] })));
         const analyzer = new GeminiAnalyzer();
         const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toContain('https://x.com/link-51');
+        expect(result).toContain('https://x.com/link-201');
       });
 
       it('continúa si un lote devuelve schema inválido', async () => {
@@ -194,15 +194,15 @@ describe('GeminiAnalyzer', () => {
         expect(result).toEqual([]);
       });
 
-      it('procesa links en lotes de 50', async () => {
-        const links = Array.from({ length: 110 }, (_, i) => ({
+      it('procesa links en lotes de 200', async () => {
+        const links = Array.from({ length: 450 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [] })));
         const analyzer = new GeminiAnalyzer();
         await analyzer.discoverActivityLinks(links, 'https://x.com');
-        // 110 links → 3 lotes (50, 50, 10)
+        // 450 links → 3 lotes (200, 200, 50) — CHUNK_SIZE aumentado de 50 a 200
         expect(mockGenerateContent).toHaveBeenCalledTimes(3);
       });
 

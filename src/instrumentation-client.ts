@@ -4,4 +4,4 @@
 // =============================================================================
 import '../sentry.client.config';
 
-export { onRouterTransitionStart } from '@sentry/nextjs';
+export const onRouterTransitionStart = (await import('@sentry/nextjs')).captureRouterTransitionStart;

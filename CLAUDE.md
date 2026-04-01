@@ -148,10 +148,11 @@ Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero
 - **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
 - **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead.
 - **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
+- **CHUNK_SIZE = 200** en `gemini.analyzer.ts` (era 50). Banrep Bogotá: 1.083 URLs → 6 lotes (antes 22, excedía cuota 20 RPD). No cambiar sin medir impacto en tokens.
 - **npm audit:** 0 vulnerabilidades. Si aparecen nuevas, correr `npm audit fix` antes de desplegar.
 
 ## Estado actual (v0.9.0 — 2026-03-31)
-- **277+ actividades** en BD (260 base + 17 nuevas hoy: Cinemateca 13, JBB 3, Banrep Cartagena 1)
+- **293+ actividades** en BD (277 base + 16 nuevas Banrep Bogotá en S27)
 - **783 tests** en 51 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
 - Cobertura real: **91.76% stmts / 86.98% branches / 89.73% funcs**
 - GitHub Actions CI/CD: tests + build automático en cada push a master

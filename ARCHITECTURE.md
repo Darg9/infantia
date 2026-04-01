@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.9.0 | Actualizado: 2026-03-31
+> Versión: v0.9.0 | Actualizado: 2026-04-01
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -237,7 +237,9 @@ CheerioExtractor.extractLinksAllPages(baseUrl, maxPages)
     │
     ▼
 GeminiAnalyzer.discoverActivityLinks(links)
-    ├─ Divide en chunks de 50 (evita truncamiento de Gemini)
+    ├─ Pre-filtro: excluye URLs con query params y extensiones binarias (.jpg/.pdf/etc.)
+    ├─ Divide en chunks de 200 URLs/lote (CHUNK_SIZE=200 desde S27 — Gemini 2.5 Flash soporta 1M tokens)
+    │   Banrep Bogotá (1.083 URLs): 6 lotes vs 22 anteriores → cabe en cuota 20 RPD ✅
     └─ Retorna índices de links identificados como actividades
     │
     ▼
@@ -304,7 +306,7 @@ ScrapingStorage.saveActivity()
 | Idartes | — | — | ❌ Pendiente |
 | Jardín Botánico | — | — | ❌ Pendiente |
 
-**Total en BD: ~211 actividades únicas**
+**Total en BD: ~293 actividades únicas** (Banrep Bogotá 16 nuevas en S27)
 
 ---
 
@@ -324,7 +326,7 @@ La búsqueda de actividades usa **PostgreSQL pg_trgm** (trigram similarity) para
 - "biblored" → encuentra actividades de BibloRed
 
 ### Por qué no Meilisearch
-Con 211 actividades, `pg_trgm` es suficiente y gratuito (usa Supabase ya existente). Meilisearch evaluable cuando haya 2000+ actividades o se necesite ranking avanzado.
+Con 293 actividades, `pg_trgm` es suficiente y gratuito (usa Supabase ya existente). Meilisearch evaluable cuando haya 1.000+ actividades activas o se necesite ranking avanzado.
 
 ---
 

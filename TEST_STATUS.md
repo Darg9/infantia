@@ -1,6 +1,6 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-03-31 | Version: v0.9.0
+Actualizado: 2026-04-01 | Version: v0.9.0
 
 ## Resumen
 

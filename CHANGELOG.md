@@ -11,6 +11,21 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+### Performance (S27 — 2026-04-01)
+- **`gemini.analyzer.ts`:** `CHUNK_SIZE` 50 → 200 URLs por lote en fase DISCOVER
+  - Banrep Bogotá: 22 lotes → 6 lotes (dentro de cuota 20 RPD)
+  - Gemini 2.5 Flash soporta 1M tokens — sin riesgo de overflow con 200 URLs/prompt
+  - Tests actualizados: prueba de resiliencia 55→250 links, validación 110→450 links
+- **Banrep Bogotá ingest:** 16 actividades nuevas guardadas (primera corrida exitosa completa)
+- **BD:** ~293 actividades totales
+
+### Docs (S27 — 2026-04-01)
+- `DEDUPLICATION-STRATEGY.md`: 211 → 277/293 actividades, historial v0.9.0
+- `CLAUDE.md`: referencia generate_v20 → generate_v21
+- `.github/pull_request_template.md`: console.log → createLogger()
+- `scripts/generate_v21.mjs`: commiteado (generador del Documento Fundacional V21)
+- `MEMORY.md`: DB State y Git State actualizados a S27
+
 ---
 
 ## [v0.9.0] — 2026-03-31 (Seguridad, Observabilidad, Scraping inteligente)

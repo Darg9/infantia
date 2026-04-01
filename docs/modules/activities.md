@@ -162,10 +162,11 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 | Alcaldía Bogotá | 20 |
 | IDARTES | 19 |
 | FCE Colombia | 10 |
-| Cinemateca | 14 (+13 hoy) |
-| JBB | 7 (+3 hoy) |
-| Banrep Cartagena | 1 (+1 hoy) |
-| **Total** | **~277** |
+| Cinemateca | 14 |
+| JBB | 7 |
+| Banrep Bogotá | 16 |
+| Banrep Cartagena | 1 |
+| **Total** | **~293** |
 
 - 29/29 locations con coordenadas reales ✅
-- Mayoría EXPIRED — pendiente: ingest Banrep (reset Gemini 19:00 COL) para fechas futuras
+- Mayoría EXPIRED — pendiente: ingest Banrep ciudades secundarias (reset Gemini 19:00 COL)

@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
 **Versión actual:** v0.9.0
-**Última actualización:** 2026-03-31
+**Última actualización:** 2026-04-01
 
 ## ¿Qué hace?
 
@@ -15,7 +15,7 @@ Descubre y extrae actividades de sitios web e Instagram, las normaliza con Gemin
 URL semilla / sitemap XML
    → CheerioExtractor descubre links (paginación automática o sitemap)
    → Filtrado por cache (URLs ya vistas)
-   → GeminiAnalyzer analiza en batches de 50
+   → GeminiAnalyzer analiza en batches de 200 (CHUNK_SIZE=200 desde S27)
    → Validación Zod (activityNLPResultSchema)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%

@@ -16,7 +16,7 @@
 ### Código
 - [ ] El código compila sin errores TypeScript
 - [ ] `npm run lint` pasa sin errores
-- [ ] No hay `console.log` de debug olvidados
+- [ ] No hay `console.*` — usar `createLogger(ctx)` de `src/lib/logger.ts`
 - [ ] No hay credenciales ni secrets hardcodeados
 
 ### Tests

@@ -7,9 +7,10 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual:**
-- 211 actividades únicas (0% duplicados exactos)
+**Estado Actual (v0.9.0 — 2026-03-31):**
+- ~277 actividades únicas (0% duplicados exactos)
 - Protección automática integrada en `ScrapingStorage`
+- 14 fuentes activas — sistema de canales (`web`, `instagram`, `tiktok`, `facebook`)
 
 ---
 
@@ -119,8 +120,8 @@ export async function POST(req: Request) {
      B: "Salones de baile: Ritmos folclóricos - Chapinero"
 
 📊 RESUMEN DIARIO
-Total actividades: 211
-Títulos únicos: 211
+Total actividades: 277
+Títulos únicos: 277
 Duplicados eliminados hoy: 0
 Similares para revisar: Sí
 Salud de datos: 100.0%
@@ -200,7 +201,7 @@ Nota: Eventos grandes pueden ser legítimos en múltiples fechas
 ```
 INFANTIA DEDUP REPORT - 2026-03-24
 
-Total actividades: 211
+Total actividades: 277
 Títulos únicos: 211
 Duplicados exactos hoy: 0
 Similares reportados: 3
@@ -297,4 +298,5 @@ A: Sí, basta comentar la lógica en `storage.ts` para Nivel 1, o desactivar el 
 ## Histórico
 
 - **2026-03-24**: Limpieza inicial (229 → 211). Integración Nivel 1 & 2.
+- **2026-03-31 (v0.9.0)**: 277 actividades. Nuevas fuentes: Cinemateca (+13), JBB (+3), Banrep Cartagena (+1). Sistema de canales en ingest-sources.ts. Pre-filtro de binarios en Gemini (ahorra cuota). 0 duplicados exactos.
 - **[Futuro]**: Reportes semanales, alertas automáticas, dashboard web.

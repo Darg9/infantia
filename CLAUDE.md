@@ -127,7 +127,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v20.mjs` (actualizar número de versión primero)
+Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero — V21 es la versión actual)
 
 ## Notas de arquitectura críticas
 

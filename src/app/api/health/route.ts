@@ -48,11 +48,13 @@ export async function GET() {
   }
 
   // ── Estado global ─────────────────────────────────────────────────────────
-  const allOk    = Object.values(services).every((s) => s === 'ok');
-  const allError = Object.values(services).every((s) => s === 'error');
-  const status   = allOk ? 'ok' : allError ? 'down' : 'degraded';
+  // Solo retorna 503 cuando la DB falla — Redis es cola/caché no crítico para
+  // la disponibilidad de la app. Redis degradado → 200 con status 'degraded'.
+  const allOk  = Object.values(services).every((s) => s === 'ok');
+  const dbDown = services.db === 'error';
+  const status = allOk ? 'ok' : dbDown ? 'down' : 'degraded';
 
-  const httpStatus = status === 'ok' ? 200 : 503;
+  const httpStatus = dbDown ? 503 : 200;
 
   return NextResponse.json(
     {

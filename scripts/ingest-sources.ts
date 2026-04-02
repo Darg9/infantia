@@ -34,7 +34,7 @@ import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
 import { enqueueBatchJob, closeScrapingQueue, closeRedisConnection } from '../src/modules/scraping/queue';
 
-type Channel = 'web' | 'instagram' | 'tiktok' | 'facebook';
+type Channel = 'web' | 'instagram' | 'tiktok' | 'facebook' | 'telegram';
 
 const SOCIAL_CHANNELS: Channel[] = ['instagram', 'tiktok', 'facebook'];
 
@@ -43,6 +43,7 @@ const CHANNEL_ICON: Record<Channel, string> = {
   instagram: '📸',
   tiktok:    '🎵',
   facebook:  '📘',
+  telegram:  '✈️',
 };
 
 interface Source {
@@ -96,7 +97,11 @@ const ALL_SOURCES: Source[] = [
   // (pendiente)
 
   // ── facebook ──────────────────────────────────────────────────────────────
-  // (pendiente)
+  // (pendiente — requiere IPRoyal proxy)
+
+  // ── telegram ──────────────────────────────────────────────────────────────
+  // Nota: los canales Telegram se ingestán con: npx tsx scripts/ingest-telegram.ts
+  // El canal 'telegram' aquí es solo para --list, no para runDirect/runQueue
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────

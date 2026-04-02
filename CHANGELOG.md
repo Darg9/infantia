@@ -11,6 +11,34 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+### Observability (S28 — 2026-04-02)
+- **Sentry activo en producción:** `instrumentation-client.ts` creado para captura de errores frontend
+  - `onRouterTransitionStart` via `captureRouterTransitionStart` de `@sentry/nextjs`
+  - `NEXT_PUBLIC_SENTRY_DSN` agregado en Vercel Dashboard
+  - Verificado: primer evento llegó correctamente a Sentry
+- **Fix `/api/health`:** responde 200 cuando Redis falla pero DB está OK (antes devolvía 503)
+  - Redis es cola/caché no crítico para disponibilidad — solo DB determina status HTTP
+  - Respuestas: `200 ok` | `200 degraded` (Redis falla) | `503 down` (DB falla)
+- **UptimeRobot:** monitor configurado en `https://infantia-activities.vercel.app/api/health`
+
+### Scraping (S28 — 2026-04-02)
+- **Integración Telegram MTProto** — `telegram.extractor.ts` + `telegram-auth.ts` + `ingest-telegram.ts`
+  - `src/modules/scraping/extractors/telegram.extractor.ts`: lector de canales públicos via gramjs
+  - `scripts/telegram-auth.ts`: genera `TELEGRAM_SESSION` string (autenticación interactiva)
+  - `scripts/ingest-telegram.ts`: ingesta completa con Gemini + guardado en BD
+  - Canal `telegram` agregado a `ingest-sources.ts` (solo para `--list`, ingesta via script dedicado)
+  - Canales objetivo: `@bogotaenplanes`, `@quehacerenbogota`, `@agendabogota`
+  - Requiere: `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION` en `.env`
+  - **Estado:** código listo, pendiente autenticación (bloqueo ISP Colombia en acceso a Telegram)
+- **Ingest web S28:** corrido con `--channel=web` (incorrecto — agotó cuota Gemini)
+  - BD quedó en ~275 actividades (bajó de 293 por expiración de actividades de marzo)
+
+### Notes (S28 — 2026-04-02)
+- Rama: master | Tag: v0.9.0 (sin nuevo tag esta sesión)
+- Commits: `7663d72` fix(health) · `2378ad9` feat(telegram) · `e0e2034` fix(sentry) · `a413601` fix(sentry)
+- Tests: 783 (sin nuevos en S28) | Build: OK | TypeScript: 0 errores
+- Cobertura branches: 84.44% — por debajo del umbral 85% (telegram.extractor.ts sin tests = 0%)
+
 ### Performance (S27 — 2026-04-01)
 - **`gemini.analyzer.ts`:** `CHUNK_SIZE` 50 → 200 URLs por lote en fase DISCOVER
   - Banrep Bogotá: 22 lotes → 6 lotes (dentro de cuota 20 RPD)

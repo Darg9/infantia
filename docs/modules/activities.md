@@ -1,7 +1,7 @@
 # Módulo: Activities
 
 **Versión actual:** v0.9.0
-**Última actualización:** 2026-03-31
+**Última actualización:** 2026-04-02
 
 ## ¿Qué hace?
 
@@ -43,7 +43,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| **GET** | **`/api/health`** | **Pública** | **Health check DB + Redis (NUEVO v0.9.0)** |
+| **GET** | **`/api/health`** | **Pública** | **Health check DB + Redis — 200 si DB ok (fix S28), 503 solo si DB falla** |
 | GET | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |
 | GET | `/api/admin/scraping/logs` | Admin | Logs de scraping con filtros |
 | POST | `/api/admin/expire-activities` | Cron | Expira actividades con fecha pasada (5AM UTC) |
@@ -152,21 +152,21 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 3. cityFallback
 4. null (actividad sin pin)
 
-## Datos actuales (2026-03-31)
+## Datos actuales (2026-04-02)
 
 | Proveedor | Actividades |
 |-----------|------------|
-| BibloRed | 150 |
-| Sec. Cultura | 29 |
-| Planetario | 25 |
-| Alcaldía Bogotá | 20 |
-| IDARTES | 19 |
-| FCE Colombia | 10 |
-| Cinemateca | 14 |
-| JBB | 7 |
-| Banrep Bogotá | 16 |
-| Banrep Cartagena | 1 |
-| **Total** | **~293** |
+| BibloRed | ~150 |
+| Sec. Cultura | ~29 |
+| Planetario | ~25 |
+| Alcaldía Bogotá | ~20 |
+| IDARTES | ~19 |
+| FCE Colombia | ~10 |
+| Cinemateca | ~14 |
+| JBB | ~7 |
+| Banrep (todas ciudades) | ~17 |
+| **Total** | **~275** |
 
 - 29/29 locations con coordenadas reales ✅
-- Mayoría EXPIRED — pendiente: ingest Banrep ciudades secundarias (reset Gemini 19:00 COL)
+- BD bajó de 293 a ~275 por expiración de actividades de marzo (fechas pasadas → EXPIRED)
+- Pendiente: ingest Banrep ciudades + nuevo ingest web cuando se renueve cuota Gemini (19:00 COL)

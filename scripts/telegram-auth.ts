@@ -11,6 +11,7 @@
 import 'dotenv/config';
 import { TelegramClient } from 'telegram';
 import { StringSession } from 'telegram/sessions/index.js';
+import { ConnectionTCPObfuscated } from 'telegram/network/connection/TCPObfuscated.js';
 import * as readline from 'readline';
 
 const API_ID   = parseInt(process.env.TELEGRAM_API_ID   ?? '0', 10);
@@ -29,7 +30,10 @@ async function main() {
   console.log('\n📱 Telegram MTProto — Autenticación inicial\n');
 
   const client = new TelegramClient(new StringSession(''), API_ID, API_HASH, {
-    connectionRetries: 3,
+    connectionRetries: 5,
+    connection: ConnectionTCPObfuscated,
+    useWSS: true,          // WebSocket Secure — puerto 443, pasa firewalls
+    testServers: false,
   });
 
   await client.start({

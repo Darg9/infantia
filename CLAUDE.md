@@ -146,23 +146,27 @@ Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero
 - **Logger:** `createLogger(ctx)` en `src/lib/logger.ts`. NO usar console.* en producción. `log.error(msg, { error })` — nunca `log.error(msg, errorObject)` directo (serializa como array de chars).
 - **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.
 - **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
-- **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead.
+- **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead. `instrumentation-client.ts` inicializa Sentry en browser (S28).
 - **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
 - **CHUNK_SIZE = 200** en `gemini.analyzer.ts` (era 50). Banrep Bogotá: 1.083 URLs → 6 lotes (antes 22, excedía cuota 20 RPD). No cambiar sin medir impacto en tokens.
 - **npm audit:** 0 vulnerabilidades. Si aparecen nuevas, correr `npm audit fix` antes de desplegar.
+- **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
+- **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.9.0 — 2026-03-31)
-- **293+ actividades** en BD (277 base + 16 nuevas Banrep Bogotá en S27)
+## Estado actual (v0.9.0 — 2026-04-02)
+- **~275 actividades** en BD (bajaron de 293 por expiración de actividades de marzo)
 - **783 tests** en 51 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
-- Cobertura real: **91.76% stmts / 86.98% branches / 89.73% funcs**
+- Cobertura real: **stmts alta / branches 84.44%** ⚠️ por debajo umbral 85% (telegram.extractor.ts = 0% cobertura, sin tests aún)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
 - BullMQ + Upstash Redis: OPERATIVO
-- 14 fuentes configuradas, 29/29 locations geocodificadas
+- 14 fuentes web + canal Telegram configurado (pendiente auth)
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
 - Documento Fundacional: **V21** (2026-03-31)
 - **0 vulnerabilidades npm** (era 15 en auditoría S25)
 - **0 console.*** en producción (migrado a logger estructurado)
+- **Sentry activo** en producción (SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN configurados en Vercel)
+- **UptimeRobot** monitoreando `/api/health`
 
 ### Features v0.9.0 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

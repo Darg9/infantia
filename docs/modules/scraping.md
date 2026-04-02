@@ -1,11 +1,11 @@
 # Módulo: Scraping
 
 **Versión actual:** v0.9.0
-**Última actualización:** 2026-04-01
+**Última actualización:** 2026-04-02
 
 ## ¿Qué hace?
 
-Descubre y extrae actividades de sitios web e Instagram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal).
+Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal).
 
 ## Flujos disponibles
 
@@ -33,6 +33,20 @@ Username de cuenta (@handle)
    → Validación Zod + guardado en BD
 ```
 
+### Telegram scraping (MTProto via gramjs)
+
+```
+Canal público (@handle)
+   → TelegramClient (gramjs) con sesión autenticada
+   → Requiere: TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_SESSION
+   → Extrae mensajes: texto, fecha, mediaUrl, URL al mensaje
+   → GeminiAnalyzer analiza con INSTAGRAM_SYSTEM_PROMPT (similar a posts)
+   → ScrapingStorage.saveActivity() con deduplicación
+```
+
+**Estado (S28):** código listo. Pendiente autenticación por bloqueo ISP Colombia a servidores Telegram.
+Autenticación: `npx tsx scripts/telegram-auth.ts` (interactivo — requiere VPN o ISP que no bloquee Telegram)
+
 ### Cola asíncrona (BullMQ + Upstash Redis)
 
 ```
@@ -55,6 +69,7 @@ ingest-sources.ts --queue
 | `logger.ts` | Logging estructurado en BD (ScrapingLog) |
 | `extractors/cheerio.extractor.ts` | Links + paginación automática + sitemap XML |
 | `extractors/playwright.extractor.ts` | Instagram + extractWebLinks/extractWebText + proxy opcional |
+| `extractors/telegram.extractor.ts` | Canales Telegram MTProto (gramjs) — NUEVO S28 |
 | `nlp/gemini.analyzer.ts` | NLP con Gemini 2.5 Flash (activo en producción) |
 | `nlp/claude.analyzer.ts` | Alternativa con Claude API (backup, no activo) |
 | `queue/connection.ts` | Singleton IORedis (soporte rediss:// TLS) |
@@ -103,7 +118,7 @@ El pipeline integra geocoding automático en cada actividad guardada:
 - Filtra URLs por patrones (ej: `/bogota/` para Banrep Bogotá)
 - Sin Playwright, sin bot-detection
 
-## Fuentes activas (14)
+## Fuentes activas (14 web + canal Telegram pendiente)
 
 | Fuente | Ciudad | Tipo |
 |--------|--------|------|
@@ -121,10 +136,20 @@ El pipeline integra geocoding automático en cada actividad guardada:
 | Banrep | Barranquilla | Sitemap filtrado /barranquilla/ |
 | Banrep | Cartagena | Sitemap filtrado /cartagena/ |
 | Banrep | Bucaramanga/Manizales/Pereira/Ibagué/Santa Marta | Sitemap por ciudad |
+| @bogotaenplanes (Telegram) | Bogotá | MTProto — pendiente auth ISP |
+| @quehacerenbogota (Telegram) | Bogotá | MTProto — pendiente auth ISP |
+| @agendabogota (Telegram) | Bogotá | MTProto — pendiente auth ISP |
 
 ## Comandos
 
 ```bash
+# Telegram — canal separado (requiere TELEGRAM_SESSION en .env)
+npx tsx scripts/telegram-auth.ts                          # genera TELEGRAM_SESSION (interactivo)
+npx tsx scripts/ingest-telegram.ts                        # todos los canales
+npx tsx scripts/ingest-telegram.ts --dry-run              # sin guardar
+npx tsx scripts/ingest-telegram.ts --channel=bogotaenplanes
+npx tsx scripts/ingest-telegram.ts --limit=100            # más mensajes por canal
+
 # Ver inventario de fuentes por canal
 npx tsx scripts/ingest-sources.ts --list
 
@@ -180,4 +205,7 @@ Esto evita consumir cuota del free tier (20 RPD) en archivos que nunca son activ
 - Rate limit en pipeline: 12s entre requests a Gemini
 - Instagram puede bloquear IPs sin proxy tras uso intensivo → activar IPRoyal
 - `scraping/queue/types.ts`: 0% cobertura en tests (solo tipos TypeScript, sin runtime)
+- `scraping/extractors/telegram.extractor.ts`: 0% cobertura (sin tests — S28, pendiente)
 - JBB publica parte de su agenda como imágenes JPG — el scraper obtiene metadata pero no el contenido detallado
+- **Telegram ISP Colombia:** ISP bloquea conexiones MTProto a servidores Telegram. Requiere VPN para autenticación inicial. Una vez obtenido `TELEGRAM_SESSION`, la sesión puede funcionar directamente.
+- **Cuota Gemini agotada en S28:** Se corrió `--channel=web` por error (en lugar de `--source=banrep`). BD bajó a ~275 actividades por expiración de actividades de marzo.

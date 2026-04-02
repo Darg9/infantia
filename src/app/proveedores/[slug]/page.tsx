@@ -8,6 +8,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/db'
 import ActivityCard from '@/app/actividades/_components/ActivityCard'
+import ClaimButton from '@/components/ClaimButton'
 
 const TYPE_LABELS: Record<string, string> = {
   ACADEMY:     'Academia',
@@ -137,6 +138,9 @@ export default async function ProveedorPage({ params }: PageProps) {
 
           {/* Links de contacto */}
           <div className="flex flex-wrap gap-2 mt-4">
+            {!provider.isClaimed && provider.slug && (
+              <ClaimButton providerSlug={provider.slug} />
+            )}
             {provider.website && (
               <a href={provider.website} target="_blank" rel="noreferrer noopener"
                 className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">

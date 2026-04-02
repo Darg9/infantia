@@ -84,6 +84,7 @@ model Provider {
 
   activities Activity[]
   locations  ProviderLocation[]
+  claims     ProviderClaim[]
 
   @@map("providers")
 }
@@ -410,6 +411,29 @@ model Sponsor {
   updatedAt     DateTime  @updatedAt
 
   @@map("sponsors")
+}
+
+model ProviderClaim {
+  id         String      @id @default(uuid())
+  providerId String
+  userId     String
+  userEmail  String
+  userName   String?
+  message    String?
+  status     ClaimStatus @default(PENDING)
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  provider   Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@index([providerId])
+  @@index([status])
+  @@map("provider_claims")
+}
+
+enum ClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum ProviderType {

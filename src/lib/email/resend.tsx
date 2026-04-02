@@ -1,6 +1,7 @@
 import { Resend } from 'resend';
 import { WelcomeEmail } from './templates/welcome';
 import { ActivityDigestEmail } from './templates/activity-digest';
+import { ProviderClaimNotificationEmail } from './templates/provider-claim-notification';
 import { render as renderAsync } from '@react-email/components';
 import { createLogger } from '@/lib/logger';
 
@@ -92,6 +93,42 @@ export async function sendActivityDigest({
     return { success: true, messageId: result.data?.id };
   } catch (error: any) {
     log.error('Exception en sendActivityDigest', { to, error });
+    return { success: false, error: error.message };
+  }
+}
+
+export interface SendClaimNotificationParams {
+  claimantName:  string;
+  claimantEmail: string;
+  providerName:  string;
+  providerSlug:  string;
+  message?:      string;
+  claimId:       string;
+}
+
+/**
+ * Notifica al admin cuando un provider reclama su perfil
+ */
+export async function sendClaimNotification(params: SendClaimNotificationParams) {
+  try {
+    const html = await renderAsync(<ProviderClaimNotificationEmail {...params} />);
+
+    const result = await resend.emails.send({
+      from:    FROM_EMAIL,
+      to:      'hola@infantia.co',
+      subject: `Nueva solicitud de reclamación — ${params.providerName}`,
+      html,
+    });
+
+    if (result.error) {
+      log.error('Error enviando claim notification', { error: result.error });
+      return { success: false, error: result.error.message };
+    }
+
+    log.info('Claim notification enviada', { claimId: params.claimId, providerName: params.providerName });
+    return { success: true, messageId: result.data?.id };
+  } catch (error: any) {
+    log.error('Exception en sendClaimNotification', { error });
     return { success: false, error: error.message };
   }
 }

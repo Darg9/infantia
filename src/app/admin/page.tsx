@@ -55,6 +55,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-gray-900">Patrocinadores</h2>
           <p className="text-sm text-gray-500 mt-1">Gestiona sponsors para el newsletter</p>
         </Link>
+
+        <Link
+          href="/admin/claims"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">✋</div>
+          <h2 className="font-semibold text-gray-900">Solicitudes de perfil</h2>
+          <p className="text-sm text-gray-500 mt-1">Aprueba o rechaza reclamaciones de proveedores</p>
+        </Link>
       </div>
     </div>
   )

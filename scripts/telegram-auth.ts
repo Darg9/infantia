@@ -45,6 +45,10 @@ async function main() {
       const code = await ask('   Código que llegó a tu app Telegram: ');
       return code.trim();
     },
+    password: async () => {
+      const pwd = await ask('   Contraseña de 2FA: ');
+      return pwd.trim();
+    },
     onError: (err) => console.error('❌ Error:', err.message),
   });
 

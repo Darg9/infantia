@@ -24,49 +24,14 @@ const log = createLogger('ingest:telegram');
 // Formato: { username: 'nombre_sin_arroba', city: 'Ciudad', description: '...' }
 const TELEGRAM_CHANNELS = [
   // Bogotá
-  { username: 'bogotaenplanes',     city: 'Bogotá',   description: 'Planes y eventos en Bogotá' },
   { username: 'quehaypahacer',      city: 'Bogotá',   description: 'Actividades para familias Bogotá' },
-  { username: 'agendabogota',       city: 'Bogotá',   description: 'Agenda cultural Bogotá' },
-  // Medellín
-  { username: 'medellínenplanes',   city: 'Medellín', description: 'Planes y eventos en Medellín' },
-  // ── Agrega más canales aquí ──
+  // ── Agrega más canales aquí cuando encuentres sus usernames exactos ──
 ];
 
 // ── Analyzer y Storage ────────────────────────────────────────────────────────
 const gemini  = new GeminiAnalyzer();
 const storage = new ScrapingStorage();
 
-// ── Prompt para Telegram ──────────────────────────────────────────────────────
-// Adaptado para mensajes de texto sin estructura HTML
-function buildPrompt(text: string, city: string): string {
-  return `Analiza este mensaje de Telegram de un canal colombiano de eventos/planes y extrae la información de la actividad si la hay.
-
-Ciudad de referencia: ${city}
-Mensaje:
-"""
-${text}
-"""
-
-Responde SOLO con JSON válido siguiendo exactamente este esquema (null si no hay información):
-{
-  "title": "string (nombre de la actividad, obligatorio)",
-  "description": "string",
-  "categories": ["string"],
-  "minAge": number|null,
-  "maxAge": number|null,
-  "price": number|null,
-  "pricePeriod": "FREE"|"PER_SESSION"|"MONTHLY"|"TOTAL"|null,
-  "currency": "COP",
-  "audience": "KIDS"|"FAMILY"|"ADULTS"|"ALL",
-  "location": { "address": "string|null", "city": "string|null" }|null,
-  "schedules": [{ "startDate": "YYYY-MM-DD", "endDate": "YYYY-MM-DD|null", "notes": "string|null" }]|null,
-  "confidenceScore": 0.0-1.0,
-  "imageUrl": null
-}
-
-Si el mensaje NO es una actividad o evento (es publicidad genérica, noticias, memes, etc.), responde:
-{ "confidenceScore": 0.0, "title": "", "categories": [], "description": "" }`;
-}
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
@@ -112,9 +77,7 @@ async function main() {
 
       for (const msg of data.messages) {
         try {
-          const prompt = buildPrompt(msg.text, ch.city);
-          // Usamos Gemini directamente para analizar el texto del mensaje
-          const result = await (gemini as any).analyzeText(prompt);
+          const result = await gemini.analyze(msg.text, msg.url);
 
           if (!result || result.confidenceScore < 0.6 || !result.title) {
             skipped++;

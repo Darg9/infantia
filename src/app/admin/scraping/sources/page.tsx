@@ -2,6 +2,7 @@ import { requireRole } from '@/lib/auth'
 import { UserRole } from '@/generated/prisma/client'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
+import { InstagramConfig } from './_components/InstagramConfig'
 
 export default async function ScrapingSourcesPage() {
   await requireRole([UserRole.ADMIN])
@@ -100,6 +101,13 @@ export default async function ScrapingSourcesPage() {
                     <span className="text-xs text-gray-400">Sin ejecuciones</span>
                   )}
                 </div>
+                {/* Config Instagram — solo para fuentes de Instagram */}
+                {source.platform === 'INSTAGRAM' && (
+                  <InstagramConfig
+                    sourceId={source.id}
+                    initialConfig={source.config as Record<string, unknown> | null}
+                  />
+                )}
               </div>
             </div>
           ))}

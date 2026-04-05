@@ -7,8 +7,8 @@ Se actualiza en cada PR que toca ese módulo.
 
 | Módulo | Doc | Estado |
 |---|---|---|
-| scraping | [scraping.md](scraping.md) | ✅ v0.9.0 |
-| activities | [activities.md](activities.md) | ✅ v0.9.0 |
+| scraping | [scraping.md](scraping.md) | ✅ v0.9.1 |
+| activities | [activities.md](activities.md) | ✅ v0.9.1 |
 | providers | providers.md | 🔜 pendiente |
 | search | search.md | 🔜 pendiente |
 | verticals | verticals.md | 🔜 pendiente |

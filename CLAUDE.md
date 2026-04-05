@@ -119,6 +119,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.8.1 | V19 | Mini-mapa detalle, venue-dictionary, backfill-geocoding |
 | v0.8.1+ | V20 | Monetización A-G, proxy IPRoyal, dashboard proveedor |
 | v0.9.0 | V21 | Seguridad (C-01/C-02/npm), observabilidad (logger/Sentry/health), scraping canales |
+| v0.9.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
 
 ### Regla para Documento Fundacional
 

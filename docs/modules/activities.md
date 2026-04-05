@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.9.0
-**Última actualización:** 2026-04-02
+**Versión actual:** v0.9.1
+**Última actualización:** 2026-04-05
 
 ## ¿Qué hace?
 
@@ -35,9 +35,20 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 |---|---|---|---|
 | GET/PUT | `/api/profile` | Sí | Perfil del usuario autenticado (upsert) |
 | PUT | `/api/profile/avatar` | Sí | Sube avatar a Supabase Storage |
+| **GET** | **`/api/profile/me`** | **Sí** | **id, name, cityId, onboardingDone (NUEVO v0.9.1)** |
+| **PATCH** | **`/api/profile/onboarding`** | **Sí** | **Guarda cityId + onboardingDone=true (NUEVO v0.9.1)** |
 | GET/PUT | `/api/profile/notifications` | Sí | Preferencias de notificaciones |
 | GET/POST | `/api/children` | Sí | Lista/crea perfiles de hijos |
 | DELETE | `/api/children/:id` | Sí | Elimina perfil de hijo |
+| **GET** | **`/api/cities`** | **No** | **Lista ciudades para onboarding (NUEVO v0.9.1)** |
+
+## Endpoints de providers / claims
+
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| **POST** | **`/api/providers/:slug/claim`** | **Sí** | **Solicita reclamación de proveedor + email admin (NUEVO v0.9.1)** |
+| **GET** | **`/api/admin/claims`** | **Admin** | **Lista claims por status (NUEVO v0.9.1)** |
+| **PATCH** | **`/api/admin/claims/:id`** | **Admin** | **Aprobar (isClaimed=true, rol PROVIDER) o rechazar (NUEVO v0.9.1)** |
 
 ## Endpoints de administración
 

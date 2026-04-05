@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.9.0 | **Status:** Production — 2026-03-31 | **Tests:** 783 passing / 51 files | **Coverage:** 91.76% stmts / 86.98% branches
+**Version:** v0.9.1 | **Status:** Production — 2026-04-05 | **Tests:** 792 passing / 52 files | **Coverage:** 91.73% stmts / 86.70% branches
 
 ## Quick Start
 
@@ -21,8 +21,10 @@ npm install
 npx prisma generate
 
 # Run DB migrations (raw SQL via scripts — Supabase pgbouncer incompatible with prisma migrate dev)
-npx tsx scripts/migrate-premium.ts    # isPremium/premiumSince on Provider
-npx tsx scripts/migrate-sponsors.ts   # Sponsor table
+npx tsx scripts/migrate-premium.ts            # isPremium/premiumSince on Provider
+npx tsx scripts/migrate-sponsors.ts           # Sponsor table
+npx tsx scripts/migrate-provider-claims.ts    # ProviderClaim table + ClaimStatus enum
+npx tsx scripts/migrate-onboarding.ts         # onboardingDone column in User
 
 # Seed initial data
 npx tsx prisma/seed.ts
@@ -63,18 +65,20 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 🔔 **Web Push:** Real push notifications via VAPID + Service Worker
 - 💰 **Monetization:** isPremium providers (badge + priority ordering), sponsor newsletter blocks, /anunciate landing
 - 🏢 **Provider Dashboard:** `/proveedores/[slug]/dashboard` — views, premium status, activity table (ADMIN or owner)
-- 🔒 **Admin Panel:** Sponsors CRUD, activity management, metrics, scraping queue
+- 📋 **Provider Claim Flow:** Providers can claim their profiles via `/proveedores/[slug]/reclamar` — admin approves → PROVIDER role assigned
+- 🧭 **Onboarding Wizard:** 3-step setup for new users (city → children → done) — auto-redirects on first login
+- 🔒 **Admin Panel:** Sponsors CRUD, activity management, metrics, scraping queue, claims management
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 783 unit tests (91.76% stmts / 86.98% branches), E2E tests
+- 🧪 **Well-tested:** 792 unit tests (91.73% stmts / 86.70% branches), E2E tests
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production
-npm test                       # Run all tests (783 tests)
+npm test                       # Run all tests (792 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 
 # Scraping
@@ -91,6 +95,10 @@ npx tsx scripts/verify-db.ts                     # Verify DB state
 npx tsx scripts/backfill-geocoding.ts [--dry-run] # Geocode 0,0 locations
 npx tsx scripts/backfill-images.ts               # Backfill og:image from sourceUrl
 npx tsx scripts/expire-activities.ts             # Manually expire activities
+
+# Telegram
+npx tsx scripts/telegram-auth.ts                 # One-time MTProto auth → TELEGRAM_SESSION
+npx tsx scripts/ingest-telegram.ts [--dry-run]   # Ingest Telegram channels
 ```
 
 ## Environment Variables
@@ -145,6 +153,7 @@ src/
     auth.ts               # Supabase Auth helpers (getSession, requireRole)
     db.ts                 # Prisma singleton
     logger.ts             # createLogger(ctx) — structured logger + Sentry integration
+    ratings.ts            # recalcProviderRating() — aggregates ratingAvg/Count on Provider
     activity-url.ts       # Canonical URL helpers
     venue-dictionary.ts   # 40+ Bogotá venues with exact coords (~0ms lookup)
     geocoding.ts          # venue-dictionary → Nominatim → cityFallback → null

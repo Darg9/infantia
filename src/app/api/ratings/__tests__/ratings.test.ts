@@ -25,6 +25,7 @@ const { mockRequireAuth, mockPrisma } = vi.hoisted(() => {
 
 vi.mock('@/lib/auth', () => ({ requireAuth: mockRequireAuth }))
 vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
+vi.mock('@/lib/ratings', () => ({ recalcProviderRating: vi.fn().mockResolvedValue(undefined) }))
 
 import { NextResponse } from 'next/server'
 import { GET, POST } from '../route'
@@ -119,7 +120,7 @@ describe('POST /api/ratings', () => {
   it('crea una nueva calificacion exitosamente', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
-    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1 })
+    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const rating = { id: 'r1', userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1, score: 4, comment: null }
     mockPrisma.rating.upsert.mockResolvedValue(rating)
 
@@ -136,7 +137,7 @@ describe('POST /api/ratings', () => {
   it('crea calificacion con comentario', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
-    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1 })
+    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const rating = { id: 'r2', score: 3, comment: 'Bueno' }
     mockPrisma.rating.upsert.mockResolvedValue(rating)
 
@@ -153,7 +154,7 @@ describe('POST /api/ratings', () => {
   it('upsert actualiza calificacion existente', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
-    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1 })
+    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const updated = { id: 'r1', score: 5, comment: null }
     mockPrisma.rating.upsert.mockResolvedValue(updated)
 
@@ -311,7 +312,7 @@ describe('DELETE /api/ratings/[activityId]', () => {
   it('elimina la calificacion exitosamente', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
-    mockPrisma.rating.findUnique.mockResolvedValue({ id: 'r1', userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 })
+    mockPrisma.rating.findUnique.mockResolvedValue({ id: 'r1', userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1, activity: { providerId: 'prov-1' } })
     mockPrisma.rating.delete.mockResolvedValue({})
 
     await DELETE(makeRequest() as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })

@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { recalcProviderRating } from '@/lib/ratings'
 
 type RouteParams = { params: Promise<{ activityId: string }> }
 
@@ -49,6 +50,7 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
 
     const existing = await prisma.rating.findUnique({
       where: { userId_activityId: { userId: dbUser.id, activityId } },
+      include: { activity: { select: { providerId: true } } },
     })
 
     if (!existing) {
@@ -58,6 +60,9 @@ export async function DELETE(_req: NextRequest, { params }: RouteParams) {
     await prisma.rating.delete({
       where: { userId_activityId: { userId: dbUser.id, activityId } },
     })
+
+    // Recalcular promedio del provider
+    await recalcProviderRating(existing.activity.providerId)
 
     return NextResponse.json({ success: true })
   } catch {

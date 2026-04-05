@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { recalcProviderRating } from '@/lib/ratings'
 
 export async function GET() {
   try {
@@ -74,7 +75,7 @@ export async function POST(req: NextRequest) {
     // Verify activity exists
     const activity = await prisma.activity.findUnique({
       where: { id: activityId },
-      select: { id: true },
+      select: { id: true, providerId: true },
     })
 
     if (!activity) {
@@ -95,6 +96,9 @@ export async function POST(req: NextRequest) {
         comment: comment?.trim() || null,
       },
     })
+
+    // Recalcular promedio del provider
+    await recalcProviderRating(activity.providerId)
 
     return NextResponse.json({ success: true, rating }, { status: 201 })
   } catch {

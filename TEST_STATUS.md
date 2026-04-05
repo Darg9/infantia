@@ -1,20 +1,20 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-04-01 | Version: v0.9.0
+Actualizado: 2026-04-05 | Version: v0.9.1
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 51 |
-| Tests totales | 783 |
-| Pasados | 783 |
+| Archivos de test | 52 |
+| Tests totales | 792 |
+| Pasados | 792 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
-| Statements | 91.76% ✅ |
-| Branches | 86.98% ✅ |
-| Functions | 89.73% ✅ |
-| Lines | 93.08% ✅ |
+| Statements | 91.73% ✅ |
+| Branches | 86.70% ✅ |
+| Functions | 89.47% ✅ |
+| Lines | 92.90% ✅ |
 
 ## Estado: PASSED ✅
 
@@ -104,6 +104,7 @@ Actualizado: 2026-04-01 | Version: v0.9.0
 | admin/queue/__tests__/ | — | OK |
 | admin/send-notifications/__tests__/ | 21 | OK |
 | admin/sponsors/__tests__/sponsors.test.ts | 16 | OK — GET/POST/PATCH/DELETE (NUEVO v0.8.1+) |
+| ratings/__tests__/ratings.test.ts | 15 | OK — GET/POST list+detail, DELETE, upsert, validaciones (ACTUALIZADO v0.9.1+) |
 
 ### components/__tests__/
 | Archivo | Tests | Estado |
@@ -115,7 +116,7 @@ Actualizado: 2026-04-01 | Version: v0.9.0
 |---------|-------|--------|
 | useActivityHistory.test.ts | — | OK |
 
-## Cobertura por módulo clave (v0.9.0)
+## Cobertura por módulo clave (v0.9.1)
 
 | Archivo | Stmts | Branch | Funcs | Lines |
 |---------|-------|--------|-------|-------|

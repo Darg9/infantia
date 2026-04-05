@@ -11,6 +11,64 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+---
+
+## [v0.9.1] — 2026-04-05 (Telegram operativo, Claim flow, Onboarding, Ratings)
+**Documento Fundacional: V21** | Commits: 3896e26 → HEAD
+
+### Features
+
+#### Telegram MTProto operativo (S29)
+- **`scripts/telegram-auth.ts`:** soporte 2FA (`password` callback) — autenticación exitosa
+- **`scripts/ingest-telegram.ts`:** corregido `gemini.analyzeText` → `gemini.analyze(text, url)`, canales verificados a `@quehaypahacer`
+- Canal `@quehaypahacer`: 3 actividades detectadas en dry-run (cuota Gemini compartida con otros scrapers)
+- `TELEGRAM_SESSION` guardado en `.env` + Vercel Dashboard
+
+#### Flujo de reclamación de proveedores / Provider Claim (S29)
+- **`POST /api/providers/[slug]/claim`:** usuario autenticado envía solicitud + email a admin
+- **`GET /api/admin/claims`:** lista claims filtrable por status (PENDING / APPROVED / REJECTED)
+- **`PATCH /api/admin/claims/[id]`:** aprobar (isClaimed=true + rol PROVIDER + Supabase app_metadata) o rechazar
+- **`src/components/ClaimButton.tsx`:** botón condicional en perfil público del provider (!isClaimed)
+- **`src/app/proveedores/[slug]/reclamar/`:** página + formulario con nombre, email (readonly), mensaje
+- **`src/app/admin/claims/page.tsx`:** panel admin con tabs PENDING/APPROVED/REJECTED
+- **`src/lib/email/templates/provider-claim-notification.tsx`:** template React Email para notificar al admin
+- **`prisma/schema.prisma`:** modelo `ProviderClaim` + enum `ClaimStatus` + relación en `Provider`
+- **`scripts/migrate-provider-claims.ts`:** DDL raw SQL — `provider_claims` table con FK TEXT (no UUID)
+
+#### Onboarding wizard para nuevos usuarios (S29)
+- **`src/app/onboarding/page.tsx`:** wizard 3 pasos — Ciudad → Hijos → Listo
+  - Paso 1: selección de ciudad (`GET /api/cities`)
+  - Paso 2: agregar hijo con nombre, fecha de nacimiento y consentimiento Ley 1581
+  - Paso 3: pantalla de éxito → `/actividades`
+- **`GET /api/cities`:** retorna lista de ciudades para el wizard
+- **`GET /api/profile/me`:** retorna id, name, cityId, onboardingDone
+- **`PATCH /api/profile/onboarding`:** guarda cityId + marca onboardingDone=true
+- **`src/app/login/page.tsx`:** redirecciona a `/onboarding` si `!onboardingDone`
+- **`src/app/auth/callback/route.ts`:** nuevos usuarios redireccionados a `/onboarding`
+- **`prisma/schema.prisma`:** campo `onboardingDone Boolean @default(false)` en `User`
+- **`scripts/migrate-onboarding.ts`:** agrega columna + marca usuarios existentes como done=true
+
+#### Agregación de ratings por provider (S29)
+- **`src/lib/ratings.ts`:** `recalcProviderRating(providerId)` — recalcula `ratingAvg` + `ratingCount` en Provider
+  - Usa `prisma.rating.aggregate({ _avg, _count })` sobre todas las actividades del provider
+- **`POST /api/ratings`:** llama `recalcProviderRating` después de upsert
+- **`DELETE /api/ratings/[activityId]`:** llama `recalcProviderRating` después de eliminar
+- Provider siempre tiene `ratingAvg/ratingCount` actualizados en tiempo real
+
+### Fixes
+- **`defu` prototype pollution:** `npm audit fix` — 0 vulnerabilidades (era 1 high severity)
+- **FK constraint `provider_claims`:** `providerId` como `TEXT` (no `UUID`) para coincidir con `providers.id`
+- **`/api/cities` campo incorrecto:** `countryName` en lugar de `country` (no existe en schema)
+
+### Tests
+- **`src/app/api/ratings/__tests__/ratings.test.ts`:** actualizado con mock de `recalcProviderRating` + providerId en mocks de actividad/rating (fue necesario tras agregar agregación)
+- **Total: 792/792 ✅ | 52 archivos | 91.73% stmts | 86.7% branches ✅ | 89.47% funcs**
+
+### Security
+- **npm audit:** 0 vulnerabilidades (fix de `defu` prototype pollution — 1 high severity)
+
+---
+
 ### Observability (S28 — 2026-04-02)
 - **Sentry activo en producción:** `instrumentation-client.ts` creado para captura de errores frontend
   - `onRouterTransitionStart` via `captureRouterTransitionStart` de `@sentry/nextjs`

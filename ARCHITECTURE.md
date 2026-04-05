@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.9.0 | Actualizado: 2026-04-01
+> Versión: v0.9.1 | Actualizado: 2026-04-05
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -49,10 +49,15 @@ infantia/
 │   ├── app/                        # Next.js App Router
 │   │   ├── page.tsx                # Home — landing con contador y categorías
 │   │   ├── actividades/            # Listado con filtros facetados
-│   │   ├── login/                  # Autenticación (Supabase Auth)
+│   │   ├── login/                  # Autenticación (Supabase Auth — redirige a /onboarding si nuevo)
 │   │   ├── registro/               # Registro con email de bienvenida
+│   │   ├── onboarding/             # Wizard 3 pasos: Ciudad → Hijos → Listo (NUEVO v0.9.1)
 │   │   ├── perfil/                 # Perfil de usuario, hijos, favoritos, notificaciones, historial
-│   │   ├── admin/                  # Panel interno (logs de scraping, fuentes)
+│   │   ├── admin/                  # Panel interno (logs de scraping, fuentes, claims)
+│   │   │   └── claims/             # Lista y gestión de solicitudes de reclamación (NUEVO v0.9.1)
+│   │   ├── proveedores/
+│   │   │   └── [slug]/
+│   │   │       └── reclamar/       # Formulario de reclamación de provider (NUEVO v0.9.1)
 │   │   ├── contacto/               # Formulario de contacto
 │   │   ├── contribuir/             # Página para proveedores
 │   │   ├── privacidad/             # Política de privacidad
@@ -64,12 +69,18 @@ infantia/
 │   │       │       └── ratings/    # Calificaciones por actividad
 │   │       ├── favorites/          # Favoritos del usuario
 │   │       │   └── [activityId]/
-│   │       ├── ratings/            # Calificaciones globales
+│   │       ├── ratings/            # Calificaciones globales (recalc ratingAvg en provider)
 │   │       │   └── [activityId]/
 │   │       ├── children/           # Hijos/perfiles de menores
 │   │       │   └── [id]/
+│   │       ├── cities/             # Lista de ciudades para onboarding (NUEVO v0.9.1)
+│   │       ├── providers/
+│   │       │   └── [slug]/
+│   │       │       └── claim/      # POST — solicitud de reclamación de provider (NUEVO v0.9.1)
 │   │       ├── profile/            # Perfil del usuario autenticado
 │   │       │   ├── avatar/
+│   │       │   ├── me/             # GET — id, name, cityId, onboardingDone (NUEVO v0.9.1)
+│   │       │   ├── onboarding/     # PATCH — guarda cityId + onboardingDone=true (NUEVO v0.9.1)
 │   │       │   └── notifications/
 │   │       ├── auth/
 │   │       │   └── send-welcome/   # Email de bienvenida post-registro
@@ -79,6 +90,8 @@ infantia/
 │   │           ├── send-notifications/    # Envío masivo de notificaciones (cron 9AM UTC)
 │   │           ├── sponsors/              # CRUD de sponsors newsletter
 │   │           │   └── [id]/             # PATCH / DELETE por id
+│   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.9.1)
+│   │           │   └── [id]/             # PATCH approve / reject
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
 │   │           └── scraping/
 │   │               ├── sources/           # CRUD de fuentes de scraping
@@ -96,6 +109,7 @@ infantia/
 │   │   ├── db.ts                   # Singleton de PrismaClient
 │   │   ├── auth.ts                 # Helpers de Supabase Auth (getSession, requireRole)
 │   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.9.0)
+│   │   ├── ratings.ts              # recalcProviderRating() — agrega ratingAvg/Count en Provider (NUEVO v0.9.1)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
 │   │   ├── utils.ts                # Utilidades generales
@@ -130,6 +144,10 @@ infantia/
 │   ├── backfill-images.ts          # Extrae og:image de sourceUrl para actividades sin imagen
 │   ├── migrate-premium.ts          # DDL: isPremium/premiumSince en Provider (raw SQL)
 │   ├── migrate-sponsors.ts         # DDL: tabla sponsors (raw SQL)
+│   ├── migrate-provider-claims.ts  # DDL: tabla provider_claims + enum ClaimStatus (NUEVO v0.9.1)
+│   ├── migrate-onboarding.ts       # DDL: onboardingDone en User, existing users → true (NUEVO v0.9.1)
+│   ├── telegram-auth.ts            # Autenticación MTProto one-time → genera TELEGRAM_SESSION (NUEVO v0.9.1)
+│   ├── ingest-telegram.ts          # Ingesta canales Telegram con Gemini + guardado en BD (NUEVO v0.9.1)
 │   ├── promote-admin.ts            # Da rol ADMIN a un usuario
 │   ├── verify-db.ts                # Reporte de estado de la BD
 │   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
@@ -137,7 +155,8 @@ infantia/
 │   ├── clean-queue.ts              # Limpia jobs BullMQ acumulados
 │   ├── seed-scraping-sources.ts    # Seed de fuentes de scraping
 │   ├── generate_v19.mjs            # Genera Documento Fundacional V19 (.docx)
-│   └── generate_v20.mjs            # Genera Documento Fundacional V20 (.docx)
+│   ├── generate_v20.mjs            # Genera Documento Fundacional V20 (.docx)
+│   └── generate_v21.mjs            # Genera Documento Fundacional V21 (.docx)
 │
 ├── prisma/
 │   ├── schema.prisma               # Fuente de verdad del modelo de datos
@@ -184,6 +203,7 @@ City ── Location ───────────────────�
 | `ActivityCategory` | Relación N:M actividad ↔ categoría |
 | `Favorite` | Actividades guardadas por un usuario |
 | `Rating` | Calificación 1-5 + comentario (una por usuario por actividad) |
+| `ProviderClaim` | Solicitud de reclamación de provider por usuario autenticado (NUEVO v0.9.1) |
 | `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
 | `ScrapingLog` | Registro histórico de cada ejecución de scraping |
 
@@ -197,7 +217,16 @@ PricePeriod       → PER_SESSION | MONTHLY | TOTAL | FREE
 ScrapingPlatform  → WEBSITE | INSTAGRAM | FACEBOOK | TELEGRAM | TIKTOK | X | WHATSAPP
 UserRole          → PARENT | PROVIDER | MODERATOR | ADMIN
 ProviderType      → ACADEMY | INDEPENDENT | INSTITUTION | GOVERNMENT
+ClaimStatus       → PENDING | APPROVED | REJECTED   (NUEVO v0.9.1)
 ```
+
+### Campos nuevos en v0.9.1
+
+| Modelo | Campo | Tipo | Propósito |
+|--------|-------|------|-----------|
+| `User` | `onboardingDone` | `Boolean @default(false)` | Controla si el wizard ya se completó |
+| `Provider` | `ratingAvg` | `Float?` | Promedio recalculado tras cada rating |
+| `Provider` | `ratingCount` | `Int @default(0)` | Conteo recalculado tras cada rating |
 
 ---
 
@@ -218,7 +247,8 @@ src/modules/scraping/
 ├── index.ts                    # Re-exportaciones públicas
 ├── extractors/
 │   ├── cheerio.extractor.ts    # Sitios estáticos + paginación automática
-│   └── playwright.extractor.ts # Instagram con Chromium headless + sesión persistente
+│   ├── playwright.extractor.ts # Instagram con Chromium headless + sesión persistente
+│   └── telegram.extractor.ts   # Canales públicos via gramjs MTProto (NUEVO v0.9.1)
 └── nlp/
     ├── gemini.analyzer.ts      # Motor NLP activo (Gemini 2.5 Flash)
     └── claude.analyzer.ts      # Alternativa futura (API Anthropic — no activo)

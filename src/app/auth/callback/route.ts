@@ -35,16 +35,20 @@ export async function GET(request: NextRequest) {
         }).catch((err) => log.error('User upsert error', { error: err, userId: user.id }))
 
         // Enviar email de bienvenida si es la primera confirmación
+        let isNewUser = false
         if (user.email && user.email_confirmed_at) {
-          const isNewConfirmation =
-            new Date(user.email_confirmed_at).getTime() > Date.now() - 60_000
-          if (isNewConfirmation) {
+          isNewUser = new Date(user.email_confirmed_at).getTime() > Date.now() - 60_000
+          if (isNewUser) {
             sendWelcomeEmail({
               to: user.email,
               userName: user.user_metadata?.name,
             }).catch((err) => log.error('Welcome email error', { error: err, email: user.email }))
           }
         }
+
+        // Nuevos usuarios van al onboarding
+        const redirectPath = isNewUser ? '/onboarding' : next
+        return NextResponse.redirect(`${origin}${redirectPath}`)
       }
       return NextResponse.redirect(`${origin}${next}`)
     }

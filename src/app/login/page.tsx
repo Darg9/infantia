@@ -29,6 +29,16 @@ function LoginForm() {
       return
     }
 
+    // Verificar si el usuario necesita onboarding
+    const profileRes = await fetch('/api/profile/me')
+    if (profileRes.ok) {
+      const profile = await profileRes.json()
+      if (!profile.onboardingDone) {
+        router.push('/onboarding')
+        return
+      }
+    }
+
     router.push(redirectTo)
     router.refresh()
   }

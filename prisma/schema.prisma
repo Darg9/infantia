@@ -98,6 +98,7 @@ model User {
   cityId            String?
   neighborhood      String?  @db.VarChar(100)
   notificationPrefs Json     @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
+  onboardingDone    Boolean  @default(false)
   role              UserRole @default(PARENT)
   // Preparado para Escenario B (menores con cuenta propia) — sin lógica activa en MVP
   accountType       String   @default("adult") @db.VarChar(20) // 'adult' | 'minor'

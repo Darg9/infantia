@@ -84,10 +84,15 @@ const ALL_SOURCES: Source[] = [
   })),
 
   // ── web: Bogotá — otras instituciones ────────────────────────────────────
-  { name: 'Cinemateca de Bogotá',  channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',           cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Planetario de Bogotá',  channel: 'web', url: 'https://planetariodebogota.gov.co/programate',           cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Jardín Botánico (JBB)', channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/', cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Maloka',                channel: 'web', url: 'https://maloka.org/programacion/',                       cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Idartes',                            channel: 'web', url: 'https://idartes.gov.co/es/agenda',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Planetario de Bogotá',               channel: 'web', url: 'https://planetariodebogota.gov.co/programate',                     cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Jardín Botánico (JBB)',              channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
 
   // ── instagram ─────────────────────────────────────────────────────────────
   // Ejemplo (descomentar cuando esté listo el scraper de Instagram):

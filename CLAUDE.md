@@ -57,6 +57,35 @@ src/
 - `npm run test:watch` — Correr tests en modo watch
 - `npm run test:coverage` — Tests + reporte de cobertura con threshold dinámico
 
+## ⚠️ REGLA DE DOCUMENTACIÓN OBLIGATORIA
+
+Al cierre de cada sesión con cambios considerables, revisar y actualizar **todos** los documentos del proyecto — no solo los principales. Ejecutar primero:
+
+```bash
+find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
+```
+
+Los 12 documentos actuales del proyecto:
+
+| Doc | Qué actualizar |
+|-----|---------------|
+| `CHANGELOG.md` | Nueva sección con todos los cambios de la sesión |
+| `ARCHITECTURE.md` | Versión, estructura de dirs, modelo de datos, enums |
+| `TEST_STATUS.md` | Número de tests, archivos, cobertura real |
+| `README.md` | Versión, tests, features, comandos, estructura |
+| `TEST_PLAN.md` | Versión, tabla de cobertura actual |
+| `CLAUDE.md` | Tabla git tag ↔ Documento Fundacional |
+| `DEDUPLICATION-STRATEGY.md` | Versión, conteo de actividades, canales activos |
+| `docs/modules/README.md` | Versiones de cada módulo |
+| `docs/modules/activities.md` | Endpoints nuevos o modificados |
+| `docs/modules/scraping.md` | Nuevos flujos o extractores |
+| `.github/pull_request_template.md` | Si cambian convenciones |
+| `.agents/workflows/project-safety-check.md` | Si cambia la arquitectura de seguridad |
+
+**Nunca hacer el commit de release sin haber revisado los 12.**
+
+---
+
 ## ⚠️ REGLA DE TESTING OBLIGATORIA
 
 **Cada vez que modifiques o crees código en `src/modules/` o `src/lib/`:**

@@ -1,6 +1,6 @@
 import { ActivityNLPResult, BatchPipelineResult, InstagramPipelineResult } from './types';
 import { CheerioExtractor } from './extractors/cheerio.extractor';
-import { PlaywrightExtractor } from './extractors/playwright.extractor';
+import { PlaywrightExtractor, InstagramExtractOptions } from './extractors/playwright.extractor';
 import { GeminiAnalyzer } from './nlp/gemini.analyzer';
 import { ScrapingCache } from './cache';
 import { ScrapingStorage } from './storage';
@@ -256,10 +256,16 @@ export class ScrapingPipeline {
    * Scrape an Instagram profile: extract posts, analyze each with Gemini,
    * optionally save to DB. Posts are processed sequentially to avoid bans.
    */
-  async runInstagramPipeline(profileUrl: string, maxPosts: number = 12): Promise<InstagramPipelineResult> {
+  async runInstagramPipeline(
+    profileUrl: string,
+    options: InstagramExtractOptions | number = {},
+  ): Promise<InstagramPipelineResult> {
+    const opts: InstagramExtractOptions = typeof options === 'number' ? { maxPosts: options } : options;
+    const maxPosts = Math.min(Math.max(opts.maxPosts ?? 6, 1), 12);
+    const contentMode = opts.contentMode ?? 'text';
     log.info(`\n[IG-PIPELINE] ========== INICIO INSTAGRAM PIPELINE ==========`);
     log.info(`Perfil: ${profileUrl}`);
-    log.info(`Max posts: ${maxPosts}`);
+    log.info(`Max posts: ${maxPosts} | Content mode: ${contentMode}`);
     log.info(`Cache: ${this.cache.size} URLs ya scrapeadas`);
 
     // Logging: obtener o crear fuente y empezar log
@@ -296,7 +302,7 @@ export class ScrapingPipeline {
 
     // Phase 1: Extract profile and posts
     log.info(`Fase 1: Extrayendo perfil y posts con Playwright...`);
-    const profile = await this.playwrightExtractor.extractProfile(profileUrl, maxPosts);
+    const profile = await this.playwrightExtractor.extractProfile(profileUrl, { maxPosts, contentMode });
     log.info(`Perfil: @${profile.username} | Bio: ${profile.bio.substring(0, 80)}...`);
     log.info(`Posts extraidos: ${profile.posts.length}`);
 

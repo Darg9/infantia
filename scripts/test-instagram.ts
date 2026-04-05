@@ -1,6 +1,6 @@
 // test-instagram.ts
 // Uso: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"
-// Flags: --save-db, --max-posts=N (default 12)
+// Flags: --save-db, --max-posts=N (1-12, default 6), --content-mode=text|image|both (default text)
 
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
@@ -9,7 +9,9 @@ async function main() {
   const args = process.argv.slice(2);
   const saveToDb = args.includes('--save-db');
   const maxPostsArg = args.find((a) => a.startsWith('--max-posts='));
-  const maxPosts = maxPostsArg ? parseInt(maxPostsArg.split('=')[1], 10) : 12;
+  const maxPosts = maxPostsArg ? parseInt(maxPostsArg.split('=')[1], 10) : 6;
+  const contentModeArg = args.find((a) => a.startsWith('--content-mode='));
+  const contentMode = (contentModeArg?.split('=')[1] ?? 'text') as 'text' | 'image' | 'both';
   const url = args.find((a) => !a.startsWith('--'));
 
   if (!url || !url.includes('instagram.com')) {
@@ -27,8 +29,8 @@ async function main() {
   const startTime = Date.now();
 
   try {
-    console.log(`\nInstagram Pipeline — Perfil: ${url} (max ${maxPosts} posts)\n`);
-    const result = await pipeline.runInstagramPipeline(url, maxPosts);
+    console.log(`\nInstagram Pipeline — Perfil: ${url} (max ${maxPosts} posts, mode=${contentMode})\n`);
+    const result = await pipeline.runInstagramPipeline(url, { maxPosts, contentMode });
     const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
 
     console.log('\n================= RESULTADO INSTAGRAM =================\n');

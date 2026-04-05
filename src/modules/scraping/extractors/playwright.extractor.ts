@@ -15,6 +15,17 @@ const DESKTOP_VIEWPORT = { width: 1280, height: 800 };
 /** Path where Instagram session cookies are stored */
 const SESSION_FILE = resolve(process.cwd(), 'data', 'ig-session.json');
 
+/** Modo de extracción de contenido por post */
+export type ContentMode = 'text' | 'image' | 'both';
+
+/** Opciones de extracción por cuenta de Instagram */
+export interface InstagramExtractOptions {
+  /** Qué contenido extraer: solo texto (caption), solo imagen, o ambos. Default: 'text' */
+  contentMode?: ContentMode;
+  /** Número de posts a procesar (1–12). Default: 6 */
+  maxPosts?: number;
+}
+
 /**
  * Builds proxy config from env vars (optional).
  * Set PLAYWRIGHT_PROXY_SERVER, PLAYWRIGHT_PROXY_USER, PLAYWRIGHT_PROXY_PASS in .env
@@ -80,15 +91,27 @@ export class PlaywrightExtractor {
    * Extract profile data and posts from a public Instagram profile.
    * Navigates to the profile, extracts bio, then visits individual posts.
    */
-  async extractProfile(profileUrl: string, maxPosts: number = 12): Promise<InstagramProfileData> {
+  async extractProfile(
+    profileUrl: string,
+    options: InstagramExtractOptions | number = {},
+  ): Promise<InstagramProfileData> {
+    // Compatibilidad hacia atrás: acepta maxPosts como número
+    const opts: InstagramExtractOptions = typeof options === 'number'
+      ? { maxPosts: options }
+      : options;
+    const contentMode: ContentMode = opts.contentMode ?? 'text';
+    const maxPosts = Math.min(Math.max(opts.maxPosts ?? 6, 1), 12);
+
     await this.launch();
     const page = await this.context!.newPage();
 
     try {
-      // Bloquear imágenes, videos y fuentes — solo necesitamos texto y metadatos
-      await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
+      // Bloquear imágenes/videos cuando no se necesitan — reduce ~60% del ancho de banda
+      if (contentMode === 'text') {
+        await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
+      }
 
-      log.info(`Navegando a perfil: ${profileUrl}`);
+      log.info(`Navegando a perfil: ${profileUrl} (mode=${contentMode}, maxPosts=${maxPosts})`);
       await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       // Wait for Instagram SPA to render post grid
       await this.delay(4000, 6000);
@@ -115,7 +138,7 @@ export class PlaywrightExtractor {
       for (const postUrl of postUrls) {
         try {
           await this.delay(2000, 5000);
-          const post = await this.extractPost(page, postUrl);
+          const post = await this.extractPost(page, postUrl, contentMode);
           posts.push(post);
           log.info(`Post extraído: ${postUrl} (caption: ${post.caption.substring(0, 60)}...)`);
         } catch (error: any) {
@@ -138,9 +161,14 @@ export class PlaywrightExtractor {
   /**
    * Extract data from a single Instagram post page.
    */
-  async extractPost(pageOrUrl: Page | string, postUrl?: string): Promise<InstagramPost> {
+  async extractPost(
+    pageOrUrl: Page | string,
+    postUrlOrMode?: string | ContentMode,
+    contentMode: ContentMode = 'text',
+  ): Promise<InstagramPost> {
     let page: Page;
     let shouldClosePage = false;
+    let postUrl: string | undefined;
 
     if (typeof pageOrUrl === 'string') {
       // Called directly with a URL string
@@ -148,20 +176,33 @@ export class PlaywrightExtractor {
       page = await this.context!.newPage();
       shouldClosePage = true;
       postUrl = pageOrUrl;
+      if (typeof postUrlOrMode === 'string' && !postUrlOrMode.startsWith('http')) {
+        contentMode = postUrlOrMode as ContentMode;
+      }
     } else {
       page = pageOrUrl;
+      postUrl = typeof postUrlOrMode === 'string' ? postUrlOrMode : undefined;
     }
 
     try {
       const url = postUrl!;
-      // Bloquear imágenes, videos y fuentes — solo necesitamos caption y metadatos
-      await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
+      // Bloquear imágenes/videos en modo 'text' para reducir consumo de proxy
+      if (contentMode === 'text') {
+        await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
+      }
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await this.delay(1000, 3000);
       await this.dismissLoginPopup(page);
 
-      // Extract caption - try multiple selectors (Instagram changes these frequently)
-      const caption = await this.extractCaption(page);
+      // Extraer caption (texto) según contentMode
+      const caption = contentMode !== 'image'
+        ? await this.extractCaption(page)
+        : '';
+
+      // Extraer imágenes según contentMode
+      const imageUrls = contentMode !== 'text'
+        ? await this.extractImageUrls(page)
+        : [];
 
       // Extract timestamp
       const timestamp = await page
@@ -173,7 +214,7 @@ export class PlaywrightExtractor {
       return {
         url,
         caption,
-        imageUrls: [],
+        imageUrls,
         timestamp,
         likesCount: null,
       };

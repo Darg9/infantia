@@ -389,7 +389,7 @@ describe('ScrapingPipeline.runInstagramPipeline()', () => {
     expect(result.username).toBe('fcecolombia');
     expect(result.postsExtracted).toBe(2);
     expect(result.results).toHaveLength(2);
-    expect(mockExtractProfile).toHaveBeenCalledWith(profileUrl, 12);
+    expect(mockExtractProfile).toHaveBeenCalledWith(profileUrl, { maxPosts: 12, contentMode: 'text' });
     expect(mockAnalyzeInstagramPost).toHaveBeenCalledTimes(2);
     expect(mockCacheAdd).toHaveBeenCalledTimes(2);
     expect(mockCacheSave).toHaveBeenCalled();

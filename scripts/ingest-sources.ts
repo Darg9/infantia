@@ -53,6 +53,13 @@ interface Source {
   cityName?:        string;
   verticalSlug?:    string;
   sitemapPatterns?: string[];
+  /** Solo para channel='instagram': opciones de extracción por fuente */
+  instagram?: {
+    /** Qué contenido extraer: 'text' (solo caption), 'image' (solo imágenes), 'both'. Default: 'text' */
+    contentMode?: 'text' | 'image' | 'both';
+    /** Posts a procesar por corrida (1–12). Default: 6 */
+    maxPosts?: number;
+  };
 }
 
 // ── Ciudades Banrep ────────────────────────────────────────────────────────────
@@ -95,8 +102,13 @@ const ALL_SOURCES: Source[] = [
   { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
 
   // ── instagram ─────────────────────────────────────────────────────────────
-  // Ejemplo (descomentar cuando esté listo el scraper de Instagram):
-  // { name: 'BibloRed Instagram', channel: 'instagram', url: 'https://www.instagram.com/biblored/', cityName: 'Bogotá', verticalSlug: 'kids' },
+  // Opciones disponibles por fuente:
+  //   instagram.contentMode: 'text' (default, ~12MB/cuenta) | 'image' | 'both' (~35MB/cuenta)
+  //   instagram.maxPosts: 1–12 (default: 6)
+  //
+  // { name: 'BibloRed Instagram',  channel: 'instagram', url: 'https://www.instagram.com/biblored/',           cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  // { name: 'FCE Colombia',        channel: 'instagram', url: 'https://www.instagram.com/fcecolombia/',        cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'both', maxPosts: 8 } },
+  // { name: 'Hay pa hacer Bogotá', channel: 'instagram', url: 'https://www.instagram.com/quehaypahacerenbogota/', cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 12 } },
 
   // ── tiktok ────────────────────────────────────────────────────────────────
   // (pendiente)

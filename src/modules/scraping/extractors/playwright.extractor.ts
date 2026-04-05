@@ -85,6 +85,9 @@ export class PlaywrightExtractor {
     const page = await this.context!.newPage();
 
     try {
+      // Bloquear imágenes, videos y fuentes — solo necesitamos texto y metadatos
+      await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
+
       log.info(`Navegando a perfil: ${profileUrl}`);
       await page.goto(profileUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
       // Wait for Instagram SPA to render post grid
@@ -151,15 +154,14 @@ export class PlaywrightExtractor {
 
     try {
       const url = postUrl!;
+      // Bloquear imágenes, videos y fuentes — solo necesitamos caption y metadatos
+      await page.route('**/*.{png,jpg,jpeg,gif,webp,svg,mp4,mov,avi,woff,woff2,ttf,eot}', (route) => route.abort());
       await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
       await this.delay(1000, 3000);
       await this.dismissLoginPopup(page);
 
       // Extract caption - try multiple selectors (Instagram changes these frequently)
       const caption = await this.extractCaption(page);
-
-      // Extract image URLs
-      const imageUrls = await this.extractImageUrls(page);
 
       // Extract timestamp
       const timestamp = await page
@@ -168,15 +170,12 @@ export class PlaywrightExtractor {
         .getAttribute('datetime')
         .catch(() => null);
 
-      // Extract likes count from meta or aria-label
-      const likesCount = await this.extractLikesCount(page);
-
       return {
         url,
         caption,
-        imageUrls,
+        imageUrls: [],
         timestamp,
-        likesCount,
+        likesCount: null,
       };
     } finally {
       if (shouldClosePage) {

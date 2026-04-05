@@ -67,6 +67,7 @@ beforeEach(() => {
     close: mockClose.mockResolvedValue(undefined),
     locator: mockLocator,
     evaluate: mockEvaluate.mockResolvedValue(undefined),
+    route: vi.fn().mockResolvedValue(undefined),
   };
 
   mockNewPage.mockResolvedValue(mockPage);
@@ -536,7 +537,8 @@ describe('PlaywrightExtractor', () => {
       const extractor = new PlaywrightExtractor();
       const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
       if (result.posts.length > 0) {
-        expect(result.posts[0].imageUrls).toEqual(['https://instagram.com/full.jpg']);
+        // imageUrls siempre vacío — imágenes bloqueadas para reducir consumo de proxy
+        expect(result.posts[0].imageUrls).toEqual([]);
       }
       await extractor.close();
     });
@@ -728,8 +730,8 @@ describe('PlaywrightExtractor', () => {
       const extractor = new PlaywrightExtractor();
       const result = await extractor.extractProfile('https://www.instagram.com/test/', 1);
       if (result.posts.length > 0) {
-        // Solo full1.jpg debe aparecer (deduplicado, sin s150x150, sin null)
-        expect(result.posts[0].imageUrls).toEqual(['https://cdn.instagram.com/full1.jpg']);
+        // imageUrls siempre vacío — imágenes bloqueadas para reducir consumo de proxy
+        expect(result.posts[0].imageUrls).toEqual([]);
       }
       await extractor.close();
     });
@@ -1273,6 +1275,7 @@ describe('extractWebLinks — SPA/JS-rendered page', () => {
       locator: mockLocator,
       evaluate: mockEvaluate,
       content: vi.fn().mockResolvedValue('<html></html>'),
+      route: vi.fn().mockResolvedValue(undefined),
     };
     mockNewPage.mockResolvedValue(mockPage);
     mockNewContext.mockResolvedValue({
@@ -1347,6 +1350,7 @@ describe('extractWebText — SPA/JS-rendered page', () => {
       locator: mockLocator,
       evaluate: mockEvaluate,
       content: mockContent,
+      route: vi.fn().mockResolvedValue(undefined),
     };
     mockNewPage.mockResolvedValue(mockPage);
     mockNewContext.mockResolvedValue({

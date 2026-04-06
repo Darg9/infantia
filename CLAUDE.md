@@ -61,33 +61,25 @@ src/
 
 **Antes de cada despliegue (commit de release, tag, o push a producción), revisar y actualizar el acervo documental completo — no solo los documentos principales.**
 
-Esto incluye:
-1. Los **12 documentos del repositorio** (ver tabla abajo)
-2. El **Documento Fundacional** (.docx en `Infantia_Claude/`) — generar nueva versión si aplica
-3. **Cualquier manual adicional** que exista en `Infantia_Claude/` o en el repo
-
-Ejecutar primero para ver el inventario completo:
+El número de documentos crece con el proyecto. El inventario real siempre se obtiene ejecutando:
 
 ```bash
 find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
 ```
 
-### Documentos del repositorio (12 actuales)
+**Revisar TODOS los que aparezcan** — no una lista fija. Si el proyecto crece a 20 o 30 documentos, se revisan los 20 o 30.
 
-| Doc | Qué actualizar |
-|-----|---------------|
-| `CHANGELOG.md` | Nueva sección con todos los cambios de la sesión |
-| `ARCHITECTURE.md` | Versión, estructura de dirs, modelo de datos, enums |
-| `TEST_STATUS.md` | Número de tests, archivos, cobertura real |
-| `README.md` | Versión, tests, features, comandos, estructura |
-| `TEST_PLAN.md` | Versión, tabla de cobertura actual |
-| `CLAUDE.md` | Tabla git tag ↔ Documento Fundacional |
-| `DEDUPLICATION-STRATEGY.md` | Versión, conteo de actividades, canales activos |
-| `docs/modules/README.md` | Versiones de cada módulo |
-| `docs/modules/activities.md` | Endpoints nuevos o modificados |
-| `docs/modules/scraping.md` | Nuevos flujos o extractores |
-| `.github/pull_request_template.md` | Si cambian convenciones |
-| `.agents/workflows/project-safety-check.md` | Si cambia la arquitectura de seguridad |
+### Qué revisar por tipo de documento
+
+| Tipo | Ejemplos | Qué actualizar |
+|------|----------|---------------|
+| Changelog | `CHANGELOG.md` | Nueva sección con los cambios de la sesión |
+| Estado técnico | `ARCHITECTURE.md`, `TEST_STATUS.md`, `TEST_PLAN.md` | Versión, métricas, estructura |
+| Guías operativas | `README.md`, `CLAUDE.md` | Versión, comandos, convenciones |
+| Estrategias | `DEDUPLICATION-STRATEGY.md` | Estado actual, decisiones nuevas |
+| Módulos | `docs/modules/*.md` | Flujos, endpoints, scripts del módulo |
+| Plantillas y flujos | `.github/pull_request_template.md`, `.agents/workflows/*.md` | Si cambian convenciones o arquitectura de seguridad |
+| **Manuales nuevos** | Cualquier `.md` que se agregue | Al ser creado y cuando su tema cambie |
 
 ### Acervo externo (Infantia_Claude/)
 
@@ -96,7 +88,7 @@ find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
 | `Infantia_Documento_Fundacional_V0X.docx` | Siempre que haya cambio de producto, arquitectura, stack o estrategia — generar nueva versión (no sobreescribir) |
 | Manuales adicionales (si existen) | Cuando el tema que cubren cambie |
 
-**Nunca desplegar sin haber revisado el acervo completo. Un documento desactualizado es deuda técnica documental.**
+**Nunca desplegar sin haber revisado el acervo completo. El número exacto de documentos es lo que diga `find` — no un número fijo.**
 
 ---
 

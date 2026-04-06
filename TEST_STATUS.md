@@ -1,6 +1,6 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-04-06 | Version: v0.9.2
+Actualizado: 2026-04-06 | Version: v0.9.3
 
 ## Resumen
 
@@ -189,6 +189,12 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.0** | **783** | **51** | **91.76%** | **86.98%** |
 | **v0.9.1** | **792** | **52** | **91.73%** | **86.70%** |
 | **v0.9.2** | **795** | **53** | **90.66%** | **85.18%** |
+| **v0.9.3** | **795** | **53** | **90.66%** | **85.18%** |
+
+## Cambios respecto a v0.9.2
+
+- Sin cambios en tests — mismos 795/53 archivos
+- npm audit fix: Vite vuln (high) → 0 vulnerabilidades
 
 ## Cambios respecto a v0.9.1
 

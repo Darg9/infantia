@@ -1,6 +1,6 @@
 {
   "name": "infantia",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "private": true,
   "scripts": {
     "dev": "next dev",

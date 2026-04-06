@@ -1,6 +1,6 @@
 # Infantia — Plan de Pruebas
 
-**Version:** v0.9.2 | **Fecha:** 2026-04-06
+**Version:** v0.9.3 | **Fecha:** 2026-04-06
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 

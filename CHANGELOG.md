@@ -13,6 +13,37 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.3] — 2026-04-06 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
+**Documento Fundacional: V21** | Rama: master
+
+### Features
+
+#### Instagram ingest — 7 cuentas corridas (S30 continuación)
+- **@teatropetra:** 5/6 guardadas (confianza 0.75–0.9) — obras con fechas concretas ✅
+- **@bogotaplan:** 2/6 — mucho lifestyle, pocas actividades concretas
+- **@plansitosbogota:** 5/6 (confianza 0.6–0.9) — planes gratis, teatro, danza ✅
+- **@bogotateatralycircense:** 2/2 (confianza 0.9) — teatro Idartes, FIAV ✅
+- **@quehaypahacerenbogota:** 1/6 — captions en reels sin texto suficiente
+- **@parchexbogota:** 2/6 — feria plantas y hongos detectada ✅
+- **@planesenbogotaa:** **6/6** ⭐ (confianza 0.7–0.9) — mejor fuente del día
+- **@distritojovenbta:** 0/6 — cuota agotada durante análisis
+- **Total nuevas actividades:** ~23 actividades de Instagram guardadas en BD
+- **Pendientes:** @distritojovenbta, @festiencuentro, @centrodeljapon
+
+#### Nueva API key Gemini (S30)
+- Cambio de cuenta Google AI Studio → nueva key con cuota fresca
+- Variable `GOOGLE_AI_STUDIO_KEY` agregada en Vercel Dashboard (faltaba)
+- `.env` local actualizado con nueva key
+
+### Fixes
+- **npm audit:** Vite Arbitrary File Read (GHSA-p9ff-h696-f583, high) → `npm audit fix` → 0 vulnerabilidades
+
+### Pendientes identificados
+- Bug menor: Gemini devuelve `null` en `title` o array vacío en `categories` → falla validación Zod (no bloquea guardado, solo descarta el post)
+- @distritojovenbta, @festiencuentro, @centrodeljapon pendientes (cuota agotada)
+
+---
+
 ## [v0.9.2] — 2026-04-06 (Instagram multi-fuente, validación sin Gemini, cobertura tests)
 **Documento Fundacional: V21** | Rama: master
 

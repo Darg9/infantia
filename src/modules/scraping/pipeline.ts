@@ -99,6 +99,9 @@ export class ScrapingPipeline {
       }
     }
 
+    // Sincronizar cache desde BD antes de filtrar (evita re-scrapear en otra máquina)
+    await this.cache.syncFromDb(new URL(listingUrl).hostname.replace('www.', ''));
+
     // Fase 1: Extraer links de TODAS las páginas del listado
     log.info(`Fase 1: Extrayendo links (con paginación automática)...`);
 
@@ -208,6 +211,7 @@ export class ScrapingPipeline {
 
     // Persistir cache al disco
     this.cache.save();
+    await this.cache.saveToDb();
     log.info(`Cache actualizado: ${this.cache.size} URLs totales`);
 
     const successful = results.filter((r) => r.data !== null).length;
@@ -300,6 +304,10 @@ export class ScrapingPipeline {
       this.playwrightExtractor = new PlaywrightExtractor();
     }
 
+    // Sincronizar cache desde BD antes de filtrar posts ya vistos
+    const username = profileUrl.replace(/\/$/, '').split('/').pop() ?? 'unknown';
+    await this.cache.syncFromDb(`@${username}`);
+
     // Phase 1: Extract profile and posts
     log.info(`Fase 1: Extrayendo perfil y posts con Playwright...`);
     const profile = await this.playwrightExtractor.extractProfile(profileUrl, { maxPosts, contentMode });
@@ -350,6 +358,7 @@ export class ScrapingPipeline {
 
     // Persist cache
     this.cache.save();
+    await this.cache.saveToDb();
     log.info(`Cache actualizado: ${this.cache.size} URLs totales`);
 
     // Phase 4: Save to DB if enabled

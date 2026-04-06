@@ -77,6 +77,8 @@ vi.mock('../cache', () => ({
     this.filterNew = mockFilterNew;
     this.add = mockCacheAdd;
     this.save = mockCacheSave;
+    this.syncFromDb = vi.fn().mockResolvedValue(undefined);
+    this.saveToDb = vi.fn().mockResolvedValue(undefined);
   }),
 }));
 

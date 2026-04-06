@@ -334,6 +334,17 @@ model ScrapingLog {
   @@map("scraping_logs")
 }
 
+model ScrapingCache {
+  url        String   @id
+  title      String   @db.VarChar(500)
+  source     String   @db.VarChar(100)  // nombre de la fuente o 'unknown'
+  scrapedAt  DateTime @default(now())
+
+  @@index([source])
+  @@index([scrapedAt])
+  @@map("scraping_cache")
+}
+
 // =============================================================================
 // Enums
 // =============================================================================

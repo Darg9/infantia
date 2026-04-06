@@ -2,6 +2,7 @@
 // Uso: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"
 // Flags: --save-db, --max-posts=N (1-12, default 6), --content-mode=text|image|both (default text)
 //        --validate-only  Solo extrae con Playwright (sin Gemini, sin cuota consumida)
+//        --count-new      Cuenta posts no vistos vs cache en BD (sin Gemini)
 
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
@@ -11,6 +12,7 @@ async function main() {
   const args = process.argv.slice(2);
   const saveToDb = args.includes('--save-db');
   const validateOnly = args.includes('--validate-only');
+  const countNew = args.includes('--count-new');
   const maxPostsArg = args.find((a) => a.startsWith('--max-posts='));
   const maxPosts = maxPostsArg ? parseInt(maxPostsArg.split('=')[1], 10) : 6;
   const contentModeArg = args.find((a) => a.startsWith('--content-mode='));
@@ -23,6 +25,38 @@ async function main() {
     console.log('Ejemplo: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"');
     console.log('Flags: --save-db, --max-posts=N, --validate-only');
     process.exit(1);
+  }
+
+  // ── Modo count-new: solo cuenta posts nuevos sin Gemini ───────────────────
+  if (countNew) {
+    const extractor = new PlaywrightExtractor();
+    const { ScrapingCache } = await import('../src/modules/scraping/cache');
+    const username = url.replace(/\/$/, '').split('/').pop() ?? 'unknown';
+    const cache = new ScrapingCache(`@${username}`);
+    const startTime = Date.now();
+    try {
+      console.log(`\n🔢 COUNT-NEW — @${username} (max ${maxPosts} posts)\n`);
+      await cache.syncFromDb(`@${username}`);
+      const profile = await extractor.extractProfile(url, { maxPosts, contentMode });
+      const newPosts = profile.posts.filter((p) => !cache.has(p.url));
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+      console.log('══════════════════════════════════════════════════════');
+      console.log(`   @${profile.username}`);
+      console.log(`   Posts extraídos: ${profile.posts.length}`);
+      console.log(`   Ya procesados:   ${profile.posts.length - newPosts.length}`);
+      console.log(`   ✨ NUEVOS:        ${newPosts.length}`);
+      if (newPosts.length > 0) {
+        console.log('\n   URLs nuevas:');
+        for (const p of newPosts) {
+          console.log(`     ${p.url}`);
+        }
+      }
+      console.log('══════════════════════════════════════════════════════');
+      console.log(`Tiempo: ${elapsed}s — Gemini NO consumido ✅`);
+    } finally {
+      await extractor.close();
+    }
+    return;
   }
 
   // ── Modo validación: solo Playwright, sin Gemini ───────────────────────────

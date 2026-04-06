@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.9.1 | Actualizado: 2026-04-05
+> Versión: v0.9.2 | Actualizado: 2026-04-06
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -138,7 +138,7 @@ infantia/
 │   │                               #   --save-db | --queue | --dry-run | --max-pages=N
 │   ├── run-worker.ts               # Worker BullMQ (procesa jobs de scraping)
 │   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
-│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts)
+│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts, --validate-only) (NUEVO v0.9.2)
 │   ├── ig-login.ts                 # Login manual Instagram → genera ig-session.json
 │   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0 (NUEVO v0.8.1)
 │   ├── backfill-images.ts          # Extrae og:image de sourceUrl para actividades sin imagen

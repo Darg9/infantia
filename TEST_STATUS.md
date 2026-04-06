@@ -1,28 +1,28 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-04-05 | Version: v0.9.1
+Actualizado: 2026-04-06 | Version: v0.9.2
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 52 |
-| Tests totales | 792 |
-| Pasados | 792 |
+| Archivos de test | 53 |
+| Tests totales | 795 |
+| Pasados | 795 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
-| Statements | 91.73% ✅ |
-| Branches | 86.70% ✅ |
-| Functions | 89.47% ✅ |
-| Lines | 92.90% ✅ |
+| Statements | 90.66% ✅ |
+| Branches | 85.18% ✅ |
+| Functions | 86.52% ✅ |
+| Lines | 92.20% ✅ |
 
 ## Estado: PASSED ✅
 
 > Todos los módulos lib/*, lib/supabase/*, activities/*, scraping/queue/* y api/admin/* tienen cobertura alta.
-> Los gaps (~13% branches) son: ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` en contexto
+> Los gaps (~15% branches) son: ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` en contexto
 > browser (inaccesibles en unit tests), y ramas de Sentry dynamic import que no se pueden mockear limpiamente.
 
-## Archivos de test (51 total)
+## Archivos de test (53 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -38,6 +38,7 @@ Actualizado: 2026-04-05 | Version: v0.9.1
 | venue-dictionary.test.ts | 26 | OK |
 | geocoding.test.ts | 19 | OK ← NUEVO v0.9.0 (venue dict, Nominatim, fallbacks, rate limit) |
 | push.test.ts | 16 | OK ← NUEVO v0.9.0 (sendPushNotification, sendPushToMany, 410/404/500) |
+| ratings.test.ts | 3 | OK ← NUEVO v0.9.2 (recalcProviderRating, null avg, error propagation) |
 
 ### lib/supabase/__tests__/
 | Archivo | Tests | Estado |
@@ -116,7 +117,7 @@ Actualizado: 2026-04-05 | Version: v0.9.1
 |---------|-------|--------|
 | useActivityHistory.test.ts | — | OK |
 
-## Cobertura por módulo clave (v0.9.1)
+## Cobertura por módulo clave (v0.9.2)
 
 | Archivo | Stmts | Branch | Funcs | Lines |
 |---------|-------|--------|-------|-------|
@@ -150,8 +151,9 @@ Actualizado: 2026-04-05 | Version: v0.9.1
 | activities/service.ts | 100% | 100% | 100% | 100% |
 | lib/geocoding.ts | 95% | 87% | 95% | 95% |
 | lib/push.ts | 94% | 84% | 94% | 94% |
-| lib/logger.ts | ~85% | ~72% | ~85% | ~85% |
-| **TOTAL** | **91.76%** | **86.98%** | **89.73%** | **93.08%** |
+| lib/ratings.ts | 100% | 100% | 100% | 100% |
+| lib/logger.ts | ~73% | ~80% | ~46% | ~73% |
+| **TOTAL** | **90.66%** | **85.18%** | **86.52%** | **92.20%** |
 
 ## Gaps de cobertura conocidos (aceptados)
 
@@ -185,13 +187,13 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | v0.8.1 | 721 | 47 | ~97% | ~93% |
 | v0.8.1+ | 748 | 49 | ~97% | ~93% |
 | **v0.9.0** | **783** | **51** | **91.76%** | **86.98%** |
+| **v0.9.1** | **792** | **52** | **91.73%** | **86.70%** |
+| **v0.9.2** | **795** | **53** | **90.66%** | **85.18%** |
 
-## Cambios respecto a v0.8.1+
+## Cambios respecto a v0.9.1
 
-- **+35 tests** (748 → 783)
-- **+2 archivos de test** (49 → 51):
-  - `lib/__tests__/geocoding.test.ts` (19 tests) — venue dict, Nominatim, rate limit, fallbacks, HTTP errors
-  - `lib/__tests__/push.test.ts` (16 tests) — sendPushNotification (410/404/500/400), sendPushToMany (mixed expiry)
-- `geocoding.ts`: cobertura 8% → 95%
-- `push.ts`: cobertura 0% → 94%
-- Nota: la cobertura global bajó de ~97% a 91.76% porque se agregaron nuevos archivos (logger.ts, middleware.ts, sentry configs) que son parcialmente testeables — el threshold de 85% sigue superado ampliamente
+- **+3 tests** (792 → 795)
+- **+1 archivo de test** (52 → 53):
+  - `lib/__tests__/ratings.test.ts` (3 tests) — recalcProviderRating, null avg, propagación errores
+- `lib/ratings.ts`: cobertura 0% → 100%
+- Branches: 84.91% → 85.18% ✅ (recovery del umbral por ratings.ts sin cobertura)

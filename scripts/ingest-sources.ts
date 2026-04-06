@@ -106,9 +106,31 @@ const ALL_SOURCES: Source[] = [
   //   instagram.contentMode: 'text' (default, ~12MB/cuenta) | 'image' | 'both' (~35MB/cuenta)
   //   instagram.maxPosts: 1–12 (default: 6)
   //
-  // { name: 'BibloRed Instagram',  channel: 'instagram', url: 'https://www.instagram.com/biblored/',           cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
-  // { name: 'FCE Colombia',        channel: 'instagram', url: 'https://www.instagram.com/fcecolombia/',        cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'both', maxPosts: 8 } },
-  // { name: 'Hay pa hacer Bogotá', channel: 'instagram', url: 'https://www.instagram.com/quehaypahacerenbogota/', cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 12 } },
+  // Institucionales / culturales
+  // { name: 'BibloRed Instagram',      channel: 'instagram', url: 'https://www.instagram.com/biblored/',               cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  // { name: 'FCE Colombia',            channel: 'instagram', url: 'https://www.instagram.com/fcecolombia/',             cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'both', maxPosts: 8 } },
+
+  // Agenda / planes Bogotá
+  { name: 'Hay pa hacer Bogotá',     channel: 'instagram', url: 'https://www.instagram.com/quehaypahacerenbogota/',   cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 12 } },
+  { name: 'Plansitos Bogotá',        channel: 'instagram', url: 'https://www.instagram.com/plansitosbogota/',         cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  { name: 'Parchex Bogotá',          channel: 'instagram', url: 'https://www.instagram.com/parchexbogota/',           cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  { name: 'Bogotá Plan',             channel: 'instagram', url: 'https://www.instagram.com/bogotaplan/',              cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  { name: 'Planes en Bogotá',        channel: 'instagram', url: 'https://www.instagram.com/planesenbogotaa/',         cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+
+  // Teatro / cultura / circense
+  { name: 'Bogotá Teatral y Circense', channel: 'instagram', url: 'https://www.instagram.com/bogotateatralycircense/', cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  { name: 'Festi Encuentro',         channel: 'instagram', url: 'https://www.instagram.com/festiencuentro/',          cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  { name: 'Teatro Petra',            channel: 'instagram', url: 'https://www.instagram.com/teatropetra/',             cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+
+  // Gobierno / jóvenes
+  { name: 'Distrito Joven BTA',      channel: 'instagram', url: 'https://www.instagram.com/distritojovenbta/',       cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+
+  // Cultura internacional
+  { name: 'Centro del Japón',        channel: 'instagram', url: 'https://www.instagram.com/centrodeljapon/',         cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+
+  // Espacio / barrio Chapinero (pendiente — posts extraídos son de @distrito_ch, revisar)
+  // { name: 'El Bazar de Chapi',       channel: 'instagram', url: 'https://www.instagram.com/elbazardechapi/',         cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  // { name: 'Distrito CH',             channel: 'instagram', url: 'https://www.instagram.com/distrito_ch/',            cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
 
   // ── tiktok ────────────────────────────────────────────────────────────────
   // (pendiente)

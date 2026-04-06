@@ -7,10 +7,10 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.9.1 — 2026-04-05):**
+**Estado Actual (v0.9.2 — 2026-04-06):**
 - ~275 actividades únicas (0% duplicados exactos)
 - Protección automática integrada en `ScrapingStorage`
-- 14+ fuentes activas — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
+- 14 web + 10 Instagram + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
 
 ---
 

@@ -13,6 +13,44 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.2] — 2026-04-06 (Instagram multi-fuente, validación sin Gemini, cobertura tests)
+**Documento Fundacional: V21** | Rama: master
+
+### Features
+
+#### Instagram — catálogo ampliado a 10 fuentes activas (S30)
+- **10 cuentas de Instagram descomentadas y activas** en `scripts/ingest-sources.ts`:
+  - Agenda/planes: @quehaypahacerenbogota, @plansitosbogota, @parchexbogota, @bogotaplan, @planesenbogotaa
+  - Teatro/cultura: @bogotateatralycircense, @festiencuentro, @teatropetra
+  - Gobierno jóvenes: @distritojovenbta
+  - Cultura internacional: @centrodeljapon
+- **2 cuentas comentadas pendientes revisión:** @elbazardechapi y @distrito_ch (posts cruzados detectados)
+- **BibloRed y FCE Colombia:** se mantienen comentadas (ya tienen fuente web activa, evitar duplicados)
+
+#### Flag `--validate-only` en test-instagram.ts (S30)
+- Nuevo modo que corre solo Playwright sin llamar a Gemini — **0 cuota consumida**
+- Muestra: username, bio, preview de captions, URLs de posts, conteo de imágenes
+- Ideal para validar accesibilidad de nuevas cuentas antes de ingesta real
+- Uso: `npx tsx scripts/test-instagram.ts "https://www.instagram.com/cuenta/" --validate-only`
+- Todas las 11 cuentas nuevas validadas sin bloqueo de IP ✅
+
+#### Test de cobertura — ratings.ts (S30)
+- **`src/lib/__tests__/ratings.test.ts`:** 3 tests para `recalcProviderRating()`
+  - Caso normal: ratingAvg + ratingCount actualizados correctamente
+  - Caso sin ratings: ratingAvg=null, ratingCount=0
+  - Propagación de errores de Prisma
+- `lib/ratings.ts`: cobertura 0% → 100%
+- Branches total: 84.91% → **85.18%** ✅ (supera umbral de 85%)
+
+### Fixes
+- **Coverage branches:** cayó a 84.91% por `lib/ratings.ts` sin test → corregido con 3 tests nuevos
+- **Corrección runner de tests:** proyecto usa Vitest, no Jest
+
+### Docs
+- Todos los 12 documentos del proyecto actualizados a v0.9.2
+
+---
+
 ## [v0.9.1] — 2026-04-05 (Telegram operativo, Claim flow, Onboarding, Ratings)
 **Documento Fundacional: V21** | Commits: 3896e26 → HEAD
 

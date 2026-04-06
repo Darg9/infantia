@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.9.1
-**Última actualización:** 2026-04-05
+**Versión actual:** v0.9.2
+**Última actualización:** 2026-04-06
 
 ## ¿Qué hace?
 
@@ -44,8 +44,7 @@ Canal público (@handle)
    → ScrapingStorage.saveActivity() con deduplicación
 ```
 
-**Estado (S28):** código listo. Pendiente autenticación por bloqueo ISP Colombia a servidores Telegram.
-Autenticación: `npx tsx scripts/telegram-auth.ts` (interactivo — requiere VPN o ISP que no bloquee Telegram)
+**Estado (S29):** autenticación exitosa. `TELEGRAM_SESSION` guardado en .env y Vercel. dry-run detectó 3 actividades en @quehaypahacer. Pendiente correr sin --dry-run.
 
 ### Cola asíncrona (BullMQ + Upstash Redis)
 
@@ -118,7 +117,9 @@ El pipeline integra geocoding automático en cada actividad guardada:
 - Filtra URLs por patrones (ej: `/bogota/` para Banrep Bogotá)
 - Sin Playwright, sin bot-detection
 
-## Fuentes activas (14 web + canal Telegram pendiente)
+## Fuentes activas (14 web + 10 Instagram + canal Telegram pendiente)
+
+### Web (14 fuentes)
 
 | Fuente | Ciudad | Tipo |
 |--------|--------|------|
@@ -128,17 +129,37 @@ El pipeline integra geocoding automático en cada actividad guardada:
 | Cultura, Rec. y Deporte | Bogotá | Sitemap XML |
 | Planetario | Bogotá | Sitemap XML — 25 actividades |
 | Cinemateca | Bogotá | Sitemap XML |
-| Jardín Botánico (JBB) | Bogotá | Sitemap XML — 4 actividades |
+| Jardín Botánico (JBB) | Bogotá | Sitemap XML |
 | Maloka | Bogotá | Sitemap XML |
-| Banrep | Bogotá | Sitemap filtrado /bogota/ |
-| Banrep | Medellín | Sitemap filtrado /medellin/ |
-| Banrep | Cali | Sitemap filtrado /cali/ |
-| Banrep | Barranquilla | Sitemap filtrado /barranquilla/ |
-| Banrep | Cartagena | Sitemap filtrado /cartagena/ |
-| Banrep | Bucaramanga/Manizales/Pereira/Ibagué/Santa Marta | Sitemap por ciudad |
-| @bogotaenplanes (Telegram) | Bogotá | MTProto — pendiente auth ISP |
-| @quehacerenbogota (Telegram) | Bogotá | MTProto — pendiente auth ISP |
-| @agendabogota (Telegram) | Bogotá | MTProto — pendiente auth ISP |
+| Banrep Bogotá | Bogotá | Sitemap filtrado /bogota/ |
+| Banrep Medellín | Medellín | Sitemap filtrado /medellin/ |
+| Banrep Cali | Cali | Sitemap filtrado /cali/ |
+| Banrep Barranquilla | Barranquilla | Sitemap filtrado /barranquilla/ |
+| Banrep Cartagena | Cartagena | Sitemap filtrado /cartagena/ |
+| Banrep (Buca/Mani/Pereira/Ibagué/Santa Marta) | Multi | Sitemap por ciudad |
+
+### Instagram (10 fuentes activas — NUEVO v0.9.2)
+
+| Cuenta | Seguidores | Tipo de contenido |
+|--------|-----------|-------------------|
+| @quehaypahacerenbogota | 53K | Agenda cultural Bogotá |
+| @plansitosbogota | 22K | Planes gratis Bogotá |
+| @parchexbogota | 214K | Ferias, eventos, planes |
+| @bogotaplan | 299K | Cultura en Bogotá |
+| @planesenbogotaa | 60K | Planes en Bogotá |
+| @bogotateatralycircense | 17K | Teatro y circo — Idartes |
+| @festiencuentro | 1.6K | Festival de títeres |
+| @teatropetra | 87K | Teatro — programación activa |
+| @distritojovenbta | 24K | Agenda juventudes Bogotá |
+| @centrodeljapon | 7K | Cultura japonesa — talleres |
+
+Configuración por fuente: `instagram.contentMode` (text/image/both) + `instagram.maxPosts` (1–12).
+Validación sin cuota: `npx tsx scripts/test-instagram.ts <URL> --validate-only`
+
+### Telegram (pendiente)
+| Canal | Ciudad | Estado |
+|-------|--------|--------|
+| @quehaypahacer | Bogotá | MTProto operativo — pendiente correr sin --dry-run |
 
 ## Comandos
 

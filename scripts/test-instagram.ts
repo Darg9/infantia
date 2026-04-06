@@ -1,13 +1,16 @@
 // test-instagram.ts
 // Uso: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"
 // Flags: --save-db, --max-posts=N (1-12, default 6), --content-mode=text|image|both (default text)
+//        --validate-only  Solo extrae con Playwright (sin Gemini, sin cuota consumida)
 
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
+import { PlaywrightExtractor } from '../src/modules/scraping/extractors/playwright.extractor';
 
 async function main() {
   const args = process.argv.slice(2);
   const saveToDb = args.includes('--save-db');
+  const validateOnly = args.includes('--validate-only');
   const maxPostsArg = args.find((a) => a.startsWith('--max-posts='));
   const maxPosts = maxPostsArg ? parseInt(maxPostsArg.split('=')[1], 10) : 6;
   const contentModeArg = args.find((a) => a.startsWith('--content-mode='));
@@ -18,8 +21,48 @@ async function main() {
     console.error('Error: Debes proveer una URL de perfil de Instagram.');
     console.log('Uso: npx tsx scripts/test-instagram.ts <PROFILE_URL>');
     console.log('Ejemplo: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"');
-    console.log('Flags: --save-db, --max-posts=N');
+    console.log('Flags: --save-db, --max-posts=N, --validate-only');
     process.exit(1);
+  }
+
+  // ── Modo validación: solo Playwright, sin Gemini ───────────────────────────
+  if (validateOnly) {
+    const extractor = new PlaywrightExtractor();
+    const startTime = Date.now();
+    try {
+      console.log(`\n🔍 VALIDACIÓN (sin Gemini) — @${url.replace(/\/$/, '').split('/').pop()}`);
+      console.log(`   Max posts: ${maxPosts} | Mode: ${contentMode}\n`);
+
+      const profile = await extractor.extractProfile(url, { maxPosts, contentMode });
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
+      console.log('══════════════════════════════════════════════════════');
+      console.log(`✅ Cuenta accesible`);
+      console.log(`   @${profile.username}`);
+      console.log(`   Bio: ${profile.bio.substring(0, 120)}${profile.bio.length > 120 ? '…' : ''}`);
+      console.log(`   Posts extraídos: ${profile.posts.length}/${maxPosts} solicitados\n`);
+
+      if (profile.posts.length === 0) {
+        console.log('⚠️  Sin posts — puede estar bloqueada o privada.');
+      } else {
+        console.log('── Captions extraídas ────────────────────────────────\n');
+        for (let i = 0; i < profile.posts.length; i++) {
+          const p = profile.posts[i];
+          const preview = p.caption
+            ? p.caption.substring(0, 120).replace(/\n/g, ' ') + (p.caption.length > 120 ? '…' : '')
+            : '(sin caption)';
+          console.log(`  ${i + 1}. ${preview}`);
+          if (p.imageUrls?.length) console.log(`     📷 ${p.imageUrls.length} imagen(es)`);
+          console.log(`     🔗 ${p.url}`);
+          console.log();
+        }
+      }
+      console.log('══════════════════════════════════════════════════════');
+      console.log(`Tiempo: ${elapsed}s — Gemini NO consumido ✅`);
+    } finally {
+      await extractor.close();
+    }
+    return;
   }
 
   const pipeline = new ScrapingPipeline({ saveToDb });

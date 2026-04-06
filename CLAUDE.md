@@ -57,15 +57,22 @@ src/
 - `npm run test:watch` — Correr tests en modo watch
 - `npm run test:coverage` — Tests + reporte de cobertura con threshold dinámico
 
-## ⚠️ REGLA DE DOCUMENTACIÓN OBLIGATORIA
+## ⚠️ REGLA DE DOCUMENTACIÓN OBLIGATORIA — ACERVO COMPLETO
 
-Al cierre de cada sesión con cambios considerables, revisar y actualizar **todos** los documentos del proyecto — no solo los principales. Ejecutar primero:
+**Antes de cada despliegue (commit de release, tag, o push a producción), revisar y actualizar el acervo documental completo — no solo los documentos principales.**
+
+Esto incluye:
+1. Los **12 documentos del repositorio** (ver tabla abajo)
+2. El **Documento Fundacional** (.docx en `Infantia_Claude/`) — generar nueva versión si aplica
+3. **Cualquier manual adicional** que exista en `Infantia_Claude/` o en el repo
+
+Ejecutar primero para ver el inventario completo:
 
 ```bash
 find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
 ```
 
-Los 12 documentos actuales del proyecto:
+### Documentos del repositorio (12 actuales)
 
 | Doc | Qué actualizar |
 |-----|---------------|
@@ -82,7 +89,14 @@ Los 12 documentos actuales del proyecto:
 | `.github/pull_request_template.md` | Si cambian convenciones |
 | `.agents/workflows/project-safety-check.md` | Si cambia la arquitectura de seguridad |
 
-**Nunca hacer el commit de release sin haber revisado los 12.**
+### Acervo externo (Infantia_Claude/)
+
+| Documento | Cuándo actualizar |
+|-----------|------------------|
+| `Infantia_Documento_Fundacional_V0X.docx` | Siempre que haya cambio de producto, arquitectura, stack o estrategia — generar nueva versión (no sobreescribir) |
+| Manuales adicionales (si existen) | Cuando el tema que cubren cambie |
+
+**Nunca desplegar sin haber revisado el acervo completo. Un documento desactualizado es deuda técnica documental.**
 
 ---
 

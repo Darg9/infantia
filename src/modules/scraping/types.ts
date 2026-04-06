@@ -19,9 +19,12 @@ export interface Extractor {
 const coerceString = z.string().nullable().optional().transform((v) => v ?? undefined);
 
 export const activityNLPResultSchema = z.object({
-  title: z.string().min(1),
+  // Gemini puede devolver null o string vacío en title — normalizamos a 'Sin título'
+  title: z.union([z.string(), z.null()]).transform((v) => (v && v.trim()) ? v.trim() : 'Sin título'),
   description: z.string().nullable().default(''),
-  categories: z.array(z.string()).min(1),
+  // Gemini puede devolver null o [] en categories — normalizamos a ['General']
+  categories: z.union([z.array(z.string()), z.null()])
+    .transform((v) => (v && v.length > 0) ? v : ['General']),
   minAge: z.number().int().min(0).max(120).nullable().optional(),
   maxAge: z.number().int().min(0).max(120).nullable().optional(),
   price: z.number().min(0).nullable().optional(),

@@ -19,19 +19,33 @@ describe('activityNLPResultSchema', () => {
     expect(result.success).toBe(true);
   });
 
-  it('falla si falta el título', () => {
+  it('falla si falta el título (undefined)', () => {
     const { title, ...sinTitulo } = actividadValida;
     expect(activityNLPResultSchema.safeParse(sinTitulo).success).toBe(false);
   });
 
-  it('falla si el título está vacío', () => {
+  it('normaliza title vacío a "Sin título" (tolerancia Gemini)', () => {
     const result = activityNLPResultSchema.safeParse({ ...actividadValida, title: '' });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.title).toBe('Sin título');
   });
 
-  it('falla si categories está vacío', () => {
+  it('normaliza title null a "Sin título" (tolerancia Gemini)', () => {
+    const result = activityNLPResultSchema.safeParse({ ...actividadValida, title: null });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.title).toBe('Sin título');
+  });
+
+  it('normaliza categories vacío a ["General"] (tolerancia Gemini)', () => {
     const result = activityNLPResultSchema.safeParse({ ...actividadValida, categories: [] });
-    expect(result.success).toBe(false);
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.categories).toEqual(['General']);
+  });
+
+  it('normaliza categories null a ["General"] (tolerancia Gemini)', () => {
+    const result = activityNLPResultSchema.safeParse({ ...actividadValida, categories: null });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.categories).toEqual(['General']);
   });
 
   it('falla si confidenceScore > 1', () => {

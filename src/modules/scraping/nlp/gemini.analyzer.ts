@@ -4,6 +4,35 @@ import { createLogger } from '../../../lib/logger';
 
 const log = createLogger('scraping:gemini');
 
+/**
+ * Limpia patrones problemáticos de respuestas de Gemini antes de pasar a Zod.
+ * - title: null o string vacío → 'Sin título'
+ * - categories: null, no-array, o array vacío → ['General']
+ * - currency: null → 'COP' (Zod ya tiene default pero por si acaso)
+ */
+function sanitizeGeminiResponse(raw: Record<string, unknown>): Record<string, unknown> {
+  const out = { ...raw };
+
+  // title
+  if (!out.title || typeof out.title !== 'string' || !(out.title as string).trim()) {
+    log.warn(`sanitize: title inválido (${JSON.stringify(out.title)}) → 'Sin título'`);
+    out.title = 'Sin título';
+  }
+
+  // categories
+  if (!Array.isArray(out.categories) || (out.categories as unknown[]).length === 0) {
+    log.warn(`sanitize: categories inválido (${JSON.stringify(out.categories)}) → ['General']`);
+    out.categories = ['General'];
+  }
+
+  // currency
+  if (!out.currency || typeof out.currency !== 'string') {
+    out.currency = 'COP';
+  }
+
+  return out;
+}
+
 const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
 
@@ -191,9 +220,10 @@ export class GeminiAnalyzer {
         };
       }
 
-      const validated = activityNLPResultSchema.safeParse(parsed);
+      const sanitized = sanitizeGeminiResponse(parsed as Record<string, unknown>);
+      const validated = activityNLPResultSchema.safeParse(sanitized);
       if (!validated.success) {
-        log.error('Zod validation errors', { issues: validated.error.issues });
+        log.error('Zod validation errors', { issues: validated.error.issues, raw: JSON.stringify(sanitized).substring(0, 300) });
         throw new Error(
           `Respuesta de Gemini no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
         );
@@ -386,9 +416,10 @@ ${profileBio}`;
         };
       }
 
-      const validated = activityNLPResultSchema.safeParse(parsed);
+      const sanitized = sanitizeGeminiResponse(parsed as Record<string, unknown>);
+      const validated = activityNLPResultSchema.safeParse(sanitized);
       if (!validated.success) {
-        log.error('Zod validation errors', { issues: validated.error.issues });
+        log.error('Zod validation errors (IG)', { issues: validated.error.issues, raw: JSON.stringify(sanitized).substring(0, 300) });
         throw new Error(
           `Respuesta de Gemini-IG no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
         );

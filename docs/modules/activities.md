@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión actual:** v0.9.3
+**Versión actual:** v0.9.3-S31
 **Última actualización:** 2026-04-06
 
 ## ¿Qué hace?
@@ -163,7 +163,7 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 3. cityFallback
 4. null (actividad sin pin)
 
-## Datos actuales (2026-04-02)
+## Datos actuales (2026-04-06)
 
 | Proveedor | Actividades |
 |-----------|------------|

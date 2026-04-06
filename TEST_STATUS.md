@@ -1,14 +1,14 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-04-06 | Version: v0.9.3
+Actualizado: 2026-04-06 | Version: v0.9.3-S31
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
 | Archivos de test | 53 |
-| Tests totales | 795 |
-| Pasados | 795 |
+| Tests totales | 797 |
+| Pasados | 797 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
 | Statements | 90.66% ✅ |
@@ -56,7 +56,7 @@ Actualizado: 2026-04-06 | Version: v0.9.3
 | Archivo | Tests | Estado |
 |---------|-------|--------|
 | cache.test.ts | 14 | OK |
-| types.test.ts | 17 | OK |
+| types.test.ts | 19 | OK ← +2 tests (S31): normalización title null→'Sin título', categories null/[]→['General'] |
 | deduplication.test.ts | 42 | OK |
 | storage.test.ts | 24 | OK |
 | logger.test.ts | 10 | OK |
@@ -190,8 +190,18 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.1** | **792** | **52** | **91.73%** | **86.70%** |
 | **v0.9.2** | **795** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3** | **795** | **53** | **90.66%** | **85.18%** |
+| **v0.9.3-S31** | **797** | **53** | **90.66%** | **85.18%** |
 
-## Cambios respecto a v0.9.2
+## Cambios en S31 (v0.9.3-S31)
+
+- **+2 tests** (795 → 797): `types.test.ts` — 4 nuevos tests de normalización (reemplazan 2 existentes que cambiaron semántica)
+  - `title null` → normaliza a `'Sin título'`
+  - `title ''` → normaliza a `'Sin título'`
+  - `categories null` → normaliza a `['General']`
+  - `categories []` → normaliza a `['General']`
+- `ScrapingCache`: nuevos métodos `syncFromDb()` y `saveToDb()` — mockeados en pipeline.test.ts
+
+## Cambios respecto a v0.9.2 (v0.9.3)
 
 - Sin cambios en tests — mismos 795/53 archivos
 - npm audit fix: Vite vuln (high) → 0 vulnerabilidades

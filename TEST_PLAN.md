@@ -1,6 +1,6 @@
 # Infantia — Plan de Pruebas
 
-**Version:** v0.9.3 | **Fecha:** 2026-04-06
+**Version:** v0.9.3-S31 | **Fecha:** 2026-04-06
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.9.1)
+## Cobertura actual (v0.9.3-S31)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|

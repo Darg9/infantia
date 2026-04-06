@@ -13,7 +13,35 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.3-S31] — 2026-04-06 (caché dual disco+BD, ranking de fuentes, fix Zod Gemini)
+**Documento Fundacional: V22** | Rama: master
+
+### Features
+
+#### Caché dual disco + BD (S31)
+- `ScrapingCache` ahora persiste URLs en PostgreSQL (tabla `scraping_cache`)
+- `syncFromDb()`: fusiona BD con disco antes de procesar — evita re-scrapear en otra máquina
+- `saveToDb()`: persiste URLs nuevas al terminar cada pipeline
+- Pipeline web e Instagram integran ambas llamadas automáticamente
+- `scripts/migrate-scraping-cache.ts`: migration one-time para crear la tabla ✅ ejecutado
+
+#### Ranking de fuentes (S31)
+- `scripts/source-ranking.ts`: CLI ranking de fuentes con 3 niveles (producción 50% / volumen 30% / alcance 20%)
+- `src/lib/source-scoring.ts`: lógica de scoring compartida entre CLI y futura UI admin
+- Flag `--count-new` en `test-instagram.ts`: cuenta posts nuevos vs cache BD sin consumir Gemini
+
+#### Bug fix: tolerancia Zod ante respuestas imprecisas de Gemini (S31)
+- `types.ts`: `title` null o vacío → normaliza a `'Sin título'`; `categories` null o `[]` → normaliza a `['General']`
+- `gemini.analyzer.ts`: `sanitizeGeminiResponse()` limpia ambos campos antes de Zod (doble capa)
+- Posts que antes se descartaban silenciosamente ahora se procesan con valores de fallback
+
+### Tests
+- **797 tests** (795 → 797): +2 tests en `types.test.ts` para normalización title/categories
+
+---
+
 ## [v0.9.3] — 2026-04-06 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
+**Documento Fundacional: V21** | Rama: master — 2026-04-06 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
 **Documento Fundacional: V21** | Rama: master
 
 ### Features

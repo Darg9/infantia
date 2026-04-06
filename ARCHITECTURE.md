@@ -1,6 +1,6 @@
 # Infantia — Arquitectura del Sistema
 
-> Versión: v0.9.3 | Actualizado: 2026-04-06
+> Versión: v0.9.3-S31 | Actualizado: 2026-04-06
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -290,7 +290,8 @@ ScrapingStorage.saveActivity()
     └─ Upsert Activity (sourceUrl como clave)
     │
     ▼
-ScrapingCache.save() + ScrapingLogger.completeRun()
+ScrapingCache.save() + ScrapingCache.saveToDb() + ScrapingLogger.completeRun()
+  ↑ NUEVO S31: saveToDb() persiste URLs nuevas en tabla scraping_cache (BD)
 ```
 
 ### Flujo — Scraping Instagram
@@ -308,11 +309,13 @@ PlaywrightExtractor.extractProfile(profileUrl, maxPosts)
     └─ Por cada post: caption (3 estrategias en cascada), imágenes, timestamp, likes
     │
     ▼
-ScrapingCache.filterNew()
+ScrapingCache.syncFromDb(`@username`) + ScrapingCache.filterNew()
+  ↑ NUEVO S31: syncFromDb fusiona BD→disco antes de filtrar posts ya vistos
     │
     ▼
 GeminiAnalyzer.analyzeInstagramPost(post, bio)   [SECUENCIAL — evita rate limiting]
     └─ INSTAGRAM_SYSTEM_PROMPT: hashtags y emojis como señales de clasificación
+    └─ sanitizeGeminiResponse(): normaliza title null→'Sin título', categories []→['General'] NUEVO S31
     │
     ▼
 ScrapingStorage.saveActivity()

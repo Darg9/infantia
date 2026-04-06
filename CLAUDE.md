@@ -151,6 +151,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
 | v0.9.2 | V21 | Instagram 10 fuentes activas, --validate-only, ratings.test.ts, branches ✅ |
 | v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
+| v0.9.3-S31 | V22 | Caché dual disco+BD, ranking fuentes, fix Zod Gemini (null title/categories), 797 tests |
 
 ### Regla para Documento Fundacional
 
@@ -159,7 +160,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero — V21 es la versión actual)
+Comando: `node scripts/generate_v22.mjs` (actualizar número de versión primero — V22 es la versión actual)
 
 ## Notas de arquitectura críticas
 
@@ -170,7 +171,8 @@ Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero
 - **NLP:** `GeminiNLPService` — 20 RPD free tier. Quota se renueva medianoche UTC (19:00 COL). Si falla con 429, esperar reset antes de debuggear código.
 - **Geocoding:** venue-dictionary.ts (~0ms) → Nominatim (rate limit 1.1s) → cityFallback → null.
 - **Deduplicación:** 3 niveles — (1) real-time Jaccard >75% en saveActivity, (2) cron diario, (3) manual review.
-- **Zod schema ActivityNLPResult:** `schedules[].notes` (string), NO `frequency` ni `timeSlot`. `location` es `{address, city}`, NO string.
+- **Zod schema ActivityNLPResult:** `schedules[].notes` (string), NO `frequency` ni `timeSlot`. `location` es `{address, city}`, NO string. `title` null/'' → 'Sin título'; `categories` null/[] → ['General'] (S31).
+- **ScrapingCache:** caché dual disco + BD. Tabla `scraping_cache` en Supabase. `syncFromDb()` antes de pipeline; `saveToDb()` al terminar. `migrate-scraping-cache.ts` ya ejecutado.
 - **Sponsor en email:** se pasa como prop opcional `sponsor?` a `ActivityDigestEmail` — si no se pasa, el bloque no aparece.
 - **isPremium ordering:** `{ provider: { isPremium: 'desc' } }` en relevance sort — actividades de providers premium aparecen primero sin queries extra.
 - **Provider dashboard access:** `getSessionWithRole()` → si ADMIN permite; si role=provider, verifica `provider.email === session.user.email && provider.isClaimed`.
@@ -185,18 +187,19 @@ Comando: `node scripts/generate_v21.mjs` (actualizar número de versión primero
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.9.0 — 2026-04-02)
-- **~275 actividades** en BD (bajaron de 293 por expiración de actividades de marzo)
-- **783 tests** en 51 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
-- Cobertura real: **stmts alta / branches 84.44%** ⚠️ por debajo umbral 85% (telegram.extractor.ts = 0% cobertura, sin tests aún)
+## Estado actual (v0.9.3-S31 — 2026-04-06)
+- **~275 actividades** en BD
+- **797 tests** en 53 archivos — `npm test` pasa en ~8s — 0 errores TypeScript
+- Cobertura: **90.66% stmts / 85.18% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
 - BullMQ + Upstash Redis: OPERATIVO
-- 14 fuentes web + canal Telegram configurado (pendiente auth)
+- 14 fuentes web + 10 Instagram + canal Telegram configurado (pendiente ingest sin --dry-run)
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
-- Documento Fundacional: **V21** (2026-03-31)
-- **0 vulnerabilidades npm** (era 15 en auditoría S25)
+- Documento Fundacional: **V22** (2026-04-06)
+- **0 vulnerabilidades npm**
 - **0 console.*** en producción (migrado a logger estructurado)
+- Tabla `scraping_cache` operativa en BD (caché dual disco+BD desde S31)
 - **Sentry activo** en producción (SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN configurados en Vercel)
 - **UptimeRobot** monitoreando `/api/health`
 

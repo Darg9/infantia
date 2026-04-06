@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.9.3 | **Status:** Production — 2026-04-06 | **Tests:** 795 passing / 53 files | **Coverage:** 90.66% stmts / 85.18% branches
+**Version:** v0.9.3-S31 | **Status:** Production — 2026-04-06 | **Tests:** 797 passing / 53 files | **Coverage:** 90.66% stmts / 85.18% branches
 
 ## Quick Start
 
@@ -71,14 +71,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 792 unit tests (91.73% stmts / 86.70% branches), E2E tests
+- 🧪 **Well-tested:** 797 unit tests (90.66% stmts / 85.18% branches), E2E tests
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production
-npm test                       # Run all tests (792 tests)
+npm test                       # Run all tests (797 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 
 # Scraping
@@ -99,6 +99,10 @@ npx tsx scripts/expire-activities.ts             # Manually expire activities
 # Telegram
 npx tsx scripts/telegram-auth.ts                 # One-time MTProto auth → TELEGRAM_SESSION
 npx tsx scripts/ingest-telegram.ts [--dry-run]   # Ingest Telegram channels
+
+# Source ranking & analytics
+npx tsx scripts/source-ranking.ts [--weeks=4] [--platform=INSTAGRAM]  # Ranking de fuentes
+npx tsx scripts/test-instagram.ts <URL> --count-new  # Cuenta posts nuevos sin Gemini
 ```
 
 ## Environment Variables

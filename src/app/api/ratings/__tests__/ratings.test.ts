@@ -11,7 +11,7 @@ vi.mock('next/server', () => ({
 const { mockRequireAuth, mockPrisma } = vi.hoisted(() => {
   const mockRequireAuth = vi.fn()
   const mockPrisma = {
-    user: { findUnique: vi.fn() },
+    user: { findUnique: vi.fn(), upsert: vi.fn() },
     activity: { findUnique: vi.fn() },
     rating: {
       findMany: vi.fn(),
@@ -119,7 +119,7 @@ describe('GET /api/ratings', () => {
 describe('POST /api/ratings', () => {
   it('crea una nueva calificacion exitosamente', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const rating = { id: 'r1', userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1, score: 4, comment: null }
     mockPrisma.rating.upsert.mockResolvedValue(rating)
@@ -136,7 +136,7 @@ describe('POST /api/ratings', () => {
 
   it('crea calificacion con comentario', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const rating = { id: 'r2', score: 3, comment: 'Bueno' }
     mockPrisma.rating.upsert.mockResolvedValue(rating)
@@ -153,7 +153,7 @@ describe('POST /api/ratings', () => {
 
   it('upsert actualiza calificacion existente', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
     const updated = { id: 'r1', score: 5, comment: null }
     mockPrisma.rating.upsert.mockResolvedValue(updated)
@@ -164,9 +164,24 @@ describe('POST /api/ratings', () => {
     expect(mockJson).toHaveBeenCalledWith({ success: true, rating: updated }, { status: 201 })
   })
 
+  it('upsert crea el usuario en BD si no existe (no lanza 404)', async () => {
+    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER) // upsert siempre devuelve usuario
+    mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1, providerId: 'prov-1' })
+    mockPrisma.rating.upsert.mockResolvedValue({ id: 'r1', score: 3 })
+
+    await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 3 }) as any)
+
+    expect(mockPrisma.user.upsert).toHaveBeenCalled()
+    expect(mockJson).toHaveBeenCalledWith(
+      expect.objectContaining({ success: true }),
+      { status: 201 },
+    )
+  })
+
   it('retorna 400 si falta activityId', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     await POST(makeRequest({ score: 3 }) as any)
 
@@ -178,7 +193,7 @@ describe('POST /api/ratings', () => {
 
   it('retorna 400 si score es 0', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 0 }) as any)
 
@@ -190,7 +205,7 @@ describe('POST /api/ratings', () => {
 
   it('retorna 400 si score es 6', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 6 }) as any)
 
@@ -202,7 +217,7 @@ describe('POST /api/ratings', () => {
 
   it('retorna 400 si score es decimal (3.5)', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 3.5 }) as any)
 
@@ -214,7 +229,7 @@ describe('POST /api/ratings', () => {
 
   it('retorna 400 si score no es numero', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 'tres' }) as any)
 
@@ -226,7 +241,7 @@ describe('POST /api/ratings', () => {
 
   it('retorna 400 si comment excede 500 caracteres', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
 
     const longComment = 'a'.repeat(501)
     await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 4, comment: longComment }) as any)
@@ -239,25 +254,13 @@ describe('POST /api/ratings', () => {
 
   it('retorna 404 si la actividad no existe', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.user.upsert.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue(null)
 
     await POST(makeRequest({ activityId: 'no-existe', score: 3 }) as any)
 
     expect(mockJson).toHaveBeenCalledWith(
       { error: 'Actividad no encontrada' },
-      { status: 404 },
-    )
-  })
-
-  it('retorna 404 si el usuario no existe en la BD', async () => {
-    mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(null)
-
-    await POST(makeRequest({ activityId: ACTIVITY_ID_1, score: 3 }) as any)
-
-    expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Usuario no encontrado' },
       { status: 404 },
     )
   })

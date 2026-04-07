@@ -46,14 +46,18 @@ export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth()
 
-    const dbUser = await prisma.user.findUnique({
+    // upsert: si el usuario está en Supabase Auth pero aún no en la BD, lo creamos
+    const dbUser = await prisma.user.upsert({
       where: { supabaseAuthId: user.id },
+      create: {
+        supabaseAuthId: user.id,
+        email: user.email ?? '',
+        name: (user.user_metadata?.name as string | undefined) ?? user.email?.split('@')[0] ?? 'Usuario',
+        role: 'PARENT',
+      },
+      update: {},
       select: { id: true },
     })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
 
     const body = await req.json()
     const { activityId, score, comment } = body

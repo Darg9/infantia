@@ -327,7 +327,7 @@ export default async function MetricasPage() {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+    <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">
       {children}
     </h2>
   );

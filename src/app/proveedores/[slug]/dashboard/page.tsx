@@ -113,7 +113,7 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           <p className="text-center text-gray-400 py-10 text-sm">No hay actividades para este proveedor.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500 uppercase">
+            <thead className="bg-gray-50 text-xs text-gray-500">
               <tr>
                 <th className="px-6 py-3 text-left">Actividad</th>
                 <th className="px-4 py-3 text-left">Estado</th>

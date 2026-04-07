@@ -397,14 +397,14 @@ export default async function ActividadDetallePage({
 
             {/* Descripción */}
             <div className="rounded-2xl bg-white border border-gray-100 p-5">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Descripción</h2>
+              <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Descripción</h2>
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">{activity.description}</p>
             </div>
 
             {/* Fechas y horarios */}
             {(activity.startDate || scheduleItems.length > 0) && (
               <div className="rounded-2xl bg-white border border-gray-100 p-5">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Fechas y horarios</h2>
+                <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Fechas y horarios</h2>
                 <div className="flex flex-col gap-2">
                   {activity.startDate && (
                     <div className="flex items-start gap-2 text-sm text-gray-700">
@@ -433,7 +433,7 @@ export default async function ActividadDetallePage({
             {/* Proveedor */}
             {activity.provider && (
               <div className="rounded-2xl bg-white border border-gray-100 p-5">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Organiza</h2>
+                <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Organiza</h2>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-indigo-700">
                     {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
@@ -467,7 +467,7 @@ export default async function ActividadDetallePage({
             {/* Calificaciones */}
             <div className="rounded-2xl bg-white border border-gray-100 p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Calificaciones</h2>
+                <h2 className="text-sm font-semibold text-gray-500 tracking-wide">Calificaciones</h2>
                 {ratingsAvg._count.score > 0 && (
                   <div className="flex items-center gap-2">
                     <StarRating value={Math.round(ratingsAvg._avg.score ?? 0)} readonly size="sm" />
@@ -522,7 +522,7 @@ export default async function ActividadDetallePage({
 
             {/* Datos rápidos */}
             <div className="rounded-2xl bg-white border border-gray-100 p-5 flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Detalles</h2>
+              <h2 className="text-sm font-semibold text-gray-500 tracking-wide">Detalles</h2>
 
               {/* Precio */}
               <div className="flex items-center justify-between text-sm">

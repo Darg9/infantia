@@ -46,7 +46,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
 
   return (
     <div className="mt-4 pt-4 border-t border-gray-100">
-      <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Configuración Instagram</p>
+      <p className="text-xs font-medium text-gray-500 tracking-wide mb-3">Configuración Instagram</p>
 
       <div className="flex flex-wrap items-end gap-6">
         {/* Content mode */}

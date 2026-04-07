@@ -114,7 +114,7 @@ export function EmptyState({
       {/* Categorías populares como sugerencias rápidas */}
       {popularCategories.length > 0 && (
         <div className="flex flex-col items-center gap-3 mt-2">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+          <p className="text-xs font-semibold text-gray-400 tracking-wide">
             O explora estas categorías
           </p>
           <div className="flex flex-wrap justify-center gap-2 max-w-sm">

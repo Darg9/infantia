@@ -13,6 +13,21 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.3-S32] — 2026-04-07 (fix cobertura: tests cache.ts y source-scoring.ts)
+**Documento Fundacional: V22** | Rama: master
+
+### Tests
+- **832 tests** (797 → 832): +35 tests de cobertura
+  - `cache.test.ts` +11 tests: `syncFromDb()` (4 tests) y `saveToDb()` (4 tests) con mocks via `vi.hoisted()`
+  - `source-scoring.test.ts` nuevo archivo: 22 tests para `calcSourceScore()`, `formatReach()`, `TIER_LABEL/COLOR`
+- **Coverage:** 90.95% stmts / 85.69% branches / 86.97% funcs (umbral 85% ✅)
+
+### Fix técnico
+- `cache.ts`: imports dinámicos (`await import()`) convertidos a estáticos para compatibilidad con `vi.mock()` de Vitest 4
+- `cache.test.ts`: mocks con `function() {}` en lugar de arrow functions para soportar `new` (requerimiento Vitest 4)
+
+---
+
 ## [v0.9.3-S31] — 2026-04-06 (caché dual disco+BD, ranking de fuentes, fix Zod Gemini)
 **Documento Fundacional: V22** | Rama: master
 

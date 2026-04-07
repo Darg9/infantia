@@ -1,6 +1,6 @@
 # Infantia — Plan de Pruebas
 
-**Version:** v0.9.3-S31 | **Fecha:** 2026-04-06
+**Version:** v0.9.3-S32 | **Fecha:** 2026-04-07
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.9.3-S31)
+## Cobertura actual (v0.9.3-S32)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -66,8 +66,9 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK |
 | lib/ratings | — | Sin test dedicado (testeado via ratings API) | — | OK |
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
+| lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.9.1: 91.73% stmts / 86.70% branches / 89.47% funcs / 92.90% lines | 792 tests | 52 archivos**
+**Total v0.9.3-S32: 90.95% stmts / 85.69% branches / 86.97% funcs / 92.41% lines | 832 tests | 54 archivos**
 
 ---
 

@@ -1,20 +1,20 @@
 # Infantia — Estado de Pruebas
 
-Actualizado: 2026-04-06 | Version: v0.9.3-S31
+Actualizado: 2026-04-07 | Version: v0.9.3-S32
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 53 |
-| Tests totales | 797 |
-| Pasados | 797 |
+| Archivos de test | 54 |
+| Tests totales | 832 |
+| Pasados | 832 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
-| Statements | 90.66% ✅ |
-| Branches | 85.18% ✅ |
-| Functions | 86.52% ✅ |
-| Lines | 92.20% ✅ |
+| Statements | 90.95% ✅ |
+| Branches | 85.69% ✅ |
+| Functions | 86.97% ✅ |
+| Lines | 92.41% ✅ |
 
 ## Estado: PASSED ✅
 
@@ -39,6 +39,7 @@ Actualizado: 2026-04-06 | Version: v0.9.3-S31
 | geocoding.test.ts | 19 | OK ← NUEVO v0.9.0 (venue dict, Nominatim, fallbacks, rate limit) |
 | push.test.ts | 16 | OK ← NUEVO v0.9.0 (sendPushNotification, sendPushToMany, 410/404/500) |
 | ratings.test.ts | 3 | OK ← NUEVO v0.9.2 (recalcProviderRating, null avg, error propagation) |
+| source-scoring.test.ts | 22 | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
 ### lib/supabase/__tests__/
 | Archivo | Tests | Estado |
@@ -55,7 +56,7 @@ Actualizado: 2026-04-06 | Version: v0.9.3-S31
 ### modules/scraping/__tests__/
 | Archivo | Tests | Estado |
 |---------|-------|--------|
-| cache.test.ts | 14 | OK |
+| cache.test.ts | 25 | OK ← +11 tests (S32): syncFromDb() y saveToDb() con vi.hoisted() |
 | types.test.ts | 19 | OK ← +2 tests (S31): normalización title null→'Sin título', categories null/[]→['General'] |
 | deduplication.test.ts | 42 | OK |
 | storage.test.ts | 24 | OK |
@@ -191,6 +192,15 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.2** | **795** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3** | **795** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3-S31** | **797** | **53** | **90.66%** | **85.18%** |
+| **v0.9.3-S32** | **832** | **54** | **90.95%** | **85.69%** |
+
+## Cambios en S32 (v0.9.3-S32)
+
+- **+35 tests** (797 → 832): corrección de cobertura
+  - `cache.test.ts` +11 tests: `syncFromDb()` (4 tests) + `saveToDb()` (4 tests) + `load()` (2) + refactor con `vi.hoisted()`
+  - `source-scoring.test.ts` nuevo (22 tests): `calcSourceScore()`, `formatReach()`, `TIER_LABEL`, `TIER_COLOR`
+- `cache.ts`: imports estáticos (antes dinámicos `await import()`) — requerido para que `vi.mock()` los intercepte en Vitest 4
+- Coverage branches: 85.18% → 85.69% ✅
 
 ## Cambios en S31 (v0.9.3-S31)
 

@@ -2,17 +2,26 @@ import { describe, it, expect, vi } from 'vitest';
 import { SITE_URL } from '@/config/site';
 
 // vi.hoisted garantiza que las variables estén disponibles dentro del factory de vi.mock
-const { mockFindMany } = vi.hoisted(() => {
-  const mockFindMany = vi.fn().mockResolvedValue([
+const { mockActivityFindMany, mockCategoryFindMany, mockCityFindMany } = vi.hoisted(() => {
+  const mockActivityFindMany = vi.fn().mockResolvedValue([
     { id: 'act-1', title: 'Taller de Pintura', updatedAt: new Date('2026-03-20') },
     { id: 'act-2', title: 'Club de Lectura', updatedAt: new Date('2026-03-21') },
   ]);
-  return { mockFindMany };
+  const mockCategoryFindMany = vi.fn().mockResolvedValue([
+    { slug: 'arte-y-creatividad', updatedAt: new Date('2026-03-20') },
+  ]);
+  const mockCityFindMany = vi.fn().mockResolvedValue([
+    { name: 'Bogotá' },
+    { name: 'Medellín' },
+  ]);
+  return { mockActivityFindMany, mockCategoryFindMany, mockCityFindMany };
 });
 
 vi.mock('@/lib/db', () => ({
   prisma: {
-    activity: { findMany: mockFindMany },
+    activity: { findMany: mockActivityFindMany },
+    category: { findMany: mockCategoryFindMany },
+    city:     { findMany: mockCityFindMany },
   },
 }));
 

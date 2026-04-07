@@ -62,7 +62,7 @@ interface ActiveFilters {
 // Se usa tanto en listActivities como en getFacets para consistencia
 // =============================================================================
 function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.ActivityWhereInput {
-  const where: Prisma.ActivityWhereInput = { status: { in: ['ACTIVE', 'EXPIRED'] } };
+  const where: Prisma.ActivityWhereInput = { status: 'ACTIVE' };
   const andConditions: Prisma.ActivityWhereInput[] = [];
 
   if (f.type && exclude !== 'type') {

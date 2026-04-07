@@ -229,83 +229,164 @@ export default async function ActividadDetallePage({
     }),
   };
 
+  // Breadcrumb JSON-LD para SEO
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Inicio', item: 'https://habitaplan.com' },
+      { '@type': 'ListItem', position: 2, name: 'Actividades', item: 'https://habitaplan.com/actividades' },
+      ...(mainCategory ? [{ '@type': 'ListItem', position: 3, name: mainCategory.name, item: `https://habitaplan.com/actividades/categoria/${mainCategory.slug}` }] : []),
+      { '@type': 'ListItem', position: mainCategory ? 4 : 3, name: activity.title, item: `https://habitaplan.com${canonicalPath}` },
+    ],
+  };
+
   return (
     <>
-      {/* JSON-LD for search engines */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {/* JSON-LD: evento + breadcrumb */}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <div className="min-h-screen bg-gray-50">
 
-      {/* Breadcrumb */}
+      {/* Breadcrumb visual */}
       <div className="mx-auto max-w-4xl px-4 pt-4">
-        <a
-          href="/actividades"
-          className="inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-        >
-          ← Volver a actividades
-        </a>
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-gray-400 flex-wrap">
+          <Link href="/" className="hover:text-gray-600 transition-colors">Inicio</Link>
+          <span>/</span>
+          <Link href="/actividades" className="hover:text-gray-600 transition-colors">Actividades</Link>
+          {mainCategory && (
+            <>
+              <span>/</span>
+              <Link href={`/actividades/categoria/${mainCategory.slug}`} className="hover:text-gray-600 transition-colors">
+                {mainCategory.name}
+              </Link>
+            </>
+          )}
+          <span>/</span>
+          <span className="text-gray-600 truncate max-w-[200px]">{activity.title}</span>
+        </nav>
       </div>
 
 
       <div className="mx-auto max-w-4xl px-4 py-4 flex flex-col gap-6">
 
-        {/* Hero: imagen real O encabezado compacto */}
+        {/* ── Hero: título siempre protagonista ───────────────────────────────── */}
         {activity.imageUrl ? (
-          <div className="relative h-48 sm:h-64 rounded-2xl overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={activity.imageUrl}
-              alt={activity.title}
-              className="h-full w-full object-cover"
-            />
-            <div className="absolute top-3 left-3 flex gap-2">
-              <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-gray-700 shadow-sm">
-                {TYPE_LABELS[activity.type] ?? activity.type}
-              </span>
-              {priceLabel !== 'No disponible' && (
-                <span className={clsx(
-                  'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
-                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
-                )}>
-                  {priceLabel}
-                </span>
-              )}
+
+          /* CASO 1: con imagen → layout 2 columnas, imagen secundaria a la derecha */
+          <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+            <div className="flex flex-col sm:flex-row">
+
+              {/* Imagen: compacta en mobile (arriba), thumbnail en desktop (derecha) */}
+              <div className="h-44 sm:h-auto sm:w-56 sm:shrink-0 sm:order-last">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={activity.imageUrl}
+                  alt={activity.title}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+
+              {/* Texto: protagonista */}
+              <div className="flex-1 p-6 sm:p-8 flex flex-col gap-3">
+                {/* Chips de contexto */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                    {TYPE_LABELS[activity.type] ?? activity.type}
+                  </span>
+                  {priceLabel !== 'No disponible' && (
+                    <span className={clsx(
+                      'rounded-full px-3 py-1 text-xs font-semibold',
+                      priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-50 text-orange-700'
+                    )}>
+                      {priceLabel}
+                    </span>
+                  )}
+                  {activity.categories.map(({ category }) => (
+                    <span key={category.id} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                      {category.name}
+                    </span>
+                  ))}
+                </div>
+
+                {/* H1 */}
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug">
+                  {activity.title}
+                </h1>
+
+                {/* Proveedor */}
+                {activity.provider && (
+                  <p className="text-sm text-gray-500">
+                    por{' '}
+                    {activity.provider.slug ? (
+                      <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                        {activity.provider.name}
+                      </Link>
+                    ) : (
+                      <span className="font-medium text-gray-700">{activity.provider.name}</span>
+                    )}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
-        ) : (
-          <div
-            className="relative h-44 sm:h-56 rounded-2xl overflow-hidden flex items-center justify-center"
-            style={{ background: gradient }}
-          >
-            {/* Emoji grande centrado */}
-            <span className="text-7xl sm:text-8xl drop-shadow-lg select-none">{categoryEmoji}</span>
 
-            {/* Badges superpuestos */}
-            <div className="absolute top-3 left-3 flex gap-2">
-              <span className="rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white shadow-sm">
-                {TYPE_LABELS[activity.type] ?? activity.type}
-              </span>
-              {priceLabel !== 'No disponible' && (
-                <span className={clsx(
-                  'rounded-full px-3 py-1 text-xs font-semibold shadow-sm',
-                  priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-black/30 backdrop-blur-sm text-white'
-                )}>
-                  {priceLabel}
+        ) : (
+
+          /* CASO 2: sin imagen → título protagonista, acento de color por categoría */
+          <div className="rounded-2xl overflow-hidden border border-gray-100">
+            {/* Barra de color de categoría */}
+            <div className="h-1.5 w-full" style={{ background: gradient }} />
+
+            <div className="bg-white rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
+              {/* Chips de contexto */}
+              <div className="flex flex-wrap gap-2">
+                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                  {TYPE_LABELS[activity.type] ?? activity.type}
                 </span>
+                {priceLabel !== 'No disponible' && (
+                  <span className={clsx(
+                    'rounded-full px-3 py-1 text-xs font-semibold',
+                    priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-50 text-orange-700'
+                  )}>
+                    {priceLabel}
+                  </span>
+                )}
+                {activity.categories.map(({ category }) => (
+                  <span key={category.id} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    {category.name}
+                  </span>
+                ))}
+              </div>
+
+              {/* H1 — protagonista */}
+              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+                {activity.title}
+              </h1>
+
+              {/* Emoji + categoría como detalle visual secundario */}
+              <div className="flex items-center gap-2">
+                <span className="text-2xl select-none">{categoryEmoji}</span>
+                {mainCategory && (
+                  <span className="text-sm text-gray-500">{mainCategory.name}</span>
+                )}
+              </div>
+
+              {/* Proveedor */}
+              {activity.provider && (
+                <p className="text-sm text-gray-500">
+                  por{' '}
+                  {activity.provider.slug ? (
+                    <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                      {activity.provider.name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium text-gray-700">{activity.provider.name}</span>
+                  )}
+                </p>
               )}
             </div>
-
-            {/* Nombre de categoría abajo */}
-            {mainCategory && (
-              <div className="absolute bottom-3 left-3">
-                <span className="rounded-full bg-black/30 backdrop-blur-sm px-3 py-1 text-xs font-medium text-white">
-                  {mainCategory.name}
-                </span>
-              </div>
-            )}
           </div>
         )}
 
@@ -313,23 +394,6 @@ export default async function ActividadDetallePage({
 
           {/* Columna principal */}
           <div className="lg:col-span-2 flex flex-col gap-6">
-
-            {/* Título y categorías */}
-            <div className="flex flex-col gap-3">
-              {activity.categories.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {activity.categories.map(({ category }) => (
-                    <span
-                      key={category.id}
-                      className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700"
-                    >
-                      {category.name}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <h1 className="text-2xl font-bold text-gray-900 leading-snug">{activity.title}</h1>
-            </div>
 
             {/* Descripción */}
             <div className="rounded-2xl bg-white border border-gray-100 p-5">

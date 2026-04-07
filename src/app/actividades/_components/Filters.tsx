@@ -388,7 +388,7 @@ export default function Filters({
         >
           <option value="">💰 Todos los precios</option>
           <option value="free">🟢 Gratis ({facets.priceCounts.free})</option>
-          <option value="paid">💳 De pago ({facets.priceCounts.paid})</option>
+          <option value="paid">💳 Pagas ({facets.priceCounts.paid})</option>
         </select>
 
         {/* Ciudad — solo si hay más de 1 opción */}

@@ -125,7 +125,7 @@ export default function Filters({
   // Fetch sugerencias con debounce independiente (más corto: 200ms)
   function fetchSuggestions(value: string) {
     if (suggestDebounceRef.current) clearTimeout(suggestDebounceRef.current);
-    if (value.length < 2) {
+    if (value.length < 3) {
       setSuggestions([]);
       setShowSuggestions(false);
       return;
@@ -195,7 +195,7 @@ export default function Filters({
     debounceRef.current = setTimeout(() => {
       navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
       // Registra la búsqueda (fire-and-forget, solo si tiene contenido)
-      if (value.trim().length >= 2) {
+      if (value.trim().length >= 3) {
         fetch('/api/search/log', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

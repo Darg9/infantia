@@ -158,14 +158,15 @@ model City {
 }
 
 model Location {
-  id           String  @id @default(uuid())
-  name         String  @db.VarChar(255)
-  address      String  @db.VarChar(500)
-  neighborhood String? @db.VarChar(100)
-  cityId       String
-  latitude     Decimal @db.Decimal(10, 8)
-  longitude    Decimal @db.Decimal(11, 8)
-  isVirtual    Boolean @default(false)
+  id                          String  @id @default(uuid())
+  name                        String  @db.VarChar(255)
+  address                     String  @db.VarChar(500)
+  neighborhood                String? @db.VarChar(100)
+  cityId                      String
+  latitude                    Decimal @db.Decimal(10, 8)
+  longitude                   Decimal @db.Decimal(11, 8)
+  isVirtual                   Boolean @default(false)
+  expirationHoursAfterStart   Int?    // horas tras startDate para expirar si no hay endDate; null = usar config fuente o default (3h)
 
   city       City               @relation(fields: [cityId], references: [id])
   activities Activity[]

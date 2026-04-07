@@ -76,10 +76,10 @@ describe('listActivities()', () => {
     expect(result.total).toBe(1);
   });
 
-  it('incluye ACTIVE y EXPIRED por defecto, excluye DRAFT y PAUSED', async () => {
+  it('muestra solo ACTIVE por defecto, excluye EXPIRED, DRAFT y PAUSED', async () => {
     await listActivities({ skip: 0, pageSize: 20 });
     const whereArg = mockFindMany.mock.calls[0][0].where;
-    expect(whereArg.status).toEqual({ in: ['ACTIVE', 'EXPIRED'] });
+    expect(whereArg.status).toBe('ACTIVE');
   });
 
   it('usa el status exacto cuando se pasa explícitamente', async () => {

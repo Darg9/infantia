@@ -125,6 +125,9 @@ export default async function ActividadDetallePage({
 
   if (!activity) notFound();
 
+  // Las actividades expiradas se redirigen al listado (ya no se muestran en el portal)
+  if (activity.status === 'EXPIRED') redirect('/actividades');
+
   // Redirect a URL canónica si el param no incluye el slug del título
   const canonicalPath = activityPath(id, activity.title);
   if (`/actividades/${rawId}` !== canonicalPath) {
@@ -246,36 +249,6 @@ export default async function ActividadDetallePage({
         </a>
       </div>
 
-      {/* Aviso de actividad expirada */}
-      {activity.status === 'EXPIRED' && (
-        <div className="mx-auto max-w-4xl px-4 pt-2">
-          <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
-            <span className="text-amber-500 text-lg">⚠️</span>
-            <div>
-              <p className="text-sm font-semibold text-amber-800">
-                Esta actividad puede ya no estar disponible
-              </p>
-              <p className="text-xs text-amber-700 mt-0.5">
-                La fecha registrada indica que ya pasó. Te recomendamos verificar directamente
-                con el organizador antes de asistir.
-                {activity.sourceUrl && (
-                  <>
-                    {' '}
-                    <a
-                      href={activity.sourceUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline hover:text-amber-900"
-                    >
-                      Ver fuente original
-                    </a>
-                  </>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="mx-auto max-w-4xl px-4 py-4 flex flex-col gap-6">
 

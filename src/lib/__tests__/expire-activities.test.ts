@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// ── Mock de prisma ────────────────────────────────────────────────────────────
+// ── Mocks ─────────────────────────────────────────────────────────────────────
 
 const { mockPrisma } = vi.hoisted(() => ({
   mockPrisma: {
@@ -8,18 +8,21 @@ const { mockPrisma } = vi.hoisted(() => ({
       findMany: vi.fn(),
       updateMany: vi.fn(),
     },
+    scrapingSource: {
+      findMany: vi.fn(),
+    },
   },
 }))
 
 vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
 
-import { expireActivities } from '../expire-activities'
+import { expireActivities, DEFAULT_EXPIRATION_HOURS } from '../expire-activities'
 
 // ── Fecha fija para todos los tests ──────────────────────────────────────────
 
 const FIXED_NOW = new Date('2026-06-15T10:00:00.000Z')
 
-// Helpers para construir actividades de prueba
+// Helpers
 function makeActivity(id: string, overrides = {}) {
   return {
     id,
@@ -27,6 +30,8 @@ function makeActivity(id: string, overrides = {}) {
     type: 'ONE_TIME' as const,
     startDate: null,
     endDate: null,
+    sourcePlatform: null,
+    location: null,
     ...overrides,
   }
 }
@@ -39,6 +44,7 @@ describe('expireActivities', () => {
     vi.setSystemTime(FIXED_NOW)
     mockPrisma.activity.findMany.mockResolvedValue([])
     mockPrisma.activity.updateMany.mockResolvedValue({ count: 0 })
+    mockPrisma.scrapingSource.findMany.mockResolvedValue([])
   })
 
   afterEach(() => {
@@ -46,29 +52,28 @@ describe('expireActivities', () => {
     vi.clearAllMocks()
   })
 
-  // ── Caso: sin candidatas ────────────────────────────────────────────────────
+  // ── Constante ────────────────────────────────────────────────────────────
+
+  it('DEFAULT_EXPIRATION_HOURS es 3', () => {
+    expect(DEFAULT_EXPIRATION_HOURS).toBe(3)
+  })
+
+  // ── Sin candidatas ───────────────────────────────────────────────────────
 
   it('devuelve { expired: 0, ids: [] } cuando no hay candidatas', async () => {
-    mockPrisma.activity.findMany.mockResolvedValue([])
-
     const result = await expireActivities()
-
     expect(result).toEqual({ expired: 0, ids: [] })
   })
 
   it('no llama a updateMany cuando no hay candidatas', async () => {
-    mockPrisma.activity.findMany.mockResolvedValue([])
-
     await expireActivities()
-
     expect(mockPrisma.activity.updateMany).not.toHaveBeenCalled()
   })
 
-  // ── Caso: candidatas con endDate pasado ────────────────────────────────────
+  // ── Expiración por endDate ───────────────────────────────────────────────
 
   it('expira actividades cuyo endDate ya pasó', async () => {
-    const past = new Date('2026-06-10T00:00:00.000Z') // 5 días antes de FIXED_NOW
-    const act = makeActivity('act-1', { endDate: past })
+    const act = makeActivity('act-1', { endDate: new Date('2026-06-10T00:00:00.000Z') })
     mockPrisma.activity.findMany.mockResolvedValue([act])
 
     const result = await expireActivities()
@@ -76,7 +81,7 @@ describe('expireActivities', () => {
     expect(result).toEqual({ expired: 1, ids: ['act-1'] })
   })
 
-  it('llama a updateMany con los IDs correctos cuando expira por endDate', async () => {
+  it('llama a updateMany con los IDs correctos al expirar por endDate', async () => {
     const act = makeActivity('act-2', { endDate: new Date('2026-06-01T00:00:00.000Z') })
     mockPrisma.activity.findMany.mockResolvedValue([act])
 
@@ -88,11 +93,12 @@ describe('expireActivities', () => {
     })
   })
 
-  // ── Caso: candidatas con startDate >3 días atrás sin endDate ───────────────
+  // ── Expiración por startDate + default 3h ────────────────────────────────
 
-  it('expira actividades con startDate hace más de 3 días y sin endDate', async () => {
-    const fourDaysAgo = new Date('2026-06-11T00:00:00.000Z') // 4 días antes
-    const act = makeActivity('act-3', { startDate: fourDaysAgo, endDate: null })
+  it('expira actividades con startDate hace más de 3 horas y sin endDate (default)', async () => {
+    // FIXED_NOW = 10:00. startDate = 06:00 → 4 horas atrás → debe expirar
+    const fourHoursAgo = new Date('2026-06-15T06:00:00.000Z')
+    const act = makeActivity('act-3', { startDate: fourHoursAgo, endDate: null })
     mockPrisma.activity.findMany.mockResolvedValue([act])
 
     const result = await expireActivities()
@@ -101,13 +107,98 @@ describe('expireActivities', () => {
     expect(result.ids).toContain('act-3')
   })
 
-  // ── Caso: múltiples candidatas ────────────────────────────────────────────
+  it('NO expira actividades con startDate hace menos de 3 horas sin endDate', async () => {
+    // FIXED_NOW = 10:00. startDate = 08:00 → 2 horas atrás → NO debe expirar
+    const twoHoursAgo = new Date('2026-06-15T08:00:00.000Z')
+    const act = makeActivity('act-4', { startDate: twoHoursAgo, endDate: null })
+    mockPrisma.activity.findMany.mockResolvedValue([act])
 
-  it('expira múltiples actividades en una sola llamada', async () => {
+    const result = await expireActivities()
+
+    expect(result.expired).toBe(0)
+    expect(mockPrisma.activity.updateMany).not.toHaveBeenCalled()
+  })
+
+  // ── Configurable por lugar ───────────────────────────────────────────────
+
+  it('usa expirationHoursAfterStart de Location si está configurado', async () => {
+    // Location tiene 1 hora → startDate hace 2h → debe expirar
+    const twoHoursAgo = new Date('2026-06-15T08:00:00.000Z')
+    const act = makeActivity('act-5', {
+      startDate: twoHoursAgo,
+      endDate: null,
+      location: { expirationHoursAfterStart: 1, cityId: 'city-1' },
+    })
+    mockPrisma.activity.findMany.mockResolvedValue([act])
+
+    const result = await expireActivities()
+
+    expect(result.expired).toBe(1)
+    expect(result.ids).toContain('act-5')
+  })
+
+  it('NO expira si startDate está dentro del umbral configurado en Location', async () => {
+    // Location tiene 6 horas → startDate hace 4h → NO debe expirar
+    const fourHoursAgo = new Date('2026-06-15T06:00:00.000Z')
+    const act = makeActivity('act-6', {
+      startDate: fourHoursAgo,
+      endDate: null,
+      location: { expirationHoursAfterStart: 6, cityId: 'city-1' },
+    })
+    mockPrisma.activity.findMany.mockResolvedValue([act])
+
+    const result = await expireActivities()
+
+    expect(result.expired).toBe(0)
+  })
+
+  // ── Configurable por fuente (ScrapingSource) ─────────────────────────────
+
+  it('usa config.expirationHoursAfterStart de ScrapingSource si Location no tiene config', async () => {
+    // ScrapingSource tiene 1h → startDate hace 2h → debe expirar
+    const twoHoursAgo = new Date('2026-06-15T08:00:00.000Z')
+    const act = makeActivity('act-7', {
+      startDate: twoHoursAgo,
+      endDate: null,
+      sourcePlatform: 'WEB',
+      location: { expirationHoursAfterStart: null, cityId: 'city-2' },
+    })
+    mockPrisma.activity.findMany.mockResolvedValue([act])
+    mockPrisma.scrapingSource.findMany.mockResolvedValue([
+      { platform: 'WEB', cityId: 'city-2', config: { expirationHoursAfterStart: 1 } },
+    ])
+
+    const result = await expireActivities()
+
+    expect(result.expired).toBe(1)
+  })
+
+  it('Location tiene prioridad sobre ScrapingSource', async () => {
+    // Location: 6h, Source: 1h → startDate hace 2h → Location gana → NO expira
+    const twoHoursAgo = new Date('2026-06-15T08:00:00.000Z')
+    const act = makeActivity('act-8', {
+      startDate: twoHoursAgo,
+      endDate: null,
+      sourcePlatform: 'WEB',
+      location: { expirationHoursAfterStart: 6, cityId: 'city-3' },
+    })
+    mockPrisma.activity.findMany.mockResolvedValue([act])
+    mockPrisma.scrapingSource.findMany.mockResolvedValue([
+      { platform: 'WEB', cityId: 'city-3', config: { expirationHoursAfterStart: 1 } },
+    ])
+
+    const result = await expireActivities()
+
+    expect(result.expired).toBe(0)
+  })
+
+  // ── Múltiples candidatas ─────────────────────────────────────────────────
+
+  it('expira múltiples actividades en una sola llamada a updateMany', async () => {
     const acts = [
       makeActivity('act-a', { endDate: new Date('2026-06-01T00:00:00.000Z') }),
       makeActivity('act-b', { endDate: new Date('2026-05-20T00:00:00.000Z') }),
-      makeActivity('act-c', { startDate: new Date('2026-06-10T00:00:00.000Z'), endDate: null }),
+      makeActivity('act-c', { startDate: new Date('2026-06-15T06:00:00.000Z'), endDate: null }), // 4h atrás
     ]
     mockPrisma.activity.findMany.mockResolvedValue(acts)
 
@@ -115,13 +206,27 @@ describe('expireActivities', () => {
 
     expect(result.expired).toBe(3)
     expect(result.ids).toEqual(['act-a', 'act-b', 'act-c'])
-    expect(mockPrisma.activity.updateMany).toHaveBeenCalledWith({
-      where: { id: { in: ['act-a', 'act-b', 'act-c'] } },
-      data: { status: 'EXPIRED' },
-    })
+    expect(mockPrisma.activity.updateMany).toHaveBeenCalledOnce()
   })
 
-  // ── Verificación del query a findMany ──────────────────────────────────────
+  // ── Tipos de actividad expirables ─────────────────────────────────────────
+
+  it.each([['ONE_TIME'], ['CAMP'], ['WORKSHOP']])(
+    'expira correctamente actividades de tipo %s',
+    async (type) => {
+      const act = makeActivity('act-typed', {
+        type,
+        endDate: new Date('2026-06-01T00:00:00.000Z'),
+      })
+      mockPrisma.activity.findMany.mockResolvedValue([act])
+
+      const result = await expireActivities()
+
+      expect(result.expired).toBe(1)
+    },
+  )
+
+  // ── Query a findMany ──────────────────────────────────────────────────────
 
   it('consulta findMany con status ACTIVE y solo tipos expirables', async () => {
     await expireActivities()
@@ -132,82 +237,26 @@ describe('expireActivities', () => {
     expect(callArgs.where.type).toEqual({ in: ['ONE_TIME', 'CAMP', 'WORKSHOP'] })
   })
 
-  it('el query incluye condición OR para endDate y startDate', async () => {
-    await expireActivities()
-
-    const callArgs = mockPrisma.activity.findMany.mock.calls[0][0]
-    const orConditions = callArgs.where.OR
-
-    expect(orConditions).toHaveLength(2)
-    // Primera condición: endDate < now
-    expect(orConditions[0]).toHaveProperty('endDate')
-    // Segunda condición: startDate < threeDaysAgo y endDate null
-    expect(orConditions[1]).toHaveProperty('startDate')
-    expect(orConditions[1].endDate).toBeNull()
-  })
-
-  it('el umbral de threeDaysAgo es exactamente 3 días antes de now', async () => {
-    await expireActivities()
-
-    const callArgs = mockPrisma.activity.findMany.mock.calls[0][0]
-    const threeDaysAgo = callArgs.where.OR[1].startDate.lt as Date
-
-    const expectedThreeDaysAgo = new Date(FIXED_NOW)
-    expectedThreeDaysAgo.setDate(expectedThreeDaysAgo.getDate() - 3)
-
-    expect(threeDaysAgo.getTime()).toBe(expectedThreeDaysAgo.getTime())
-  })
-
-  it('el query incluye select con los campos necesarios', async () => {
+  it('el query incluye select con location y sourcePlatform', async () => {
     await expireActivities()
 
     const callArgs = mockPrisma.activity.findMany.mock.calls[0][0]
 
-    expect(callArgs.select).toEqual({
+    expect(callArgs.select).toMatchObject({
       id: true,
-      title: true,
-      type: true,
       startDate: true,
       endDate: true,
+      sourcePlatform: true,
+      location: expect.objectContaining({ select: expect.any(Object) }),
     })
-  })
-
-  // ── RECURRING no expira ───────────────────────────────────────────────────
-
-  it('no incluye RECURRING en los tipos expirables del query', async () => {
-    await expireActivities()
-
-    const callArgs = mockPrisma.activity.findMany.mock.calls[0][0]
-    const types: string[] = callArgs.where.type.in
-
-    expect(types).not.toContain('RECURRING')
-  })
-
-  // ── Tipos de actividad expirables ─────────────────────────────────────────
-
-  it.each([
-    ['ONE_TIME'],
-    ['CAMP'],
-    ['WORKSHOP'],
-  ])('expira correctamente actividades de tipo %s', async (type) => {
-    const act = makeActivity('act-typed', {
-      type,
-      endDate: new Date('2026-06-01T00:00:00.000Z'),
-    })
-    mockPrisma.activity.findMany.mockResolvedValue([act])
-
-    const result = await expireActivities()
-
-    expect(result.expired).toBe(1)
   })
 
   // ── Interfaz de retorno ───────────────────────────────────────────────────
 
   it('devuelve exactamente los IDs de las actividades expiradas', async () => {
-    const acts = [
-      makeActivity('id-x'),
-      makeActivity('id-y'),
-    ]
+    const acts = [makeActivity('id-x'), makeActivity('id-y')]
+    acts[0] = { ...acts[0], endDate: new Date('2026-06-01T00:00:00.000Z') }
+    acts[1] = { ...acts[1], endDate: new Date('2026-05-01T00:00:00.000Z') }
     mockPrisma.activity.findMany.mockResolvedValue(acts)
 
     const result = await expireActivities()
@@ -217,7 +266,9 @@ describe('expireActivities', () => {
   })
 
   it('el resultado tiene la forma correcta de ExpireResult', async () => {
-    mockPrisma.activity.findMany.mockResolvedValue([makeActivity('act-z')])
+    mockPrisma.activity.findMany.mockResolvedValue([
+      makeActivity('act-z', { endDate: new Date('2026-06-01T00:00:00.000Z') }),
+    ])
 
     const result = await expireActivities()
 

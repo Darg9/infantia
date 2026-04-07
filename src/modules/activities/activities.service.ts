@@ -77,8 +77,8 @@ export async function listActivities(params: ListParams) {
   if (params.status) {
     where.status = params.status as Prisma.EnumActivityStatusFilter;
   } else {
-    // Mostrar ACTIVE y EXPIRED (con badge). Ocultar DRAFT y PAUSED (estados internos).
-    where.status = { in: ['ACTIVE', 'EXPIRED'] };
+    // Mostrar solo ACTIVE. Las EXPIRED se ocultan automáticamente del portal.
+    where.status = 'ACTIVE';
   }
 
   if (params.verticalId) where.verticalId = params.verticalId;

@@ -21,7 +21,7 @@ export async function Header() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-orange-500">Infantia</span>
+          <span className="text-xl font-bold text-orange-500">HabitaPlan</span>
         </Link>
 
         {/* Nav */}

@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Política de Tratamiento de Datos Personales',
-  description: 'Política de tratamiento de datos personales de Infantia conforme a la Ley 1581 de 2012.',
+  description: 'Política de tratamiento de datos personales de HabitaPlan conforme a la Ley 1581 de 2012.',
 };
 
 export default function TratamientoDatosPage() {
@@ -24,7 +24,7 @@ export default function TratamientoDatosPage() {
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="px-3 py-2 font-medium bg-gray-50">Proyecto</td>
-                <td className="px-3 py-2">Infantia</td>
+                <td className="px-3 py-2">HabitaPlan</td>
               </tr>
               <tr className="border-b border-gray-100">
                 <td className="px-3 py-2 font-medium bg-gray-50">Domicilio</td>
@@ -186,7 +186,7 @@ export default function TratamientoDatosPage() {
           <p className="text-gray-600 leading-relaxed">
             Los datos personales serán tratados mientras sea necesario para las finalidades descritas
             o mientras el titular no solicite su supresión. Las bases de datos tendrán vigencia mientras
-            Infantia desarrolle su objeto.
+            HabitaPlan desarrolle su objeto.
           </p>
         </section>
 

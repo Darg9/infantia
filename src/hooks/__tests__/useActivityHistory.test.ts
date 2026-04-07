@@ -19,7 +19,7 @@ Object.defineProperty(globalThis, 'localStorage', { value: localStorageMock, wri
 // Now import the module (it will see window + localStorage)
 import { addToHistory, clearHistory } from '../useActivityHistory'
 
-const STORAGE_KEY = 'infantia:activity-history'
+const STORAGE_KEY = 'habitaplan:activity-history'
 
 function getStoredHistory() {
   const raw = store[STORAGE_KEY]

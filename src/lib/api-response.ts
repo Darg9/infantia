@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia - Standardized API Response Helpers
+// HabitaPlan - Standardized API Response Helpers
 // =============================================================================
 
 import { NextResponse } from 'next/server';

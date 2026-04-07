@@ -33,7 +33,7 @@ function sanitizeGeminiResponse(raw: Record<string, unknown>): Record<string, un
   return out;
 }
 
-const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
+const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma HabitaPlan.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
 
 REGLAS:
@@ -69,7 +69,7 @@ ESTRUCTURA JSON ESPERADA:
   "confidenceScore": number
 }`;
 
-const INSTAGRAM_SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
+const INSTAGRAM_SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma HabitaPlan.
 Tu tarea es extraer información estructurada de publicaciones de Instagram.
 
 CONTEXTO: Recibirás el caption de un post de Instagram y la bio del perfil que lo publicó.
@@ -287,7 +287,7 @@ export class GeminiAnalyzer {
         .map((l, i) => `${i + 1}. URL: ${l.url} | Texto: ${l.anchorText}`)
         .join('\n');
 
-      const prompt = `Eres un filtro inteligente para la plataforma Infantia.
+      const prompt = `Eres un filtro inteligente para la plataforma HabitaPlan.
 Te doy una lista numerada de links extraídos de: ${sourceUrl}
 
 Tu tarea: selecciona SOLO los links que probablemente lleven a páginas de actividades, eventos, talleres, cursos o programas para niños, jóvenes o familias.

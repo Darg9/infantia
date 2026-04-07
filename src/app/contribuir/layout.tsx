@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'Contribuir — Sugerir actividades o fuentes',
-  description: 'Ayúdanos a crecer. Sugiere nuevas actividades o instituciones que deberían estar en Infantia.',
+  description: 'Ayúdanos a crecer. Sugiere nuevas actividades o instituciones que deberían estar en HabitaPlan.',
 }
 
 export default function ContribuirLayout({

@@ -1,20 +1,20 @@
-# Infantia - Project Guidelines
+# HabitaPlan - Project Guidelines
 
 ## ⚠️ REGLA DE SEGURIDAD — VERIFICACIÓN DE DIRECTORIO
 
 **AL INICIO DE CADA SESIÓN, antes de escribir cualquier línea de código:**
 
-1. Ejecuta `pwd` y verifica que el resultado sea `C:/Users/denys/Projects/infantia`
+1. Ejecuta `pwd` y verifica que el resultado sea `C:/Users/denys/Projects/habitaplan`
 2. Si el directorio NO es ese, detente inmediatamente y avisa al usuario:
-   > "⛔ Directorio incorrecto: estoy en [directorio actual]. Este proyecto debe abrirse desde C:/Users/denys/Projects/infantia. Abre Claude Code desde esa carpeta."
+   > "⛔ Directorio incorrecto: estoy en [directorio actual]. Este proyecto debe abrirse desde C:/Users/denys/Projects/habitaplan. Abre Claude Code desde esa carpeta."
 3. Verifica que `prisma/schema.prisma` exista y contenga `provider = "postgresql"` (no SQLite).
    Si contiene SQLite o le falta `provider`, detente y avisa antes de continuar.
 
-**Este proyecto es INFANTIA. Nunca escribas código de habit-challenge aquí.**
+**Este proyecto es HABITAPLAN. Nunca escribas código de habit-challenge aquí.**
 **habit-challenge tiene su propio directorio: `C:/Users/denys/Projects/habit-challenge`**
 
 ## What is this project?
-Infantia is a multi-source activity discovery platform for families. It aggregates activities from websites, social media, and messaging platforms into a single searchable interface.
+HabitaPlan is a multi-source activity discovery platform for families. It aggregates activities from websites, social media, and messaging platforms into a single searchable interface.
 
 ## Tech Stack
 - **Framework:** Next.js 16.2.1 (App Router) + TypeScript (strict)
@@ -81,11 +81,11 @@ find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
 | Plantillas y flujos | `.github/pull_request_template.md`, `.agents/workflows/*.md` | Si cambian convenciones o arquitectura de seguridad |
 | **Manuales nuevos** | Cualquier `.md` que se agregue | Al ser creado y cuando su tema cambie |
 
-### Acervo externo (Infantia_Claude/)
+### Acervo externo (HabitaPlan_Claude/)
 
 | Documento | Cuándo actualizar |
 |-----------|------------------|
-| `Infantia_Documento_Fundacional_V0X.docx` | Siempre que haya cambio de producto, arquitectura, stack o estrategia — generar nueva versión (no sobreescribir) |
+| `HabitaPlan_Documento_Fundacional_V0X.docx` | Siempre que haya cambio de producto, arquitectura, stack o estrategia — generar nueva versión (no sobreescribir) |
 | Manuales adicionales (si existen) | Cuando el tema que cubren cambie |
 
 **Nunca desplegar sin haber revisado el acervo completo. El número exacto de documentos es lo que diga `find` — no un número fijo.**
@@ -198,7 +198,7 @@ Comando: `node scripts/generate_v22.mjs` (actualizar número de versión primero
 - **797 tests** en 53 archivos — `npm test` pasa en ~8s — 0 errores TypeScript
 - Cobertura: **90.66% stmts / 85.18% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO en `https://infantia-activities.vercel.app`
+- Vercel deployment: ACTIVO en `https://habitaplan-activities.vercel.app`
 - BullMQ + Upstash Redis: OPERATIVO
 - 14 fuentes web + 10 Instagram + canal Telegram configurado (pendiente ingest sin --dry-run)
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
@@ -226,7 +226,7 @@ Comando: `node scripts/generate_v22.mjs` (actualizar número de versión primero
 - **Página /anunciate:** landing de monetización con stats y precios orientativos
 - **Dashboard proveedor:** `/proveedores/[slug]/dashboard` — acceso ADMIN o owner (email + isClaimed)
 - **UserMenu:** muestra "Mi panel" si `providerSlug` presente (role=provider + isClaimed)
-- **UTM tracking email:** todos los links del digest con `?utm_source=infantia&utm_medium=email&utm_campaign=...`
+- **UTM tracking email:** todos los links del digest con `?utm_source=habitaplan&utm_medium=email&utm_campaign=...`
 - **Proxy Playwright:** `PLAYWRIGHT_PROXY_SERVER/USER/PASS` — sin vars = sin proxy (backward compatible)
 
 ### Features v0.8.0 – v0.8.1

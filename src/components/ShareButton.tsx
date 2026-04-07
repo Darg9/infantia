@@ -41,7 +41,7 @@ export function ShareButton({
           ? `Hasta ${ageMax} años`
           : 'Todas las edades'
 
-  const shareText = `${title} — ${ageLabel} · Descubre más en Infantia`
+  const shareText = `${title} — ${ageLabel} · Descubre más en HabitaPlan`
   const shareUrl = `${SITE_URL}${activityPath(id, title)}`
 
   const handleWebShare = async () => {

@@ -20,8 +20,8 @@ import { SITE_URL } from '@/config/site';
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Infantia — Actividades para niños en Colombia',
-    template: '%s | Infantia',
+    default: 'HabitaPlan — Actividades para niños en Colombia',
+    template: '%s | HabitaPlan',
   },
   description:
     'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia. Todo en un solo lugar, siempre actualizado.',
@@ -36,14 +36,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'es_CO',
-    siteName: 'Infantia',
-    title: 'Infantia — Actividades para niños en Colombia',
+    siteName: 'HabitaPlan',
+    title: 'HabitaPlan — Actividades para niños en Colombia',
     description:
       'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Infantia — Actividades para niños en Colombia',
+    title: 'HabitaPlan — Actividades para niños en Colombia',
     description:
       'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
   },

@@ -1,4 +1,4 @@
-# Infantia — Activity Discovery Platform for Families
+# HabitaPlan — Activity Discovery Platform for Families
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
@@ -126,7 +126,7 @@ RESEND_API_KEY=...
 REDIS_URL=rediss://...
 
 # Site
-NEXT_PUBLIC_SITE_URL=https://infantia-activities.vercel.app
+NEXT_PUBLIC_SITE_URL=https://habitaplan-activities.vercel.app
 
 # Proxy (optional — IPRoyal residential, pay-as-you-go $7/GB)
 PLAYWRIGHT_PROXY_SERVER=http://geo.iproyal.com:12321
@@ -178,8 +178,8 @@ src/
 
 ## Deployment
 
-- **Production:** https://infantia-activities.vercel.app
-- **Repo:** https://github.com/Darg9/infantia (private)
+- **Production:** https://habitaplan-activities.vercel.app
+- **Repo:** https://github.com/Darg9/habitaplan (private)
 - **Branch:** master — auto-deploy on push via GitHub Actions → Vercel
 - **DB:** Supabase PostgreSQL (Free Tier)
 - **Queue:** Upstash Redis (Free Tier)

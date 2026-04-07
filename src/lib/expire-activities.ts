@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia - Lógica de expiración de actividades
+// HabitaPlan - Lógica de expiración de actividades
 // Reglas:
 //   ONE_TIME / CAMP / WORKSHOP con endDate pasado → EXPIRED
 //   ONE_TIME / CAMP / WORKSHOP con startDate pasado (>3 días), sin endDate → EXPIRED

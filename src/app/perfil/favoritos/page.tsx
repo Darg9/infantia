@@ -9,8 +9,8 @@ import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 
 export const metadata: Metadata = {
-  title: 'Mis favoritos | Infantia',
-  description: 'Tus actividades guardadas en Infantia',
+  title: 'Mis favoritos | HabitaPlan',
+  description: 'Tus actividades guardadas en HabitaPlan',
 };
 
 export default async function FavoritosPage() {

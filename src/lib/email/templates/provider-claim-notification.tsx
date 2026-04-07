@@ -15,7 +15,7 @@ interface Props {
   claimId:       string;
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://infantia-activities.vercel.app';
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://habitaplan-activities.vercel.app';
 
 export function ProviderClaimNotificationEmail({
   claimantName,

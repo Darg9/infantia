@@ -205,7 +205,7 @@ export async function POST(request: NextRequest) {
       });
       if (recentCount > 0) {
         const expiredEndpoints = await sendPushToMany(allPushSubs, {
-          title: '🎉 Nuevas actividades en Infantia',
+          title: '🎉 Nuevas actividades en HabitaPlan',
           body: `${recentCount} actividad${recentCount !== 1 ? 'es' : ''} nueva${recentCount !== 1 ? 's' : ''} disponible${recentCount !== 1 ? 's' : ''} hoy`,
           url: '/actividades',
           tag: 'digest',

@@ -67,7 +67,7 @@ async function main() {
   const byType = await prisma.activity.groupBy({ by: ['type'], _count: { _all: true } });
   const byStatus = await prisma.activity.groupBy({ by: ['status'], _count: { _all: true } });
 
-  console.log(`\nINFANTIA -- DIAGNOSTICO DE FUENTES`);
+  console.log(`\nHABITAPLAN -- DIAGNOSTICO DE FUENTES`);
   console.log(`${'='.repeat(65)}`);
   console.log(`Total actividades en DB : ${total}`);
   console.log(`Gratis                  : ${free} (${Math.round((free / total) * 100)}%)`);

@@ -5,7 +5,7 @@
 
 ## ¿Qué hace?
 
-Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el módulo central de Infantia — todo lo que el scraping guarda, la API lo sirve con filtros facetados, ordenamiento, geocoding y soporte de monetización (isPremium).
+Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el módulo central de HabitaPlan — todo lo que el scraping guarda, la API lo sirve con filtros facetados, ordenamiento, geocoding y soporte de monetización (isPremium).
 
 ## Endpoints de actividades
 
@@ -95,7 +95,7 @@ Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo s
 | `date` | Próximas primero, sin fecha al final |
 | `price_asc` | Precio ascendente, gratis y sin precio al final |
 | `price_desc` | Precio descendente, gratis y sin precio al final |
-| `newest` | Recién agregadas a Infantia |
+| `newest` | Recién agregadas a HabitaPlan |
 
 > **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
 
@@ -150,7 +150,7 @@ extractActivityId(param) // → UUID (desde param con o sin slug)
 ## Email digest con UTM
 
 `activity-digest.tsx` incluye:
-- UTM en links de actividades: `?utm_source=infantia&utm_medium=email&utm_campaign=digest_{daily|weekly}`
+- UTM en links de actividades: `?utm_source=habitaplan&utm_medium=email&utm_campaign=digest_{daily|weekly}`
 - UTM en CTA "Ver todas": mismo parámetro
 - Bloque sponsor opcional (prop `sponsor?`): link con `utm_campaign=newsletter`
 

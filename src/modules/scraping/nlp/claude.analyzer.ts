@@ -3,7 +3,7 @@ import { createLogger } from '../../../lib/logger';
 
 const log = createLogger('scraping:claude');
 
-const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma Infantia.
+const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma HabitaPlan.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
 
 REGLAS:

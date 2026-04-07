@@ -1,4 +1,4 @@
-# Infantia — Plan de Pruebas
+# HabitaPlan — Plan de Pruebas
 
 **Version:** v0.9.3-S32 | **Fecha:** 2026-04-07
 **Framework:** Vitest + @vitest/coverage-v8

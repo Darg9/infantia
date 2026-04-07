@@ -52,7 +52,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
         <div className="text-4xl mb-3">✅</div>
         <h2 className="font-semibold text-emerald-800 text-lg">¡Solicitud enviada!</h2>
         <p className="text-sm text-emerald-700 mt-2">
-          El equipo de Infantia revisará tu solicitud en menos de 48 horas
+          El equipo de HabitaPlan revisará tu solicitud en menos de 48 horas
           y te contactará a <strong>{userEmail}</strong>.
         </p>
         <a

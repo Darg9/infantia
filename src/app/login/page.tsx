@@ -46,7 +46,7 @@ function LoginForm() {
   return (
     <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Iniciar sesión</h1>
-      <p className="text-gray-500 text-sm mb-6">Bienvenido de vuelta a Infantia</p>
+      <p className="text-gray-500 text-sm mb-6">Bienvenido de vuelta a HabitaPlan</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

@@ -35,7 +35,7 @@ export default function ContactoPage() {
     }
     const urlParam = searchParams?.get('url')
     if (urlParam) {
-      const base = typeof window !== 'undefined' ? window.location.origin : 'https://infantia.co'
+      const base = typeof window !== 'undefined' ? window.location.origin : 'https://habitaplan.com'
       setActividadUrl(`${base}${urlParam}`)
     }
   }, [searchParams])
@@ -50,11 +50,11 @@ export default function ContactoPage() {
     setLoading(true)
 
     // For MVP, we send to a mailto link since there's no backend endpoint yet
-    const subject = encodeURIComponent(`[Infantia] ${motivo}`)
+    const subject = encodeURIComponent(`[HabitaPlan] ${motivo}`)
     const body = encodeURIComponent(
       `Nombre: ${nombre}\nCorreo: ${email}\nMotivo: ${motivo}${actividadUrl ? `\nURL actividad: ${actividadUrl}` : ''}\n\nMensaje:\n${mensaje}`
     )
-    window.location.href = `mailto:contacto@infantia.co?subject=${subject}&body=${body}`
+    window.location.href = `mailto:contacto@habitaplan.com?subject=${subject}&body=${body}`
 
     setLoading(false)
     setEnviado(true)
@@ -68,7 +68,7 @@ export default function ContactoPage() {
           <h1 className="text-xl font-bold text-gray-900 mb-2">Solicitud recibida</h1>
           <p className="text-gray-600">
             Se abrió su cliente de correo con los datos del formulario. Si no se abrió automáticamente,
-            puede escribirnos directamente a <strong>contacto@infantia.co</strong>.
+            puede escribirnos directamente a <strong>contacto@habitaplan.com</strong>.
           </p>
           <p className="text-sm text-gray-500 mt-4">
             {isTakedown
@@ -100,7 +100,7 @@ export default function ContactoPage() {
       <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-8">
         <h2 className="text-sm font-semibold text-orange-800 mb-1">Remoción de contenido</h2>
         <p className="text-sm text-orange-700">
-          Si eres titular de contenido publicado en Infantia y deseas su modificación o remoción,
+          Si eres titular de contenido publicado en HabitaPlan y deseas su modificación o remoción,
           selecciona el motivo <strong>&quot;Solicitud de remoción de contenido&quot;</strong> abajo.
           Nos comprometemos a responder en un máximo de <strong>5 días hábiles</strong>.
         </p>
@@ -159,7 +159,7 @@ export default function ContactoPage() {
         {(isReporte || isTakedown) && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL de la actividad en Infantia {isTakedown && <span className="text-red-500">*</span>}
+              URL de la actividad en HabitaPlan {isTakedown && <span className="text-red-500">*</span>}
             </label>
             <input
               type="url"
@@ -167,7 +167,7 @@ export default function ContactoPage() {
               onChange={(e) => setActividadUrl(e.target.value)}
               required={isTakedown}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              placeholder="https://infantia.co/actividades/..."
+              placeholder="https://habitaplan.com/actividades/..."
             />
             <p className="text-xs text-gray-400 mt-1">Copie la URL de la actividad desde la barra de su navegador</p>
           </div>
@@ -192,7 +192,7 @@ export default function ContactoPage() {
             <p className="font-medium text-gray-700 mb-1">Para ejercer sus derechos (Ley 1581 de 2012):</p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Indique qué derecho desea ejercer (acceso, rectificación, cancelación, oposición)</li>
-              <li>Correo electrónico con el que se registró en Infantia</li>
+              <li>Correo electrónico con el que se registró en HabitaPlan</li>
               <li>Descripción de su solicitud</li>
             </ul>
             <p className="mt-1">Responderemos en un plazo máximo de 10 días hábiles.</p>

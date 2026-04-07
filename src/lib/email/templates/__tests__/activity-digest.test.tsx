@@ -7,7 +7,7 @@ vi.mock('@/lib/activity-url', () => ({
   activityPath: (id: string, title: string) => `/actividades/${id}-${title.toLowerCase().replace(/\s+/g, '-')}`,
 }))
 
-const BASE_URL = 'https://infantia-activities.vercel.app'
+const BASE_URL = 'https://habitaplan-activities.vercel.app'
 
 const ACTIVITIES = [
   {
@@ -38,7 +38,7 @@ describe('ActivityDigestEmail', () => {
   describe('UTM tracking — links de actividades', () => {
     it('incluye UTM en el link "Ver detalles" de cada actividad (daily)', async () => {
       const html = await renderEmail({ activities: ACTIVITIES, period: 'daily' })
-      expect(html).toContain('utm_source=infantia')
+      expect(html).toContain('utm_source=habitaplan')
       expect(html).toContain('utm_medium=email')
       expect(html).toContain('utm_campaign=digest_daily')
     })
@@ -50,12 +50,12 @@ describe('ActivityDigestEmail', () => {
 
     it('incluye UTM en el link "Ver todas las actividades"', async () => {
       const html = await renderEmail({ activities: ACTIVITIES, period: 'daily' })
-      expect(html).toContain('/actividades?utm_source=infantia&amp;utm_medium=email&amp;utm_campaign=digest_daily')
+      expect(html).toContain('/actividades?utm_source=habitaplan&amp;utm_medium=email&amp;utm_campaign=digest_daily')
     })
 
     it('los links de actividad apuntan a la URL correcta con UTM', async () => {
       const html = await renderEmail({ activities: [ACTIVITIES[0]], period: 'daily' })
-      expect(html).toContain('/actividades/act-1-taller-de-arte?utm_source=infantia')
+      expect(html).toContain('/actividades/act-1-taller-de-arte?utm_source=habitaplan')
     })
   })
 
@@ -80,7 +80,7 @@ describe('ActivityDigestEmail', () => {
 
     it('incluye UTM en el link del sponsor', async () => {
       const html = await renderEmail({ activities: ACTIVITIES, period: 'daily', sponsor })
-      expect(html).toContain('utm_source=infantia')
+      expect(html).toContain('utm_source=habitaplan')
       expect(html).toContain('utm_medium=email')
       expect(html).toContain('utm_campaign=newsletter')
     })

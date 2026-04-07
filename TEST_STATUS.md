@@ -1,4 +1,4 @@
-# Infantia — Estado de Pruebas
+# HabitaPlan — Estado de Pruebas
 
 Actualizado: 2026-04-07 | Version: v0.9.3-S32
 

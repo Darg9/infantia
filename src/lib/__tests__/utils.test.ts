@@ -100,7 +100,7 @@ describe('slugify()', () => {
     expect(slugify('ya-es-slug')).toBe('ya-es-slug');
   });
 
-  it('maneja nombre típico de actividad infantia', () => {
+  it('maneja nombre típico de actividad habitaplan', () => {
     expect(slugify('Jardín Botánico — Taller Niños')).toBe('jardin-botanico-taller-ninos');
   });
 });

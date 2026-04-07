@@ -7,11 +7,11 @@ import { SITE_URL } from '@/config/site'
 import MapClient from './MapClient'
 
 export const metadata: Metadata = {
-  title: 'Mapa de actividades en Bogotá | Infantia',
+  title: 'Mapa de actividades en Bogotá | HabitaPlan',
   description: 'Explora actividades para niños y familias en el mapa de Bogotá.',
   alternates: { canonical: `${SITE_URL}/mapa` },
   openGraph: {
-    title: 'Mapa de actividades | Infantia',
+    title: 'Mapa de actividades | HabitaPlan',
     description: 'Encuentra actividades cerca de ti en Bogotá.',
     url: `${SITE_URL}/mapa`,
   },

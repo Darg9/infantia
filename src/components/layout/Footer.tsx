@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
           {/* Brand */}
           <div>
-            <span className="text-lg font-bold text-orange-500">Infantia</span>
+            <span className="text-lg font-bold text-orange-500">HabitaPlan</span>
             <p className="text-sm text-gray-500 mt-1">
               Actividades para niños y familias en Colombia.
             </p>
@@ -64,7 +64,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-gray-100 mt-6 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-          <span>© {new Date().getFullYear()} Infantia. Bogotá, Colombia.</span>
+          <span>© {new Date().getFullYear()} HabitaPlan. Bogotá, Colombia.</span>
           <span>
             La información proviene de fuentes públicas.{' '}
             <Link href="/contacto" className="underline hover:text-gray-600">

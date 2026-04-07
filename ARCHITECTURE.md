@@ -1,4 +1,4 @@
-# Infantia — Arquitectura del Sistema
+# HabitaPlan — Arquitectura del Sistema
 
 > Versión: v0.9.3-S32 | Actualizado: 2026-04-07
 > Documento vivo — se actualiza con cada versión mayor.
@@ -7,7 +7,7 @@
 
 ## 1. Visión General
 
-**Infantia** es un agregador multi-fuente de actividades para niños y familias en Bogotá (con visión de expansión a otras ciudades de Colombia y Latinoamérica). Resuelve el problema de la información fragmentada: talleres, eventos, clubes y cursos están dispersos entre sitios web institucionales, redes sociales, grupos de mensajería y academias privadas.
+**HabitaPlan** es un agregador multi-fuente de actividades para niños y familias en Bogotá (con visión de expansión a otras ciudades de Colombia y Latinoamérica). Resuelve el problema de la información fragmentada: talleres, eventos, clubes y cursos están dispersos entre sitios web institucionales, redes sociales, grupos de mensajería y academias privadas.
 
 **Problema central:** Los padres y cuidadores pierden tiempo buscando en múltiples fuentes sin garantía de que la información esté actualizada.
 
@@ -44,7 +44,7 @@
 ## 3. Estructura de Directorios
 
 ```
-infantia/
+habitaplan/
 ├── src/
 │   ├── app/                        # Next.js App Router
 │   │   ├── page.tsx                # Home — landing con contador y categorías
@@ -232,7 +232,7 @@ ClaimStatus       → PENDING | APPROVED | REJECTED   (NUEVO v0.9.1)
 
 ## 5. Módulo de Scraping
 
-El motor de scraping es el núcleo diferenciador de Infantia. Extrae actividades de múltiples fuentes, las normaliza con IA y las persiste con deduplicación automática.
+El motor de scraping es el núcleo diferenciador de HabitaPlan. Extrae actividades de múltiples fuentes, las normaliza con IA y las persiste con deduplicación automática.
 
 ### Archivos del módulo
 
@@ -406,7 +406,7 @@ El modelo `Child` almacena consentimiento parental explícito:
 ### Transferencia internacional de datos
 - Supabase Inc. (AWS, EEUU) — SOC 2 Type II, AES-256
 - Vercel Inc. (EEUU) — SOC 2 Type II
-- Registrado en RNBD (SIC Colombia) — trámite en `infantia.co/tratamiento-datos`
+- Registrado en RNBD (SIC Colombia) — trámite en `habitaplan.com/tratamiento-datos`
 
 ---
 
@@ -465,7 +465,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 
 - **Plataforma:** Vercel (auto-deploy en push a `master`)
 - **DB:** Supabase PostgreSQL (AWS us-east-1, proyecto `vjfhlrpfubbfnvpthwym`)
-- **Dominio objetivo:** `infantia.co` (pendiente de configurar en Vercel)
+- **Dominio objetivo:** `habitaplan.com` (pendiente de configurar en Vercel)
 - **Crons Vercel:** deduplicación diaria — `15 2 * * *`
 
 ### Variables de entorno requeridas
@@ -478,7 +478,7 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 GOOGLE_AI_STUDIO_KEY            # Gemini 2.5 Flash — 20 RPD free tier
 RESEND_API_KEY                  # Email transaccional
-RESEND_FROM_EMAIL               # Remitente (ej: Infantia <hola@infantia.co>)
+RESEND_FROM_EMAIL               # Remitente (ej: HabitaPlan <hola@habitaplan.com>)
 UPSTASH_REDIS_URL               # BullMQ queue (rediss://...)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY    # Web Push
 VAPID_PRIVATE_KEY
@@ -613,11 +613,11 @@ vi.mock('./module', () => ({ fn: mockFn }));
 
 ## 14. Separación de Proyectos
 
-El mismo desarrollador mantiene dos proyectos independientes. En el pasado hubo contaminación cruzada (archivos de Habit Challenge en el repo de Infantia). Verificar al inicio de cada sesión:
+El mismo desarrollador mantiene dos proyectos independientes. En el pasado hubo contaminación cruzada (archivos de Habit Challenge en el repo de HabitaPlan). Verificar al inicio de cada sesión:
 
 | Proyecto | Directorio | DB | NLP activo |
 |---|---|---|---|
-| **Infantia** | `C:\Users\denys\Projects\infantia` | PostgreSQL (Supabase) | Gemini 2.5 Flash |
+| **HabitaPlan** | `C:\Users\denys\Projects\habitaplan` | PostgreSQL (Supabase) | Gemini 2.5 Flash |
 | **Habit Challenge** | `C:\Users\denys\Projects\habit-challenge` | SQLite | Claude API |
 
 **Señales de contaminación:**

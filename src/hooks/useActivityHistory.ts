@@ -2,7 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from 'react'
 
-const STORAGE_KEY = 'infantia:activity-history'
+const STORAGE_KEY = 'habitaplan:activity-history'
 const MAX_ITEMS = 50
 
 export interface HistoryEntry {

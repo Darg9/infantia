@@ -128,7 +128,7 @@ describe('geocodeAddress()', () => {
       await geocodeAddress('Calle 1', 'Bogotá');
 
       const options = mockFetch.mock.calls[0][1];
-      expect(options.headers['User-Agent']).toContain('Infantia');
+      expect(options.headers['User-Agent']).toContain('HabitaPlan');
     });
 
     it('pide format=json y limit=1', async () => {

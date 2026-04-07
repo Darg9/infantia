@@ -12,7 +12,7 @@ interface City { id: string; name: string; countryName: string }
 
 const CONSENT_TEXT =
   'Soy el padre, madre o tutor legal de este menor y autorizo el tratamiento de sus datos personales ' +
-  'por parte de Infantia conforme a la Política de Tratamiento de Datos Personales (Ley 1581 de 2012). ' +
+  'por parte de HabitaPlan conforme a la Política de Tratamiento de Datos Personales (Ley 1581 de 2012). ' +
   'Los datos del menor se usarán exclusivamente para personalizar la búsqueda de actividades y nunca serán ' +
   'compartidos con terceros para fines comerciales.';
 
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-sm">
         {/* Logo / marca */}
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-orange-500">infantia</span>
+          <span className="text-2xl font-bold text-orange-500">habitaplan</span>
           <p className="text-xs text-gray-400 mt-1">Configura tu cuenta en 2 minutos</p>
         </div>
 

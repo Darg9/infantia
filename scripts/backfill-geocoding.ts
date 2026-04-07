@@ -38,7 +38,7 @@ const stats: BackfillStats = {
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
 
-  console.log(`\n🗺️  Geocoding retroactivo — Infantia`);
+  console.log(`\n🗺️  Geocoding retroactivo — HabitaPlan`);
   console.log(`Modo: ${dryRun ? 'DRY RUN (sin guardar)' : 'GUARDAR EN BD'}\n`);
 
   // Busca TODAS las locations (no solo las de actividades sin coords)

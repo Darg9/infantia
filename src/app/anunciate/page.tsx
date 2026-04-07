@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Anúnciate en Infantia — Llega a familias en Bogotá',
+  title: 'Anúnciate en HabitaPlan — Llega a familias en Bogotá',
   description:
-    'Patrocina el newsletter de Infantia o destaca tu academia en nuestra plataforma. Llega a familias que buscan actividades para sus hijos en Bogotá.',
+    'Patrocina el newsletter de HabitaPlan o destaca tu academia en nuestra plataforma. Llega a familias que buscan actividades para sus hijos en Bogotá.',
 };
 
-const CONTACT_EMAIL = 'hola@infantia.co';
+const CONTACT_EMAIL = 'hola@habitaplan.com';
 
 const STATS = [
   { label: 'Actividades indexadas', value: '260+' },
@@ -27,10 +27,10 @@ const OPTIONS = [
       'Bloque destacado en el email semanal',
       'Logo + tagline + link a tu sitio',
       'UTM tracking — sabrás exactamente cuántos clicks recibiste',
-      'Mención en redes sociales de Infantia',
+      'Mención en redes sociales de HabitaPlan',
     ],
     cta: 'Reservar lugar en lista de espera',
-    subject: 'Quiero patrocinar el newsletter de Infantia',
+    subject: 'Quiero patrocinar el newsletter de HabitaPlan',
   },
   {
     id: 'listing',
@@ -46,7 +46,7 @@ const OPTIONS = [
       'Métricas de vistas e interacciones',
     ],
     cta: 'Reservar mi lugar destacado',
-    subject: 'Quiero un listing destacado en Infantia',
+    subject: 'Quiero un listing destacado en HabitaPlan',
   },
 ];
 
@@ -63,7 +63,7 @@ export default function AnunciatePage() {
             Llega a las familias que ya están buscando
           </h1>
           <p className="text-indigo-100 text-lg leading-relaxed">
-            Infantia es la plataforma donde las familias de Bogotá descubren actividades para sus
+            HabitaPlan es la plataforma donde las familias de Bogotá descubren actividades para sus
             hijos. Pon tu propuesta frente a ellas en el momento exacto.
           </p>
         </div>
@@ -84,7 +84,7 @@ export default function AnunciatePage() {
       {/* Opciones */}
       <section className="max-w-5xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">
-          Elige cómo aparecer en Infantia
+          Elige cómo aparecer en HabitaPlan
         </h2>
         <div className="grid md:grid-cols-2 gap-8">
           {OPTIONS.map((opt) => (
@@ -124,7 +124,7 @@ export default function AnunciatePage() {
           Escríbenos directamente. Respondemos en menos de 24 horas.
         </p>
         <a
-          href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Quiero anunciarme en Infantia')}`}
+          href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent('Quiero anunciarme en HabitaPlan')}`}
           className="inline-block rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 transition-colors"
         >
           Escribir a {CONTACT_EMAIL}

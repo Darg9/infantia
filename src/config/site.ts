@@ -2,7 +2,7 @@
 // site.ts — Fuente única de verdad para la URL del sitio
 //
 // Prioridad:
-// 1. NEXT_PUBLIC_SITE_URL          → Override manual (dominio custom, ej: infantia.app)
+// 1. NEXT_PUBLIC_SITE_URL          → Override manual (dominio custom, ej: habitaplan.com)
 // 2. NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL → Inyectado automáticamente por Vercel
 // 3. Fallback hardcodeado          → Solo si ninguna variable está disponible
 //
@@ -14,4 +14,4 @@ const vercelProductionUrl = process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_UR
 
 export const SITE_URL: string =
   process.env.NEXT_PUBLIC_SITE_URL ??
-  (vercelProductionUrl ? `https://${vercelProductionUrl}` : 'https://infantia-activities.vercel.app');
+  (vercelProductionUrl ? `https://${vercelProductionUrl}` : 'https://habitaplan-activities.vercel.app');

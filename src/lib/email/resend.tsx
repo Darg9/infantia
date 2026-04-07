@@ -40,7 +40,7 @@ export async function sendWelcomeEmail({ to, userName }: SendWelcomeEmailParams)
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to,
-      subject: 'Bienvenido a Infantia 🎉',
+      subject: 'Bienvenido a HabitaPlan 🎉',
       html,
     });
 
@@ -80,7 +80,7 @@ export async function sendActivityDigest({
     const result = await resend.emails.send({
       from: FROM_EMAIL,
       to,
-      subject: `${activities.length} nuevas actividades en Infantia ${periodLabel}`,
+      subject: `${activities.length} nuevas actividades en HabitaPlan ${periodLabel}`,
       html,
     });
 
@@ -115,7 +115,7 @@ export async function sendClaimNotification(params: SendClaimNotificationParams)
 
     const result = await resend.emails.send({
       from:    FROM_EMAIL,
-      to:      'hola@infantia.co',
+      to:      'hola@habitaplan.com',
       subject: `Nueva solicitud de reclamación — ${params.providerName}`,
       html,
     });

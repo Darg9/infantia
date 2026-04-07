@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia - Database Client (Prisma 7 + PostgreSQL Adapter)
+// HabitaPlan - Database Client (Prisma 7 + PostgreSQL Adapter)
 // =============================================================================
 
 import { PrismaPg } from '@prisma/adapter-pg';

@@ -1,5 +1,5 @@
 // =============================================================================
-// /admin/metricas — Panel de métricas de Infantia
+// /admin/metricas — Panel de métricas de HabitaPlan
 // =============================================================================
 
 import { requireRole } from '@/lib/auth';

@@ -16,7 +16,7 @@ export interface GeocodingResult {
 }
 
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
-const USER_AGENT = 'Infantia/1.0 (plataforma de actividades infantiles; contacto@infantia.co)';
+const USER_AGENT = 'HabitaPlan/1.0 (plataforma de actividades infantiles; contacto@habitaplan.com)';
 const RATE_LIMIT_MS = 1100; // 1.1s entre requests para respetar el ToS
 
 let lastRequestAt = 0;

@@ -39,7 +39,7 @@ async function main() {
   });
 
   console.log('\n╔══════════════════════════════════════╗');
-  console.log('║       REPORTE SUPABASE — INFANTIA    ║');
+  console.log('║       REPORTE SUPABASE — HABITAPLAN    ║');
   console.log('╚══════════════════════════════════════╝\n');
 
   console.log(`📊 Actividades totales : ${totalActivities}`);

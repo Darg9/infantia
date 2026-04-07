@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia - Shared Validation Utilities
+// HabitaPlan - Shared Validation Utilities
 // =============================================================================
 
 import { z } from 'zod';

@@ -69,7 +69,7 @@ export default function RegistroPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Crear cuenta</h1>
-        <p className="text-gray-500 text-sm mb-6">Únete a Infantia y descubre actividades</p>
+        <p className="text-gray-500 text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

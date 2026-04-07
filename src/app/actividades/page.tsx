@@ -21,7 +21,7 @@ export const metadata: Metadata = {
   description:
     'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Colombia. Filtra por edad, categoría y más.',
   openGraph: {
-    title: 'Actividades para niños en Colombia | Infantia',
+    title: 'Actividades para niños en Colombia | HabitaPlan',
     description:
       'Explora talleres, clubes, cursos, campamentos y eventos para niños y familias en Colombia.',
   },

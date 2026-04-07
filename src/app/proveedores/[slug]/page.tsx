@@ -50,10 +50,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const provider = await getProvider(slug)
   if (!provider) return {}
 
-  const title = `${provider.name} | Infantia`
+  const title = `${provider.name} | HabitaPlan`
   const description =
     provider.description?.slice(0, 160) ??
-    `${provider.name} — ${provider._count.activities} actividades en Infantia`
+    `${provider.name} — ${provider._count.activities} actividades en HabitaPlan`
 
   return {
     title,

@@ -62,7 +62,7 @@ function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInp
       // Más caro primero; sin precio al final
       return [{ price: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }];
     case 'newest':
-      // Recién agregadas a Infantia
+      // Recién agregadas a HabitaPlan
       return [{ createdAt: 'desc' }];
     case 'relevance':
     default:

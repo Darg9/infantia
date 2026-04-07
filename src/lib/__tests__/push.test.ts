@@ -18,7 +18,7 @@ vi.mock('web-push', () => ({
 // Configurar vars de entorno para que setVapidDetails se llame en init
 vi.stubEnv('NEXT_PUBLIC_VAPID_PUBLIC_KEY', 'fake-public-key');
 vi.stubEnv('VAPID_PRIVATE_KEY', 'fake-private-key');
-vi.stubEnv('VAPID_SUBJECT', 'mailto:test@infantia.co');
+vi.stubEnv('VAPID_SUBJECT', 'mailto:test@habitaplan.com');
 
 // Import después de mocks
 import { sendPushNotification, sendPushToMany } from '../push';

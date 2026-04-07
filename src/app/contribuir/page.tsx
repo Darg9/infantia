@@ -11,15 +11,15 @@ export default function ContribuirPage() {
   const handleSubmit = (tipoContribucion: 'actividad' | 'institucion') => {
     const subject = encodeURIComponent(
       tipoContribucion === 'actividad'
-        ? '[Infantia] Sugerir nueva actividad'
-        : '[Infantia] Sugerir institución o proveedor'
+        ? '[HabitaPlan] Sugerir nueva actividad'
+        : '[HabitaPlan] Sugerir institución o proveedor'
     )
     const body = encodeURIComponent(
       tipoContribucion === 'actividad'
         ? 'Nombre de la actividad:\n\nInstitucion/Proveedor:\n\nDescripción:\n\nEdad recomendada:\n\nPrecio (si aplica):\n\nURL o fuente de información:\n\nObservaciones adicionales:'
         : 'Nombre de la institución o proveedor:\n\nCategoria de actividades:\n\nUrl del sitio web:\n\nRedes sociales:\n\nContacto / Email:\n\nObservaciones:'
     )
-    window.location.href = `mailto:contacto@infantia.co?subject=${subject}&body=${body}`
+    window.location.href = `mailto:contacto@habitaplan.com?subject=${subject}&body=${body}`
   }
 
   return (
@@ -37,7 +37,7 @@ export default function ContribuirPage() {
       <div className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-bold text-gray-900 mb-3">Ayúdanos a crecer</h1>
         <p className="text-gray-600 mb-8">
-          Infantia funciona gracias a familias como la tuya. Si conoces una actividad o institución que debería estar
+          HabitaPlan funciona gracias a familias como la tuya. Si conoces una actividad o institución que debería estar
           aquí, ¡cuéntanos!
         </p>
 
@@ -51,7 +51,7 @@ export default function ContribuirPage() {
               <div className="absolute top-4 right-4 text-2xl">📝</div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Sugerir una actividad</h2>
               <p className="text-sm text-gray-600 mb-4">
-                ¿Conoces un taller, club, campamento o evento que no aparece en Infantia?
+                ¿Conoces un taller, club, campamento o evento que no aparece en HabitaPlan?
               </p>
               <span className="inline-flex items-center gap-1 text-sm text-orange-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
@@ -201,7 +201,7 @@ export default function ContribuirPage() {
         {/* Nota informativa */}
         <div className="mt-12 rounded-xl bg-indigo-50 border border-indigo-100 p-4 text-xs text-indigo-700">
           <p className="font-semibold mb-1">📬 ¿Qué pasa después?</p>
-          <p>Revisaremos tu sugerencia en máximo 5 días hábiles. Si la actividad o institución cumple con nuestros criterios, aparecerá pronto en Infantia.</p>
+          <p>Revisaremos tu sugerencia en máximo 5 días hábiles. Si la actividad o institución cumple con nuestros criterios, aparecerá pronto en HabitaPlan.</p>
         </div>
       </div>
     </div>

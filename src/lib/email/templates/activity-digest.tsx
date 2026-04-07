@@ -41,14 +41,14 @@ export const ActivityDigestEmail = ({
   period = 'daily',
   sponsor,
 }: ActivityDigestEmailProps) => {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://infantia-activities.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://habitaplan-activities.vercel.app';
   const periodLabel = period === 'daily' ? 'hoy' : 'esta semana';
 
   return (
     <Html>
       <Head />
       <Preview>
-        {String(activities.length)} nuevas actividades en Infantia {periodLabel}
+        {String(activities.length)} nuevas actividades en HabitaPlan {periodLabel}
       </Preview>
       <Body style={main}>
         <Container style={container}>
@@ -86,7 +86,7 @@ export const ActivityDigestEmail = ({
                 </Row>
                 <Row style={ctaRow}>
                   <Link
-                    href={`${baseUrl}${activityPath(activity.id, activity.title)}?utm_source=infantia&utm_medium=email&utm_campaign=digest_${period}`}
+                    href={`${baseUrl}${activityPath(activity.id, activity.title)}?utm_source=habitaplan&utm_medium=email&utm_campaign=digest_${period}`}
                     style={smallButton}
                   >
                     Ver detalles
@@ -97,7 +97,7 @@ export const ActivityDigestEmail = ({
             ))}
 
             <Row style={ctaRow}>
-              <Link href={`${baseUrl}/actividades?utm_source=infantia&utm_medium=email&utm_campaign=digest_${period}`} style={button}>
+              <Link href={`${baseUrl}/actividades?utm_source=habitaplan&utm_medium=email&utm_campaign=digest_${period}`} style={button}>
                 Ver todas las actividades
               </Link>
             </Row>
@@ -115,7 +115,7 @@ export const ActivityDigestEmail = ({
                   <Text style={sponsorName}>{sponsor.name}</Text>
                   <Text style={sponsorTagline}>{sponsor.tagline}</Text>
                   <Link
-                    href={`${sponsor.url}?utm_source=infantia&utm_medium=email&utm_campaign=newsletter`}
+                    href={`${sponsor.url}?utm_source=habitaplan&utm_medium=email&utm_campaign=newsletter`}
                     style={sponsorCta}
                   >
                     Conocer más →
@@ -133,7 +133,7 @@ export const ActivityDigestEmail = ({
               </Link>
               .
             </Text>
-            <Text style={footer}>© 2026 Infantia. Todos los derechos reservados.</Text>
+            <Text style={footer}>© 2026 HabitaPlan. Todos los derechos reservados.</Text>
           </Section>
         </Container>
       </Body>

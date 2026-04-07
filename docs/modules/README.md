@@ -1,4 +1,4 @@
-# Documentación funcional — Módulos de Infantia
+# Documentación funcional — Módulos de HabitaPlan
 
 Cada archivo documenta un módulo: qué hace, cómo usarlo, sus tests y qué está pendiente.
 Se actualiza en cada PR que toca ese módulo.

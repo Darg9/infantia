@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: 'Política de Privacidad',
-  description: 'Política de privacidad de Infantia. Conoce cómo protegemos tu información personal.',
+  description: 'Política de privacidad de HabitaPlan. Conoce cómo protegemos tu información personal.',
 };
 
 export default function PrivacidadPage() {
@@ -16,7 +16,7 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="text-lg font-semibold text-gray-800">1. Responsable del tratamiento</h2>
           <p className="text-gray-600 leading-relaxed">
-            <strong>Infantia</strong> es un proyecto operado por Denys Reyes, con domicilio en Bogotá, Colombia.
+            <strong>HabitaPlan</strong> es un proyecto operado por Denys Reyes, con domicilio en Bogotá, Colombia.
             Para cualquier consulta relacionada con el tratamiento de sus datos personales, puede escribirnos a
             través de nuestra <Link href="/contacto" className="text-orange-600 hover:underline">página de contacto</Link>.
           </p>
@@ -67,13 +67,13 @@ export default function PrivacidadPage() {
         <section>
           <h2 className="text-lg font-semibold text-gray-800">5. Información de actividades</h2>
           <p className="text-gray-600 leading-relaxed">
-            Infantia recopila información sobre actividades, talleres y eventos de <strong>fuentes públicamente
+            HabitaPlan recopila información sobre actividades, talleres y eventos de <strong>fuentes públicamente
             accesibles</strong> (sitios web de entidades públicas, redes sociales de organizaciones culturales).
             Esta información es de carácter factual (nombres, fechas, horarios, ubicaciones, precios) y se
             presenta con <strong>atribución explícita</strong> a la fuente original.
           </p>
           <p className="text-gray-600 leading-relaxed">
-            Si usted es titular de contenido publicado en Infantia y desea su modificación o remoción,
+            Si usted es titular de contenido publicado en HabitaPlan y desea su modificación o remoción,
             puede solicitarlo a través de nuestra{' '}
             <Link href="/contacto" className="text-orange-600 hover:underline">página de contacto</Link>.
             Nos comprometemos a responder en un plazo máximo de 15 días hábiles.

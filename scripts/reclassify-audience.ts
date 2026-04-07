@@ -80,7 +80,7 @@ Responde ÚNICAMENTE con este JSON (sin texto adicional):
 // Main
 // =============================================================================
 async function main() {
-  console.log(`\n🎯 Reclasificador de audiencia Infantia`);
+  console.log(`\n🎯 Reclasificador de audiencia HabitaPlan`);
   if (isDryRun) console.log('⚠️  DRY RUN — no se guardarán cambios\n');
 
   const apiKey = process.env.GOOGLE_AI_STUDIO_KEY;

@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia - Utility Functions
+// HabitaPlan - Utility Functions
 // =============================================================================
 
 import { type ClassValue, clsx } from 'clsx';

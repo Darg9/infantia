@@ -116,7 +116,7 @@ describe('POST /api/admin/queue/enqueue', () => {
   it('encola instagram job y devuelve jobId', async () => {
     const req = makeRequest({
       type: 'instagram',
-      profileUrl: 'https://instagram.com/infantia',
+      profileUrl: 'https://instagram.com/habitaplan',
       cityName: 'Bogotá',
       verticalSlug: 'kids',
     })

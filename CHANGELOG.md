@@ -1,4 +1,4 @@
-# Changelog — Infantia
+# Changelog — HabitaPlan
 
 Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 Versionamiento basado en [Semantic Versioning](https://semver.org/lang/es/).
@@ -189,7 +189,7 @@ Relación con Documento Fundacional:
 - **Fix `/api/health`:** responde 200 cuando Redis falla pero DB está OK (antes devolvía 503)
   - Redis es cola/caché no crítico para disponibilidad — solo DB determina status HTTP
   - Respuestas: `200 ok` | `200 degraded` (Redis falla) | `503 down` (DB falla)
-- **UptimeRobot:** monitor configurado en `https://infantia-activities.vercel.app/api/health`
+- **UptimeRobot:** monitor configurado en `https://habitaplan-activities.vercel.app/api/health`
 
 ### Scraping (S28 — 2026-04-02)
 - **Integración Telegram MTProto** — `telegram.extractor.ts` + `telegram-auth.ts` + `ingest-telegram.ts`
@@ -287,7 +287,7 @@ Relación con Documento Fundacional:
   - Sección entre lista de actividades y CTA final (opcional vía prop `sponsor?`)
   - Logo, tagline, link con `utm_campaign=newsletter`
 - **UTM tracking en email digest** — todos los links de actividades y CTA "Ver todas"
-  - `?utm_source=infantia&utm_medium=email&utm_campaign=digest_{daily|weekly}`
+  - `?utm_source=habitaplan&utm_medium=email&utm_campaign=digest_{daily|weekly}`
 - **Página `/anunciate`** — landing de monetización
   - Stats (260+ actividades, 14 fuentes, ~35% open rate)
   - Opciones: Newsletter Sponsorship (COP 200k-500k/edición) y Listing Destacado (COP 150k-300k/mes)
@@ -348,7 +348,7 @@ Relación con Documento Fundacional:
   - `relevance` (por defecto): ACTIVE primero + confianza Gemini
   - `date`: próximas primero, sin fecha al final
   - `price_asc` / `price_desc`: precio nulo al final
-  - `newest`: recién agregadas a Infantia
+  - `newest`: recién agregadas a HabitaPlan
 - **Página de inicio mejorada** — stats reales desde DB
   - Contador de actividades ACTIVE, categorías y ciudades
   - Filtros rápidos (Gratis, Para niños, Este fin de semana)
@@ -584,8 +584,8 @@ Relación con Documento Fundacional:
 **Documento Fundacional: V12**
 
 ### Fixed
-- Supabase Auth URL Configuration: `Site URL` corregido de `http://localhost:3000` a `https://infantia-activities.vercel.app`
-- Redirect URLs de Supabase: agregadas `https://infantia-activities.vercel.app/auth/callback` y `https://infantia-activities.vercel.app/**`
+- Supabase Auth URL Configuration: `Site URL` corregido de `http://localhost:3000` a `https://habitaplan-activities.vercel.app`
+- Redirect URLs de Supabase: agregadas `https://habitaplan-activities.vercel.app/auth/callback` y `https://habitaplan-activities.vercel.app/**`
 - Flujo de confirmación de email ahora redirige correctamente a producción (antes redirigía a localhost)
 
 ### Verified (Certificación)
@@ -602,7 +602,7 @@ Relación con Documento Fundacional:
 - CHANGELOG.md: actualizado a V12
 - CLAUDE.md: actualizado a v0.6.1, estado de sesión de certificación
 - README.md: actualizado con estado de certificación
-- Documento Fundacional V12 generado: `Infantia_V12_v0.6.0.docx` (1,017 párrafos, 16 secciones)
+- Documento Fundacional V12 generado: `HabitaPlan_V12_v0.6.0.docx` (1,017 párrafos, 16 secciones)
 
 ### Known Gaps
 - `npm run test:coverage` falla el threshold dinámico (100% en día 9): cobertura actual 86.85% stmts / 78.57% branches
@@ -757,7 +757,7 @@ Relación con Documento Fundacional:
 - Batch scraping BibloRed: 167 actividades guardadas en Supabase (97% alta confianza)
 - Integración Gemini 2.5 Flash para NLP / extracción de datos
 - Conexión a Supabase PostgreSQL con Prisma 7
-- Seed inicial: 10 ciudades, 1 vertical (Infantia), 47 categorías
+- Seed inicial: 10 ciudades, 1 vertical (HabitaPlan), 47 categorías
 - Cache incremental de scraping (`data/scraping-cache.json`)
 - Script `verify-db.ts` para validar estado de la base de datos
 - API de actividades con CRUD completo
@@ -766,7 +766,7 @@ Relación con Documento Fundacional:
 - Scraper genérico con Cheerio + Playwright
 - Sistema de testing: Vitest + cobertura dinámica +10%/día
 - 120 tests — 31% cobertura statements, 52% functions (supera threshold día 1: 30%)
-- TEST_PLAN.md y TEST_STATUS.md propios de Infantia
+- TEST_PLAN.md y TEST_STATUS.md propios de HabitaPlan
 - Workflow de versionamiento: feature branches + PR template + CHANGELOG + docs de módulos
 - Separación completa de habit-challenge (directorio y cuenta GitHub independientes)
 - Cuenta GitHub dedicada: Darg9 / denysreyes@gmail.com

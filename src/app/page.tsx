@@ -1,5 +1,5 @@
 // =============================================================================
-// Home — Landing page de Infantia
+// Home — Landing page de HabitaPlan
 // Server Component: stats reales, categorías destacadas, actividades recientes
 // =============================================================================
 
@@ -11,7 +11,7 @@ import { getCategoryEmoji, getCategoryGradient } from '@/lib/category-utils';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 
 export const metadata: Metadata = {
-  title: 'Infantia — Actividades para niños y familias en Colombia',
+  title: 'HabitaPlan — Actividades para niños y familias en Colombia',
   description:
     'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia. Todo en un solo lugar, siempre actualizado.',
 };

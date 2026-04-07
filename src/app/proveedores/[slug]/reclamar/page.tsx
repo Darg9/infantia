@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const provider = await prisma.provider.findUnique({ where: { slug }, select: { name: true } });
   if (!provider) return {};
-  return { title: `Reclamar perfil — ${provider.name} | Infantia` };
+  return { title: `Reclamar perfil — ${provider.name} | HabitaPlan` };
 }
 
 export default async function ReclamarPage({ params }: PageProps) {

@@ -8,7 +8,7 @@ export default async function AdminPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Panel de administración</h1>
-      <p className="text-gray-500 mb-8">Infantia Admin — versión inicial</p>
+      <p className="text-gray-500 mb-8">HabitaPlan Admin — versión inicial</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link

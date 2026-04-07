@@ -43,14 +43,14 @@ export async function generateMetadata({
     description,
     keywords: categoryNames ? [categoryNames, cityName, 'actividades'] : undefined,
     openGraph: {
-      title: `${title} | Infantia`,
+      title: `${title} | HabitaPlan`,
       description,
       type: 'article',
       ...(activity.imageUrl && { images: [{ url: activity.imageUrl }] }),
     },
     twitter: {
       card: activity.imageUrl ? 'summary_large_image' : 'summary',
-      title: `${title} | Infantia`,
+      title: `${title} | HabitaPlan`,
       description,
     },
     alternates: {

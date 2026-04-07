@@ -6,7 +6,7 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: '404 — Página no encontrada | Infantia',
+  title: '404 — Página no encontrada | HabitaPlan',
 };
 
 export default function NotFound() {

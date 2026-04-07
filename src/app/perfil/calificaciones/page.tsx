@@ -6,7 +6,7 @@ import { StarRating } from '@/components/StarRating'
 import { activityPath } from '@/lib/activity-url'
 
 export const metadata: Metadata = {
-  title: 'Mis calificaciones | Infantia',
+  title: 'Mis calificaciones | HabitaPlan',
 }
 
 export default async function CalificacionesPage() {

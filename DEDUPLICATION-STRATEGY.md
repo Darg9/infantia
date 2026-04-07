@@ -1,4 +1,4 @@
-# 🛡️ Estrategia de Deduplicación - Infantia
+# 🛡️ Estrategia de Deduplicación - HabitaPlan
 
 ## Resumen Ejecutivo
 
@@ -200,7 +200,7 @@ Nota: Eventos grandes pueden ser legítimos en múltiples fechas
 
 ### Dashboard Diario
 ```
-INFANTIA DEDUP REPORT - 2026-03-24
+HABITAPLAN DEDUP REPORT - 2026-03-24
 
 Total actividades: 277
 Títulos únicos: 211

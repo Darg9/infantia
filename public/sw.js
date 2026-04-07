@@ -1,5 +1,5 @@
 // =============================================================================
-// Infantia Service Worker — Web Push notifications
+// HabitaPlan Service Worker — Web Push notifications
 // =============================================================================
 
 self.addEventListener('install', () => self.skipWaiting())
@@ -8,12 +8,12 @@ self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim(
 // Handle incoming push events
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {}
-  const title = data.title ?? 'Infantia'
+  const title = data.title ?? 'HabitaPlan'
   const options = {
     body: data.body ?? 'Nueva actividad disponible',
     icon: '/favicon.ico',
     badge: '/favicon.ico',
-    tag: data.tag ?? 'infantia-default',
+    tag: data.tag ?? 'habitaplan-default',
     data: { url: data.url ?? '/actividades' },
     requireInteraction: false,
   }

@@ -16,24 +16,24 @@ interface WelcomeEmailProps {
 }
 
 export const WelcomeEmail = ({ userEmail = 'friend' }: WelcomeEmailProps) => {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://infantia.app';
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://habitaplan.com';
 
   return (
     <Html>
       <Head />
-      <Preview>Bienvenido a Infantia — descubre actividades para tu familia</Preview>
+      <Preview>Bienvenido a HabitaPlan — descubre actividades para tu familia</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={box}>
             <Row>
-              <Text style={heading}>Bienvenido a Infantia 🎉</Text>
+              <Text style={heading}>Bienvenido a HabitaPlan 🎉</Text>
             </Row>
             <Hr style={hr} />
             <Text style={paragraph}>
               Hola {userEmail},
             </Text>
             <Text style={paragraph}>
-              Nos alegra mucho que te hayas unido a Infantia. A partir de ahora podrás:
+              Nos alegra mucho que te hayas unido a HabitaPlan. A partir de ahora podrás:
             </Text>
             <Text style={bulletPoint}>
               ✓ Descubrir actividades, eventos y talleres para tus hijos en Bogotá
@@ -66,10 +66,10 @@ export const WelcomeEmail = ({ userEmail = 'friend' }: WelcomeEmailProps) => {
             <Text style={footerText}>
               ¿Preguntas? Contáctanos en{' '}
               <Link href={`${baseUrl}/contacto`} style={link}>
-                infantia.app/contacto
+                habitaplan.com/contacto
               </Link>
             </Text>
-            <Text style={footer}>© 2026 Infantia. Todos los derechos reservados.</Text>
+            <Text style={footer}>© 2026 HabitaPlan. Todos los derechos reservados.</Text>
           </Section>
         </Container>
       </Body>

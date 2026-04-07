@@ -2,6 +2,27 @@ import { describe, it, expect, beforeEach, vi, type MockedFunction } from 'vites
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { ScrapingCache } from '../cache';
 
+// ── Mocks para Prisma (syncFromDb / saveToDb) ──────────────────────────────
+// vi.hoisted() garantiza que los mocks existen antes del hoisting de vi.mock()
+const { mockFindMany, mockUpsert, mockDisconnect } = vi.hoisted(() => ({
+  mockFindMany:   vi.fn(),
+  mockUpsert:     vi.fn(),
+  mockDisconnect: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock('@prisma/adapter-pg', () => ({
+  PrismaPg: vi.fn().mockImplementation(function () { return {}; }),
+}));
+
+vi.mock('../../../generated/prisma/client', () => ({
+  PrismaClient: vi.fn().mockImplementation(function () {
+    return {
+      scrapingCache: { findMany: mockFindMany, upsert: mockUpsert },
+      $disconnect: mockDisconnect,
+    };
+  }),
+}));
+
 // Mock file system — tests no deben escribir archivos reales
 vi.mock('fs', () => ({
   existsSync: vi.fn(() => false),
@@ -95,6 +116,81 @@ describe('ScrapingCache', () => {
       const contenido = mockWrite.mock.calls[0][1] as string;
       expect(() => JSON.parse(contenido)).not.toThrow();
       expect(contenido).toContain('https://test.com');
+    });
+  });
+
+  describe('syncFromDb()', () => {
+    beforeEach(() => {
+      mockFindMany.mockReset();
+      mockUpsert.mockReset();
+    });
+
+    it('no lanza si la BD devuelve entradas vacías', async () => {
+      mockFindMany.mockResolvedValue([]);
+      await expect(cache.syncFromDb()).resolves.toBeUndefined();
+      expect(cache.size).toBe(0);
+    });
+
+    it('fusiona entradas nuevas de BD en el cache local', async () => {
+      mockFindMany.mockResolvedValue([
+        { url: 'https://bd.com/act1', title: 'Acto BD 1', scrapedAt: new Date() },
+        { url: 'https://bd.com/act2', title: 'Acto BD 2', scrapedAt: new Date() },
+      ]);
+      await cache.syncFromDb();
+      expect(cache.size).toBe(2);
+      expect(cache.has('https://bd.com/act1')).toBe(true);
+      expect(cache.has('https://bd.com/act2')).toBe(true);
+    });
+
+    it('no duplica URLs que ya están en el cache local', async () => {
+      cache.add('https://local.com/act', 'Ya en disco');
+      mockFindMany.mockResolvedValue([
+        { url: 'https://local.com/act', title: 'También en BD', scrapedAt: new Date() },
+        { url: 'https://bd.com/nueva', title: 'Solo en BD', scrapedAt: new Date() },
+      ]);
+      await cache.syncFromDb();
+      expect(cache.size).toBe(2); // 1 local + 1 nueva de BD (no duplica)
+    });
+
+    it('maneja errores de BD sin lanzar (non-fatal)', async () => {
+      mockFindMany.mockRejectedValue(new Error('DB connection failed'));
+      await expect(cache.syncFromDb()).resolves.toBeUndefined();
+    });
+  });
+
+  describe('saveToDb()', () => {
+    beforeEach(() => {
+      mockFindMany.mockReset();
+      mockUpsert.mockReset();
+    });
+
+    it('no llama a Prisma si no hay entradas nuevas', async () => {
+      await cache.saveToDb();
+      expect(mockUpsert).not.toHaveBeenCalled();
+    });
+
+    it('persiste entradas nuevas con upsert', async () => {
+      mockUpsert.mockResolvedValue({});
+      cache.add('https://nueva.com/act1', 'Actividad nueva');
+      cache.add('https://nueva.com/act2', 'Otra actividad');
+      await cache.saveToDb();
+      expect(mockUpsert).toHaveBeenCalledTimes(2);
+    });
+
+    it('limpia newEntries después de guardar', async () => {
+      mockUpsert.mockResolvedValue({});
+      cache.add('https://nueva.com/act', 'Actividad');
+      await cache.saveToDb();
+      // Segunda llamada no debe hacer upsert — ya fue limpiado
+      mockUpsert.mockClear();
+      await cache.saveToDb();
+      expect(mockUpsert).not.toHaveBeenCalled();
+    });
+
+    it('maneja errores de BD sin lanzar (non-fatal)', async () => {
+      mockUpsert.mockRejectedValue(new Error('DB write failed'));
+      cache.add('https://nueva.com/act', 'Actividad');
+      await expect(cache.saveToDb()).resolves.toBeUndefined();
     });
   });
 

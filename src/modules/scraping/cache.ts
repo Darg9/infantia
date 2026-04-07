@@ -1,4 +1,6 @@
 import { readFileSync, writeFileSync, existsSync } from 'fs';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../../generated/prisma/client';
 import { createLogger } from '../../lib/logger';
 
 const log = createLogger('scraping:cache');
@@ -46,8 +48,6 @@ export class ScrapingCache {
   /** Sincroniza desde BD — llamar antes de procesar para evitar re-scrapear */
   async syncFromDb(source?: string): Promise<void> {
     try {
-      const { PrismaPg } = await import('@prisma/adapter-pg');
-      const { PrismaClient } = await import('../../generated/prisma/client');
       const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
       const prisma = new PrismaClient({ adapter });
 
@@ -71,8 +71,6 @@ export class ScrapingCache {
   async saveToDb(): Promise<void> {
     if (this.newEntries.size === 0) return;
     try {
-      const { PrismaPg } = await import('@prisma/adapter-pg');
-      const { PrismaClient } = await import('../../generated/prisma/client');
       const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
       const prisma = new PrismaClient({ adapter });
 

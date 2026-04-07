@@ -64,6 +64,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-gray-900">Solicitudes de perfil</h2>
           <p className="text-sm text-gray-500 mt-1">Aprueba o rechaza reclamaciones de proveedores</p>
         </Link>
+
+        <Link
+          href="/admin/sources"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-purple-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">📈</div>
+          <h2 className="font-semibold text-gray-900">URL Score Dashboard</h2>
+          <p className="text-sm text-gray-500 mt-1">Monitoreo de calidad y auto-pause de fuentes</p>
+        </Link>
       </div>
     </div>
   )

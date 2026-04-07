@@ -264,7 +264,7 @@ export class GeminiAnalyzer {
 
     // Pre-filtro Stage 2: análisis de URL productividad (nuevo — S34)
     const urlClassifierResult = preFilterUrls(stage1Filtered.map((l) => l.url), 45);
-    const stage2Excluded = urlClassifierResult.stats.filtered.length;
+    const stage2Excluded = urlClassifierResult.stats.filtered;
 
     if (stage2Excluded > 0) {
       log.info(`Pre-filtro Stage 2 (URL classifier): ${stage2Excluded} URLs excluidas (patrón no productivo).`);

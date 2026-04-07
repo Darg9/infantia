@@ -1,14 +1,14 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-07 | Version: v0.9.3-S32
+Actualizado: 2026-04-07 | Version: v0.9.3-S34
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
 | Archivos de test | 54 |
-| Tests totales | 832 |
-| Pasados | 832 |
+| Tests totales | 835 |
+| Pasados | 835 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
 | Statements | 90.95% ✅ |
@@ -193,6 +193,8 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.3** | **795** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3-S31** | **797** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3-S32** | **832** | **54** | **90.95%** | **85.69%** |
+| **v0.9.3-S33** | **838** | **54** | **90.95%** | **85.69%** |
+| **v0.9.3-S34** | **835** | **54** | **90.95%** | **85.69%** |
 
 ## Cambios en S32 (v0.9.3-S32)
 

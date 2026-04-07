@@ -13,6 +13,81 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.3-S34] — 2026-04-07 (evaluación Instagram + diagnóstico Banrep + QA final)
+**Documento Fundacional: V23** | Rama: master
+
+### Features & Fixes
+
+#### Instagram account evaluation (S34)
+- **@festiencuentro:** ✅ KEEP — 6 new concrete activities (Sabatíteres, Patrimonios Vivos taller, concierto Foxtrot)
+- **@distritojovenbta:** ✅ KEEP — 24K followers, publishes sports/youth center activities (#CasasDeJuventud)
+- **Recomendación:** Ambas cuentas tienen valor — mantener en catálogo
+
+#### Banrep Ibagué diagnosis (S34)
+- **Root cause:** No es timeout — Gemini retorna JSON inválido al procesar 107 URLs
+- **Impact:** 0 actividades extraídas de Ibagué (vs. 107 URLs encontradas)
+- **Source quality:** `banrepcultural.org` con score 13/100 ⚠️ (URLs no contienen actividades reales)
+- **Recomendación:** Pausar Banrep Ibagué; investigar si URLs son categorías/infraestructura
+
+### Tests
+- **835 tests** (832 → 835): no hay nuevos tests en S34 (evaluación e investigación diagnóstica)
+- **Coverage:** 90.95% stmts / 85.69% branches ✅ (sin cambios)
+
+---
+
+## [v0.9.3-S33] — 2026-04-07 (S33: RatingForm + SEO landings + expiración configurable + rebrand V23)
+**Documento Fundacional: V23** | Rama: master
+
+### Major Features (S33)
+
+#### RatingForm 3-step progressive disclosure
+- **Paso 1:** Estrellas siempre visibles
+- **Paso 2:** Textarea aparece al seleccionar estrella (con transición smooth)
+- **Paso 3:** Botón siempre visible pero deshabilitado sin estrella
+- **LoginModal inline:** modal sin navegar, preserva state (score + comentario) durante auth
+- **Data persistence:** Cierra modal → automáticamente reenvía rating con valores guardados
+- **Microcopy:** "Guarda tu opinión iniciando sesión"
+
+#### SEO Landing Pages (4 rutas dinámicas)
+- `/actividades/categoria/[slug]` — dynamic routes para todas las categorías (generateStaticParams)
+- `/actividades/publico/[slug]` — ninos|familia|adultos
+- `/actividades/precio/[slug]` — gratis|pagas
+- `/actividades/ciudad/[slug]` — todos los cities de BD (con slugify utility)
+- **Component:** `FilterLandingLayout` — breadcrumbs JSON-LD + grid + CTA to full filters
+
+#### Expiración configurable por location/source
+- `src/lib/expire-activities.ts` reescrito: `resolveExpirationHours()` con 3 niveles de prioridad
+  - Priority 1: Location-specific hours (si existe)
+  - Priority 2: Source-specific hours (si existe)
+  - Priority 3: Global default (3 horas)
+- **19 tests nuevos** verifican cada nivel + edge cases
+- Usa `user.upsert()` para crear usuario en BD si falta (aunque exista en Supabase Auth)
+
+#### UI Polish
+- **Uppercase removal:** eliminado `uppercase` CSS class de todo el proyecto (EmptyState, metrics, admin, perfil, dashboard)
+- **Uso de title case** en lugar de UPPERCASE en labels
+- **RatingForm tests:** nuevo test suite `ratings.test.ts` para validaciones API (score 1-5, comment max 500 chars, activity lookup)
+
+### API Changes
+- **POST /api/ratings** — cambio de `findUnique()` con 404 a `upsert()` — crea usuario en BD automáticamente
+- No más error "Usuario no encontrado" — user siempre se crea si es primera vez
+
+### Fixes
+- **Sitemap.ts:** actualizar para incluir nuevas rutas SEO (categoria, publico, precio, ciudad)
+- **listActivities():** filtrar solo ACTIVE status (no EXPIRED) en listings
+- **Filters.tsx:** autocompletado threshold 2→3 caracteres; "De pago"→"Pagas"
+- **Activity detail hero:** rediseño (title-first, image opcional)
+
+### Tests
+- **838 tests** incluye nuevos tests de expiración (19) + ratings API (15 actualizado)
+- Coverage: sin cambios en % pero +nuevas líneas de cobertura
+
+### Despliegue
+- Auto-deploy via GitHub Actions → Vercel al push master
+- Cambios visibles en producción inmediatamente
+
+---
+
 ## [v0.9.3-S32] — 2026-04-07 (fix cobertura: tests cache.ts y source-scoring.ts)
 **Documento Fundacional: V22** | Rama: master
 

@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema, InstagramPost } from '../types';
 import { createLogger } from '../../../lib/logger';
+import { preFilterUrls, getProductivityTier } from '../../../lib/url-classifier';
 
 const log = createLogger('scraping:gemini');
 
@@ -245,8 +246,8 @@ export class GeminiAnalyzer {
     // Extensiones de archivo que nunca son páginas de actividades
     const IMAGE_OR_BINARY_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|pdf|mp4|mp3|zip|doc[x]?|xls[x]?|ppt[x]?)$/i;
 
-    // Pre-filtrar URLs que son claramente páginas de navegación/filtro, no actividades individuales
-    const filtered = links.filter((l) => {
+    // Pre-filtro Stage 1: URLs que son claramente navegación/filtro/archivos
+    const stage1Filtered = links.filter((l) => {
       try {
         const u = new URL(l.url);
         if (u.search.length > 0) return false;          // query params → navegación/filtro
@@ -256,8 +257,33 @@ export class GeminiAnalyzer {
         return true;
       }
     });
-    if (filtered.length < links.length) {
-      log.info(`Pre-filtro: ${links.length - filtered.length} URLs excluidas (query params o archivos binarios).`);
+    const stage1Excluded = links.length - stage1Filtered.length;
+    if (stage1Excluded > 0) {
+      log.info(`Pre-filtro Stage 1: ${stage1Excluded} URLs excluidas (query params o archivos binarios).`);
+    }
+
+    // Pre-filtro Stage 2: análisis de URL productividad (nuevo — S34)
+    const urlClassifierResult = preFilterUrls(stage1Filtered.map((l) => l.url), 45);
+    const stage2Excluded = urlClassifierResult.stats.filtered.length;
+
+    if (stage2Excluded > 0) {
+      log.info(`Pre-filtro Stage 2 (URL classifier): ${stage2Excluded} URLs excluidas (patrón no productivo).`);
+      // Log algunos ejemplos de URLs excluidas
+      const examples = urlClassifierResult.stats.scores
+        .filter((s) => !urlClassifierResult.kept.includes(s.url))
+        .slice(0, 3)
+        .map((s) => `${s.url} (score ${s.score})`)
+        .join('; ');
+      if (examples) {
+        log.debug(`Ejemplos excluidos: ${examples}`);
+      }
+    }
+
+    // Filtrar links basado en URLs que pasaron ambos filtros
+    const filtered = links.filter((l) => urlClassifierResult.kept.includes(l.url));
+    const totalExcluded = links.length - filtered.length;
+    if (totalExcluded > 0) {
+      log.info(`Pre-filtros combinados: ${totalExcluded}/${links.length} URLs excluidas (${Math.round((totalExcluded / links.length) * 100)}% reducción). Enviando ${filtered.length} a Gemini.`);
     }
 
     // 200 URLs por lote: Banrep Bogotá (1.083 URLs) → 6 lotes en vez de 22

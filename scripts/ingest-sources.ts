@@ -72,7 +72,7 @@ const BANREP_CITIES: { cityName: string; slug: string }[] = [
   { cityName: 'Bucaramanga',  slug: 'bucaramanga'  },
   { cityName: 'Manizales',    slug: 'manizales'    },
   { cityName: 'Pereira',      slug: 'pereira'      },
-  { cityName: 'Ibagué',       slug: 'ibague'       },
+  // { cityName: 'Ibagué',    slug: 'ibague'       }, // pausada S34: cuota Gemini se agota antes de llegar a Ibagué (score 13/100)
   { cityName: 'Santa Marta',  slug: 'santa-marta'  },
 ];
 

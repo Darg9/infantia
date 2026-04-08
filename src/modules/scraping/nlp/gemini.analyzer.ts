@@ -286,9 +286,10 @@ export class GeminiAnalyzer {
       log.info(`Pre-filtros combinados: ${totalExcluded}/${links.length} URLs excluidas (${Math.round((totalExcluded / links.length) * 100)}% reducción). Enviando ${filtered.length} a Gemini.`);
     }
 
-    // 200 URLs por lote: Banrep Bogotá (1.083 URLs) → 6 lotes en vez de 22
-    // Gemini 2.5 Flash soporta 1M tokens de contexto; output {"indices":[...]} ≤ 1200 tokens con 200 URLs
-    const CHUNK_SIZE = 200;
+    // 100 URLs por lote (benchmark S34: chunk=100 reduce riesgo por quota-429)
+    // Gemini free tier: 20 req/día — 100 URLs/lote balancea # llamadas vs riesgo de fallo
+    // Banrep Bogotá (1.083 URLs) → 11 lotes (vs 6 con 200, vs 22 con 50)
+    const CHUNK_SIZE = 100;
     const chunks: DiscoveredLink[][] = [];
     for (let i = 0; i < filtered.length; i += CHUNK_SIZE) {
       chunks.push(filtered.slice(i, i + CHUNK_SIZE));

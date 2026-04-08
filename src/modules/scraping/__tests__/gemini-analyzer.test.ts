@@ -165,8 +165,8 @@ describe('GeminiAnalyzer', () => {
       });
 
       it('continúa con otros lotes si un lote falla con JSON inválido', async () => {
-        // 250 links → 2 lotes (200, 50). El primero falla, el segundo ok (índice 1 → link 201)
-        const links = Array.from({ length: 250 }, (_, i) => ({
+        // 200 links → 2 lotes (100, 100). El primero falla, el segundo ok (índice 1 → link-101)
+        const links = Array.from({ length: 200 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
@@ -175,7 +175,7 @@ describe('GeminiAnalyzer', () => {
           .mockResolvedValueOnce(makeResponse(JSON.stringify({ indices: [1] })));
         const analyzer = new GeminiAnalyzer();
         const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toContain('https://x.com/link-201');
+        expect(result).toContain('https://x.com/link-101');
       });
 
       it('continúa si un lote devuelve schema inválido', async () => {
@@ -194,7 +194,7 @@ describe('GeminiAnalyzer', () => {
         expect(result).toEqual([]);
       });
 
-      it('procesa links en lotes de 200', async () => {
+      it('procesa links en lotes de 100', async () => {
         const links = Array.from({ length: 450 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
@@ -202,8 +202,8 @@ describe('GeminiAnalyzer', () => {
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [] })));
         const analyzer = new GeminiAnalyzer();
         await analyzer.discoverActivityLinks(links, 'https://x.com');
-        // 450 links → 3 lotes (200, 200, 50) — CHUNK_SIZE aumentado de 50 a 200
-        expect(mockGenerateContent).toHaveBeenCalledTimes(3);
+        // 450 links → 5 lotes (100, 100, 100, 100, 50) — CHUNK_SIZE=100 (benchmark S34)
+        expect(mockGenerateContent).toHaveBeenCalledTimes(5);
       });
 
       it('excluye URLs con query params en pre-filtro y registra log (línea 223)', async () => {

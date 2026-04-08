@@ -3,6 +3,7 @@ import { UserRole } from '@/generated/prisma/client'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import { InstagramConfig } from './_components/InstagramConfig'
+import { SourceToggle } from './_components/SourceToggle'
 
 export default async function ScrapingSourcesPage() {
   await requireRole([UserRole.ADMIN])
@@ -101,6 +102,15 @@ export default async function ScrapingSourcesPage() {
                     <span className="text-xs text-gray-400">Sin ejecuciones</span>
                   )}
                 </div>
+                {/* Toggle activa/inactiva */}
+                <div className="flex items-center gap-2 ml-4 mt-1">
+                  <SourceToggle
+                    sourceId={source.id}
+                    sourceName={source.name}
+                    isActive={source.isActive}
+                  />
+                </div>
+
                 {/* Config Instagram — solo para fuentes de Instagram */}
                 {source.platform === 'INSTAGRAM' && (
                   <InstagramConfig

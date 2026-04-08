@@ -90,6 +90,19 @@ const ALL_SOURCES: Source[] = [
     sitemapPatterns: [`/${slug}/`],
   })),
 
+  // ── web: Medellín ─────────────────────────────────────────────────────────
+  // Parque Explora — sitemap con 700+ eventos individuales bajo //programate/
+  { name: 'Parque Explora',     channel: 'web', url: 'https://www.parqueexplora.org/sitemap.xml',     cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/programate/'] },
+  // Biblioteca Piloto — sitemap + SSR Next.js, eventos niños/familias bajo /agenda/
+  { name: 'Biblioteca Piloto', channel: 'web', url: 'https://bibliotecapiloto.gov.co/sitemap.xml',  cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/agenda/'] },
+
+  // Pendientes Medellín (verificar disponibilidad):
+  // { name: 'Sec. Cultura Antioquia', channel: 'web', url: 'https://www.culturaantioquia.gov.co/agenda',     cityName: 'Medellín', verticalSlug: 'kids' }, // ECONNREFUSED
+  // { name: 'Alcaldía de Medellín',   channel: 'web', url: 'https://www.medellin.gov.co/es/eventos/',        cityName: 'Medellín', verticalSlug: 'kids' }, // WordPress+Elementor JS
+  // { name: 'Jardín Botánico MDE',    channel: 'web', url: 'https://www.jardinbotanicodemedellin.gov.co',    cityName: 'Medellín', verticalSlug: 'kids' }, // ECONNREFUSED
+  // { name: 'Museo de Antioquia',     channel: 'web', url: 'https://museodeantioquia.co/sitemap.xml',        cityName: 'Medellín', verticalSlug: 'kids' }, // sin agenda estructurada
+  // { name: 'Infolocal Comfenalco',   channel: 'web', url: 'https://infolocal.comfenalcoantioquia.com/index.php/agenda', cityName: 'Medellín', verticalSlug: 'kids' }, // 150 eventos, contenido mixto adultos
+
   // ── web: Bogotá — otras instituciones ────────────────────────────────────
   { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Idartes',                            channel: 'web', url: 'https://idartes.gov.co/es/agenda',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
@@ -131,6 +144,13 @@ const ALL_SOURCES: Source[] = [
   // Espacio / barrio Chapinero (pendiente — posts extraídos son de @distrito_ch, revisar)
   // { name: 'El Bazar de Chapi',       channel: 'instagram', url: 'https://www.instagram.com/elbazardechapi/',         cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
   // { name: 'Distrito CH',             channel: 'instagram', url: 'https://www.instagram.com/distrito_ch/',            cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+
+  // ── instagram: Medellín ──────────────────────────────────────────────────
+  // (pendiente validación — descomentar después de test-instagram.ts --validate-only)
+  // { name: 'Parque Explora IG',      channel: 'instagram', url: 'https://www.instagram.com/parqueexplora/',       cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
+  // { name: 'Medellín Planes',        channel: 'instagram', url: 'https://www.instagram.com/medellinplanes/',      cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
+  // { name: 'Planes Medellín',        channel: 'instagram', url: 'https://www.instagram.com/planesmedellin/',      cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
+  // { name: 'Qué hacer Medellín',     channel: 'instagram', url: 'https://www.instagram.com/quehacerenmedellin/', cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
 
   // ── tiktok ────────────────────────────────────────────────────────────────
   // (pendiente)

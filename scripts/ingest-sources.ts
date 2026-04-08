@@ -146,11 +146,11 @@ const ALL_SOURCES: Source[] = [
   // { name: 'Distrito CH',             channel: 'instagram', url: 'https://www.instagram.com/distrito_ch/',            cityName: 'Bogotá', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
 
   // ── instagram: Medellín ──────────────────────────────────────────────────
-  // (pendiente validación — descomentar después de test-instagram.ts --validate-only)
-  // { name: 'Parque Explora IG',      channel: 'instagram', url: 'https://www.instagram.com/parqueexplora/',       cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
-  // { name: 'Medellín Planes',        channel: 'instagram', url: 'https://www.instagram.com/medellinplanes/',      cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
-  // { name: 'Planes Medellín',        channel: 'instagram', url: 'https://www.instagram.com/planesmedellin/',      cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 6 } },
-  // { name: 'Qué hacer Medellín',     channel: 'instagram', url: 'https://www.instagram.com/quehacerenmedellin/', cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },
+  // Validadas S34 con --validate-only (sin cuota Gemini)
+  { name: 'Parque Explora IG',    channel: 'instagram', url: 'https://www.instagram.com/parqueexplora/',       cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },  // 236K seg ✅
+  { name: 'Qué hacer Medellín',  channel: 'instagram', url: 'https://www.instagram.com/quehacerenmedellin/', cityName: 'Medellín', verticalSlug: 'kids', instagram: { contentMode: 'text', maxPosts: 8 } },  // 168K seg ✅
+  // @medellinplanes — 59 seguidores, inactiva desde 2023 ❌
+  // @planesmedellin — 37 seguidores, 1 post desde 2021 ❌
 
   // ── tiktok ────────────────────────────────────────────────────────────────
   // (pendiente)

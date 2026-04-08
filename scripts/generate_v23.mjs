@@ -578,6 +578,8 @@ children.push(threeColTable(
     ["v0.9.3 (ddcea08)", "V21", "Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln"],
     ["cddd248 (S31)", "V22", "Cache dual disco+BD, source-ranking, --count-new en test-instagram. 795 tests."],
     ["432b9b0 (S31)", "V22", "Fix Zod Gemini: title null / categories [] normalizados. 797 tests."],
+    ["12120fd (S32)", "V22", "Fix cobertura: vi.mock+static imports cache.ts, source-scoring.test.ts 22 tests. 832 tests."],
+    ["429559a (S33)", "V23", "Rebrand Infantia → HabitaPlan, dominio habitaplan.com. 71 archivos, 832 tests."],
   ],
   [25, 12, 63]
 ));
@@ -589,12 +591,12 @@ children.push(twoColTable(
   ["Metrica", "Valor"],
   [
     ["Framework", "Vitest + @vitest/coverage-v8"],
-    ["Tests totales", "797 en 53 archivos"],
+    ["Tests totales", "832 en 54 archivos"],
     ["Threshold", "85% branches (cap fijo desde dia 16 del proyecto)"],
-    ["Statements", "90.66%"],
-    ["Branches", "85.18%"],
-    ["Functions", "86.52%"],
-    ["Lines", "92.20%"],
+    ["Statements", "90.95%"],
+    ["Branches", "85.69%"],
+    ["Functions", "86.97%"],
+    ["Lines", "92.46%"],
   ]
 ));
 children.push(spacer());
@@ -603,6 +605,8 @@ children.push(bodyParagraph("telegram-extractor.test.ts (9 tests, S28): extracci
 children.push(bodyParagraph("ratings.test.ts (3 tests, S29): recalcProviderRating, avg null cuando sin ratings, propagacion errores.", { bullet: true }));
 children.push(bodyParagraph("types.test.ts +4 tests (S31): normalizacion title null → 'Sin titulo', title '' → 'Sin titulo', categories null → ['General'], categories [] → ['General'].", { bullet: true }));
 children.push(bodyParagraph("pipeline.test.ts actualizado (S31): mocks para syncFromDb() y saveToDb() del cache dual.", { bullet: true }));
+children.push(bodyParagraph("cache.test.ts +11 tests (S32): syncFromDb (merge, dedup, error) + saveToDb (upsert, clear, error). Fix vi.mock con imports estaticos + function() para Vitest 4.", { bullet: true }));
+children.push(bodyParagraph("source-scoring.test.ts 22 tests (S32): calcSourceScore, formatReach, TIER_LABEL, TIER_COLOR.", { bullet: true }));
 children.push(spacer());
 
 // ── SECTION 16: ROADMAP ──────────────────────────────────────────────────────

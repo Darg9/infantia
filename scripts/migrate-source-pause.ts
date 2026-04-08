@@ -3,9 +3,8 @@
  * Ejecutar: npx tsx scripts/migrate-source-pause.ts
  */
 
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import 'dotenv/config';
+import { prisma } from '../src/lib/db';
 
 async function migrate() {
   console.log('🔄 Creando tablas SourcePauseConfig y SourceUrlStats...\n');
@@ -14,9 +13,9 @@ async function migrate() {
     // Crear tabla SourcePauseConfig
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS source_pause_config (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        source_id UUID NOT NULL,
-        city_id UUID,
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+        source_id TEXT NOT NULL,
+        city_id TEXT,
         pause_threshold_score SMALLINT NOT NULL DEFAULT 20,
         pause_duration_days SMALLINT NOT NULL DEFAULT 7,
         auto_pause_enabled BOOLEAN NOT NULL DEFAULT true,
@@ -24,8 +23,8 @@ async function migrate() {
         paused_reason VARCHAR(255),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        FOREIGN KEY (source_id) REFERENCES scraping_source(id) ON DELETE CASCADE,
-        FOREIGN KEY (city_id) REFERENCES city(id) ON DELETE SET NULL,
+        FOREIGN KEY (source_id) REFERENCES scraping_sources(id) ON DELETE CASCADE,
+        FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
         UNIQUE (source_id, city_id)
       )
     `);
@@ -34,9 +33,9 @@ async function migrate() {
     // Crear tabla SourceUrlStats
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS source_url_stats (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        source_id UUID NOT NULL,
-        city_id UUID,
+        id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+        source_id TEXT NOT NULL,
+        city_id TEXT,
         avg_url_score DECIMAL(5,2),
         low_score_count SMALLINT DEFAULT 0,
         high_score_count SMALLINT DEFAULT 0,
@@ -44,8 +43,8 @@ async function migrate() {
         last_scan_at TIMESTAMPTZ,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        FOREIGN KEY (source_id) REFERENCES scraping_source(id) ON DELETE CASCADE,
-        FOREIGN KEY (city_id) REFERENCES city(id) ON DELETE SET NULL,
+        FOREIGN KEY (source_id) REFERENCES scraping_sources(id) ON DELETE CASCADE,
+        FOREIGN KEY (city_id) REFERENCES cities(id) ON DELETE SET NULL,
         UNIQUE (source_id, city_id)
       )
     `);
@@ -74,7 +73,7 @@ async function migrate() {
       throw error;
     }
   } finally {
-    await prisma.$disconnect();
+    await prisma.$disconnect().catch(() => {});
   }
 }
 

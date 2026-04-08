@@ -4,9 +4,9 @@
 
 **AL INICIO DE CADA SESIÓN, antes de escribir cualquier línea de código:**
 
-1. Ejecuta `pwd` y verifica que el resultado sea `C:/Users/denys/Projects/habitaplan`
+1. Ejecuta `pwd` y verifica que el resultado sea `C:/Users/denys/Projects/infantia`
 2. Si el directorio NO es ese, detente inmediatamente y avisa al usuario:
-   > "⛔ Directorio incorrecto: estoy en [directorio actual]. Este proyecto debe abrirse desde C:/Users/denys/Projects/habitaplan. Abre Claude Code desde esa carpeta."
+   > "⛔ Directorio incorrecto: estoy en [directorio actual]. Este proyecto debe abrirse desde C:/Users/denys/Projects/infantia. Abre Claude Code desde esa carpeta."
 3. Verifica que `prisma/schema.prisma` exista y contenga `provider = "postgresql"` (no SQLite).
    Si contiene SQLite o le falta `provider`, detente y avisa antes de continuar.
 
@@ -159,8 +159,9 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
 | v0.9.3-S31 | V22 | Caché dual disco+BD, ranking fuentes, fix Zod Gemini (null title/categories), 797 tests |
 | v0.9.3-S32 | V22 | Fix cobertura (cache.ts, source-scoring.ts tests), 832 tests, 85.69% branches ✅ |
-| v0.9.3-S33 | V23 | RatingForm 3-step modal, SEO landings (4 rutas), expiración configurable, UI cleanup |
-| v0.9.3-S34 | V23 | Evaluación Instagram (@festiencuentro ✅, @distritojovenbta ✅), diagnóstico Banrep, 835 tests |
+| v0.9.3-S33 | V23 | Rebrand Infantia → HabitaPlan, dominio habitaplan.com, RatingForm 3-step |
+| v0.9.3-S34 | V23 | URL classifier pre-Gemini (40% reducción), dashboard auto-pause, 863 tests |
+| v0.9.4-S35 | V23 | Multi-ciudad Medellín, admin toggle fuentes, source-pause-manager, 876 tests |
 
 ### Regla para Documento Fundacional
 
@@ -169,7 +170,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v22.mjs` (actualizar número de versión primero — V22 es la versión actual)
+Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual)
 
 ## Notas de arquitectura críticas
 
@@ -191,27 +192,28 @@ Comando: `node scripts/generate_v22.mjs` (actualizar número de versión primero
 - **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
 - **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead. `instrumentation-client.ts` inicializa Sentry en browser (S28).
 - **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
-- **CHUNK_SIZE = 200** en `gemini.analyzer.ts` (era 50). Banrep Bogotá: 1.083 URLs → 6 lotes (antes 22, excedía cuota 20 RPD). No cambiar sin medir impacto en tokens.
+- **CHUNK_SIZE = 100** en `gemini.analyzer.ts` (era 200 en S31, reducido en S35 por resiliencia ante cuota parcial). Banrep Bogotá: 1.083 URLs → ~11 lotes. No cambiar sin medir impacto.
 - **npm audit:** 0 vulnerabilidades. Si aparecen nuevas, correr `npm audit fix` antes de desplegar.
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.9.3-S34 — 2026-04-07)
-- **~296 actividades** en BD
-- **835 tests** en 54 archivos — `npm test` pasa en ~11s — 0 errores TypeScript
-- Cobertura: **90.95% stmts / 85.69% branches** ✅ (umbral 85%)
+## Estado actual (v0.9.4-S35 — 2026-04-08)
+- **~296 actividades** en BD (Bogotá + Medellín fuentes activas)
+- **876 tests** en 56 archivos — `npm test` pasa en ~14s — 0 errores TypeScript
+- Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO en `https://infantaplan-activities.vercel.app` (rebrand: habitaplan.com pending DNS)
+- Vercel deployment: ACTIVO — habitaplan.com DNS apuntado ✅
 - BullMQ + Upstash Redis: OPERATIVO
-- 14 fuentes web + 10 Instagram (ambas validadas: @festiencuentro ✅ + @distritojovenbta ✅) + canal Telegram (con session token en Vercel)
-- Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL)
-- Documento Fundacional: **V23** (2026-04-07, rebrand Infantia → HabitaPlan)
-- **0 vulnerabilidades npm**
+- **16 fuentes web** (14 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
+- Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
+- Documento Fundacional: **V23** (2026-04-07, rebrand HabitaPlan)
+- **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)
 - **0 console.*** en producción (migrado a logger estructurado)
-- Tabla `scraping_cache` operativa en BD (caché dual disco+BD desde S31)
+- Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅
 - **Sentry activo** en producción (SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN configurados en Vercel)
 - **UptimeRobot** monitoreando `/api/health`
-- **RatingForm:** 3-step progressive disclosure + inline LoginModal + data persistence ✅ (S33)
+- **URL classifier** activo en gemini.analyzer.ts — pre-filtra ~40% URLs antes de Gemini
+- **Auto-pause dashboard** en `/admin/sources` — score monitoring + toggle por fuente
 - **SEO landings:** 4 nuevas rutas dinámicas (categoria, publico, precio, ciudad) + breadcrumbs JSON-LD (S33)
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
 - **UI cleanup:** sin uppercase sostenido, title case en labels (S33)

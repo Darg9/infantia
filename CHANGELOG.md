@@ -13,6 +13,73 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.4-S35] — 2026-04-08 (Multi-ciudad Medellín + Dashboard auto-pause + Benchmark Gemini + Fixes)
+**Documento Fundacional: V23** | Rama: master
+
+### Features
+
+#### Dashboard admin URL Score + Auto-pause
+- **New:** `src/lib/source-pause-manager.ts` (305 líneas) — lógica auto-pause con 3 niveles de config:
+  - Global (threshold: 20, duration: 7 días)
+  - Ciudad (`CITY_PAUSE_CONFIG` dict — nombres en minúsculas)
+  - Fuente específica (tabla `source_pause_config` en BD)
+- **New:** `GET /api/admin/sources/url-stats` — endpoint con filtro por ciudad
+- **New:** `src/app/admin/sources/components/SourceStatsTable.tsx` — dashboard con 4 summary cards + tabla
+- **New:** `src/app/admin/sources/page.tsx` — página `/admin/sources`
+- **New card** en panel admin `/admin` → "URL Score Dashboard"
+- **New:** `scripts/apply-source-pause.ts` — CLI auto-pause con `--dry-run`, `--city`, `--verbose`
+- **New:** `scripts/migrate-source-pause.ts` — crea tablas BD (corregido: nombres `scraping_sources`, `cities`, tipos `TEXT`)
+- **New:** `scripts/check-pause-tables.ts` — verificación de migration en BD real ✅
+- **Migration ejecutada** en producción — tablas operativas con 6 índices
+
+#### Toggle activar/desactivar fuentes desde UI admin
+- **New:** `PATCH /api/admin/sources/[id]` — actualiza `isActive` (requiere ADMIN)
+- **New:** `SourceToggle.tsx` — switch verde/gris con feedback inmediato + `router.refresh()`
+- Integrado en `/admin/scraping/sources` — visible por cada fuente
+
+#### Multi-ciudad: Medellín
+- **Web (2 fuentes activas):**
+  - Parque Explora (`parqueexplora.org/sitemap.xml`, patrón `/programate/`) — 700+ eventos
+  - Biblioteca Piloto (`bibliotecapiloto.gov.co/sitemap.xml`, patrón `/agenda/`) — talleres/niños
+- **Instagram (2 cuentas activas, validadas con `--validate-only`):**
+  - @parqueexplora — 236K seguidores ✅
+  - @quehacerenmedellin — 168K seguidores ✅
+  - @medellinplanes ❌ descartada (59 seg, inactiva 2023)
+  - @planesmedellin ❌ descartada (37 seg, 1 post 2021)
+- **Pendientes comentados:** Sec. Cultura Antioquia, Alcaldía Medellín, Jardín Botánico MDE, Infolocal Comfenalco
+
+#### Benchmark CHUNK_SIZE Gemini
+- **New:** `scripts/benchmark-chunk-size.ts` — benchmark Banrep Ibagué (107 URLs, sitemap paginado)
+- **Hallazgo:** errores "JSON inválido" eran realmente **429 Too Many Requests** disfrazados
+- **Hallazgo:** URL classifier no filtra Banrep Ibagué (100% `/actividad/`, ya son URLs productivas)
+- **Cambio:** `CHUNK_SIZE 200 → 100` en `gemini.analyzer.ts` — mejor resiliencia ante cuota parcial
+- Tests actualizados: "lotes de 200" → "lotes de 100"
+
+#### Banrep Ibagué — pausa definitiva
+- Comentada en `BANREP_CITIES` con motivo documentado
+- Root cause: cuota Gemini se agota antes de llegar a Ibagué (score 13/100)
+- Reactivar: descomentar línea en `scripts/ingest-sources.ts` (sin tocar código)
+
+#### DNS habitaplan.com
+- Dominio apuntado a Vercel ✅ (configurado fuera del repo)
+- Redirección `habitoplan.com → habitaplan.com` activa ✅
+
+### Fixes
+- `scripts/migrate-source-pause.ts`: `PrismaClient()` → `import prisma from src/lib/db` + dotenv
+- `scripts/migrate-source-pause.ts`: nombres reales de tablas (`scraping_sources`, `cities`) y tipos FK (`TEXT`)
+- `src/modules/scraping/nlp/gemini.analyzer.ts`: `stats.filtered.length` → `stats.filtered` (número, no array)
+- `scripts/apply-source-pause.ts`: type `cityName` removido del array de paused
+
+### Tests
+- **876 tests** (863 → 876): +13 tests en `source-pause-manager.test.ts`
+- **56 test files** (55 → 56)
+- Coverage: branches threshold 85% ✅
+
+### Vulnerabilidades
+- 3 `moderate` en `@prisma/dev` (dependencia de desarrollo, no producción) — `npm audit fix --force` haría downgrade de Prisma 7→6, riesgo alto → mantenidas
+
+---
+
 ## [v0.9.3-S34] — 2026-04-07 (URL classifier + Instagram eval + Banrep diagnosis + QA)
 **Documento Fundacional: V23** | Rama: master
 

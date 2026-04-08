@@ -1,20 +1,20 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-07 | Version: v0.9.3-S34
+Actualizado: 2026-04-08 | Version: v0.9.4-S35
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 54 |
-| Tests totales | 835 |
-| Pasados | 835 |
+| Archivos de test | 56 |
+| Tests totales | 876 |
+| Pasados | 876 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
-| Statements | 90.95% ✅ |
-| Branches | 85.69% ✅ |
-| Functions | 86.97% ✅ |
-| Lines | 92.41% ✅ |
+| Statements | 91.39% ✅ |
+| Branches | 85.90% ✅ |
+| Functions | 88.09% ✅ |
+| Lines | 92.71% ✅ |
 
 ## Estado: PASSED ✅
 
@@ -22,7 +22,7 @@ Actualizado: 2026-04-07 | Version: v0.9.3-S34
 > Los gaps (~15% branches) son: ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` en contexto
 > browser (inaccesibles en unit tests), y ramas de Sentry dynamic import que no se pueden mockear limpiamente.
 
-## Archivos de test (53 total)
+## Archivos de test (56 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -154,7 +154,7 @@ Actualizado: 2026-04-07 | Version: v0.9.3-S34
 | lib/push.ts | 94% | 84% | 94% | 94% |
 | lib/ratings.ts | 100% | 100% | 100% | 100% |
 | lib/logger.ts | ~73% | ~80% | ~46% | ~73% |
-| **TOTAL** | **90.66%** | **85.18%** | **86.52%** | **92.20%** |
+| **TOTAL** | **91.39%** | **85.90%** | **88.09%** | **92.71%** |
 
 ## Gaps de cobertura conocidos (aceptados)
 
@@ -194,7 +194,21 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.3-S31** | **797** | **53** | **90.66%** | **85.18%** |
 | **v0.9.3-S32** | **832** | **54** | **90.95%** | **85.69%** |
 | **v0.9.3-S33** | **838** | **54** | **90.95%** | **85.69%** |
-| **v0.9.3-S34** | **835** | **54** | **90.95%** | **85.69%** |
+| **v0.9.3-S34** | **835** | **55** | **90.95%** | **85.69%** |
+| **v0.9.4-S35** | **876** | **56** | **91.39%** | **85.90%** |
+
+## Cambios en S35 (v0.9.4-S35)
+
+- **+41 tests** (835 → 876): +13 `source-pause-manager.test.ts` (nuevo) + 28 `url-classifier.test.ts` (S34, contabilizados en S35)
+- **2 archivos nuevos de test:** `source-pause-manager.test.ts` + `url-classifier.test.ts`
+- Fix TS: `expire-activities.test.ts` — `makeActivity` con tipos `Date | null` explícitos
+- Coverage branches: 85.69% → 85.90% ✅
+
+## Cambios en S35 — nuevos archivos
+| Archivo | Tests | Estado |
+|---------|-------|--------|
+| lib/__tests__/url-classifier.test.ts | 28 | OK ← NUEVO S34 (100% cobertura) |
+| lib/__tests__/source-pause-manager.test.ts | 13 | OK ← NUEVO S35 (auto-pause logic) |
 
 ## Cambios en S32 (v0.9.3-S32)
 

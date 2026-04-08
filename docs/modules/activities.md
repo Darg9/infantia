@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.9.3-S32
-**Última actualización:** 2026-04-07
+**Versión actual:** v0.9.4-S35
+**Última actualización:** 2026-04-08
 
 ## ¿Qué hace?
 

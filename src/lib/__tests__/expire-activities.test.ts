@@ -23,13 +23,13 @@ import { expireActivities, DEFAULT_EXPIRATION_HOURS } from '../expire-activities
 const FIXED_NOW = new Date('2026-06-15T10:00:00.000Z')
 
 // Helpers
-function makeActivity(id: string, overrides = {}) {
+function makeActivity(id: string, overrides: Record<string, unknown> = {}) {
   return {
     id,
     title: `Actividad ${id}`,
     type: 'ONE_TIME' as const,
-    startDate: null,
-    endDate: null,
+    startDate: null as Date | null,
+    endDate: null as Date | null,
     sourcePlatform: null,
     location: null,
     ...overrides,

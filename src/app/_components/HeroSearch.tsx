@@ -160,38 +160,24 @@ export default function HeroSearch() {
                 aria-selected={i === activeIndex}
                 onMouseEnter={() => setActiveIndex(i)}
                 onMouseLeave={() => setActiveIndex(-1)}
-                className={`flex items-center justify-between gap-2 px-4 py-3 cursor-pointer text-sm transition-colors ${
+                onClick={() => selectSuggestion(s)}
+                className={`flex items-center gap-2 px-4 py-3 cursor-pointer text-sm transition-colors ${
                   i === activeIndex
                     ? 'bg-indigo-50 text-indigo-900'
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
-                {/* Click en texto → búsqueda por término */}
-                <span
-                  className="flex-1 truncate"
-                  onClick={() => {
-                    setQuery(s.title);
-                    submitSearch(s.title);
-                  }}
-                >
+                <span className="flex-1 truncate">
                   <span className="font-medium">{highlightMatch(s.title, query)}</span>
                   {s.category && (
                     <span className="ml-2 text-xs text-gray-400">{s.category}</span>
                   )}
                 </span>
-                {/* Flecha → va directo a la actividad */}
-                <button
-                  onClick={() => selectSuggestion(s)}
-                  title="Ver actividad"
-                  className="shrink-0 text-gray-300 hover:text-indigo-500 transition-colors px-1"
-                  tabIndex={-1}
-                >
-                  →
-                </button>
+                <span className="shrink-0 text-gray-300 text-xs">→</span>
               </li>
             ))}
             <li className="px-4 py-2 text-xs text-gray-400 border-t border-gray-100 select-none">
-              ↑↓ navegar · Enter buscar · Esc cerrar
+              ↑↓ navegar · Enter ir a actividad · Esc cerrar
             </li>
           </ul>
         )}

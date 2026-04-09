@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.9.5-S37
-**Última actualización:** 2026-04-08
+**Versión actual:** v0.9.8-S40
+**Última actualización:** 2026-04-09
 
 ## ¿Qué hace?
 
@@ -15,7 +15,7 @@ Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, la
 URL semilla / sitemap XML
    → CheerioExtractor descubre links (paginación automática o sitemap)
    → Filtrado por cache (URLs ya vistas)
-   → GeminiAnalyzer analiza en batches de 200 (CHUNK_SIZE=200 desde S27)
+   → GeminiAnalyzer analiza en batches de 100 (CHUNK_SIZE=100 desde S34 — benchmark 200→100)
    → Validación Zod (activityNLPResultSchema)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
@@ -117,7 +117,7 @@ El pipeline integra geocoding automático en cada actividad guardada:
 - Filtra URLs por patrones (ej: `/bogota/` para Banrep Bogotá)
 - Sin Playwright, sin bot-detection
 
-## Fuentes activas (14 web + 10 Instagram + canal Telegram pendiente)
+## Fuentes activas (20 web + 12 Instagram + canal Telegram pendiente) — S40
 
 ### Web (14 fuentes)
 
@@ -138,7 +138,7 @@ El pipeline integra geocoding automático en cada actividad guardada:
 | Banrep Cartagena | Cartagena | Sitemap filtrado /cartagena/ |
 | Banrep (Buca/Mani/Pereira/Ibagué/Santa Marta) | Multi | Sitemap por ciudad |
 
-### Instagram (10 fuentes activas — NUEVO v0.9.2)
+### Instagram (12 fuentes activas — +2 Medellín en S35)
 
 | Cuenta | Seguidores | Tipo de contenido |
 |--------|-----------|-------------------|

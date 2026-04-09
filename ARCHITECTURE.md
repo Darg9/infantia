@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.9.5-S37 | Actualizado: 2026-04-08
+> Versión: v0.9.8-S40 | Actualizado: 2026-04-09
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -49,7 +49,7 @@ habitaplan/
 │   ├── app/                        # Next.js App Router
 │   │   ├── page.tsx                # Home — hero + buscador + categorías + recientes (S37)
 │   │   ├── _components/
-│   │   │   └── HeroSearch.tsx      # Client Component: buscador hero con autocomplete + chips (NUEVO S37)
+│   │   │   └── HeroSearch.tsx      # Client Component: buscador mixto (actividades+cats+ciudades), cache, AbortController, historial (S40)
 │   │   ├── actividades/            # Listado con filtros facetados
 │   │   ├── login/                  # Autenticación (Supabase Auth — redirige a /onboarding si nuevo)
 │   │   ├── registro/               # Registro con email de bienvenida
@@ -329,7 +329,7 @@ ScrapingStorage.saveActivity()
 1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
 2. Busca `<a href>` con parámetro `?page=N+1`
 
-### Fuentes activas (al 2026-04-08 — S37)
+### Fuentes activas (al 2026-04-09 — S40)
 
 #### Bogotá — Web (Cheerio + Gemini)
 | Fuente | Actividades aprox. |
@@ -450,6 +450,8 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | `GET` | `/api/activities` | Pública |
 | `POST` | `/api/activities` | Admin |
 | `GET/PUT/DELETE` | `/api/activities/[id]` | Mixto |
+| `GET` | `/api/activities/suggestions?q=` | Pública — sugerencias mixtas (acts+cats+ciudades, max 5, min 3 chars) |
+| `GET` | `/api/activities/map` | Pública — actividades con coords para mapa (max 500) |
 | `GET/POST` | `/api/activities/[id]/ratings` | Usuario |
 
 **Filtros GET `/api/activities`:** `page`, `pageSize`, `verticalId`, `categoryId`, `cityId`, `ageMin`, `ageMax` (0-120), `priceMin`, `priceMax`, `status`, `type`, `audience`, `search`
@@ -495,7 +497,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 
 - **Plataforma:** Vercel (auto-deploy en push a `master`)
 - **DB:** Supabase PostgreSQL (AWS us-east-1, proyecto `vjfhlrpfubbfnvpthwym`)
-- **Dominio objetivo:** `habitaplan.com` (pendiente de configurar en Vercel)
+- **Dominio:** `habitaplan.com` ✅ (DNS apuntado a Vercel — S35)
 - **Crons Vercel:** deduplicación diaria — `15 2 * * *`
 
 ### Variables de entorno requeridas
@@ -538,8 +540,8 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 783 tests, 51 archivos, 0 fallos
-- **Cobertura:** 91.76% stmts / 86.98% branches / 89.73% funcs / 93.08% lines
+- **Estado actual:** 882 tests, 56 archivos, 0 fallos
+- **Cobertura:** 91.39% stmts / 85.90% branches / 88.09% funcs / 92.71% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`
 - **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests

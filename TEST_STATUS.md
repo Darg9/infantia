@@ -1,14 +1,14 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-09 | Version: v0.9.7-S39
+Actualizado: 2026-04-09 | Version: v0.9.8-S40
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
 | Archivos de test | 56 |
-| Tests totales | 876 |
-| Pasados | 876 |
+| Tests totales | 882 |
+| Pasados | 882 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
 | Statements | 91.39% ✅ |
@@ -94,7 +94,7 @@ Actualizado: 2026-04-09 | Version: v0.9.7-S39
 | Archivo | Tests | Estado |
 |---------|-------|--------|
 | activities/map/__tests__/ | — | OK |
-| activities/suggestions/__tests__/ | — | OK |
+| activities/suggestions/__tests__/ | 13 | OK ← ACTUALIZADO S40 (+6 tests, mocks categorías+ciudades, nuevo formato SuggestionItem) |
 | activities/[id]/ratings/__tests__/ | — | OK |
 | activities/[id]/view/__tests__/ | — | OK |
 | favorites/__tests__/ | — | OK |
@@ -197,6 +197,23 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.3-S34** | **835** | **55** | **90.95%** | **85.69%** |
 | **v0.9.4-S35** | **876** | **56** | **91.39%** | **85.90%** |
 | **v0.9.5-S37** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.9.6-S38** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.9.7-S39** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.9.8-S40** | **882** | **56** | **91.39%** | **85.90%** |
+
+## Cambios en S40 (v0.9.8-S40)
+
+- **+6 tests** (876 → 882): `suggestions/__tests__/suggestions.test.ts` actualizado
+  - Mocks añadidos: `mockCategoryFindMany`, `mockCityFindMany`
+  - Nuevos tests: formato actividad (type/id/label/sublabel), formato categoría, formato ciudad, max 5, orden tipos, sublabel null
+- **Sin archivos de test nuevos** — mismo archivo actualizado con suite ampliada
+- Coverage: 91.39% stmts / 85.90% branches ✅ (estable)
+- TypeScript: 0 errores ✅
+
+## Cambios en S38-S39 (v0.9.6/v0.9.7)
+
+- **Sin nuevos tests** — cambios UI (Client Components sin lógica testeable en unit tests)
+- TypeScript: 0 errores ✅ | Branches: 85.90% ✅
 
 ## Cambios en S37 (v0.9.5-S37)
 

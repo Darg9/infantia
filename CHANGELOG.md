@@ -13,6 +13,45 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.8-S40] — 2026-04-09 (Buscador mixto + fixes críticos autocomplete)
+**Documento Fundacional: V23** | Rama: master | Commit: `c5efce5`
+
+### Features
+
+#### Buscador mixto (actividades + categorías + ciudades) — HeroSearch.tsx + Filters.tsx
+- **API `GET /api/activities/suggestions`:** rediseñada para devolver hasta 5 resultados mixtos
+  - Actividades (max 3): match en título, ranking prefix > sourceConfidence
+  - Categorías (max 1): con actividades activas, ranking prefix > count
+  - Ciudades (max 1): con actividades activas, ranking prefix
+  - Tipo `SuggestionItem { type, id, label, sublabel }` exportado
+- **HeroSearch.tsx y Filters.tsx:** cache en memoria LRU (20 entradas), AbortController, debounce 300ms
+- **Historial de búsquedas:** sessionStorage `hp_recent_searches` (max 5), panel con reloj
+- **Skeleton loading:** 3 ítems animados mientras se espera la API
+- **Estado vacío:** "No encontramos resultados para…" si la API devuelve array vacío
+- **Pre-selección:** primer ítem activo al recibir sugerencias (`activeIndex = 0`)
+- **Selección por tipo:** activity→detalle, category→`?categoryId=`, city→`?cityId=`
+- **Badges de tipo:** pill "Categoría" (violeta) / "Ciudad" (verde esmeralda)
+- **Iconos:** 🎯 actividad · 📂 categoría · 📍 ciudad
+- **Footer teclado:** "↑↓ navegar · Enter seleccionar · Esc cerrar" (solo desktop, `hidden sm:block`)
+- **Lupa clickeable:** botón que submite búsqueda
+- **`onMouseDown={e => e.preventDefault()}`:** evita pérdida de foco al clicar dropdown
+
+#### Fixes críticos autocomplete
+- **Bug 1 — umbral API incorrecto:** `q.length < 2` → corregido a `< 3`
+- **Bug 2 — race condition:** fetch anterior no cancelado → `AbortController` abort en cada nueva llamada
+- **Bug 3 — estado stale en re-foco:** suggestions no se limpiaban al cerrar → `setSugg([])` en `closeDropdown()`
+
+#### Fix conteo categorías en facets
+- `getFacets()` en `page.tsx`: `_count.activities` ahora incluye `where: { activity: buildWhere(filters, 'categoryId') }` — el número en el dropdown coincide con los resultados reales
+
+### Tests
+- **6 nuevos tests** en `suggestions/__tests__/suggestions.test.ts` (876 → 882)
+- Mocks añadidos: `mockCategoryFindMany`, `mockCityFindMany`
+- 882/882 passing ✅ | 56 archivos | TypeScript: 0 errores
+- Coverage: 91.39% stmts / 85.90% branches ✅
+
+---
+
 ## [v0.9.7-S39] — 2026-04-09 (Header resultados /actividades)
 **Documento Fundacional: V23** | Rama: master
 

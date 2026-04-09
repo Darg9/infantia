@@ -164,6 +164,9 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.4-S35 | V23 | Multi-ciudad Medellín, admin toggle fuentes, source-pause-manager, 876 tests |
 | v0.9.4-S36 | V23 | Rebrand masivo UI (71 archivos), fix rutas CLAUDE.md, docs completos |
 | v0.9.5-S37 | V23 | Home UX: HeroSearch, ActivityCard compact, footer 4 cols, fix stats ACTIVE |
+| v0.9.6-S38 | V23 | Filtros /actividades: desktop 1 fila, precio pills, chips ✕, modal mobile |
+| v0.9.7-S39 | V23 | Header resultados: cabecera bg-white, subtítulo, spinner, FiltersSkeleton |
+| v0.9.8-S40 | V23 | Buscador mixto (acts+cats+ciudades), 3 bugs autocomplete, fix facets count |
 
 ### Regla para Documento Fundacional
 
@@ -172,7 +175,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — sin cambios de producto en S37)
+Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios S38-S40 son UX, no requieren nuevo doc fundacional)
 
 ## Notas de arquitectura críticas
 
@@ -195,18 +198,20 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — sin camb
 - **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead. `instrumentation-client.ts` inicializa Sentry en browser (S28).
 - **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
 - **CHUNK_SIZE = 100** en `gemini.analyzer.ts` (era 200 en S31, reducido en S35 por resiliencia ante cuota parcial). Banrep Bogotá: 1.083 URLs → ~11 lotes. No cambiar sin medir impacto.
-- **npm audit:** 0 vulnerabilidades. Si aparecen nuevas, correr `npm audit fix` antes de desplegar.
+- **npm audit:** 3 moderate en `@hono/node-server` (dependencia dev de Prisma). No en producción — esperar fix de Prisma. No correr `npm audit fix --force` (breaking change Prisma 6→7).
+- **Buscador mixto (S40):** `GET /api/activities/suggestions?q=` devuelve `SuggestionItem[]` max 5 (3 acts + 1 cat + 1 ciudad). Min 3 chars. Cache en memoria LRU (20 entries) en HeroSearch y Filters. AbortController cancela fetch previo. Historial en sessionStorage (`hp_recent_searches`, max 5). Pre-selección automática del primer ítem.
+- **Facets count (S40):** `getFacets()` en `page.tsx` usa `_count: { select: { activities: { where: { activity: buildWhere(filters, 'categoryId') } } } }` — el conteo refleja los filtros activos, no el total global.
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.9.4-S35 — 2026-04-08)
+## Estado actual (v0.9.8-S40 — 2026-04-09)
 - **~296 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **876 tests** en 56 archivos — `npm test` pasa en ~14s — 0 errores TypeScript
+- **882 tests** en 56 archivos — `npm test` pasa en ~7s — 0 errores TypeScript
 - Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO — habitaplan.com DNS apuntado ✅
 - BullMQ + Upstash Redis: OPERATIVO
-- **16 fuentes web** (14 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
+- **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
 - Documento Fundacional: **V23** (2026-04-07, rebrand HabitaPlan)
 - **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)

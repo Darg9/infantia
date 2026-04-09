@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.9.5-S37
-**Última actualización:** 2026-04-08
+**Versión actual:** v0.9.8-S40
+**Última actualización:** 2026-04-09
 
 ## ¿Qué hace?
 
@@ -16,7 +16,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |
 | DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.9.0) |
-| GET | `/api/activities/suggestions` | No | Autocompletado de búsqueda (debounce 300ms, máx 6) |
+| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1). Total max 5. Min 3 chars. Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
 | GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500) |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |

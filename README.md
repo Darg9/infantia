@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.9.5-S37 | **Status:** Production — 2026-04-08 | **Tests:** 876 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **URL Classifier:** ✅ Active
+**Version:** v0.9.8-S40 | **Status:** Production — 2026-04-09 | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **URL Classifier:** ✅ Active
 
 ## Quick Start
 
@@ -71,14 +71,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 832 unit tests (90.95% stmts / 85.69% branches), E2E tests
+- 🧪 **Well-tested:** 882 unit tests (91.39% stmts / 85.90% branches), E2E tests
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production
-npm test                       # Run all tests (832 tests)
+npm test                       # Run all tests (882 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 
 # Scraping
@@ -178,8 +178,8 @@ src/
 
 ## Deployment
 
-- **Production:** https://habitaplan-activities.vercel.app
-- **Repo:** https://github.com/Darg9/habitaplan (private)
+- **Production:** https://habitaplan.com (Vercel, dominio activo)
+- **Repo:** https://github.com/Darg9/infantia (private)
 - **Branch:** master — auto-deploy on push via GitHub Actions → Vercel
 - **DB:** Supabase PostgreSQL (Free Tier)
 - **Queue:** Upstash Redis (Free Tier)

@@ -10,7 +10,7 @@ import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import type { Prisma } from '@/generated/prisma/client';
 import ActivityCard from './_components/ActivityCard';
-import Filters from './_components/Filters';
+import Filters, { FiltersSkeleton } from './_components/Filters';
 import Pagination from './_components/Pagination';
 import { EmptyState } from './_components/EmptyState';
 import { MapView } from './_components/MapView';
@@ -272,32 +272,46 @@ export default async function ActividadesPage({
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
 
-        {/* Título */}
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Actividades para niños</h1>
-          <p className="text-sm text-gray-500 mt-0.5">
-            Talleres, clubes, cursos y eventos
-          </p>
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CABECERA — fondo blanco, título + buscador + filtros           */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="mx-auto max-w-7xl px-4 pt-8 pb-5">
+
+          {/* Título + subtítulo */}
+          <div className="mb-5">
+            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+              Actividades para niños
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Encuentra talleres, cursos y eventos según edad, ubicación y presupuesto
+            </p>
+          </div>
+
+          {/* Buscador + filtros + chips + conteo */}
+          <Suspense fallback={<FiltersSkeleton />}>
+            <Filters
+              search={params.search ?? ''}
+              ageMin={params.ageMin ?? ''}
+              ageMax={params.ageMax ?? ''}
+              categoryId={params.categoryId ?? ''}
+              cityId={params.cityId ?? ''}
+              type={params.type ?? ''}
+              audience={params.audience ?? ''}
+              price={params.price ?? ''}
+              sort={sortBy}
+              facets={facets}
+              total={total}
+            />
+          </Suspense>
         </div>
+      </div>
 
-        {/* Filtros */}
-        <Suspense fallback={<div className="h-12 animate-pulse bg-gray-200 rounded-xl" />}>
-          <Filters
-            search={params.search ?? ''}
-            ageMin={params.ageMin ?? ''}
-            ageMax={params.ageMax ?? ''}
-            categoryId={params.categoryId ?? ''}
-            cityId={params.cityId ?? ''}
-            type={params.type ?? ''}
-            audience={params.audience ?? ''}
-            price={params.price ?? ''}
-            sort={sortBy}
-            facets={facets}
-            total={total}
-          />
-        </Suspense>
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* RESULTADOS — fondo gris, lista o mapa                          */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
 
         {/* Toggle Lista / Mapa */}
         <div className="flex items-center justify-end">

@@ -49,15 +49,27 @@ export default function ContactoPage() {
     setError(null)
     setLoading(true)
 
-    // For MVP, we send to a mailto link since there's no backend endpoint yet
-    const subject = encodeURIComponent(`[HabitaPlan] ${motivo}`)
-    const body = encodeURIComponent(
-      `Nombre: ${nombre}\nCorreo: ${email}\nMotivo: ${motivo}${actividadUrl ? `\nURL actividad: ${actividadUrl}` : ''}\n\nMensaje:\n${mensaje}`
-    )
-    window.location.href = `mailto:contacto@habitaplan.com?subject=${subject}&body=${body}`
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motivo, nombre, email, mensaje, actividadUrl }),
+      })
 
-    setLoading(false)
-    setEnviado(true)
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.error || 'Error al enviar. Intenta de nuevo.')
+        setLoading(false)
+        return
+      }
+
+      setEnviado(true)
+    } catch {
+      setError('Error de red. Verifica tu conexión e intenta de nuevo.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (enviado) {
@@ -65,10 +77,10 @@ export default function ContactoPage() {
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8">
           <span className="text-4xl block mb-4">✓</span>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Solicitud recibida</h1>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">Mensaje enviado</h1>
           <p className="text-gray-600">
-            Se abrió su cliente de correo con los datos del formulario. Si no se abrió automáticamente,
-            puede escribirnos directamente a <strong>contacto@habitaplan.com</strong>.
+            Recibimos tu solicitud y te enviamos una confirmación a <strong>{email}</strong>.
+            Si no llega en unos minutos, revisa la carpeta de spam.
           </p>
           <p className="text-sm text-gray-500 mt-4">
             {isTakedown

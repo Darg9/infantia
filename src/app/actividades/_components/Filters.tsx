@@ -3,31 +3,21 @@
 // =============================================================================
 // Filters — cabecera de resultados de /actividades
 //
-// Desktop: [Buscador prominente (full-width)]
-//          [Categoría▼] [Gratis|De pago] [Edad▼] [Ordenar▼] [Limpiar filtros]
-//          [Chips activos: ciudad ✕  categoría ✕  precio ✕  edad ✕]
-//          [N actividades encontradas]
-//
-// Mobile:  [Buscador] [Filtros▼ (badge N)]
-//          [Chips activos]
-//          [N actividades]
-//          → Modal full-screen: categoría | precio | edad | ordenar
-//            Footer fijo: Limpiar · Aplicar filtros
-//
-// Estados: loading (spinner en buscador + opacidad) | vacío | error suggestions
+// Input: lupa clickeable, debounce 300ms, placeholder "Busca por actividad…"
+// Dropdown: mixto (actividades + categorías + ciudades), máx 5 ítems,
+//   primer ítem preseleccionado, cache en memoria, historial en sessionStorage,
+//   skeleton de carga, estado vacío, footer de teclado (solo desktop).
+// Desktop: [Input] → [Categoría▼] [Gratis|De pago] [Edad▼] [Ordenar▼] [Limpiar]
+//          → [Chips activos]  → [N actividades]
+// Mobile:  [Input] [Filtros▼ badge] → modal full-screen con temp state
 // =============================================================================
 
 import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { activityPath } from '@/lib/activity-url';
+import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
-
-interface Suggestion {
-  id: string;
-  title: string;
-  category: string | null;
-}
 
 interface Category {
   id: string;
@@ -81,21 +71,22 @@ const AGE_OPTIONS = [
   { label: '15–18 años',     min: '15', max: '18' },
 ];
 
-// ── Skeleton (exportado para Suspense fallback) ───────────────────────────────
+const HISTORY_KEY = 'hp_recent_searches';
+const HISTORY_MAX = 5;
+const CACHE_MAX   = 20;
+
+// ── Skeleton (Suspense fallback) ──────────────────────────────────────────────
 
 export function FiltersSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
-      {/* Buscador */}
       <div className="h-14 rounded-2xl bg-gray-100 w-full" />
-      {/* Fila de filtros */}
       <div className="hidden sm:flex gap-2">
         <div className="h-9 rounded-xl bg-gray-100 w-36" />
         <div className="h-9 rounded-xl bg-gray-100 w-40" />
         <div className="h-9 rounded-xl bg-gray-100 w-28" />
         <div className="h-9 rounded-xl bg-gray-100 w-32" />
       </div>
-      {/* Contador */}
       <div className="h-4 rounded bg-gray-100 w-44" />
     </div>
   );
@@ -103,29 +94,33 @@ export function FiltersSkeleton() {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-function highlightMatch(title: string, query: string): React.ReactNode {
-  if (!query || query.length < 2) return title;
-  const idx = title.toLowerCase().indexOf(query.toLowerCase());
-  if (idx === -1) return title;
+/** Resalta la parte del texto que coincide con el query */
+function highlightMatch(text: string, query: string): React.ReactNode {
+  if (!query || query.length < 2) return text;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return text;
   return (
     <>
-      {title.slice(0, idx)}
-      <mark className="bg-indigo-100 text-indigo-800 rounded px-0.5">
-        {title.slice(idx, idx + query.length)}
+      {text.slice(0, idx)}
+      <mark className="bg-indigo-100 text-indigo-800 rounded px-0.5 not-italic">
+        {text.slice(idx, idx + query.length)}
       </mark>
-      {title.slice(idx + query.length)}
+      {text.slice(idx + query.length)}
     </>
   );
 }
 
+/** Icono por tipo de sugerencia */
+function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
+  if (type === 'category') return <span aria-hidden>📂</span>;
+  if (type === 'city')     return <span aria-hidden>📍</span>;
+  return                          <span aria-hidden>🎯</span>;
+}
+
+/** Spinner animado */
 function Spinner({ className = '' }: { className?: string }) {
   return (
-    <svg
-      className={`animate-spin h-4 w-4 text-indigo-400 ${className}`}
-      fill="none"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
+    <svg className={`animate-spin h-4 w-4 ${className}`} fill="none" viewBox="0 0 24 24" aria-hidden>
       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
     </svg>
@@ -140,21 +135,27 @@ export default function Filters({
   const router   = useRouter();
   const pathname = usePathname();
 
-  // Búsqueda + sugerencias
-  const [searchValue, setSearchValue]   = useState(search);
-  const [suggestions, setSuggestions]   = useState<Suggestion[]>([]);
-  const [showSugg, setShowSugg]         = useState(false);
-  const [activeIndex, setActiveIndex]   = useState(-1);
-  const [suggError, setSuggError]       = useState(false);
-  const debounceRef                     = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const suggestDebRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const fetchControllerRef              = useRef<AbortController | null>(null);
-  const searchContainerRef              = useRef<HTMLDivElement>(null);
+  // ── Search state ──────────────────────────────────────────────────────────
+  const [searchValue, setSearchValue]     = useState(search);
+  const [suggestions, setSuggestions]     = useState<SuggestionItem[]>([]);
+  const [activeIndex, setActiveIndex]     = useState(-1);
+  const [showSugg, setShowSugg]           = useState(false);    // results visible
+  const [showHistory, setShowHistory]     = useState(false);    // history visible
+  const [isFetchingSugg, setIsFetching]   = useState(false);    // skeleton visible
+  const [suggError, setSuggError]         = useState(false);
+  const [recentSearches, setRecent]       = useState<string[]>([]);
 
-  // Estado de carga: true desde que se llama navigate() hasta que los props cambian
+  // ── Navigation loading ────────────────────────────────────────────────────
   const [isPending, setIsPending] = useState(false);
 
-  // Modal mobile + temp state
+  // ── Refs ──────────────────────────────────────────────────────────────────
+  const debounceRef       = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const suggestDebRef     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchCtrlRef      = useRef<AbortController | null>(null);
+  const cacheRef          = useRef<Map<string, SuggestionItem[]>>(new Map());
+  const searchContainerRef = useRef<HTMLDivElement>(null);
+
+  // ── Mobile modal ──────────────────────────────────────────────────────────
   const [mobileOpen, setMobileOpen]     = useState(false);
   const [mobileAgeIdx, setMobileAgeIdx] = useState(0);
   const [mobileCatId, setMobileCatId]   = useState('');
@@ -162,35 +163,72 @@ export default function Filters({
   const [mobilePrice, setMobilePrice]   = useState('');
   const [mobileSort, setMobileSort]     = useState('relevance');
 
-  // ── Efectos ────────────────────────────────────────────────────────────────
+  // ── Efectos ───────────────────────────────────────────────────────────────
 
-  // Cuando el Server Component devuelve nuevos props → navagación completada
+  // Cargar historial desde sessionStorage
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(HISTORY_KEY);
+      if (raw) setRecent(JSON.parse(raw));
+    } catch {}
+  }, []);
+
+  // Limpiar isPending cuando llegan nuevos props (navegación completada)
   useEffect(() => {
     setSearchValue(search);
     setIsPending(false);
   }, [search, ageMin, ageMax, categoryId, cityId, price, sort]);
 
-  // Cerrar dropdown al clic fuera — también limpiar sugerencias para evitar
-  // que reaparezcan en el siguiente onFocus con valor corto en el input
+  // Cerrar dropdown al hacer clic fuera
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
-        setShowSugg(false);
-        setSuggestions([]);
-        setActiveIndex(-1);
+        closeDropdown();
       }
     }
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
-  // Bloquear scroll cuando el modal está abierto
+  // Bloquear scroll del body cuando modal mobile está abierto
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [mobileOpen]);
 
-  // ── Navegación ─────────────────────────────────────────────────────────────
+  // ── Helpers dropdown ──────────────────────────────────────────────────────
+
+  function closeDropdown() {
+    setShowSugg(false);
+    setShowHistory(false);
+    setSuggestions([]);
+    setActiveIndex(-1);
+    setIsFetching(false);
+    setSuggError(false);
+  }
+
+  function isDropdownVisible() {
+    return showSugg || showHistory || isFetchingSugg;
+  }
+
+  // ── Historial de búsquedas ─────────────────────────────────────────────────
+
+  function saveToHistory(q: string) {
+    if (!q || q.trim().length < 3) return;
+    setRecent(prev => {
+      const updated = [q.trim(), ...prev.filter(r => r !== q.trim())].slice(0, HISTORY_MAX);
+      try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(updated)); } catch {}
+      return updated;
+    });
+  }
+
+  function selectHistory(term: string) {
+    setSearchValue(term);
+    closeDropdown();
+    navigate({ search: term, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+  }
+
+  // ── Navegación ────────────────────────────────────────────────────────────
 
   const navigate = useCallback((params: Record<string, string>) => {
     setIsPending(true);
@@ -200,68 +238,94 @@ export default function Filters({
     router.push(`${pathname}?${sp.toString()}`);
   }, [router, pathname]);
 
-  // ── Autocompletado ─────────────────────────────────────────────────────────
-  // AbortController cancela el fetch en vuelo cuando el usuario borra el texto
-  // antes de que llegue la respuesta — evita mostrar sugerencias obsoletas.
+  // ── Autocompletado ────────────────────────────────────────────────────────
 
   function fetchSuggestions(value: string) {
+    // Cancelar debounce y fetch previos
     if (suggestDebRef.current) clearTimeout(suggestDebRef.current);
-    // Cancelar fetch anterior si sigue en vuelo
-    if (fetchControllerRef.current) fetchControllerRef.current.abort();
+    if (fetchCtrlRef.current) fetchCtrlRef.current.abort();
     setSuggError(false);
-    if (value.length < 3) { setSuggestions([]); setShowSugg(false); return; }
+
+    if (value.length < 3) {
+      setSuggestions([]);
+      setShowSugg(false);
+      setIsFetching(false);
+      // Mostrar historial si hay búsquedas recientes
+      if (recentSearches.length > 0) setShowHistory(true);
+      return;
+    }
+
+    setShowHistory(false);
+
+    // Cache hit: mostrar instantáneamente
+    const cached = cacheRef.current.get(value);
+    if (cached) {
+      setSuggestions(cached);
+      setShowSugg(true);
+      setIsFetching(false);
+      setActiveIndex(cached.length > 0 ? 0 : -1);
+      return;
+    }
+
+    // Iniciar skeleton inmediatamente (antes del debounce)
+    setIsFetching(true);
+    setShowSugg(false);
+
     suggestDebRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      fetchControllerRef.current = controller;
+      const ctrl = new AbortController();
+      fetchCtrlRef.current = ctrl;
       try {
         const res  = await fetch(
           `/api/activities/suggestions?q=${encodeURIComponent(value)}`,
-          { signal: controller.signal },
+          { signal: ctrl.signal },
         );
         if (!res.ok) throw new Error('API error');
         const data = await res.json();
-        setSuggestions(data.suggestions ?? []);
-        setShowSugg((data.suggestions ?? []).length > 0);
-        setActiveIndex(-1);
+        const list: SuggestionItem[] = data.suggestions ?? [];
+
+        // Guardar en cache (LRU simple: eliminar la entrada más antigua)
+        cacheRef.current.set(value, list);
+        if (cacheRef.current.size > CACHE_MAX) {
+          const oldest = cacheRef.current.keys().next().value;
+          if (oldest) cacheRef.current.delete(oldest);
+        }
+
+        setSuggestions(list);
+        setShowSugg(true);
+        setIsFetching(false);
+        setActiveIndex(list.length > 0 ? 0 : -1); // Preseleccionar primer ítem
       } catch (err) {
-        if ((err as Error).name === 'AbortError') return; // fetch cancelado, ignorar
+        if ((err as Error).name === 'AbortError') return; // Cancelado, ignorar
         setSuggestions([]);
         setShowSugg(false);
+        setIsFetching(false);
         setSuggError(true);
       }
-    }, 200);
+    }, 300); // 300ms debounce
   }
 
-  function selectSuggestion(s: Suggestion) {
-    setShowSugg(false); setSuggestions([]); setActiveIndex(-1);
-    router.push(activityPath(s.id, s.title));
+  function selectSuggestion(s: SuggestionItem) {
+    closeDropdown();
+    if (s.type === 'activity') {
+      saveToHistory(searchValue);
+      router.push(activityPath(s.id, s.label));
+    } else if (s.type === 'category') {
+      handleCategory(s.id);
+    } else if (s.type === 'city') {
+      handleCity(s.id);
+    }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (!showSugg || suggestions.length === 0) {
-      if (e.key === 'Enter') { e.preventDefault(); handleSearchSubmit(); }
-      return;
-    }
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActiveIndex(i => Math.min(i + 1, suggestions.length - 1));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActiveIndex(i => Math.max(i - 1, -1));
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      if (activeIndex >= 0) selectSuggestion(suggestions[activeIndex]);
-      else handleSearchSubmit();
-    } else if (e.key === 'Escape') {
-      setShowSugg(false);
-      setSuggestions([]); // limpiar para que no reaparezcan en el siguiente onFocus
-      setActiveIndex(-1);
-    }
+  function handleSearchSubmit() {
+    closeDropdown();
+    saveToHistory(searchValue);
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
   }
 
   function handleSearchChange(value: string) {
     setSearchValue(value);
     fetchSuggestions(value);
+    // Debounce para actualizar los resultados de la página
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
       navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
@@ -272,15 +336,38 @@ export default function Filters({
           body: JSON.stringify({ query: value.trim(), resultCount: total }),
         }).catch(() => {});
       }
-    }, 400);
+    }, 400); // Navegación con debounce ligeramente mayor
   }
 
-  function handleSearchSubmit() {
-    setShowSugg(false);
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+  // ── Teclado ───────────────────────────────────────────────────────────────
+
+  function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    const visible = isDropdownVisible();
+
+    if (e.key === 'ArrowDown') {
+      if (!visible) return;
+      e.preventDefault();
+      const max = showSugg ? suggestions.length - 1 : showHistory ? recentSearches.length - 1 : -1;
+      setActiveIndex(i => Math.min(i + 1, max));
+    } else if (e.key === 'ArrowUp') {
+      if (!visible) return;
+      e.preventDefault();
+      setActiveIndex(i => Math.max(i - 1, -1)); // -1 = sin selección → Enter envía texto
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (showSugg && activeIndex >= 0 && suggestions[activeIndex]) {
+        selectSuggestion(suggestions[activeIndex]);
+      } else if (showHistory && activeIndex >= 0 && recentSearches[activeIndex]) {
+        selectHistory(recentSearches[activeIndex]);
+      } else {
+        handleSearchSubmit();
+      }
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
   }
 
-  // ── Handlers desktop ───────────────────────────────────────────────────────
+  // ── Handlers de filtros (desktop) ─────────────────────────────────────────
 
   const currentAgeIdx = AGE_OPTIONS.findIndex(o => o.min === ageMin && o.max === ageMax);
   const ageIndex = currentAgeIdx === -1 ? 0 : currentAgeIdx;
@@ -306,7 +393,7 @@ export default function Filters({
     navigate({});
   }
 
-  // ── Modal mobile ───────────────────────────────────────────────────────────
+  // ── Mobile modal ──────────────────────────────────────────────────────────
 
   function openMobile() {
     setMobileAgeIdx(ageIndex);
@@ -325,7 +412,7 @@ export default function Filters({
     setMobileOpen(false);
   }
 
-  // ── Chips activos ──────────────────────────────────────────────────────────
+  // ── Chips activos ─────────────────────────────────────────────────────────
 
   const categoryName = facets.validCategories.find(c => c.id === categoryId)?.name;
   const cityName     = facets.availableCities.find(c => c.id === cityId)?.name;
@@ -333,7 +420,6 @@ export default function Filters({
   const priceName    = price === 'free' ? 'Gratis' : price === 'paid' ? 'De pago' : null;
 
   type Chip = { key: string; label: string; onRemove: () => void };
-  // Orden fijo: Ubicación → Categoría → Precio → Edad
   const chips: Chip[] = ([
     cityName     && { key: 'city',     label: cityName,     onRemove: () => handleCity('')     },
     categoryName && { key: 'category', label: categoryName, onRemove: () => handleCategory('') },
@@ -344,7 +430,7 @@ export default function Filters({
   const hasFilters = !!(search || ageMin || ageMax || categoryId || cityId || price || (sort && sort !== 'relevance'));
   const mobileHasChanges = !!(mobileCatId || mobileCityId || mobilePrice || mobileAgeIdx !== 0 || mobileSort !== 'relevance');
 
-  // ── Estilos ────────────────────────────────────────────────────────────────
+  // ── Estilos ───────────────────────────────────────────────────────────────
 
   function selectCls(active: boolean) {
     const base = 'rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
@@ -362,91 +448,213 @@ export default function Filters({
     }`;
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  // ── Contenido del dropdown ────────────────────────────────────────────────
+  // Determinamos qué mostrar sin bloquear el render
+
+  const dropdownVisible = showSugg || showHistory || isFetchingSugg;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-3">
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* BUSCADOR — prominente, full-width                                  */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* BUSCADOR prominente + dropdown                                   */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       <div className="relative" ref={searchContainerRef}>
 
-        {/* Ícono lupa */}
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none select-none">
-          🔍
-        </span>
+        {/* Lupa — clickeable, dispara búsqueda */}
+        <button
+          type="button"
+          onClick={handleSearchSubmit}
+          aria-label="Buscar"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors z-10 p-0.5"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+          </svg>
+        </button>
 
         <input
           type="text"
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
-          onFocus={() => { if (suggestions.length > 0) setShowSugg(true); }}
+          onFocus={() => {
+            if (searchValue.length < 3) {
+              if (recentSearches.length > 0) setShowHistory(true);
+            } else if (suggestions.length > 0) {
+              setShowSugg(true);
+            } else if (!isFetchingSugg) {
+              fetchSuggestions(searchValue);
+            }
+          }}
           onKeyDown={handleKeyDown}
           placeholder="Busca por actividad, edad o ubicación…"
           autoComplete="off"
+          spellCheck={false}
           aria-label="Buscar actividades"
           aria-autocomplete="list"
-          aria-expanded={showSugg}
-          className={`w-full rounded-2xl border bg-white py-3.5 pl-12 pr-12 text-base placeholder:text-gray-400 text-gray-900
-            focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all
+          aria-expanded={dropdownVisible}
+          aria-haspopup="listbox"
+          className={`w-full rounded-2xl border bg-white py-3.5 pl-12 pr-12 text-base
+            placeholder:text-gray-400 text-gray-900 focus:outline-none focus:ring-2
+            transition-all shadow-sm
             ${isPending
-              ? 'border-indigo-300 shadow-sm opacity-80'
-              : 'border-gray-200 shadow-sm hover:border-gray-300 focus:border-indigo-400'
+              ? 'border-indigo-300 opacity-80 focus:ring-indigo-100'
+              : 'border-gray-200 hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
             }`}
         />
 
-        {/* Spinner de carga (visible durante navegación) */}
+        {/* Spinner de navegación (derecha) */}
         {isPending && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400">
             <Spinner />
           </span>
         )}
 
-        {/* Dropdown de sugerencias */}
-        {showSugg && suggestions.length > 0 && (
-          <ul
+        {/* ── Dropdown ──────────────────────────────────────────────── */}
+        {dropdownVisible && (
+          <div
             role="listbox"
+            aria-label="Sugerencias de búsqueda"
+            // onMouseDown preventDefault evita que el input pierda el foco al hacer clic en el dropdown
+            onMouseDown={e => e.preventDefault()}
             className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-gray-100 bg-white shadow-xl overflow-hidden"
           >
-            {suggestions.map((s, i) => (
-              <li
-                key={s.id}
-                role="option"
-                aria-selected={i === activeIndex}
-                onMouseEnter={() => setActiveIndex(i)}
-                onMouseLeave={() => setActiveIndex(-1)}
-                onClick={() => selectSuggestion(s)}
-                className={`flex items-center gap-2 px-4 py-3 cursor-pointer text-sm transition-colors ${
-                  i === activeIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                <span className="flex-1 truncate">
-                  <span className="font-medium">{highlightMatch(s.title, searchValue)}</span>
-                  {s.category && (
-                    <span className="ml-2 text-xs text-gray-400">{s.category}</span>
-                  )}
-                </span>
-                <span className="shrink-0 text-gray-300 text-xs">→</span>
-              </li>
-            ))}
-            <li className="px-4 py-2 text-xs text-gray-400 border-t border-gray-100 select-none">
-              ↑↓ navegar · Enter ir a actividad · Esc cerrar
-            </li>
-          </ul>
-        )}
 
-        {/* Error estado sugerencias (sutil) */}
-        {suggError && searchValue.length >= 3 && (
-          <p className="absolute left-0 top-full mt-1 text-xs text-red-400 px-1">
-            No se pudieron cargar sugerencias
-          </p>
+            {/* ── Historial de búsquedas ──────────────────────────── */}
+            {showHistory && recentSearches.length > 0 && (
+              <>
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide select-none">
+                  Búsquedas recientes
+                </p>
+                <ul>
+                  {recentSearches.map((term, i) => (
+                    <li
+                      key={term}
+                      role="option"
+                      aria-selected={i === activeIndex}
+                      onMouseEnter={() => setActiveIndex(i)}
+                      onMouseLeave={() => setActiveIndex(-1)}
+                      onClick={() => selectHistory(term)}
+                      className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors ${
+                        i === activeIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      <svg className="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
+                          d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="flex-1 truncate">{term}</span>
+                    </li>
+                  ))}
+                </ul>
+              </>
+            )}
+
+            {/* ── Skeleton de carga ────────────────────────────────── */}
+            {isFetchingSugg && (
+              <ul className="animate-pulse divide-y divide-gray-50">
+                {[1, 2, 3].map(i => (
+                  <li key={i} className="flex items-center gap-3 px-4 py-3">
+                    <div className="w-5 h-5 rounded-full bg-gray-100 shrink-0" />
+                    <div className="flex-1 space-y-1.5">
+                      <div className="h-3.5 bg-gray-100 rounded-full" style={{ width: `${50 + i * 15}%` }} />
+                      <div className="h-2.5 bg-gray-100 rounded-full w-1/4" />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* ── Sin resultados ───────────────────────────────────── */}
+            {!isFetchingSugg && showSugg && suggestions.length === 0 && (
+              <div className="px-4 py-8 text-center">
+                <p className="text-sm text-gray-500">
+                  No encontramos resultados para{' '}
+                  <span className="font-medium text-gray-700">"{searchValue}"</span>
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Intenta con otras palabras o explora los filtros
+                </p>
+              </div>
+            )}
+
+            {/* ── Resultados mixtos ────────────────────────────────── */}
+            {!isFetchingSugg && showSugg && suggestions.length > 0 && (
+              <ul>
+                {suggestions.map((s, i) => (
+                  <li
+                    key={`${s.type}-${s.id}`}
+                    role="option"
+                    aria-selected={i === activeIndex}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    onMouseLeave={() => setActiveIndex(-1)}
+                    onClick={() => selectSuggestion(s)}
+                    className={`flex items-center gap-3 px-4 py-3 cursor-pointer text-sm transition-colors ${
+                      i === activeIndex ? 'bg-indigo-50' : 'hover:bg-gray-50'
+                    }`}
+                  >
+                    {/* Ícono por tipo */}
+                    <span className="text-base w-5 text-center shrink-0 select-none">
+                      <SuggIcon type={s.type} />
+                    </span>
+
+                    {/* Texto principal + sublabel */}
+                    <span className="flex-1 min-w-0">
+                      <span className={`block truncate font-medium ${
+                        i === activeIndex ? 'text-indigo-900' : 'text-gray-800'
+                      }`}>
+                        {highlightMatch(s.label, searchValue)}
+                      </span>
+                      {s.sublabel && (
+                        <span className="text-xs text-gray-400 truncate block mt-0.5">
+                          {s.sublabel}
+                        </span>
+                      )}
+                    </span>
+
+                    {/* Badge de tipo */}
+                    {s.type !== 'activity' && (
+                      <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
+                        s.type === 'category'
+                          ? 'bg-violet-50 text-violet-600'
+                          : 'bg-emerald-50 text-emerald-600'
+                      }`}>
+                        {s.type === 'category' ? 'Categoría' : 'Ciudad'}
+                      </span>
+                    )}
+
+                    {/* Flecha */}
+                    <span className={`shrink-0 text-xs ${
+                      i === activeIndex ? 'text-indigo-400' : 'text-gray-300'
+                    }`}>→</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {/* ── Footer teclado — solo desktop, bajo contraste ────── */}
+            {(showSugg && suggestions.length > 0) && (
+              <div className="hidden sm:block px-4 py-2 text-xs text-gray-300 border-t border-gray-50 select-none">
+                ↑↓ navegar · Enter seleccionar · Esc cerrar
+              </div>
+            )}
+
+            {/* ── Error de sugerencias ─────────────────────────────── */}
+            {suggError && (
+              <div className="px-4 py-3 text-xs text-red-400 text-center">
+                No se pudieron cargar sugerencias
+              </div>
+            )}
+          </div>
         )}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* CONTROLES — desktop                                                */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CONTROLES DESKTOP                                               */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       <div className="hidden sm:flex items-center gap-2 flex-wrap">
 
         {/* Categoría */}
@@ -463,26 +671,14 @@ export default function Filters({
         </select>
 
         {/* Precio — pills independientes */}
-        <div
-          className="flex rounded-xl border border-gray-200 bg-white p-1 gap-1"
-          role="group"
-          aria-label="Precio"
-        >
-          <button
-            type="button"
-            onClick={() => handlePriceToggle('free')}
-            className={pillCls(price === 'free')}
-          >
+        <div className="flex rounded-xl border border-gray-200 bg-white p-1 gap-1" role="group" aria-label="Precio">
+          <button type="button" onClick={() => handlePriceToggle('free')} className={pillCls(price === 'free')}>
             Gratis
             {facets.priceCounts.free > 0 && price !== 'free' && (
               <span className="ml-1 text-xs opacity-50">({facets.priceCounts.free})</span>
             )}
           </button>
-          <button
-            type="button"
-            onClick={() => handlePriceToggle('paid')}
-            className={pillCls(price === 'paid')}
-          >
+          <button type="button" onClick={() => handlePriceToggle('paid')} className={pillCls(price === 'paid')}>
             De pago
             {facets.priceCounts.paid > 0 && price !== 'paid' && (
               <span className="ml-1 text-xs opacity-50">({facets.priceCounts.paid})</span>
@@ -490,7 +686,7 @@ export default function Filters({
           </button>
         </div>
 
-        {/* Ubicación — solo si hay más de 1 ciudad */}
+        {/* Ubicación */}
         {facets.availableCities.length > 1 && (
           <select
             value={cityId}
@@ -530,10 +726,10 @@ export default function Filters({
           ))}
         </select>
 
-        {/* Separador + Limpiar filtros */}
+        {/* Limpiar filtros */}
         {hasFilters && (
           <>
-            <span className="w-px h-5 bg-gray-200 mx-1" aria-hidden="true" />
+            <span className="w-px h-5 bg-gray-200 mx-1" aria-hidden />
             <button
               type="button"
               onClick={handleReset}
@@ -545,9 +741,9 @@ export default function Filters({
         )}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* CONTROLES — mobile: botón "Filtros"                               */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CONTROLES MOBILE                                                 */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       <div className="flex sm:hidden gap-2">
         <button
           type="button"
@@ -558,7 +754,6 @@ export default function Filters({
               : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
           }`}
         >
-          {/* Ícono filtros */}
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h18M6 12h12M10 20h4" />
           </svg>
@@ -569,7 +764,6 @@ export default function Filters({
             </span>
           )}
         </button>
-
         {hasFilters && (
           <button
             type="button"
@@ -581,10 +775,9 @@ export default function Filters({
         )}
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* CHIPS activos — en desktop y mobile (siempre fuera del modal)     */}
-      {/* Orden fijo: Ubicación → Categoría → Precio → Edad                 */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CHIPS activos (Ubicación → Categoría → Precio → Edad)           */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       {chips.length > 0 && (
         <div className="flex gap-2 flex-wrap items-center">
           {chips.map(chip => (
@@ -606,24 +799,21 @@ export default function Filters({
         </div>
       )}
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* CONTEO de resultados                                               */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CONTEO de resultados                                             */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       <p className={`text-sm transition-opacity ${isPending ? 'opacity-40' : 'opacity-100'}`}>
         {isPending ? (
           <span className="text-gray-400 flex items-center gap-1.5">
-            <Spinner className="inline" />
+            <Spinner className="inline text-indigo-400" />
             Buscando…
           </span>
         ) : total === 0 ? (
           <span className="text-gray-500">
             No hay actividades con estos filtros.{' '}
             {hasFilters && (
-              <button
-                type="button"
-                onClick={handleReset}
-                className="text-indigo-600 hover:underline font-medium"
-              >
+              <button type="button" onClick={handleReset}
+                className="text-indigo-600 hover:underline font-medium">
                 Limpiar filtros
               </button>
             )}
@@ -636,40 +826,28 @@ export default function Filters({
         )}
       </p>
 
-      {/* ══════════════════════════════════════════════════════════════════ */}
-      {/* MODAL MOBILE — full-screen con temp state                          */}
-      {/* ══════════════════════════════════════════════════════════════════ */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* MODAL MOBILE                                                     */}
+      {/* ════════════════════════════════════════════════════════════════ */}
       {mobileOpen && (
-        <div
-          className="fixed inset-0 z-50 flex flex-col bg-white sm:hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Filtros"
-        >
-          {/* Header modal */}
+        <div className="fixed inset-0 z-50 flex flex-col bg-white sm:hidden" role="dialog" aria-modal aria-label="Filtros">
+
+          {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
             <h2 className="text-base font-bold text-gray-900">Filtros</h2>
-            <button
-              type="button"
-              onClick={() => setMobileOpen(false)}
-              aria-label="Cerrar filtros"
-              className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center"
-            >
+            <button type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
+              className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center">
               ✕
             </button>
           </div>
 
-          {/* Contenido desplazable */}
+          {/* Contenido */}
           <div className="flex-1 overflow-y-auto px-5 py-6 space-y-7">
 
-            {/* Categoría */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Categoría</label>
-              <select
-                value={mobileCatId}
-                onChange={e => setMobileCatId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-              >
+              <select value={mobileCatId} onChange={e => setMobileCatId(e.target.value)}
+                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none">
                 <option value="">Todas las categorías</option>
                 {facets.validCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
@@ -677,36 +855,27 @@ export default function Filters({
               </select>
             </div>
 
-            {/* Precio */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Precio</label>
               <div className="grid grid-cols-2 gap-2">
                 {(['free', 'paid'] as const).map(v => (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => setMobilePrice(p => p === v ? '' : v)}
+                  <button key={v} type="button" onClick={() => setMobilePrice(p => p === v ? '' : v)}
                     className={`rounded-xl border py-3 text-sm font-medium transition-colors ${
                       mobilePrice === v
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'
-                    }`}
-                  >
+                    }`}>
                     {v === 'free' ? 'Gratis' : 'De pago'}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Ubicación */}
             {facets.availableCities.length > 1 && (
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">Ubicación</label>
-                <select
-                  value={mobileCityId}
-                  onChange={e => setMobileCityId(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100"
-                >
+                <select value={mobileCityId} onChange={e => setMobileCityId(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none">
                   <option value="">Todas las ciudades</option>
                   {facets.availableCities.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -715,67 +884,48 @@ export default function Filters({
               </div>
             )}
 
-            {/* Edad */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Edad</label>
               <div className="grid grid-cols-2 gap-2">
                 {AGE_OPTIONS.map((o, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => setMobileAgeIdx(i)}
+                  <button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
                     className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                       mobileAgeIdx === i
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'
-                    }`}
-                  >
+                    }`}>
                     {o.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Ordenar */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">Ordenar por</label>
               <div className="flex flex-col gap-2">
                 {SORT_OPTIONS.map(o => (
-                  <button
-                    key={o.value}
-                    type="button"
-                    onClick={() => setMobileSort(o.value)}
+                  <button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
                       mobileSort === o.value
                         ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
                         : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
+                    }`}>
                     {o.label}
-                    {mobileSort === o.value && (
-                      <span className="float-right text-indigo-500">✓</span>
-                    )}
+                    {mobileSort === o.value && <span className="float-right text-indigo-500">✓</span>}
                   </button>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Footer fijo */}
+          {/* Footer */}
           <div className="border-t border-gray-100 px-5 py-4 flex gap-3 bg-white">
-            <button
-              type="button"
-              onClick={clearMobile}
-              disabled={!mobileHasChanges}
-              className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-            >
+            <button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
+              className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Limpiar
             </button>
-            <button
-              type="button"
-              onClick={applyMobile}
-              className="flex-[2] rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors"
-            >
+            <button type="button" onClick={applyMobile}
+              className="flex-[2] rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
               Aplicar filtros
             </button>
           </div>

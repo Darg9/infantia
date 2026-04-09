@@ -145,10 +145,19 @@ async function getFacets(filters: ActiveFilters) {
       }),
 
       // Categorías disponibles: con todos los filtros EXCEPTO categoryId
+      // _count filtra por los mismos criterios para que el número coincida con los resultados
       prisma.category.findMany({
         where: { activities: { some: { activity: buildWhere(filters, 'categoryId') } } },
         orderBy: { name: 'asc' },
-        select: { id: true, name: true, _count: { select: { activities: true } } },
+        select: {
+          id: true,
+          name: true,
+          _count: {
+            select: {
+              activities: { where: { activity: buildWhere(filters, 'categoryId') } },
+            },
+          },
+        },
       }),
 
       // Precio: gratis (price=0 o pricePeriod=FREE)

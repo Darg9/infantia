@@ -162,6 +162,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.3-S33 | V23 | Rebrand Infantia → HabitaPlan, dominio habitaplan.com, RatingForm 3-step |
 | v0.9.3-S34 | V23 | URL classifier pre-Gemini (40% reducción), dashboard auto-pause, 863 tests |
 | v0.9.4-S35 | V23 | Multi-ciudad Medellín, admin toggle fuentes, source-pause-manager, 876 tests |
+| v0.9.4-S36 | V23 | Rebrand masivo UI (71 archivos), fix rutas CLAUDE.md, docs completos |
+| v0.9.5-S37 | V23 | Home UX: HeroSearch, ActivityCard compact, footer 4 cols, fix stats ACTIVE |
 
 ### Regla para Documento Fundacional
 
@@ -170,7 +172,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual)
+Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — sin cambios de producto en S37)
 
 ## Notas de arquitectura críticas
 

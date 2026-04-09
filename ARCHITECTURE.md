@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.9.4-S35 | Actualizado: 2026-04-08
+> Versión: v0.9.5-S37 | Actualizado: 2026-04-08
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -47,7 +47,9 @@
 habitaplan/
 ├── src/
 │   ├── app/                        # Next.js App Router
-│   │   ├── page.tsx                # Home — landing con contador y categorías
+│   │   ├── page.tsx                # Home — hero + buscador + categorías + recientes (S37)
+│   │   ├── _components/
+│   │   │   └── HeroSearch.tsx      # Client Component: buscador hero con autocomplete + chips (NUEVO S37)
 │   │   ├── actividades/            # Listado con filtros facetados
 │   │   ├── login/                  # Autenticación (Supabase Auth — redirige a /onboarding si nuevo)
 │   │   ├── registro/               # Registro con email de bienvenida
@@ -268,8 +270,8 @@ CheerioExtractor.extractLinksAllPages(baseUrl, maxPages)
     ▼
 GeminiAnalyzer.discoverActivityLinks(links)
     ├─ Pre-filtro: excluye URLs con query params y extensiones binarias (.jpg/.pdf/etc.)
-    ├─ Divide en chunks de 200 URLs/lote (CHUNK_SIZE=200 desde S27 — Gemini 2.5 Flash soporta 1M tokens)
-    │   Banrep Bogotá (1.083 URLs): 6 lotes vs 22 anteriores → cabe en cuota 20 RPD ✅
+    ├─ Divide en chunks de 100 URLs/lote (CHUNK_SIZE=100 desde S34 — benchmark reveló 200 causaba 429 disfrazados)
+    │   Banrep Bogotá (1.083 URLs): 11 lotes → mejor resiliencia ante cuota parcial ✅
     └─ Retorna índices de links identificados como actividades
     │
     ▼
@@ -327,19 +329,47 @@ ScrapingStorage.saveActivity()
 1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
 2. Busca `<a href>` con parámetro `?page=N+1`
 
-### Fuentes activas (al 2026-03-24)
+### Fuentes activas (al 2026-04-08 — S37)
 
-| Fuente | Extractor | Páginas recorridas | Actividades |
-|---|---|---|---|
-| `biblored.gov.co/eventos` | Cheerio + Gemini | 19 | 167 |
-| `bogota.gov.co` | Cheerio + Gemini | — | 21 |
-| `@fcecolombia` | Playwright (Instagram) | — | 10 |
-| `@quehaypahacerenbogota` | Playwright (Instagram) | — | 2 |
-| CEFEs / culturarecreacionydeporte.gov.co | Script manual | — | ~11 |
-| Idartes | — | — | ❌ Pendiente |
-| Jardín Botánico | — | — | ❌ Pendiente |
+#### Bogotá — Web (Cheerio + Gemini)
+| Fuente | Actividades aprox. |
+|---|---|
+| BibloRed | ~150 |
+| Sec. Cultura / bogota.gov.co | ~29 |
+| Alcaldía / culturarecreacionydeporte | ~20 |
+| Idartes | ~19 |
+| Planetario de Bogotá | ~25 |
+| JBB (Jardín Botánico) | ~7 |
+| Cinemateca Distrital | ~12 |
+| Centro Felicidad Chapinero | ~10 |
+| Banrep Bogotá | ~17 |
 
-**Total en BD: ~293 actividades únicas** (Banrep Bogotá 16 nuevas en S27)
+#### Bogotá — Instagram (Playwright)
+10 cuentas activas: @fcecolombia, @quehaypahacerenbogota y 8 más
+
+#### Medellín — Web (Cheerio + Gemini) — NUEVO S35
+| Fuente | Estado |
+|---|---|
+| Parque Explora (`parqueexplora.org/sitemap.xml`) | ✅ activo |
+| Biblioteca Piloto (`bibliotecapiloto.gov.co/sitemap.xml`) | ✅ activo |
+
+#### Medellín — Instagram (Playwright) — NUEVO S35
+| Cuenta | Estado |
+|---|---|
+| @parqueexplora | ✅ validada, pendiente ingest real |
+| @quehacerenmedellin | ✅ validada, pendiente ingest real |
+
+#### Telegram
+| Canal | Estado |
+|---|---|
+| @quehaypahacer | ✅ auth exitosa, dry-run OK, pendiente ingest real |
+
+#### Pausadas
+| Fuente | Motivo |
+|---|---|
+| Banrep Ibagué | Score 13/100 — cuota Gemini se agota antes de llegar |
+
+**Total en BD: ~296 actividades activas** (44 activas / ~252 expiradas)
 
 ---
 

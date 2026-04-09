@@ -39,6 +39,12 @@ interface ActivityCardProps {
   activity: Activity;
   /** true si el usuario autenticado ya marcó esta actividad como favorita */
   isFavorited?: boolean;
+  /**
+   * compact=true → vista simplificada para el home:
+   * sin badge de tipo, sin categorías, sin descripción,
+   * título más prominente, footer reducido a ubicación + favorito
+   */
+  compact?: boolean;
 }
 
 
@@ -72,7 +78,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
 
-export default function ActivityCard({ activity, isFavorited = false }: ActivityCardProps) {
+export default function ActivityCard({ activity, isFavorited = false, compact = false }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
@@ -85,10 +91,11 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
   const cardContent = (
     <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
-      {/* Strip visual — siempre presente, h-20 */}
+      {/* ── Strip visual ─────────────────────────────────────────────── */}
       <div
         className={clsx(
-          'relative h-20 flex items-center justify-center overflow-hidden',
+          'relative flex items-center justify-center overflow-hidden',
+          compact ? 'h-24' : 'h-20',
           activity.status === 'EXPIRED' && 'opacity-60'
         )}
         style={activity.imageUrl ? undefined : { background: gradient }}
@@ -105,12 +112,14 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
           <span className="text-4xl select-none drop-shadow-sm">{categoryEmoji}</span>
         )}
 
-        {/* Badge tipo */}
-        <span className="absolute top-1.5 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm">
-          {TYPE_LABELS[activity.type] ?? activity.type}
-        </span>
+        {/* Badge tipo — oculto en compact */}
+        {!compact && (
+          <span className="absolute top-1.5 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm">
+            {TYPE_LABELS[activity.type] ?? activity.type}
+          </span>
+        )}
 
-        {/* Badge precio — sólo cuando hay información */}
+        {/* Badge precio */}
         {priceLabel !== 'No disponible' && (
           <span className={clsx(
             'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
@@ -134,7 +143,7 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
           </span>
         )}
 
-        {/* Badge Nuevo — actividades de los últimos 7 días (solo si no es destacado) */}
+        {/* Badge Nuevo — últimos 7 días (solo si no es destacado) */}
         {isNew && !activity.provider?.isPremium && (
           <span className="absolute bottom-1.5 left-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
             🆕 Nuevo
@@ -142,11 +151,11 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
         )}
       </div>
 
-      {/* Contenido */}
-      <div className="flex flex-col gap-2 p-4 flex-1">
+      {/* ── Contenido ────────────────────────────────────────────────── */}
+      <div className={clsx('flex flex-col p-4 flex-1', compact ? 'gap-3' : 'gap-2')}>
 
-        {/* Categorías */}
-        {activity.categories.length > 0 && (
+        {/* Categorías — ocultas en compact */}
+        {!compact && activity.categories.length > 0 && (
           <div className="flex flex-wrap gap-1">
             {activity.categories.slice(0, 2).map(({ category }) => (
               <span
@@ -159,51 +168,85 @@ export default function ActivityCard({ activity, isFavorited = false }: Activity
           </div>
         )}
 
-        {/* Título */}
-        <h3 className="text-sm font-semibold text-gray-900 leading-snug line-clamp-2 group-hover:text-indigo-700 transition-colors">
+        {/* Título — más prominente en compact */}
+        <h3 className={clsx(
+          'leading-snug line-clamp-2 group-hover:text-indigo-700 transition-colors',
+          compact
+            ? 'text-base font-bold text-gray-900'
+            : 'text-sm font-semibold text-gray-900'
+        )}>
           {activity.title}
         </h3>
 
-        {/* Descripción */}
-        <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed flex-1">
-          {activity.description}
-        </p>
+        {/* Descripción — oculta en compact */}
+        {!compact && (
+          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed flex-1">
+            {activity.description}
+          </p>
+        )}
 
-        {/* Metadatos */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-auto pt-2 border-t border-gray-100">
-          {activity.audience === 'KIDS' && (
-            <span className="flex items-center gap-1 text-xs text-violet-600 font-medium">
-              <span>👶</span> Niños
-            </span>
-          )}
-          {activity.audience === 'FAMILY' && (
-            <span className="flex items-center gap-1 text-xs text-teal-600 font-medium">
-              <span>👨‍👩‍👧</span> Familia
-            </span>
-          )}
-          {ageLabel && (
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <span>👧</span> {ageLabel}
-            </span>
-          )}
-          {locationLabel && (
-            <span className="flex items-center gap-1 text-xs text-gray-500">
-              <span>📍</span> {locationLabel}
-            </span>
-          )}
-          <span className="ml-auto flex items-center gap-2">
-            {activity.provider && (
-              <span className="flex items-center gap-1 text-xs text-gray-400">
-                {activity.provider.name}
-                {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
+        {/* ── Footer ──────────────────────────────────────────────────── */}
+        <div className={clsx(
+          'flex items-center mt-auto pt-2 border-t border-gray-100',
+          compact ? 'justify-between' : 'flex-wrap gap-x-3 gap-y-1'
+        )}>
+
+          {/* Vista completa: audience + age + location + provider */}
+          {!compact && (
+            <>
+              {activity.audience === 'KIDS' && (
+                <span className="flex items-center gap-1 text-xs text-violet-600 font-medium">
+                  <span>👶</span> Niños
+                </span>
+              )}
+              {activity.audience === 'FAMILY' && (
+                <span className="flex items-center gap-1 text-xs text-teal-600 font-medium">
+                  <span>👨‍👩‍👧</span> Familia
+                </span>
+              )}
+              {ageLabel && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <span>👧</span> {ageLabel}
+                </span>
+              )}
+              {locationLabel && (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <span>📍</span> {locationLabel}
+                </span>
+              )}
+              <span className="ml-auto flex items-center gap-2">
+                {activity.provider && (
+                  <span className="flex items-center gap-1 text-xs text-gray-400">
+                    {activity.provider.name}
+                    {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
+                  </span>
+                )}
+                <FavoriteButton
+                  activityId={activity.id}
+                  initialIsFavorited={isFavorited}
+                  size="sm"
+                />
               </span>
-            )}
-            <FavoriteButton
-              activityId={activity.id}
-              initialIsFavorited={isFavorited}
-              size="sm"
-            />
-          </span>
+            </>
+          )}
+
+          {/* Vista compact: solo ubicación + favorito */}
+          {compact && (
+            <>
+              {locationLabel ? (
+                <span className="flex items-center gap-1 text-xs text-gray-500">
+                  <span>📍</span> {locationLabel}
+                </span>
+              ) : (
+                <span />
+              )}
+              <FavoriteButton
+                activityId={activity.id}
+                initialIsFavorited={isFavorited}
+                size="sm"
+              />
+            </>
+          )}
         </div>
       </div>
     </div>

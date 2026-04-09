@@ -1,6 +1,6 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-08 | Version: v0.9.4-S35
+Actualizado: 2026-04-08 | Version: v0.9.5-S37
 
 ## Resumen
 
@@ -196,6 +196,13 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.3-S33** | **838** | **54** | **90.95%** | **85.69%** |
 | **v0.9.3-S34** | **835** | **55** | **90.95%** | **85.69%** |
 | **v0.9.4-S35** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.9.5-S37** | **876** | **56** | **91.39%** | **85.90%** |
+
+## Cambios en S37 (v0.9.5-S37)
+
+- **Sin nuevos tests** — cambios UI-only (Server Components + un Client Component sin lógica testeable adicional)
+- `ActivityCard` prop `compact` compatible con todos los 876 tests existentes (default `false`)
+- TypeScript: 0 errores ✅ | Branches: 85.90% ✅ (sobre umbral 85%)
 
 ## Cambios en S35 (v0.9.4-S35)
 

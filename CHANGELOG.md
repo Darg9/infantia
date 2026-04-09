@@ -13,6 +13,65 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.5-S37] — 2026-04-08 (Home UX — Hero buscador + Cards compactas + Footer 4 columnas)
+**Documento Fundacional: V23** | Rama: master
+
+### Features
+
+#### Hero con buscador prominente
+- **New:** `src/app/_components/HeroSearch.tsx` — Client Component standalone
+  - Buscador con autocompletado a partir del 3er carácter (API `/api/activities/suggestions`)
+  - Keyboard navigation: ↑↓ Enter Esc — highlight de coincidencias
+  - 3 chips rápidos: "Hoy" (`?sort=date`) / "Gratis" (`?price=free`) / "Cerca de ti" (`/mapa`)
+  - Click en sugerencia → busca por término; click en flecha → va directo a la actividad
+- **Updated copy:** Título `"¿Qué hacemos hoy?"` · Subtítulo `"Descubre planes en familia cerca de ti"`
+- **Removed:** Botones CTA anteriores (Explorar actividades / Solo gratuitas)
+- **Updated badge:** `"La agenda de planes para familias en Colombia"`
+
+#### ActivityCard — modo compact para home
+- **New prop:** `compact?: boolean` (default `false` — sin breaking changes)
+  - `compact=true`: sin badge tipo, sin categorías, sin descripción, título `text-base font-bold`, footer reducido a ubicación + favorito, strip más alto (`h-24`)
+  - `compact=false`: comportamiento original intacto (usado en `/actividades`, favoritos, proveedores)
+- Solo el home usa `compact` — los otros 4+ usos sin cambios
+
+#### Sección "Descubre actividades" con fallback robusto
+- **Removed:** Sección "Filtros rápidos por tipo" (Talleres/Eventos) — eliminada completamente
+  - `ACTIVITY_TYPES` constant eliminada
+  - `typeCounts` query eliminada del `Promise.all` (una query menos a BD)
+  - `typeCountMap` eliminada
+- **Renamed:** Título `"Explora por categoría"` → `"Explora por tipo de actividad"`
+- **Updated:** `pageSize: 8 → 4` (una fila en desktop)
+- **New:** Fallback de actividades populares (`sortBy: 'relevance'`) si no hay recientes
+- **New:** Empty state si no hay ninguna actividad disponible (con CTA consistente)
+- **New:** `SectionHeader` acepta `subtitle?: string` opcional (jerarquía título + subtítulo)
+- Subtítulo adaptativo: `"Las más recientes"` o `"Las más populares"` según disponibilidad
+
+#### Copy y UX mejorados
+- Sección recientes: título `"Descubre actividades"` + subtítulo `"Las más recientes"`
+- CTA de sección: outline button centrado `"Ver más actividades →"` (reemplaza link top-right)
+- CTA final: `"¿No encontraste algo que te guste?"` · `"Descubre más actividades filtrando por edad, precio o ubicación"` · `"Ver más actividades →"`
+- Padding reducido en CTA final: `py-16/py-12` → `py-12/py-10`
+- Todos los CTAs del home apuntan a `/actividades` con texto consistente
+
+#### Footer — 4 columnas
+- **Updated:** `src/components/layout/Footer.tsx` — 3 columnas → 4 columnas (`grid-cols-2 sm:grid-cols-4`)
+- **Columna HabitaPlan:** nuevo texto `"Encuentra actividades para disfrutar en familia"`
+- **Columna Explorar:** Ver actividades / Categorías / Publicar actividad
+- **Columna Ayuda (nueva):** Cómo funciona / Contacto / Preguntas frecuentes
+- **Columna Legal:** Términos de uso / Política de privacidad / Política de tratamiento de datos
+- **Barra inferior:** simplificada — `"Bogotá, Colombia"` (izquierda) + `"© 2026 HabitaPlan"` (derecha)
+- Títulos de columna en `text-xs uppercase tracking-wider text-gray-400`
+
+### Bug Fixes
+- **Fix stats home:** `page.tsx` — `typeCounts`/`totalCategories`/`totalCities`/`topCategories` usaban `{ in: ['ACTIVE', 'EXPIRED'] }` → ahora todos usan `status: 'ACTIVE'` — números consistentes en toda la página
+
+### Tests
+- **876 tests, 56 archivos** — sin cambios (nuevo código es UI-only / Client Components sin lógica testeable adicional)
+- `compact` prop en ActivityCard: compatible con todos los tests existentes (default `false`)
+- TypeScript: 0 errores
+
+---
+
 ## [v0.9.4-S35] — 2026-04-08 (Multi-ciudad Medellín + Dashboard auto-pause + Benchmark Gemini + Fixes)
 **Documento Fundacional: V23** | Rama: master
 

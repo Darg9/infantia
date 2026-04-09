@@ -33,6 +33,8 @@ export async function Header() {
             Mapa
           </Link>
 
+          <span className="w-px h-4 bg-gray-200" aria-hidden="true" />
+
           {session ? (
             <UserMenu
               email={session.user.email ?? ''}
@@ -46,13 +48,13 @@ export async function Header() {
                 href="/login"
                 className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
               >
-                Iniciar sesión
+                Inicia sesión
               </Link>
               <Link
                 href="/registro"
-                className="bg-orange-500 text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-600 transition-colors"
+                className="border border-orange-400 text-orange-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors"
               >
-                Registrarse
+                Regístrate
               </Link>
             </div>
           )}

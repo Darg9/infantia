@@ -59,7 +59,7 @@ export default async function HomePage() {
           some: { activity: { status: 'ACTIVE' } },
         },
       },
-      include: { _count: { select: { activities: true } } },
+      include: { _count: { select: { activities: { where: { activity: { status: 'ACTIVE' } } } } } },
       orderBy: { activities: { _count: 'desc' } },
       take: 8,
     }),
@@ -87,20 +87,19 @@ export default async function HomePage() {
       <section className="bg-white border-b border-gray-100">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:py-20 text-center">
 
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 rounded-full bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700 mb-6">
-            <span>✨</span>
-            <span>La agenda de planes para familias en Colombia</span>
-          </div>
-
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-3">
             ¿Qué hacemos{' '}
             <span className="text-indigo-600">hoy?</span>
           </h1>
 
-          <p className="text-lg text-gray-500 max-w-xl mx-auto mb-8">
-            Descubre planes en familia cerca de ti
-          </p>
+          <div className="max-w-xl mx-auto mb-8">
+            <p className="text-lg text-gray-500">
+              Descubre planes en familia cerca de ti
+            </p>
+            <p className="text-sm text-gray-400 mt-1">
+              Actividades para niños y familias en Bogotá
+            </p>
+          </div>
 
           {/* Buscador principal */}
           <div className="mb-12">

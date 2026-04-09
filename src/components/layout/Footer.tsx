@@ -50,15 +50,15 @@ export function Footer() {
           {/* Columnas 2-4 — Navegación */}
           {NAV_COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3">
+              <h3 className="text-sm font-semibold text-gray-700 mb-4">
                 {col.title}
               </h3>
-              <ul className="space-y-2">
+              <ul className="space-y-3">
                 {col.links.map((link) => (
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-500 hover:text-gray-800 transition-colors"
+                      className="text-sm text-gray-400 hover:text-indigo-600 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -70,9 +70,8 @@ export function Footer() {
         </div>
 
         {/* ── Barra inferior ───────────────────────────────────────── */}
-        <div className="border-t border-gray-100 mt-8 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-400">
-          <span>Bogotá, Colombia</span>
-          <span>© {new Date().getFullYear()} HabitaPlan</span>
+        <div className="border-t border-gray-100 mt-8 pt-4 text-xs text-gray-400 text-center">
+          Bogotá, Colombia · © {new Date().getFullYear()} HabitaPlan
         </div>
 
       </div>

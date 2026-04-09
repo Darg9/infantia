@@ -86,9 +86,8 @@ export default function HeroSearch() {
 
   function submitSearch(q: string) {
     const trimmed = q.trim();
-    if (!trimmed) return;
     setShowSugg(false);
-    router.push(`/actividades?search=${encodeURIComponent(trimmed)}`);
+    router.push(trimmed ? `/actividades?search=${encodeURIComponent(trimmed)}` : '/actividades');
   }
 
   function selectSuggestion(s: Suggestion) {

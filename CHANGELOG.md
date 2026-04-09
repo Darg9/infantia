@@ -13,6 +13,33 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.6-S38] — 2026-04-09 (Rediseño filtros /actividades)
+**Documento Fundacional: V23** | Rama: master
+
+### Features
+
+#### Filtros /actividades — rediseño completo (Filters.tsx)
+- **Desktop:** barra única con: Búsqueda → Categoría ▼ → Precio (pills) → Ubicación ▼ → Edad ▼ → Ordenar ▼ → Limpiar filtros
+- **Precio:** pill toggles independientes `Gratis` / `De pago` (reemplaza dropdown)
+- **Chips activos:** fila de chips con ✕ individual, orden fijo Ubicación → Categoría → Precio → Edad
+- **"Limpiar filtros":** visible solo cuando hay filtros activos, estilo secundario (link subrayado)
+- **Mobile:** botón "Filtros" con badge de cantidad → modal full-screen con temp state
+  - Categoría: select | Precio: pills | Ubicación: select | Edad: grid botones | Ordenar: select
+  - Footer fijo: `Limpiar` + `Aplicar filtros`
+  - Chips visibles fuera del modal (siempre)
+- **Contador:** inline "Limpiar filtros" cuando total = 0
+- **Eliminados de UI:** type y audience (se preserva compat URL)
+- **Sin 0-result options:** heredado del sistema facetado existente
+
+### Bug Fixes
+- **HeroSearch.tsx:** `<span>` del arrow tenía `</button>` como closing tag — corregido
+
+### Tests
+- 876 tests, 876 pasados — sin cambios en suite (Filters es Client Component, no tiene unit tests directos)
+- TypeScript: 0 errores | Coverage: 91.39% stmts / 85.90% branches ✅
+
+---
+
 ## [v0.9.5-S37] — 2026-04-08 (Home UX — Hero buscador + Cards compactas + Footer 4 columnas)
 **Documento Fundacional: V23** | Rama: master
 

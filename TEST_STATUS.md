@@ -1,6 +1,6 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-08 | Version: v0.9.5-S37
+Actualizado: 2026-04-09 | Version: v0.9.6-S38
 
 ## Resumen
 

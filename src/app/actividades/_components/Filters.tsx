@@ -148,6 +148,7 @@ export default function Filters({
   const [suggError, setSuggError]       = useState(false);
   const debounceRef                     = useRef<ReturnType<typeof setTimeout> | null>(null);
   const suggestDebRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchControllerRef              = useRef<AbortController | null>(null);
   const searchContainerRef              = useRef<HTMLDivElement>(null);
 
   // Estado de carga: true desde que se llama navigate() hasta que los props cambian
@@ -169,11 +170,13 @@ export default function Filters({
     setIsPending(false);
   }, [search, ageMin, ageMax, categoryId, cityId, price, sort]);
 
-  // Cerrar dropdown al clic fuera
+  // Cerrar dropdown al clic fuera — también limpiar sugerencias para evitar
+  // que reaparezcan en el siguiente onFocus con valor corto en el input
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
         setShowSugg(false);
+        setSuggestions([]);
         setActiveIndex(-1);
       }
     }
@@ -198,20 +201,30 @@ export default function Filters({
   }, [router, pathname]);
 
   // ── Autocompletado ─────────────────────────────────────────────────────────
+  // AbortController cancela el fetch en vuelo cuando el usuario borra el texto
+  // antes de que llegue la respuesta — evita mostrar sugerencias obsoletas.
 
   function fetchSuggestions(value: string) {
     if (suggestDebRef.current) clearTimeout(suggestDebRef.current);
+    // Cancelar fetch anterior si sigue en vuelo
+    if (fetchControllerRef.current) fetchControllerRef.current.abort();
     setSuggError(false);
     if (value.length < 3) { setSuggestions([]); setShowSugg(false); return; }
     suggestDebRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      fetchControllerRef.current = controller;
       try {
-        const res  = await fetch(`/api/activities/suggestions?q=${encodeURIComponent(value)}`);
+        const res  = await fetch(
+          `/api/activities/suggestions?q=${encodeURIComponent(value)}`,
+          { signal: controller.signal },
+        );
         if (!res.ok) throw new Error('API error');
         const data = await res.json();
         setSuggestions(data.suggestions ?? []);
         setShowSugg((data.suggestions ?? []).length > 0);
         setActiveIndex(-1);
-      } catch {
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return; // fetch cancelado, ignorar
         setSuggestions([]);
         setShowSugg(false);
         setSuggError(true);
@@ -240,7 +253,9 @@ export default function Filters({
       if (activeIndex >= 0) selectSuggestion(suggestions[activeIndex]);
       else handleSearchSubmit();
     } else if (e.key === 'Escape') {
-      setShowSugg(false); setActiveIndex(-1);
+      setShowSugg(false);
+      setSuggestions([]); // limpiar para que no reaparezcan en el siguiente onFocus
+      setActiveIndex(-1);
     }
   }
 

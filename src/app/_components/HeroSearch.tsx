@@ -44,13 +44,16 @@ export default function HeroSearch() {
   const [showSugg, setShowSugg]         = useState(false);
   const [activeIndex, setActiveIndex]   = useState(-1);
   const debounceRef                     = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fetchControllerRef              = useRef<AbortController | null>(null);
   const containerRef                    = useRef<HTMLDivElement>(null);
 
-  // Cerrar al hacer clic fuera
+  // Cerrar al hacer clic fuera — limpiar sugerencias para evitar
+  // que reaparezcan en el siguiente onFocus con valor corto en el input
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setShowSugg(false);
+        setSuggestions([]);
         setActiveIndex(-1);
       }
     }
@@ -58,22 +61,31 @@ export default function HeroSearch() {
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
 
+  // AbortController cancela el fetch en vuelo si el usuario borra el texto
+  // antes de que llegue la respuesta — evita mostrar sugerencias obsoletas.
   function fetchSuggestions(value: string) {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (fetchControllerRef.current) fetchControllerRef.current.abort();
     if (value.length < 3) {
       setSuggestions([]);
       setShowSugg(false);
       return;
     }
     debounceRef.current = setTimeout(async () => {
+      const controller = new AbortController();
+      fetchControllerRef.current = controller;
       try {
-        const res  = await fetch(`/api/activities/suggestions?q=${encodeURIComponent(value)}`);
+        const res  = await fetch(
+          `/api/activities/suggestions?q=${encodeURIComponent(value)}`,
+          { signal: controller.signal },
+        );
         const data = await res.json();
         const list = data.suggestions ?? [];
         setSuggestions(list);
         setShowSugg(list.length > 0);
         setActiveIndex(-1);
-      } catch {
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') return;
         setSuggestions([]);
       }
     }, 200);
@@ -113,6 +125,7 @@ export default function HeroSearch() {
       }
     } else if (e.key === 'Escape') {
       setShowSugg(false);
+      setSuggestions([]); // limpiar para que no reaparezcan en el siguiente onFocus
       setActiveIndex(-1);
     }
   }
@@ -130,7 +143,7 @@ export default function HeroSearch() {
           type="text"
           value={query}
           onChange={e => handleChange(e.target.value)}
-          onFocus={() => { if (suggestions.length > 0) setShowSugg(true); }}
+          onFocus={() => { if (suggestions.length > 0 && query.length >= 3) setShowSugg(true); }}
           onKeyDown={handleKeyDown}
           placeholder="Ej: hoy, gratis, niños 5 años, talleres…"
           autoComplete="off"

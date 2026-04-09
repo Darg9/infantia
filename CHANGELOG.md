@@ -13,6 +13,25 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.9.7-S39] — 2026-04-09 (Header resultados /actividades)
+**Documento Fundacional: V23** | Rama: master
+
+### Features
+
+#### Header de resultados rediseñado
+- **page.tsx:** cabecera blanca (`bg-white border-b`) con título + subtítulo nuevo separada de zona gris de resultados
+- **Subtítulo nuevo:** "Encuentra talleres, cursos y eventos según edad, ubicación y presupuesto"
+- **Buscador prominente:** `py-3.5 text-base rounded-2xl`, placeholder "Busca por actividad, edad o ubicación…"
+- **Estado loading:** `isPending` + spinner en buscador + contador "Buscando…" durante navegación
+- **Estado error:** mensaje sutil si la API de sugerencias falla
+- **`FiltersSkeleton`** exportado para Suspense fallback — replica visualmente la cabecera
+- **Mobile ordenar:** lista de botones con checkmark en lugar de `<select>`
+
+### Tests
+- 876 tests, 876 pasados — TypeScript: 0 errores
+
+---
+
 ## [v0.9.6-S38] — 2026-04-09 (Rediseño filtros /actividades)
 **Documento Fundacional: V23** | Rama: master
 

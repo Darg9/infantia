@@ -73,6 +73,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-gray-900">URL Score Dashboard</h2>
           <p className="text-sm text-gray-500 mt-1">Monitoreo de calidad y auto-pause de fuentes</p>
         </Link>
+        
+        <Link
+          href="/admin/quality"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">🛡️</div>
+          <h2 className="font-semibold text-gray-900">Content Quality</h2>
+          <p className="text-sm text-gray-500 mt-1">Monitor de pipeline: ruido, longitud y alertas</p>
+        </Link>
       </div>
     </div>
   )

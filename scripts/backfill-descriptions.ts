@@ -272,16 +272,29 @@ async function main() {
   console.log(`IA habilitada: ${aiEnabled ? '✅ Sí (conserva cuota)' : '❌ No (--ai-enabled para activar)'}`);
   console.log(`Límite:      ${limit ?? 'todas las actividades'}\n`);
 
-  // Agrega columna description_method si no existe (idempotente)
+  // Agrega esquema si no existe (idempotente, evita problemas de PgBouncer con prisma migrate)
   if (!dryRun) {
     try {
       await prisma.$executeRaw`
         ALTER TABLE activities
         ADD COLUMN IF NOT EXISTS description_method TEXT DEFAULT NULL
       `;
-      console.log('✅ Columna description_method verificada/creada\n');
+      console.log('✅ Columna description_method verificada/creada');
+      
+      await prisma.$executeRaw`
+        CREATE TABLE IF NOT EXISTS content_quality_metrics (
+          id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+          created_at TIMESTAMP DEFAULT now(),
+          avg_length INT NOT NULL,
+          pct_short FLOAT NOT NULL,
+          pct_noise FLOAT NOT NULL,
+          pct_promo FLOAT NOT NULL,
+          total_processed INT NOT NULL
+        )
+      `;
+      console.log('✅ Tabla content_quality_metrics verificada/creada\n');
     } catch (err) {
-      console.log('ℹ️  Columna description_method ya existe\n');
+      console.log('ℹ️  Configuración de DDL inicializada\n');
     }
   }
 
@@ -397,7 +410,32 @@ async function main() {
     console.log('\n⚠️  Modo DRY RUN — ningún cambio fue guardado en BD');
     console.log('   Ejecuta sin --dry-run para aplicar los cambios\n');
   } else {
-    console.log(`\n✨ ${processed} actividades actualizadas en BD\n`);
+    console.log(`\n✨ ${processed} actividades actualizadas en BD`);
+    
+    // Guardar métricas en DB
+    if (processedResults.length > 0) {
+      try {
+        const avgLength = processedResults.reduce((acc, r) => acc + r.charsAfter, 0) / processedResults.length;
+        const shortDescs = processedResults.filter((r) => r.charsAfter < 60).length;
+        const noisySource = processedResults.filter((r) => /[#@]|https?:\/\/|[A-Z]{4,}/.test(r.originalDescription)).length;
+        const promoStart = processedResults.filter((r) => /^(te invitamos|no te pierdas|ven)/i.test(r.originalDescription)).length;
+        
+        await prisma.contentQualityMetric.create({
+          data: {
+            avgLength: Math.round(avgLength),
+            pctShort: (shortDescs / processedResults.length) * 100,
+            pctNoise: (noisySource / processedResults.length) * 100,
+            pctPromo: (promoStart / processedResults.length) * 100,
+            totalProcessed: processedResults.length,
+          }
+        });
+        console.log('✅ Métricas de calidad guardadas en histórico\n');
+      } catch (err) {
+        console.error('⚠️  No se pudieron guardar las métricas de calidad:', err);
+      }
+    } else {
+      console.log();
+    }
   }
 
   await prisma.$disconnect();

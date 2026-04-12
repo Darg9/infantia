@@ -411,6 +411,18 @@ model SearchLog {
   @@map("search_logs")
 }
 
+model ContentQualityMetric {
+  id             String   @id @default(uuid())
+  createdAt      DateTime @default(now()) @map("created_at")
+  avgLength      Int      @map("avg_length")
+  pctShort       Float    @map("pct_short")
+  pctNoise       Float    @map("pct_noise")
+  pctPromo       Float    @map("pct_promo")
+  totalProcessed Int      @map("total_processed")
+
+  @@map("content_quality_metrics")
+}
+
 model Sponsor {
   id            String    @id @default(uuid())
   name          String    @db.VarChar(255)

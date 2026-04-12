@@ -1,6 +1,13 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-09 | Version: v0.9.8-S40
+Actualizado: 2026-04-12 | Version: v0.10.0-S41
+
+## Resumen Actual (v0.10.0-S41 / Centro de Seguridad)
+- **Archivos de Test:** 56
+- **Tests Totales:** 882
+- **Estado:** 100% pasando ✅
+- **Framework:** Vitest 1.3 (+ React Testing Library)
+- **Cobertura:** 91.39% Stmts / 85.90% Branches / 86.97% Funcs / 91.39% Lines (umbral dinámico: 85%)
 
 ## Resumen
 
@@ -15,12 +22,6 @@ Actualizado: 2026-04-09 | Version: v0.9.8-S40
 | Branches | 85.90% ✅ |
 | Functions | 88.09% ✅ |
 | Lines | 92.71% ✅ |
-
-## Estado: PASSED ✅
-
-> Todos los módulos lib/*, lib/supabase/*, activities/*, scraping/queue/* y api/admin/* tienen cobertura alta.
-> Los gaps (~15% branches) son: ramas `NODE_ENV !== 'production'`, callbacks de `page.$$eval()` en contexto
-> browser (inaccesibles en unit tests), y ramas de Sentry dynamic import que no se pueden mockear limpiamente.
 
 ## Archivos de test (56 total)
 
@@ -206,9 +207,6 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 - **+6 tests** (876 → 882): `suggestions/__tests__/suggestions.test.ts` actualizado
   - Mocks añadidos: `mockCategoryFindMany`, `mockCityFindMany`
   - Nuevos tests: formato actividad (type/id/label/sublabel), formato categoría, formato ciudad, max 5, orden tipos, sublabel null
-- **Sin archivos de test nuevos** — mismo archivo actualizado con suite ampliada
-- Coverage: 91.39% stmts / 85.90% branches ✅ (estable)
-- TypeScript: 0 errores ✅
 
 ## Cambios en S38-S39 (v0.9.6/v0.9.7)
 

@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.9.8-S40 | Actualizado: 2026-04-09
+> Versión: v0.10.0-S41 | Actualizado: 2026-04-12
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -436,7 +436,7 @@ El modelo `Child` almacena consentimiento parental explícito:
 ### Transferencia internacional de datos
 - Supabase Inc. (AWS, EEUU) — SOC 2 Type II, AES-256
 - Vercel Inc. (EEUU) — SOC 2 Type II
-- Registrado en RNBD (SIC Colombia) — trámite en `habitaplan.com/tratamiento-datos`
+- Documentos Legales bajo SSOT — /seguridad/* expone políticas alineadas con SIC y 1581 explícitamente vía descarga en PDF.
 
 ---
 

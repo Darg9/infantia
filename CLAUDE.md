@@ -167,6 +167,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.6-S38 | V23 | Filtros /actividades: desktop 1 fila, precio pills, chips ✕, modal mobile |
 | v0.9.7-S39 | V23 | Header resultados: cabecera bg-white, subtítulo, spinner, FiltersSkeleton |
 | v0.9.8-S40 | V23 | Buscador mixto (acts+cats+ciudades), 3 bugs autocomplete, fix facets count |
+| v0.10.0-S41 | V24 | Centro de Seguridad SSOT, PDFs de Privacidad/Términos/Datos, 882 tests 100% |
 
 ### Regla para Documento Fundacional
 
@@ -204,16 +205,16 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.9.8-S40 — 2026-04-09)
+## Estado actual (v0.10.0-S41 — 2026-04-12)
 - **~296 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **882 tests** en 56 archivos — `npm test` pasa en ~7s — 0 errores TypeScript
+- **882 tests** en 56 archivos — `npm test` pasa en ~8.5s — 0 errores TypeScript
 - Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO — habitaplan.com DNS apuntado ✅
+- Vercel deployment: ACTIVO (Despliegue automático commit f8bd1db a las 09:18 AM COL)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
-- Documento Fundacional: **V23** (2026-04-07, rebrand HabitaPlan)
+- Documento Fundacional: **V24** pendiente de generar (v0.10.0-S41 hito legal)
 - **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)
 - **0 console.*** en producción (migrado a logger estructurado)
 - Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅

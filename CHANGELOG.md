@@ -11,6 +11,11 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+---
+
+## [v0.10.0-S41] — 2026-04-12 (Centro de Seguridad Legal SSOT + PDFs)
+**Documento Fundacional: V24** | Rama: master | Commit: `f8bd1db`
+
 ### Features
 
 #### Centro de Seguridad (Legal SSOT)

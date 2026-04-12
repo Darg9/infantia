@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
 
-**Version:** v0.9.8-S40 | **Status:** Production — 2026-04-09 | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **URL Classifier:** ✅ Active
+**Version:** v0.10.0-S41 | **Status:** Production — 2026-04-12 | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **URL Classifier:** ✅ Active
 
 ## Quick Start
 

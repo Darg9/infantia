@@ -36,7 +36,7 @@ export default function QualityDashboardClient() {
       const res = await fetch(`/api/admin/quality?${params.toString()}`)
       const rawData = await res.json()
       
-      const formattedData = rawData.map((d: any) => ({
+      const formattedData = rawData.map((d: MetricData) => ({
         ...d,
         createdAt: new Date(d.createdAt).toLocaleDateString("es-CO", {
           month: 'short',

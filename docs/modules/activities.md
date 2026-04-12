@@ -91,7 +91,9 @@ Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo s
 
 | Valor | Criterio |
 |-------|---------|
-| `relevance` (default) | ACTIVE primero → `isPremium desc` → sourceConfidence → createdAt |
+| `relevance` (default) | ACTIVE primero → `isPremium desc` → sourceConfidence* → createdAt |
+
+* *Nota técnica sobre sourceConfidence:* El índice de confianza es una variable puramente algorítmica para priorización en BD y cache, **nunca** se expone a cliente garantizando 100% de veracidad, protegiendo así el Compliance Legal.*
 | `date` | Próximas primero, sin fecha al final |
 | `price_asc` | Precio ascendente, gratis y sin precio al final |
 | `price_desc` | Precio descendente, gratis y sin precio al final |
@@ -181,3 +183,10 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 - 29/29 locations con coordenadas reales ✅
 - BD bajó de 293 a ~275 por expiración de actividades de marzo (fechas pasadas → EXPIRED)
 - Pendiente: ingest Banrep ciudades + nuevo ingest web cuando se renueve cuota Gemini (19:00 COL)
+
+## UX y Compliance Legal de Atribución
+
+Para proteger al proyecto como "Agregador de Información", la página de detalle de una actividad (`/actividades/:id`) implementa dinámicas UX irrenunciables:
+1.  Enlaza de forma transparente la **fuente oficial original** con etiqueta de "(sitio oficial)".
+2.  Desmiente mediante disclaimers cualquier adjudicación sobre ser autor original del contenido.
+3.  Protege a la marca eliminando certificaciones de viabilidad como sellos estáticos de "Evento Verificado" o "100% Confianza".

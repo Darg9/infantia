@@ -198,7 +198,19 @@ npx tsx scripts/run-worker.ts
 
 # Geocodificación retroactiva
 npx tsx scripts/backfill-geocoding.ts [--dry-run]
+
+# Reescritura pura de descripciones (Mitigación Módulo Legal)
+npx tsx scripts/backfill-descriptions.ts [--limit=N] [--ai-enabled] [--dry-run]
 ```
+
+## Calidad y Observabilidad (NUEVO v0.10.x)
+
+El pipeline de ingesta cuenta con un flujo estricto de **mitigación legal/copyright**. Se ejecuta un algoritmo de normalización sobre cada descripción entrante en `3 capas` priorizadas:
+1. **`structured`**: Búsqueda puramente regex de Tipo de Actividad + Categoría.
+2. **`rule-based`** (Activo y Default): Aisla la primera frase no-promocional omitiendo stopwords. Extrae hasta el primer punto, limpiando hashtags o basura, previniendo el plagio textual extenso.
+3. **`ai`** (Fallback Inactivo por defecto): Se envía a LLM si las capas previas no logran rescatar >60 caracteres no ambiguos.
+
+Para mantener total monitoreo sobre las fuentes, cada bloque ingestado se inserta temporalmente en la BD como un reporte de degradación (`ContentQualityMetric`) visible en `/admin/quality`. Evalúa % Cortas, % Ruido y % Promo de los strings.
 
 ## Deduplicación
 

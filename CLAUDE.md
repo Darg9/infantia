@@ -168,7 +168,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.7-S39 | V23 | Header resultados: cabecera bg-white, subtítulo, spinner, FiltersSkeleton |
 | v0.9.8-S40 | V23 | Buscador mixto (acts+cats+ciudades), 3 bugs autocomplete, fix facets count |
 | v0.10.0-S41 | V24 | Centro de Seguridad SSOT, PDFs de Privacidad/Términos/Datos, 882 tests 100% |
-
+| v0.10.0-S42 | V24 | Backfill NLP 3-capas (Structured, rule-based, gemini), mitigación Copyright |
+| v0.10.0-S43 | V24 | Content Quality Dashboard (/admin/quality), UI con gráficas Recharts |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -205,16 +206,16 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 
-## Estado actual (v0.10.0-S41 — 2026-04-12)
-- **~296 actividades** en BD (Bogotá + Medellín fuentes activas)
+## Estado actual (v0.10.0-S43 — 2026-04-12)
+- **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **882 tests** en 56 archivos — `npm test` pasa en ~8.5s — 0 errores TypeScript
 - Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO (Despliegue automático commit f8bd1db a las 09:18 AM COL)
+- Vercel deployment: ACTIVO (Despliegue automático de master)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
-- Documento Fundacional: **V24** pendiente de generar (v0.10.0-S41 hito legal)
+- Documento Fundacional: **V24** pendiente de generar (v0.10.0-S43 hitos legales/calidad)
 - **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)
 - **0 console.*** en producción (migrado a logger estructurado)
 - Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅
@@ -230,7 +231,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 
 | ID | Área | Descripción | Mitigación | Plan |
 |---|---|---|---|---|
-| DEBT-01 | Legal / Copyright | Las descripciones de actividades ingestadas antes de S41 pueden contener texto similar al de las fuentes originales | **Fase 1 completada (S42):** 35 actividades reescritas vía pipeline rule-based (100% sin IA). Columna `description_method` en BD para auditoría. Script: `backfill-descriptions.ts` | Fase 2: activar `--ai-enabled` para edge cases si se requiere tras nueva ingesta |
+| DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright y falsa confianza. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP limitando la IA. UI con atribución exacta para asumir rol de "Agregador". Content Quality Dashboard midiendo degradación. | - |
 | DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | No afectan runtime ni comportamiento | Eliminar progresivamente en sprints de mantenimiento |
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
 

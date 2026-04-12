@@ -1,8 +1,8 @@
 # HabitaPlan — Activity Discovery Platform for Families
 
-A multi-source activity discovery platform for families in Bogotá, Colombia. Aggregates activities from websites, Instagram, and other sources into a single searchable interface.
+A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.10.0-S41 | **Status:** Production — 2026-04-12 | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **URL Classifier:** ✅ Active
+**Version:** v0.10.0-S43 | **Status:** Production | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 
@@ -67,7 +67,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 🏢 **Provider Dashboard:** `/proveedores/[slug]/dashboard` — views, premium status, activity table (ADMIN or owner)
 - 📋 **Provider Claim Flow:** Providers can claim their profiles via `/proveedores/[slug]/reclamar` — admin approves → PROVIDER role assigned
 - 🧭 **Onboarding Wizard:** 3-step setup for new users (city → children → done) — auto-redirects on first login
-- 🔒 **Admin Panel:** Sponsors CRUD, activity management, metrics, scraping queue, claims management
+- 🔒 **Admin Panel:** Sponsors CRUD, activity management, claims management, and **Content Quality Dashboard** (real-time metric observabality for ingestion erosion).
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo

@@ -95,6 +95,7 @@ habitaplan/
 │   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.9.1)
 │   │           │   └── [id]/             # PATCH approve / reject
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
+│   │           ├── quality/               # Content Quality Dashboard — UI/UX Métricas de ingesta (NUEVO v0.10.0)
 │   │           └── scraping/
 │   │               ├── sources/           # CRUD de fuentes de scraping
 │   │               └── logs/              # Historial de ejecuciones
@@ -208,6 +209,7 @@ City ── Location ───────────────────�
 | `ProviderClaim` | Solicitud de reclamación de provider por usuario autenticado (NUEVO v0.9.1) |
 | `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
 | `ScrapingLog` | Registro histórico de cada ejecución de scraping |
+| `ContentQualityMetric` | Métricas puras observadas del texto post-scraping: longitud, ruido y stopwords (NUEVO v0.10.x) |
 
 ### Enums clave
 

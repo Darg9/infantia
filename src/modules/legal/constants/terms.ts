@@ -42,7 +42,7 @@ export const TERMS_SECTIONS = [
   {
     num: "5",
     title: "Contenido de terceros",
-    content: [{ type: "text" as const, text: "HabitaPlan no garantiza la exactitud ni disponibilidad de la información publicada por terceros." }]
+    content: [{ type: "text" as const, text: "HabitaPlan puede recopilar, organizar y mostrar información proveniente de entidades públicas, organizaciones privadas o proveedores externos. Dicha información se presenta con fines exclusivamente informativos y puede ser modificada por sus respectivos titulares en cualquier momento. HabitaPlan no garantiza la exactitud, disponibilidad, vigencia ni idoneidad de dicha información y no asume responsabilidad alguna por decisiones tomadas con base en ella." }]
   },
   {
     num: "6",
@@ -65,7 +65,7 @@ export const TERMS_SECTIONS = [
   {
     num: "9",
     title: "Propiedad intelectual",
-    content: [{ type: "text" as const, text: "El contenido de la plataforma es propiedad de HabitaPlan o terceros autorizados." }]
+    content: [{ type: "text" as const, text: "El diseño, código y contenido propio de la plataforma son propiedad de HabitaPlan. La información proveniente de terceros pertenece a sus respectivos titulares. HabitaPlan la presenta en su rol de agregador informativo, sin reclamar derechos sobre dicho contenido externo. Cualquier solicitud de remoción puede realizarse a través del canal de contacto habilitado en la plataforma." }]
   },
   {
     num: "10",

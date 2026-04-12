@@ -57,6 +57,14 @@ export const PRIVACY_SECTIONS = [
   },
   {
     num: '3',
+    title: 'Fuentes de información externas',
+    content: [
+      { type: 'text' as const, text: 'La Plataforma puede obtener información de fuentes públicas o de terceros para su organización y visualización dentro del servicio. Esta información tiene fines exclusivamente informativos y no implica que HabitaPlan avale, garantice ni sea responsable de su exactitud, disponibilidad o vigencia.' },
+      { type: 'text' as const, text: 'Los derechos sobre dicha información pertenecen a sus respectivos titulares. HabitaPlan actúa como agregador informativo y no reclama derechos sobre el contenido externo.' },
+    ],
+  },
+  {
+    num: '4',
     title: 'Finalidad del tratamiento',
     content: [
       { type: 'text' as const, text: 'Los datos personales son utilizados para:' },
@@ -70,7 +78,7 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '4',
+    num: '5',
     title: 'Tratamiento de datos de menores',
     content: [
       { type: 'text' as const, text: 'La Plataforma puede tratar datos personales de menores únicamente bajo:' },
@@ -81,7 +89,7 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '5',
+    num: '6',
     title: 'Compartición de datos',
     content: [
       { type: 'text' as const, text: 'HabitaPlan no vende datos personales.' },
@@ -89,7 +97,7 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '6',
+    num: '7',
     title: 'Transferencias internacionales',
     content: [
       { type: 'text' as const, text: 'Los datos personales pueden ser transferidos y tratados en servidores ubicados fuera de Colombia, incluyendo Estados Unidos.' },
@@ -97,7 +105,7 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '7',
+    num: '8',
     title: 'Derechos del titular',
     content: [
       { type: 'text' as const, text: 'El titular tiene derecho a:' },
@@ -109,14 +117,14 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '8',
+    num: '9',
     title: 'Eliminación de datos',
     content: [
       { type: 'text' as const, text: 'El usuario puede solicitar la eliminación de sus datos. La supresión de datos personales procederá siempre que no exista una obligación legal o contractual que requiera su conservación.' },
     ],
   },
   {
-    num: '9',
+    num: '10',
     title: 'Seguridad de la información',
     content: [
       { type: 'text' as const, text: 'Implementamos medidas como:' },
@@ -126,7 +134,7 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '10',
+    num: '11',
     title: 'Cookies',
     content: [
       { type: 'text' as const, text: 'Usamos cookies necesarias para el funcionamiento.' },
@@ -134,14 +142,14 @@ export const PRIVACY_SECTIONS = [
     ],
   },
   {
-    num: '11',
+    num: '12',
     title: 'Cambios en la política',
     content: [
       { type: 'text' as const, text: 'Esta política puede actualizarse. Los cambios serán informados en la plataforma.' },
     ],
   },
   {
-    num: '12',
+    num: '13',
     title: 'Contacto',
     content: [
       { type: 'text' as const, text: 'Canal Habeas Data: habeasdata@habitaplan.com' },

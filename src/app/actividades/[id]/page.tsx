@@ -18,6 +18,7 @@ import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
 import { ActivityDetailMap } from '@/components/ActivityDetailMap';
 import clsx from 'clsx';
+import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
 
 export async function generateMetadata({
   params,
@@ -595,7 +596,7 @@ export default async function ActividadDetallePage({
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
               >
-                Ver en {activity.sourcePlatform === 'WEBSITE' ? 'sitio oficial' : activity.sourcePlatform ?? 'fuente original'}
+              Ver sitio oficial
                 <span>↗</span>
               </a>
             )}
@@ -621,19 +622,19 @@ export default async function ActividadDetallePage({
               </div>
             </div>
 
-            {/* Confianza y fuente */}
+            {/* Fuente y última actualización */}
             <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col gap-1.5 text-xs text-gray-400">
               <div className="flex items-center justify-between">
                 <span>Fuente</span>
-                <span className="text-gray-600 capitalize">{activity.sourcePlatform?.toLowerCase() ?? 'manual'}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span>Confianza</span>
-                <span className="text-gray-600">{Math.round(activity.sourceConfidence * 100)}%</span>
+                <span className="text-gray-600">
+                  {activity.sourceUrl
+                    ? (() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'Proveedor externo'; } })()
+                    : 'Proveedor externo'}
+                </span>
               </div>
               {activity.sourceCapturedAt && (
                 <div className="flex items-center justify-between">
-                  <span>Capturado</span>
+                  <span>Última actualización</span>
                   <span className="text-gray-600">
                     {new Date(activity.sourceCapturedAt).toLocaleDateString('es-CO')}
                   </span>
@@ -643,11 +644,9 @@ export default async function ActividadDetallePage({
           </div>
         </div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer legal */}
         <div className="col-span-full rounded-xl bg-gray-50 border border-gray-100 p-4 text-xs text-gray-400 leading-relaxed">
-          La información de esta actividad fue recopilada de fuentes públicas con fines informativos.
-          Los derechos del contenido original pertenecen a sus respectivos titulares.
-          Recomendamos verificar los detalles directamente con el organizador.{' '}
+          {ACTIVITY_DISCLAIMER_FULL}{' '}
           <a
             href={`/contacto?motivo=reportar&url=${encodeURIComponent(canonicalPath)}`}
             className="text-orange-500 hover:underline"

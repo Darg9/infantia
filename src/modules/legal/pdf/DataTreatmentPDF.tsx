@@ -106,13 +106,14 @@ export function DataTreatmentPDF() {
         {DATA_TREATMENT_SECTIONS.map(({ num, title, content }) => (
           <View key={num} wrap={false}>
             <Text style={styles.sectionNumber}>{num} {title}</Text>
-            {content.map((item, i) =>
-              item.type === 'bullet' ? (
-                <Text key={i} style={styles.bulletItem}>• {item.text}</Text>
+            {content.map((item, i) => {
+              const c = item as { type: string; text: string };
+              return c.type === 'bullet' ? (
+                <Text key={i} style={styles.bulletItem}>• {c.text}</Text>
               ) : (
-                <Text key={i} style={styles.sectionText}>{item.text}</Text>
-              )
-            )}
+                <Text key={i} style={styles.sectionText}>{c.text}</Text>
+              );
+            })}
           </View>
         ))}
 

@@ -61,16 +61,17 @@ export function DataTreatmentContent() {
               {title}
             </h2>
             <div className="space-y-2 text-sm text-gray-600 leading-relaxed">
-              {content.map((item, i) =>
-                item.type === 'bullet' ? (
+              {content.map((item, i) => {
+                const c = item as { type: string; text: string };
+                return c.type === 'bullet' ? (
                   <p key={i} className="flex items-start gap-2 ml-2">
                     <span className="text-orange-400 shrink-0">•</span>
-                    <span>{item.text}</span>
+                    <span>{c.text}</span>
                   </p>
                 ) : (
-                  <p key={i}>{item.text}</p>
-                )
-              )}
+                  <p key={i}>{c.text}</p>
+                );
+              })}
             </div>
           </section>
         ))}

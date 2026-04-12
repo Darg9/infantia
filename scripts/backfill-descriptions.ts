@@ -360,6 +360,38 @@ async function main() {
   console.log(`✅ Sin IA:           ${withoutAI} (${pct(withoutAI)}) — objetivo ≥ 80%`);
   console.log(`${parseFloat(pct(withoutAI)) >= 80 ? '🎯 OBJETIVO CUMPLIDO' : '⚠️  Por debajo del objetivo (80%)'}`);
 
+  // =============================================================================
+  // SEÑALES DE OBSERVABILIDAD — activan ambiguityScore si 2+ disparan
+  // Señal 2 se evalúa sobre originalDescription (no el reescrito)
+  // para detectar suciedad en la fuente, no en el output
+  // =============================================================================
+  const processedResults = results.filter((r) => r.method !== 'skipped');
+
+  if (processedResults.length > 0) {
+    const avgLength = processedResults.reduce((acc, r) => acc + r.charsAfter, 0) / processedResults.length;
+    const shortDescs = processedResults.filter((r) => r.charsAfter < 60).length;
+    const noisySource = processedResults.filter((r) => /[#@]|https?:\/\/|[A-Z]{4,}/.test(r.originalDescription)).length;
+    const promoStart = processedResults.filter((r) => /^(te invitamos|no te pierdas|ven)/i.test(r.originalDescription)).length;
+    const pctShort = (shortDescs / processedResults.length) * 100;
+    const pctNoisy = (noisySource / processedResults.length) * 100;
+    const pctPromo = (promoStart / processedResults.length) * 100;
+
+    console.log('\n────────────────────────────────────────');
+    console.log('🔭 OBSERVABILIDAD (señales de calidad)');
+    console.log('────────────────────────────────────────');
+    console.log(`📏 Avg length output:    ${Math.round(avgLength)} chars`);
+    console.log(`📉 Señal 1 — cortas (<60):  ${shortDescs} (${pctShort.toFixed(1)}%) ${pctShort > 20 ? '⚠️  ALERTA: umbral > 20%' : '🟢 ok'}`);
+    console.log(`🔊 Señal 2 — ruido fuente:  ${noisySource} (${pctNoisy.toFixed(1)}%) ${pctNoisy > 15 ? '⚠️  ALERTA: umbral > 15%' : '🟢 ok'}`);
+    console.log(`📣 Señal 3 — promo (canary): ${promoStart} (${pctPromo.toFixed(1)}%) ${pctPromo > 25 ? '🚨 ALERTA: normalize puede estar fallando' : '🟢 ok'}`);
+
+    const alertCount = [pctShort > 20, pctNoisy > 15, pctPromo > 25].filter(Boolean).length;
+    if (alertCount >= 2) {
+      console.log('\n🚨 ≥2 señales activas → considerar activar ambiguityScore');
+    } else {
+      console.log('\n✅ Pipeline óptimo — sin necesidad de ambiguityScore');
+    }
+  }
+
 
   if (dryRun) {
     console.log('\n⚠️  Modo DRY RUN — ningún cambio fue guardado en BD');

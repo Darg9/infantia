@@ -666,7 +666,7 @@ export default async function ActividadDetallePage({
                     className="text-gray-400 hover:text-orange-500 hover:underline transition-colors"
                   >
                     {(() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'fuente externa'; } })()}
-                  </a>
+                  </a>{' '}(sitio oficial)
                 </span>
               )}
               {activity.sourceCapturedAt && (

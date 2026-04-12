@@ -420,6 +420,9 @@ model ContentQualityMetric {
   pctPromo       Float    @map("pct_promo")
   totalProcessed Int      @map("total_processed")
 
+  source         String?  @map("source") 
+  pipelineStage  String?  @map("pipeline_stage")
+
   @@map("content_quality_metrics")
 }
 

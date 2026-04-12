@@ -289,8 +289,16 @@ async function main() {
           pct_short FLOAT NOT NULL,
           pct_noise FLOAT NOT NULL,
           pct_promo FLOAT NOT NULL,
-          total_processed INT NOT NULL
+          total_processed INT NOT NULL,
+          source TEXT,
+          pipeline_stage TEXT
         )
+      `;
+      // Alter table por si la tabla ya existía sin estas columnas
+      await prisma.$executeRaw`
+        ALTER TABLE content_quality_metrics
+        ADD COLUMN IF NOT EXISTS source TEXT,
+        ADD COLUMN IF NOT EXISTS pipeline_stage TEXT
       `;
       console.log('✅ Tabla content_quality_metrics verificada/creada\n');
     } catch (err) {
@@ -427,6 +435,8 @@ async function main() {
             pctNoise: (noisySource / processedResults.length) * 100,
             pctPromo: (promoStart / processedResults.length) * 100,
             totalProcessed: processedResults.length,
+            source: 'backfill',
+            pipelineStage: 'backfill',
           }
         });
         console.log('✅ Métricas de calidad guardadas en histórico\n');

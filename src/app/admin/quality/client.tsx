@@ -23,44 +23,92 @@ interface MetricData {
 export default function QualityDashboardClient() {
   const [data, setData] = useState<MetricData[]>([])
   const [loading, setLoading] = useState(true)
+  const [filters, setFilters] = useState({ from: "", to: "", source: "" })
+
+  const fetchData = async () => {
+    setLoading(true)
+    try {
+      const params = new URLSearchParams()
+      if (filters.from) params.append("from", filters.from)
+      if (filters.to) params.append("to", filters.to)
+      if (filters.source) params.append("source", filters.source)
+
+      const res = await fetch(`/api/admin/quality?${params.toString()}`)
+      const rawData = await res.json()
+      
+      const formattedData = rawData.map((d: any) => ({
+        ...d,
+        createdAt: new Date(d.createdAt).toLocaleDateString("es-CO", {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      }))
+      setData(formattedData)
+    } catch (err) {
+      console.error("Error loading metrics:", err);
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    fetch("/api/admin/quality")
-      .then(res => res.json())
-      .then((rawData) => {
-        // Formateo de fecha para el eje X
-        const formattedData = rawData.map((d: any) => ({
-          ...d,
-          createdAt: new Date(d.createdAt).toLocaleDateString("es-CO", {
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })
-        }))
-        setData(formattedData)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error("Error loading metrics:", err);
-        setLoading(false)
-      })
-  }, [])
+    fetchData()
+  }, [filters])
 
-  // Alerta de degradación sobre el último registro
   const latest = data.length > 0 ? data[data.length - 1] : null;
   const isDegrading = latest ? (latest.pctShort > 20 || latest.pctNoise > 15 || latest.pctPromo > 10) : false;
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-6">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Content Quality</h1>
-          <p className="text-gray-500 mt-1">Evolución e impacto del pipeline de reescritura</p>
+          <h1 className="text-3xl font-semibold text-gray-900">Content Quality Dashboard</h1>
+          <p className="text-gray-500 mt-1">Observabilidad del pipeline de contenido</p>
         </div>
         <Link href="/admin" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 px-4 py-2 border border-indigo-100 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition">
           ← Volver a Admin
         </Link>
+      </div>
+
+      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-8 flex flex-wrap gap-4 items-end">
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Desde</label>
+          <input 
+            type="date" 
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            value={filters.from}
+            onChange={(e) => setFilters(f => ({ ...f, from: e.target.value }))}
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Hasta</label>
+          <input 
+            type="date" 
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            value={filters.to}
+            onChange={(e) => setFilters(f => ({ ...f, to: e.target.value }))}
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-gray-500 mb-1">Fuente / Etapa</label>
+          <select 
+            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            value={filters.source}
+            onChange={(e) => setFilters(f => ({ ...f, source: e.target.value }))}
+          >
+            <option value="">Todas las fuentes</option>
+            <option value="backfill">Backfill</option>
+            <option value="ingestion">Ingestión diaria</option>
+          </select>
+        </div>
+        <button 
+          onClick={() => setFilters({ from: "", to: "", source: "" })}
+          className="text-sm text-gray-500 hover:text-gray-900 px-2 py-1.5"
+        >
+          Reset
+        </button>
       </div>
 
       {isDegrading && (

@@ -653,6 +653,30 @@ export default async function ActividadDetallePage({
           >
             Reportar error o solicitar remoción
           </a>
+          {/* Atribución de fuente — transparencia para usuarios, auditores e inversores */}
+          {(activity.sourceUrl || activity.sourceCapturedAt) && (
+            <p className="mt-2 pt-2 border-t border-gray-200 text-gray-300 flex flex-wrap gap-x-3">
+              {activity.sourceUrl && (
+                <span>
+                  Fuente:{' '}
+                  <a
+                    href={activity.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-400 hover:text-orange-500 hover:underline transition-colors"
+                  >
+                    {(() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'fuente externa'; } })()}
+                  </a>
+                </span>
+              )}
+              {activity.sourceCapturedAt && (
+                <span>
+                  Última actualización:{' '}
+                  {new Date(activity.sourceCapturedAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+              )}
+            </p>
+          )}
         </div>
       </div>
       </div>

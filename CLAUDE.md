@@ -226,6 +226,14 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
 - **UI cleanup:** sin uppercase sostenido, title case en labels (S33)
 
+### Known Technical Debt
+
+| ID | Área | Descripción | Mitigación | Plan |
+|---|---|---|---|---|
+| DEBT-01 | Legal / Copyright | Las descripciones de actividades ingestadas antes de S41 pueden contener texto similar al de las fuentes originales (no transformado por IA) | Todo contenido nuevo se transforma vía Gemini durante la ingesta. Disclaimer oficial visible en UI. Enlace de remoción disponible en cada actividad. | Fase 2: reescritura masiva de registros legacy mediante batch Gemini (backfill script) |
+| DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | No afectan runtime ni comportamiento | Eliminar progresivamente en sprints de mantenimiento |
+| DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
+
 ### Features v0.9.0 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)
 - **Health check:** `GET /api/health` — estado DB + Redis en tiempo real (listo para UptimeRobot)

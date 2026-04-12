@@ -216,8 +216,6 @@ async function processActivity(
     if (parsed) {
       const structuredDesc = buildDescription(parsed);
       const fallbackForComparison = safeRewrite(normalized);
-      // Usar structured solo si el fallback rule-based no es suficientemente bueno
-      // O si la descripción estructurada es comparable en longitud (evita "Concierto de teatro.")
       if (!isGoodEnough(fallbackForComparison) && structuredDesc.length > 20) {
         return {
           id: activity.id, title: activity.title,
@@ -225,6 +223,9 @@ async function processActivity(
           method: 'structured', charsBefore, charsAfter: structuredDesc.length,
         };
       }
+      // Log de decisión: útil para monitorear evolución del dataset
+      // Cuando fuentes caóticas (Instagram, Telegram) entren, structured empezará a aparecer aquí
+      console.log(`   📊 decision: rule-based-won-over-structured (structured="${structuredDesc.substring(0, 40)}")`);
     }
   }
 

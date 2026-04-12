@@ -11,6 +11,16 @@ Relación con Documento Fundacional:
 
 ## [Unreleased]
 
+### Features
+
+#### Centro de Seguridad (Legal SSOT)
+- Implementación de arquitectura "Single Source of Truth" (SSOT) para políticas legales en `src/modules/legal/constants/`.
+- **Privacidad** (`/seguridad/privacidad`): Rediseño de UI con "Resumen para humanos", generación estricta de PDF server-side con logs enriquecidos.
+- **Términos de uso** (`/seguridad/terminos`): Inyección automática desde `terms.ts`, UI replicada, validaciones strictas sobre limitación de responsabilidad de intermediario y menores.
+- **Tratamiento de Datos Personales** (`/seguridad/datos`): Alineamiento estricto a la Ley 1581 y Decretos SIC, 13 secciones completas, transferencia estricta de datos cubierta.
+- Rutas API (`GET /api/legal/*/pdf`) con descargas PDF habilitadas para cumplimiento legal.
+- Rutas base antiguas preservadas por compatibilidad SEO (`/privacidad`, `/terminos`, `/tratamiento-datos`).
+
 ---
 
 ## [v0.9.8-S40] — 2026-04-09 (Buscador mixto + fixes críticos autocomplete)

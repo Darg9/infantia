@@ -24,8 +24,9 @@ const NAV_COLUMNS = [
   {
     title: 'Legal',
     links: [
-      { label: 'Términos de uso',                href: '/terminos'          },
-      { label: 'Política de privacidad',         href: '/privacidad'        },
+      { label: 'Centro de Seguridad',              href: '/seguridad'         },
+      { label: 'Términos de uso',                  href: '/terminos'          },
+      { label: 'Política de privacidad',           href: '/privacidad'        },
       { label: 'Política de tratamiento de datos', href: '/tratamiento-datos' },
     ],
   },

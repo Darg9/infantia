@@ -37,7 +37,7 @@ model Activity {
   verticalId        String
   sourceType        SourceType       @default(MANUAL)
   sourceUrl         String?
-  sourceDomain      String?          @db.VarChar(255)
+  sourceDomain      String?          @map("source_domain") @db.VarChar(255)
   sourcePlatform    String?          @db.VarChar(50)
   sourceConfidence  Float            @default(0.5)
   sourceCapturedAt  DateTime?
@@ -58,7 +58,7 @@ model Activity {
   @@index([locationId])
   @@index([startDate])
   @@index([status, verticalId, startDate])
-  @@index([sourceDomain])
+  @@index([sourceDomain], map: "activities_source_domain_idx")
   @@map("activities")
 }
 

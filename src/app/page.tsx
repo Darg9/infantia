@@ -17,17 +17,33 @@ export const metadata: Metadata = {
     'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia. Todo en un solo lugar, siempre actualizado.',
 };
 
+function logHomeQueryFailure(queryName: string, reason: unknown) {
+  const error =
+    reason instanceof Error
+      ? { message: reason.message, stack: reason.stack }
+      : { message: String(reason) };
+
+  console.error(
+    JSON.stringify({
+      event: 'home_query_failed',
+      queryName,
+      ...error,
+      timestamp: new Date().toISOString(),
+    }),
+  );
+}
+
 export default async function HomePage() {
-  // Todas las queries en paralelo
+  // Home resiliente: una query rota no debe tumbar todo el portal.
   const [
-    { total: totalActivities },
-    totalCities,
-    totalProviders,
-    totalCategories,
-    topCategories,
-    { activities: recentActivities },
-    { activities: popularActivities },
-  ] = await Promise.all([
+    totalActivitiesResult,
+    totalCitiesResult,
+    totalProvidersResult,
+    totalCategoriesResult,
+    topCategoriesResult,
+    recentActivitiesResult,
+    popularActivitiesResult,
+  ] = await Promise.allSettled([
     // Total de actividades activas (visible en la plataforma)
     listActivities({ skip: 0, pageSize: 1, status: 'ACTIVE' }),
 
@@ -69,7 +85,44 @@ export default async function HomePage() {
 
     // Fallback: 4 actividades populares (relevance) si no hay recientes
     listActivities({ skip: 0, pageSize: 4, status: 'ACTIVE', sortBy: 'relevance' }),
-  ]);
+  ] as const);
+
+  if (totalActivitiesResult.status === 'rejected') {
+    logHomeQueryFailure('totalActivities', totalActivitiesResult.reason);
+  }
+  if (totalCitiesResult.status === 'rejected') {
+    logHomeQueryFailure('totalCities', totalCitiesResult.reason);
+  }
+  if (totalProvidersResult.status === 'rejected') {
+    logHomeQueryFailure('totalProviders', totalProvidersResult.reason);
+  }
+  if (totalCategoriesResult.status === 'rejected') {
+    logHomeQueryFailure('totalCategories', totalCategoriesResult.reason);
+  }
+  if (topCategoriesResult.status === 'rejected') {
+    logHomeQueryFailure('topCategories', topCategoriesResult.reason);
+  }
+  if (recentActivitiesResult.status === 'rejected') {
+    logHomeQueryFailure('recentActivities', recentActivitiesResult.reason);
+  }
+  if (popularActivitiesResult.status === 'rejected') {
+    logHomeQueryFailure('popularActivities', popularActivitiesResult.reason);
+  }
+
+  const totalActivities =
+    totalActivitiesResult.status === 'fulfilled' ? totalActivitiesResult.value.total : 0;
+  const totalCities =
+    totalCitiesResult.status === 'fulfilled' ? totalCitiesResult.value : 0;
+  const totalProviders =
+    totalProvidersResult.status === 'fulfilled' ? totalProvidersResult.value : 0;
+  const totalCategories =
+    totalCategoriesResult.status === 'fulfilled' ? totalCategoriesResult.value : 0;
+  const topCategories =
+    topCategoriesResult.status === 'fulfilled' ? topCategoriesResult.value : [];
+  const recentActivities =
+    recentActivitiesResult.status === 'fulfilled' ? recentActivitiesResult.value.activities : [];
+  const popularActivities =
+    popularActivitiesResult.status === 'fulfilled' ? popularActivitiesResult.value.activities : [];
 
   // Lógica de fallback para la sección de actividades
   const hasRecent   = recentActivities.length > 0;

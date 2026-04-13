@@ -38,7 +38,12 @@ export async function GET(req: Request) {
       },
     });
 
-    return NextResponse.json(data);
+    const mappedData = data.map((d) => ({
+      ...d,
+      discardRate: Math.min(1, d.pctShort / 100),
+    }));
+
+    return NextResponse.json(mappedData);
   } catch (error) {
     console.error('Error fetching quality metrics:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });

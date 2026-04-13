@@ -24,8 +24,9 @@ import 'dotenv/config';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { ambiguityScore } from '../src/modules/scraping/ambiguity';
-import { getAdaptiveRules, getSourceRules } from '../src/modules/scraping/adaptive-rules';
+import { getAdaptiveRules, getSourceRules } from '@/modules/scraping/adaptive-rules';
+import { ambiguityScore } from '@/modules/scraping/ambiguity';
+import { getSystemStatus } from '@/modules/scraping/alerts';
 
 // =============================================================================
 // Setup
@@ -447,14 +448,42 @@ async function main() {
   console.log(`✅ Sin IA:           ${withoutAI} (${pct(withoutAI)}) — objetivo ≥ 80%`);
   console.log(`${parseFloat(pct(withoutAI)) >= 80 ? '🎯 OBJETIVO CUMPLIDO' : '⚠️  Por debajo del objetivo (80%)'}`);
 
+  const computedDiscardRate = activities.length > 0 ? Number((stats.skipped / activities.length).toFixed(4)) : 0;
+  const computedAvgLength = activities.length > 0 ? Math.round(sumMinLength / activities.length) : 0;
+
   console.info(JSON.stringify({
     event: "adaptive_filter_summary",
     totalProcessed: activities.length,
     totalSkipped: stats.skipped,
-    discardRate: activities.length > 0 ? Number((stats.skipped / activities.length).toFixed(4)) : 0,
-    avgMinLength: activities.length > 0 ? Math.round(sumMinLength / activities.length) : 0,
+    discardRate: computedDiscardRate,
+    avgMinLength: computedAvgLength,
     timestamp: new Date().toISOString()
   }));
+
+  const status = getSystemStatus({
+    discardRate: computedDiscardRate,
+    avgLength: computedAvgLength
+  });
+
+  console.info(JSON.stringify({
+    event: "system_health_alert",
+    level: "info",
+    status,
+    discardRate: computedDiscardRate,
+    avgLength: computedAvgLength,
+    timestamp: new Date().toISOString()
+  }));
+
+  if (status !== "healthy") {
+    console.warn(JSON.stringify({
+      event: "system_health_alert",
+      level: "warning",
+      status,
+      discardRate: computedDiscardRate,
+      avgLength: computedAvgLength,
+      timestamp: new Date().toISOString()
+    }));
+  }
 
   // =============================================================================
   // SEÑALES DE OBSERVABILIDAD — activan ambiguityScore si 2+ disparan

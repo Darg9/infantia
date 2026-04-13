@@ -8,9 +8,12 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  CartesianGrid
+  CartesianGrid,
+  ReferenceLine,
+  Legend
 } from "recharts"
 import Link from 'next/link'
+import { getSystemStatus } from "@/modules/scraping/alerts";
 
 interface MetricData {
   createdAt: string;
@@ -18,6 +21,7 @@ interface MetricData {
   pctShort: number;
   pctNoise: number;
   pctPromo: number;
+  discardRate: number;
 }
 
 export default function QualityDashboardClient() {
@@ -58,7 +62,10 @@ export default function QualityDashboardClient() {
   }, [filters])
 
   const latest = data.length > 0 ? data[data.length - 1] : null;
-  const isDegrading = latest ? (latest.pctShort > 20 || latest.pctNoise > 15 || latest.pctPromo > 10) : false;
+  const status = getSystemStatus(latest);
+
+  const percentFormatter = (val: number) => `${(val * 100).toFixed(1)}%`;
+  const basePercentFormatter = (val: number) => `${val.toFixed(1)}%`;
 
   return (
     <div className="max-w-5xl mx-auto py-12 px-6">
@@ -111,16 +118,51 @@ export default function QualityDashboardClient() {
         </button>
       </div>
 
-      {isDegrading && (
+      {status === 'over' && (
         <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-md shadow-sm">
+          <div className="flex">
+            <div className="flex-shrink-0 text-xl">🚨</div>
+            <div className="ml-3">
+              <h3 className="text-sm font-bold text-red-800">Over-filtering detectado</h3>
+              <p className="mt-1 text-sm text-red-700">El sistema evaluativo es demasiado severo. Rebaja los thresholds.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {status === 'under' && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">⚠️</div>
             <div className="ml-3">
-              <h3 className="text-sm font-bold text-red-800">Calidad del contenido degradándose</h3>
-              <div className="mt-1 text-sm text-red-700">
-                <p>Múltiples señales se sobrepasaron en el último registro. Considera habilitar ambiguityScore.</p>
-              </div>
+              <h3 className="text-sm font-bold text-yellow-800">Under-filtering detectado</h3>
+              <p className="mt-1 text-sm text-yellow-700">El sistema está permitiendo que contenido muy pobre penetre. Endurece las reglas.</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {status === 'healthy' && (
+        <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-8 rounded-md shadow-sm">
+          <div className="flex">
+            <div className="flex-shrink-0 text-xl">✅</div>
+            <div className="ml-3">
+              <h3 className="text-sm font-bold text-green-800">Sistema saludable</h3>
+              <p className="mt-1 text-sm text-green-700">La curaduría opera dentro de márgenes totalmente seguros.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {latest && (
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
+            <h3 className="text-sm font-medium text-gray-500">Discard Rate (Actual)</h3>
+            <p className="text-3xl font-bold text-blue-600 mt-2">{percentFormatter(latest.discardRate)}</p>
+          </div>
+          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
+            <h3 className="text-sm font-medium text-gray-500">Avg Length (Actual)</h3>
+            <p className="text-3xl font-bold text-indigo-600 mt-2">{latest.avgLength}</p>
           </div>
         </div>
       )}
@@ -138,83 +180,70 @@ export default function QualityDashboardClient() {
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Avg Length */}
+          
           <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Avg Description Length</h2>
-              <p className="text-sm text-gray-500 text-pretty">Longitud promedio del output del pipeline.</p>
+              <h2 className="text-lg font-semibold text-gray-900">Discard Rate Timeline</h2>
+              <p className="text-sm text-gray-500 text-pretty">Presión del filtro y volumen denegado a BD.</p>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={data}>
+                <LineChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} tickMargin={10} minTickGap={30} />
-                  <YAxis tick={{fontSize: 12, fill: '#6B7280'}} allowDecimals={false} />
-                  <Tooltip contentStyle={{ borderRadius: '8px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
-                  <Line type="monotone" dataKey="avgLength" stroke="#4F46E5" strokeWidth={3} dot={{r: 4}} activeDot={{r: 6}} name="Promedio (chars)" />
+                  <YAxis tickFormatter={percentFormatter} tick={{fontSize: 12, fill: '#6B7280'}} />
+                  <Tooltip formatter={(value: number) => percentFormatter(value)} contentStyle={{ borderRadius: '8px' }} />
+                  <ReferenceLine y={0.10} stroke="#EAB308" strokeDasharray="3 3" />
+                  <ReferenceLine y={0.35} stroke="#22C55E" strokeDasharray="3 3" />
+                  <ReferenceLine y={0.50} stroke="#EF4444" strokeDasharray="3 3" />
+                  <Line type="monotone" dataKey="discardRate" stroke="#3B82F6" strokeWidth={3} dot={false} activeDot={{r: 6}} name="Discard Rate" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* % Short */}
-            <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">% Short Descriptions ({'<'}60)</h2>
-                <p className="text-xs text-gray-500 font-mono mt-1">Umbral alerta: {'>'} 20% (Actual: {latest?.pctShort.toFixed(1)}%)</p>
-              </div>
-              <div className="h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} minTickGap={30} />
-                    <YAxis tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: '8px' }} />
-                    <Line type="monotone" dataKey="pctShort" stroke="#F59E0B" strokeWidth={2} name="% Cortas" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
+          <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Average Min-Length Timeline</h2>
+              <p className="text-sm text-gray-500 text-pretty">Longitud de string dinámicamente aprobada.</p>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                  <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} tickMargin={10} minTickGap={30} />
+                  <YAxis tick={{fontSize: 12, fill: '#6B7280'}} allowDecimals={false} />
+                  <Tooltip contentStyle={{ borderRadius: '8px' }} />
+                  <ReferenceLine y={40} stroke="#EAB308" strokeDasharray="3 3" />
+                  <ReferenceLine y={65} stroke="#22C55E" strokeDasharray="3 3" />
+                  <ReferenceLine y={75} stroke="#EF4444" strokeDasharray="3 3" />
+                  <Line type="monotone" dataKey="avgLength" stroke="#4F46E5" strokeWidth={3} dot={false} activeDot={{r: 6}} name="Avg Length (chars)" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
 
-            {/* % Noise */}
-            <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">% Noise in Sources</h2>
-                <p className="text-xs text-gray-500 font-mono mt-1">Umbral alerta: {'>'} 15% (Actual: {latest?.pctNoise.toFixed(1)}%)</p>
-              </div>
-              <div className="h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} minTickGap={30} />
-                    <YAxis tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: '8px' }} />
-                    <Line type="monotone" dataKey="pctNoise" stroke="#EF4444" strokeWidth={2} name="% Ruido (Fuente)" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-            
-            {/* % Promo */}
-            <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm md:col-span-2">
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-900">Promo Canary</h2>
-                <p className="text-xs text-gray-500 font-mono mt-1">Umbral alerta: {'>'} 10% (Si sube, normalize está fallando)</p>
-              </div>
-              <div className="h-60">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={data}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
-                    <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} minTickGap={30} />
-                    <YAxis tick={{fontSize: 12, fill: '#6B7280'}} />
-                    <Tooltip contentStyle={{ borderRadius: '8px' }} />
-                    <Line type="monotone" dataKey="pctPromo" stroke="#10B981" strokeWidth={2} name="% Promocional" />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </section>
-          </div>
+          <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-900">Quality Metrics Raw</h2>
+              <p className="text-sm text-gray-500 text-pretty">Señales históricas consolidadas.</p>
+            </div>
+            <div className="h-72">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data} margin={{ top: 10, right: 30, left: 10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
+                  <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} tickMargin={10} minTickGap={30} />
+                  <YAxis tickFormatter={basePercentFormatter} tick={{fontSize: 12, fill: '#6B7280'}} />
+                  <Tooltip formatter={(value: number) => basePercentFormatter(value)} contentStyle={{ borderRadius: '8px', zIndex: 1000 }} />
+                  <Legend verticalAlign="top" height={36}/>
+                  <Line type="monotone" dataKey="pctShort" stroke="#F59E0B" strokeWidth={2} dot={false} activeDot={{r: 5}} name="% Cortas" />
+                  <Line type="monotone" dataKey="pctNoise" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={{r: 5}} name="% Ruido" />
+                  <Line type="monotone" dataKey="pctPromo" stroke="#10B981" strokeWidth={2} dot={false} activeDot={{r: 5}} name="% Promo" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </section>
+
         </div>
       )}
     </div>

@@ -230,6 +230,15 @@ Parámetros a monitorear desde PM2/Vercel (evento `adaptive_filter_summary`):
   - `> 75` → El sistema está siendo ultra severo globalmente (probablemente impulsado por una crisis histórica de ruido).
   - `< 40` → El sistema está confiado y dejando pasar todo contenido pobre.
 
+### Quick Debug
+
+| Métrica        | Valor        | Acción                  |
+|----------------|-------------|--------------------------|
+| discardRate >50% | 🔴 alto     | bajar thresholds         |
+| discardRate <5%  | 🟡 bajo     | subir validación         |
+| avgMinLength >75 | 🔴 alto     | relajar reglas           |
+| avgMinLength <40 | 🟡 bajo     | endurecer reglas         |
+
 Esta lógica descansa de forma determinista en `adaptive-rules.ts`.
 
 ## Deduplicación

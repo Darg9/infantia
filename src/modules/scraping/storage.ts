@@ -5,6 +5,8 @@ import { ActivityNLPResult, BatchPipelineResult } from './types';
 import { calculateSimilarity, normalizeString } from './deduplication';
 import { geocodeAddress } from '../../lib/geocoding';
 import { createLogger } from '../../lib/logger';
+import { ambiguityScore } from './ambiguity';
+import { isValidActivity } from './validation';
 
 const log = createLogger('scraping:storage');
 
@@ -15,6 +17,7 @@ const prisma = new PrismaClient({ adapter });
 type SaveResult = {
   saved: number;
   skipped: number;
+  discarded: number;
   errors: string[];
 };
 
@@ -32,6 +35,18 @@ export class ScrapingStorage {
     sourceOptions?: { platform?: string; instagramUsername?: string },
   ): Promise<string | null> {
     try {
+      const validation = isValidActivity({ title: data.title, description: data.description });
+      if (!validation.valid) {
+        log.info(JSON.stringify({
+          event: "activity_discarded",
+          reason: validation.reason,
+          ambiguityScore: ambiguityScore(data.description || ""),
+          descriptionLength: data.description?.length || 0,
+          title: data.title
+        }));
+        return "DISCARDED_QUALITY";
+      }
+
       // 1. Obtener vertical
       const vertical = await prisma.vertical.findUnique({ where: { slug: verticalSlug } });
       if (!vertical) {
@@ -150,7 +165,7 @@ export class ScrapingStorage {
    * Guarda todos los resultados de un batch pipeline.
    */
   async saveBatchResults(batchResult: BatchPipelineResult): Promise<SaveResult> {
-    const result: SaveResult = { saved: 0, skipped: 0, errors: [] };
+    const result: SaveResult = { saved: 0, skipped: 0, discarded: 0, errors: [] };
 
     for (const item of batchResult.results) {
       if (!item.data) {
@@ -165,14 +180,23 @@ export class ScrapingStorage {
       }
 
       const activityId = await this.saveActivity(item.data, item.url);
-      if (activityId) {
+      if (activityId === "DISCARDED_QUALITY") {
+        result.discarded++;
+      } else if (activityId) {
         result.saved++;
       } else {
         result.errors.push(item.url);
       }
     }
 
-    log.info(`Batch: ${result.saved} guardadas, ${result.skipped} omitidas, ${result.errors.length} errores`);
+    log.info(JSON.stringify({
+      event: "batch_quality_summary",
+      saved: result.saved,
+      discarded: result.discarded,
+      skipped: result.skipped,
+      errors: result.errors.length,
+      sourceUrl: batchResult.sourceUrl
+    }));
     return result;
   }
 

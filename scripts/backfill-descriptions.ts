@@ -24,6 +24,8 @@ import 'dotenv/config';
 import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import { ambiguityScore } from '../src/modules/scraping/ambiguity';
+import { getAdaptiveRules, getSourceRules } from '../src/modules/scraping/adaptive-rules';
 
 // =============================================================================
 // Setup
@@ -193,8 +195,9 @@ Responde SOLO con la frase reescrita, sin comillas ni explicaciones.`;
 // =============================================================================
 
 async function processActivity(
-  activity: { id: string; title: string; description: string },
+  activity: { id: string; title: string; description: string; sourceUrl: string },
   genAI: GoogleGenerativeAI | null,
+  finalRules: { forceStructured: boolean; minDescriptionLength: number }
 ): Promise<Result> {
   const original = activity.description ?? '';
   const charsBefore = original.length;
@@ -209,34 +212,47 @@ async function processActivity(
     };
   }
 
-  // Etapa 2+3+4: Detección y generación estructurada
-  // Solo si el resultado estructurado es mejor que el rule-based (más informativo)
-  if (canParseStructured(normalized)) {
+  // Etapa 2+3+4: Detección y generación estructurada vs Rule-based
+  const fallback = safeRewrite(normalized);
+  const ambiguity = ambiguityScore(normalized);
+
+  // structured gana si la ambigüedad es alta O si la regla adaptativa lo fuerza
+  if ((ambiguity >= 2 || finalRules.forceStructured) && canParseStructured(normalized)) {
     const parsed = parseStructured(normalized);
     if (parsed) {
       const structuredDesc = buildDescription(parsed);
-      const fallbackForComparison = safeRewrite(normalized);
-      if (!isGoodEnough(fallbackForComparison) && structuredDesc.length > 20) {
+      if (structuredDesc.length >= 20) {
         return {
           id: activity.id, title: activity.title,
           originalDescription: original, newDescription: structuredDesc,
           method: 'structured', charsBefore, charsAfter: structuredDesc.length,
         };
       }
-      // Log de decisión: útil para monitorear evolución del dataset
-      // Cuando fuentes caóticas (Instagram, Telegram) entren, structured empezará a aparecer aquí
-      console.log(`   📊 decision: rule-based-won-over-structured (structured="${structuredDesc.substring(0, 40)}")`);
     }
   }
 
-  // Etapa 5: Rule-based fallback
-  const fallback = safeRewrite(normalized);
+  // Etapa 5: Rule-based fallback (si es lo suficientemente bueno)
   if (isGoodEnough(fallback)) {
     return {
       id: activity.id, title: activity.title,
       originalDescription: original, newDescription: fallback,
       method: 'rule-based', charsBefore, charsAfter: fallback.length,
     };
+  }
+
+  // fallback final a structured (si aplica, para evitar deshechar texto útil)
+  if (canParseStructured(normalized)) {
+    const parsed = parseStructured(normalized);
+    if (parsed) {
+      const structuredDesc = buildDescription(parsed);
+      if (structuredDesc.length >= 20) {
+        return {
+          id: activity.id, title: activity.title,
+          originalDescription: original, newDescription: structuredDesc,
+          method: 'structured', charsBefore, charsAfter: structuredDesc.length,
+        };
+      }
+    }
   }
 
   // Etapa 6: IA solo si está habilitada y el fallback fue insuficiente
@@ -254,6 +270,7 @@ async function processActivity(
   }
 
   // Si el fallback es demasiado corto pero es lo mejor que tenemos → rule-based igual
+  // Nota: La validación final real de `finalRules.minDescriptionLength` se ejecuta en main()
   const safeFallback = fallback.length >= 10 ? fallback : normalized.substring(0, 160).trim();
   return {
     id: activity.id, title: activity.title,
@@ -309,24 +326,73 @@ async function main() {
   // Cargar actividades ACTIVE + PAUSED (las que se muestran al usuario)
   const activities = await prisma.activity.findMany({
     where: { status: { in: ['ACTIVE', 'PAUSED'] } },
-    select: { id: true, title: true, description: true },
+    select: { id: true, title: true, description: true, sourceUrl: true },
     orderBy: { createdAt: 'asc' },
     ...(limit ? { take: limit } : {}),
   });
 
   console.log(`📦 Actividades a procesar: ${activities.length}\n`);
 
+  // Extraer Lógica Adaptativa (Capa 1: Global metrics & Capa 2: Source Health cache map)
+  const latestMetrics = await prisma.contentQualityMetric.findFirst({
+    orderBy: { createdAt: 'desc' }
+  });
+  const adaptiveRules = getAdaptiveRules(latestMetrics as any);
+
+  const sourceHealthMap = new Map<string, number | null>();
+  const allHealths = await prisma.sourceHealth.findMany();
+  for (const h of allHealths) {
+    sourceHealthMap.set(h.source, h.score);
+  }
+
   // Inicializar Gemini (opcional)
   const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
   const genAI = apiKey && aiEnabled ? new GoogleGenerativeAI(apiKey) : null;
 
+  let sumMinLength = 0;
   const results: Result[] = [];
   const stats: Record<Method, number> = { structured: 0, 'rule-based': 0, ai: 0, skipped: 0 };
 
   for (const activity of activities) {
     process.stdout.write(`⟳ [${results.length + 1}/${activities.length}] ${activity.title.substring(0, 60)}... `);
 
-    const result = await processActivity(activity, genAI);
+    // Identificar dominio para Capa 2
+    let domain = 'unknown';
+    if (activity.sourceUrl) {
+      try { domain = new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch(e) {}
+    }
+    const sourceScore = sourceHealthMap.get(domain);
+    const sourceRules = getSourceRules(sourceScore);
+
+    // Crossover para Reglas Finales de Extracción (Prioridad fuente)
+    const finalRules = {
+      forceStructured: sourceRules.forceStructured || adaptiveRules.forceStructured,
+      minDescriptionLength: Math.max(
+        adaptiveRules.minDescriptionLength,
+        sourceRules.minDescriptionLength
+      )
+    };
+    sumMinLength += finalRules.minDescriptionLength;
+
+    console.info(JSON.stringify({
+      event: "adaptive_rules_applied",
+      source: domain,
+      score: sourceScore,
+      pctShort: latestMetrics?.pctShort,
+      pctNoise: latestMetrics?.pctNoise,
+      rules: finalRules,
+    }));
+
+    let result = await processActivity(activity, genAI, finalRules);
+
+    // Validación Final Estricta: si queda por debajo de las rules adaptativas de su dominio/entorno, se descarta estrepitosamente.
+    if (result.method !== 'skipped' && result.newDescription.length < finalRules.minDescriptionLength) {
+      console.log(`   🚨 descartado orgánicamente: no cumplió threshold dinámico de ${finalRules.minDescriptionLength} chars`);
+      result.method = 'skipped';
+      result.newDescription = result.originalDescription;
+      result.charsAfter = result.newDescription.length;
+    }
+
     results.push(result);
     stats[result.method]++;
 
@@ -380,6 +446,15 @@ async function main() {
   console.log('');
   console.log(`✅ Sin IA:           ${withoutAI} (${pct(withoutAI)}) — objetivo ≥ 80%`);
   console.log(`${parseFloat(pct(withoutAI)) >= 80 ? '🎯 OBJETIVO CUMPLIDO' : '⚠️  Por debajo del objetivo (80%)'}`);
+
+  console.info(JSON.stringify({
+    event: "adaptive_filter_summary",
+    totalProcessed: activities.length,
+    totalSkipped: stats.skipped,
+    discardRate: activities.length > 0 ? Number((stats.skipped / activities.length).toFixed(4)) : 0,
+    avgMinLength: activities.length > 0 ? Math.round(sumMinLength / activities.length) : 0,
+    timestamp: new Date().toISOString()
+  }));
 
   // =============================================================================
   // SEÑALES DE OBSERVABILIDAD — activan ambiguityScore si 2+ disparan

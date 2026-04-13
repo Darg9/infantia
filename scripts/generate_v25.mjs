@@ -142,7 +142,7 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 0, after: 1200 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Documento generado automaticamente por Antigravity (Google DeepMind) — HabitaPlan v0.11.0-S42 (commits f8bd1db + 6bf69b5)", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
+  children: [new TextRun({ text: "Documento generado automaticamente por Antigravity (Google DeepMind) — HabitaPlan v0.11.0-S42 (commits f8bd1db + a3d7dc9)", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
   alignment: AlignmentType.CENTER,
 }));
 children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -518,6 +518,7 @@ children.push(twoColTable(
     ["TypeScript", "0 errores (tsc --noEmit)"],
     ["npm audit", "3 moderate en @prisma/dev (dev-only, no produccion) — mantener hasta fix de Prisma"],
     ["Build", "OK — sin warnings criticos"],
+    ["Precios y Schema", "Hardening de normalizacion de precios (decimal.ts) y validador schema:check ACTIVOS"],
     ["console.* en produccion", "0 — migrado a createLogger(ctx) con tracking JSON legal"],
     ["Deployment", "Vercel ACTIVO en habitaplan.com — commit f8bd1db (09:18 AM COL, 2026-04-13)"],
     ["Centro de Seguridad", "ACTIVO — /seguridad + 3 subpaginas + 3 APIs PDF"],
@@ -559,6 +560,7 @@ children.push(threeColTable(
     ["v0.9.6-S38", "V23", "Filtros /actividades: 1 fila desktop, precio pills, modal mobile."],
     ["v0.9.8-S40", "V23", "Buscador mixto (acts+cats+ciudades), 3 bugs autocomplete. 889 tests."],
     ["v0.11.0-S42 (f8bd1db)", "V25", "Centro de Seguridad SSOT, PDFs Ley 1581 / SIC, Minor Bump. 889 tests."],
+    ["v0.11.0-S42 (a3d7dc9)", "V25", "Hardening critico estabilidad de precios y schema validator. 889 tests."],
   ],
   [25, 12, 63]
 ));
@@ -649,7 +651,7 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 400, after: 80 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Generado por Antigravity (Google DeepMind) el 2026-04-13 | Software: v0.11.0-S42 (commits f8bd1db + 6bf69b5) | 889 tests | 58 archivos | 0 errores TS", size: 16, font: "Arial", color: "BBBBBB" })],
+  children: [new TextRun({ text: "Generado por Antigravity (Google DeepMind) el 2026-04-13 | Software: v0.11.0-S42 (commits f8bd1db + a3d7dc9) | 889 tests | 58 archivos | 0 errores TS", size: 16, font: "Arial", color: "BBBBBB" })],
   alignment: AlignmentType.CENTER,
 }));
 

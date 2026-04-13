@@ -68,7 +68,7 @@ import { ScrapingStorage } from '../storage';
 // ---------------------------------------------------------------------------
 const actividadNLPBase: ActivityNLPResult = {
   title: 'Taller de arte para niños',
-  description: 'Taller creativo en el centro cultural',
+  description: 'Taller creativo en el centro cultural para todas las edades garantizando diversión.',
   categories: ['Arte'],
   confidenceScore: 0.9,
   minAge: 6,
@@ -434,16 +434,14 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
     expect(d.ageMax).toBeNull();           // maxAge ?? null
   });
 
-  it('description vacía se mapea a string vacío (branch || del campo description)', async () => {
+  it('description vacía ahora causa descarte en la validación (return string)', async () => {
     const dataConDescVacia: ActivityNLPResult = {
       ...actividadNLPBase,
       description: '',
     };
 
-    await storage.saveActivity(dataConDescVacia, 'https://ejemplo.com/descvacia');
-
-    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
-    expect(d.description).toBe('');
+    const result = await storage.saveActivity(dataConDescVacia, 'https://ejemplo.com/descvacia');
+    expect(result).toBe('DISCARDED_QUALITY');
   });
 
   it('ageMin undefined se mapea a null (branch ?? del campo minAge)', async () => {

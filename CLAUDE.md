@@ -211,8 +211,8 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 
 ## Estado actual (v0.11.0-S42 — Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **889 tests** en 58 archivos — `npm test` pasa en ~9s — 0 errores TypeScript
-- Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
+- **894 tests** en 59 archivos — `npm test` pasa en ~10s — 0 errores TypeScript
+- Cobertura: **>85% stmts / >85% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master)
 - BullMQ + Upstash Redis: OPERATIVO
@@ -237,6 +237,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 | DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright y falsa confianza. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP limitando la IA. UI con atribución exacta para asumir rol de "Agregador". Content Quality Dashboard midiendo degradación. | - |
 | DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | No afectan runtime ni comportamiento | Eliminar progresivamente en sprints de mantenimiento |
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
+| DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado y linting estricto (no .toNumber()), sumado a pre-validador `schema:check`. | - |
 
 ### Features v0.9.0 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

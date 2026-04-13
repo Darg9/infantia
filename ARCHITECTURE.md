@@ -574,8 +574,8 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 882 tests, 56 archivos, 0 fallos
-- **Cobertura:** 91.39% stmts / 85.90% branches / 88.09% funcs / 92.71% lines
+- **Estado actual:** 894 tests, 59 archivos, 0 fallos
+- **Cobertura:** >85% stmts / >85% branches / >85% funcs / >85% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`
 - **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests
@@ -648,6 +648,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Analytics In-House Zero-Dependencies | Evita dependencias de un tercero (GA, Mixpanel), no añade peso al bundle de Next.js, fail-silent con soporte JSONB |
 | Hybrid Ranking Node Cache | Resuelve inconsistencias en páginas profundas, ahorra queries a la DB forzando el conteo 1 vez por minuto en Node.js |
 | Mock Resilience Test Pattern | Proxy `fetchWithFallback` en pipeline inyectado que aísla playrigth vs cheerio sin que un engine rompa al otro |
+| Normalización Fuerte de Precios | `normalizePrice(value)` impone un parseo seguro a Prisma Decimal evitando Error 500s |
 
 ---
 

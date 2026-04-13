@@ -8,11 +8,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import type { Prisma } from '@/generated/prisma/client';
 
-type PrismaDecimal = number | { toNumber(): number } | null;
+type PrismaDecimal = number | string | { toNumber?: () => number; valueOf?: () => unknown } | null;
 
 function toNum(v: PrismaDecimal): number {
   if (v === null) return 0;
-  return typeof v === 'number' ? v : v.toNumber();
+  if (typeof v === 'number') return v;
+  if (typeof v === 'string') {
+    const parsed = Number(v);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  if (typeof v.toNumber === 'function') {
+    const parsed = v.toNumber();
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  if (typeof v.valueOf === 'function') {
+    const raw = v.valueOf();
+    const parsed = typeof raw === 'number' ? raw : Number(raw);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
 }
 
 function formatPrice(price: PrismaDecimal, currency: string, period: string | null): string {

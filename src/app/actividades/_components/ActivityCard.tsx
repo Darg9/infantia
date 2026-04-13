@@ -10,9 +10,9 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { activityPath } from '@/lib/activity-url';
 import { trackEvent } from '@/lib/track';
 
-// Tipo local inferido desde lo que devuelve listActivities
-// Prisma retorna price como Decimal (objeto con toNumber()), no como number primitivo
-type PrismaPrice = number | { toNumber(): number } | null;
+// Tipo local inferido desde lo que devuelve listActivities.
+// En producción puede llegar como number, string o Decimal serializado.
+type PrismaPrice = number | string | { toNumber?: () => number; valueOf?: () => unknown } | null;
 
 interface Activity {
   id: string;
@@ -58,9 +58,30 @@ function formatAge(ageMin: number | null, ageMax: number | null): string {
   return `Hasta ${ageMax} años`;
 }
 
+function toNumberValue(value: PrismaPrice): number | null {
+  if (value === null) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value === 'object') {
+    if (typeof value.toNumber === 'function') {
+      const parsed = value.toNumber();
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (typeof value.valueOf === 'function') {
+      const raw = value.valueOf();
+      const parsed = typeof raw === 'number' ? raw : Number(raw);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+  }
+  return null;
+}
+
 function formatPrice(price: PrismaPrice, currency: string, period: string | null): string {
-  if (price === null) return 'No disponible';
-  const numPrice = typeof price === 'number' ? price : price.toNumber();
+  const numPrice = toNumberValue(price);
+  if (numPrice === null) return 'No disponible';
   if (numPrice === 0 || period === 'FREE') return 'Gratis';
   const formatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency, minimumFractionDigits: 0 }).format(numPrice);
   const periodLabel: Record<string, string> = {

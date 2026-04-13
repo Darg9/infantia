@@ -85,12 +85,30 @@ function formatDate(dateStr: Date | string | null): string {
   });
 }
 
+function toNumberValue(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  if (typeof value === 'object') {
+    if ('toNumber' in value && typeof value.toNumber === 'function') {
+      const parsed = value.toNumber();
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    if ('valueOf' in value && typeof value.valueOf === 'function') {
+      const raw = value.valueOf();
+      const parsed = typeof raw === 'number' ? raw : Number(raw);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+  }
+  return null;
+}
+
 function formatPrice(price: unknown, currency: string, period: string | null): string {
-  if (price === null || price === undefined) return 'No disponible';
-  const num = typeof price === 'number' ? price
-    : typeof price === 'object' && price !== null && 'toNumber' in price
-    ? (price as { toNumber(): number }).toNumber()
-    : Number(price);
+  const num = toNumberValue(price);
+  if (num === null) return 'No disponible';
   if (num === 0 || period === 'FREE') return 'Gratis';
   const formatted = new Intl.NumberFormat('es-CO', {
     style: 'currency', currency, minimumFractionDigits: 0,
@@ -213,14 +231,10 @@ export default async function ActividadDetallePage({
     }),
     ...(priceLabel === 'Gratis'
       ? { isAccessibleForFree: true }
-      : activity.price != null && {
+        : activity.price != null && {
           offers: {
             '@type': 'Offer',
-            price: typeof activity.price === 'number'
-              ? activity.price
-              : typeof activity.price === 'object' && activity.price !== null && 'toNumber' in activity.price
-              ? (activity.price as { toNumber(): number }).toNumber()
-              : Number(activity.price),
+            price: toNumberValue(activity.price),
             priceCurrency: activity.priceCurrency,
             availability: 'https://schema.org/InStock',
           },

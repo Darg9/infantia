@@ -13,6 +13,36 @@
 
 **Solución:** Motor de scraping multi-fuente con NLP (Gemini 2.5 Flash) que normaliza, deduplica y clasifica actividades en una plataforma unificada.
 
+### Diagrama de Arquitectura Global
+
+```mermaid
+flowchart TD
+    %% Usuarios y UX
+    User([Usuario / Cuidador]) --> |"Interactúa (Filtros, Clics)"| NextJS
+    NextJS[Next.js App Router] --> |"SSR / RSC"| HybridCache[Node Híbrido TTL Cache]
+    HybridCache --> |"Limitado a max 200 / ttl:60s"| DB[(Superbase PostgreSQL)]
+
+    %% Tracker Analytics Zero-Dependency
+    NextJS -.-> |"Async Fail-Silent"| EdgeAnalytics[Endpoint /api/events]
+    EdgeAnalytics --> |"Guarda tracking JSONB"| DB
+
+    %% Ingesta (Cron / Admin)
+    Admin([Cron / Admin]) --> |"Dispara Ingesta"| Queue[BullMQ / Upstash]
+    Queue --> Worker[Scraping Worker]
+
+    %% Resilient Pipeline
+    subgraph Scraping Pipeline
+       Worker --> Proxy[Resilient Extraction Proxy]
+       Proxy --> |"1. Try Fast"| Cheerio(Cheerio SSR)
+       Proxy --> |"2. Try SPA Fallback"| Playwright(Playwright)
+       Cheerio -.-> |"Falla / Bloqueo"| Playwright
+    end
+
+    %% NLP e IA
+    Scraping Pipeline --> NLP{Google Gemini 2.5 Flash}
+    NLP --> |"Limpia, Clasifica y Formatea"| DB
+```
+
 ---
 
 ## 2. Stack Tecnológico

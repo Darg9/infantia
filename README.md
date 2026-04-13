@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.10.0-S43 | **Status:** Production | **Tests:** 882 passing / 56 files | **Coverage:** 91.39% stmts / 85.90% branches | **Quality Metrics:** ✅ Active
+**Version:** v0.11.0-S42 | **Status:** Production | **Tests:** 889 passing / 58 files | **Coverage:** 91.39% stmts / 85.90% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 
@@ -45,7 +45,8 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 | Database | PostgreSQL via Supabase + Prisma 7 (adapter-pg) |
 | Auth | Supabase Auth (SSR cookies) |
 | AI/NLP | Google Gemini 2.5 Flash (20 RPD free tier) |
-| Scraping | Playwright (Instagram) + Cheerio (web) + optional proxy (IPRoyal) |
+| Scraping | Resilient Proxy (Playwright + Cheerio Auto-Fallback) + optional proxy (IPRoyal) |
+| Analytics | Zero-Dependencies In-House Tracker (Fail-Silent Edge Route) |
 | Queue | BullMQ + Upstash Redis |
 | Email | Resend + react-email |
 | Maps | Leaflet + OpenStreetMap |
@@ -70,8 +71,8 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 🔒 **Admin Panel:** Sponsors CRUD, activity management, claims management, and **Content Quality Dashboard** (real-time metric observabality for ingestion erosion).
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
-- 📊 **Observable:** logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 882 unit tests (91.39% stmts / 85.90% branches), E2E tests
+- 📊 **Observable:** Native Analytics UI, logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
+- 🧪 **Well-tested:** 889 unit tests (91.39% stmts / 85.90% branches), E2E tests
 
 ## Commands
 

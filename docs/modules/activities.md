@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.9.8-S40
-**Última actualización:** 2026-04-09
+**Versión actual:** v0.11.0-S42
+**Última actualización:** Hoy
 
 ## ¿Qué hace?
 
@@ -11,7 +11,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| GET | `/api/activities` | No | Lista actividades con filtros y paginación |
+| GET | `/api/activities` | No | Lista actividades con filtros y paginación. **Usa Node TTL Cache (getCachedCount)** para no sobrecargar DB con conteos. |
 | POST | `/api/activities` | No | Crea una actividad |
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |

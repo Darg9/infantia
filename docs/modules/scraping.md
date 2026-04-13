@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.9.8-S40
-**Última actualización:** 2026-04-09
+**Versión actual:** v0.11.0-S42
+**Última actualización:** Hoy
 
 ## ¿Qué hace?
 
@@ -9,13 +9,14 @@ Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, la
 
 ## Flujos disponibles
 
-### Web scraping (Cheerio)
+### Web scraping (Resilient Proxy)
 
 ```
 URL semilla / sitemap XML
-   → CheerioExtractor descubre links (paginación automática o sitemap)
+   → ScrapingPipeline / Resilient Proxy (Intenta Cheerio primero)
+   → [Falló Cheerio por JS Dinámico/SPA?] → Auto-Fallback a Playwright
    → Filtrado por cache (URLs ya vistas)
-   → GeminiAnalyzer analiza en batches de 100 (CHUNK_SIZE=100 desde S34 — benchmark 200→100)
+   → GeminiAnalyzer analiza en batches de 100
    → Validación Zod (activityNLPResultSchema)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
@@ -60,7 +61,8 @@ ingest-sources.ts --queue
 
 | Archivo | Responsabilidad |
 |---|---|
-| `pipeline.ts` | Orquesta `runBatchPipeline()` y `runInstagramPipeline()` |
+| `pipeline.ts` | Orquesta la lógica e invoca al pipeline a través de resiliencia |
+| `resilience.ts` | **(NUEVO v0.11.0)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |
 | `types.ts` | Tipos y schemas Zod de validación |
 | `storage.ts` | Guarda actividades + deduplicación Nivel 1 (Jaccard >75%) |

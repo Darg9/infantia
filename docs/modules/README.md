@@ -7,10 +7,13 @@ Se actualiza en cada PR que toca ese módulo.
 
 | Módulo | Doc | Estado |
 |---|---|---|
-| scraping | [scraping.md](scraping.md) | ✅ v0.9.8-S40 |
-| activities | [activities.md](activities.md) | ✅ v0.9.8-S40 |
+| scraping | [scraping.md](scraping.md) | ✅ v0.11.0-S42 |
+| activities | [activities.md](activities.md) | ✅ v0.11.0-S42 |
+| product / ux | [product.md](product.md) | ✅ v0.11.0-S42 |
+| analytics | [analytics.md](analytics.md) | ✅ v0.11.0-S42 |
+| legal | [legal.md](legal.md) | ✅ v0.11.0-S42 |
 | providers | providers.md | 🔜 pendiente |
-| search | search.md | 🔜 pendiente |
+| search | search.md | *Ref. en product.md* |
 | verticals | verticals.md | 🔜 pendiente |
 | users | users.md | 🔜 pendiente |
 

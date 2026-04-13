@@ -170,6 +170,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.10.0-S41 | V24 | Centro de Seguridad SSOT, PDFs de Privacidad/Términos/Datos, 882 tests 100% |
 | v0.10.0-S42 | V24 | Backfill NLP 3-capas (Structured, rule-based, gemini), mitigación Copyright |
 | v0.10.0-S43 | V24 | Content Quality Dashboard (/admin/quality), UI con gráficas Recharts |
+| v0.11.0-S42 | V25 | Tracking Analytics Zero-Dependency, Resilience Extractor Playwright Fallback Proxy, Node Cache Hybrid Ranking. |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -205,10 +206,12 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Facets count (S40):** `getFacets()` en `page.tsx` usa `_count: { select: { activities: { where: { activity: buildWhere(filters, 'categoryId') } } } }` — el conteo refleja los filtros activos, no el total global.
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
+- **Testing Edge Cases (S42):** Cuando utilices `countCache` en Node.js o el `lastEventMap` en `track.ts`, los tests concurrentes de Vitest retendrán la memoria Map(). Asegurar `mockCount.clear()` o exponer un método `clearCountCacheForTests` para tests de unidad.
+- **Resilient Pipeline (S42):** Si fallan métodos del Pipeline por undefined de dependencias (ej. `this.playwrightExtractor`), revisar si tus proxies mockeados pasaron bien por `fetchWithFallback`. Siempre usar `vi.hoisted` antes del wrap.
 
-## Estado actual (v0.10.0-S43 — 2026-04-12)
+## Estado actual (v0.11.0-S42 — Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **882 tests** en 56 archivos — `npm test` pasa en ~8.5s — 0 errores TypeScript
+- **889 tests** en 58 archivos — `npm test` pasa en ~9s — 0 errores TypeScript
 - Cobertura: **91.39% stmts / 85.90% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master)

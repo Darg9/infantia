@@ -25,6 +25,11 @@ vi.mock('@/lib/db', () => ({
       create: mockCreate,
       update: mockUpdate,
     },
+    sourceHealth: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+      upsert: vi.fn().mockResolvedValue({}),
+    },
   },
 }));
 
@@ -36,6 +41,7 @@ import {
   updateActivity,
   deleteActivity,
   VALID_SORT_VALUES,
+  clearCountCacheForTests,
 } from '../activities.service';
 
 // ---------------------------------------------------------------------------
@@ -66,6 +72,7 @@ const actividadMock = {
 describe('listActivities()', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    clearCountCacheForTests();
     mockFindMany.mockResolvedValue([actividadMock]);
     mockCount.mockResolvedValue(1);
   });
@@ -107,7 +114,7 @@ describe('listActivities()', () => {
   });
 
   it('aplica skip y take para paginación', async () => {
-    await listActivities({ skip: 40, pageSize: 20 });
+    await listActivities({ skip: 40, pageSize: 20, sortBy: 'date' });
     const args = mockFindMany.mock.calls[0][0];
     expect(args.skip).toBe(40);
     expect(args.take).toBe(20);

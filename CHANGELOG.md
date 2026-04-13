@@ -13,6 +13,22 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S42] — Hoy (Product Analytics Zero-Dependencies + Hybrid Ranking Fixes)
+**Documento Fundacional: V25** | Rama: master | Commit: por generar
+
+### Features
+- **Zero-Dependencies Product Analytics**: Infraestructura de tracking nativa montada 100% sobre Prisma + Serverless, eliminando dependencia de GA/Mixpanel para mantener filosofía de *Zero Debt*.
+- **Modelo Event**: Nuevo modelo en PostgreSQL para capturar `page_view`, `activity_view`, `activity_click`, `outbound_click`, `search_applied` usando `JSONB` robusto.
+- **Tracker Universal**: Módulo en `src/lib/track.ts` fail-silent y asíncrono para emitir eventos sin bloquear la experiencia de usuario.
+- **Memoria Anti-Spam (Throttle)**: Arquitectura robusta implementada en memoria rápida para filtrar rebotes sintéticos sin necesidad de Redis/Rate Limits externos: 500ms `activity_click`, 1000ms `outbound_click`.
+
+### Fixes & Optimizations
+- **Consistencia Schema**: Migrado schema físico bloqueado por PgBouncer reconstruyéndolo manual y sincrónico al de Supabase, remediando types faltantes para `sourceHealth` y arreglando mocks en la pipeline de scraping.
+- **Hybrid Ranking Consistency**: Se introdujo un Cache Híbrido TTL (`getCachedCount`) en Node.js memoria sobre `prisma.activity.count` que garantiza una enumeración real de resultados consistentes al total, aislando queries concurrentes profundas y sobre-fetching.
+- **Test Integrity**: Pasando de regresiones críticas a Suite completa superada en verde (889 tests). Resiliencia del pipeline actualizada para pruebas mockeadas.
+
+---
+
 ## [v0.10.0-S41] — 2026-04-12 (Centro de Seguridad Legal SSOT + PDFs)
 **Documento Fundacional: V24** | Rama: master | Commit: `f8bd1db`
 

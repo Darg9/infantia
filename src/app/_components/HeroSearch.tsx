@@ -8,6 +8,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { trackEvent } from '@/lib/track';
 import { activityPath } from '@/lib/activity-url';
 import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
 
@@ -178,6 +179,10 @@ export default function HeroSearch() {
     const trimmed = q.trim();
     closeDropdown();
     saveToHistory(trimmed);
+    trackEvent({
+      type: "search_applied",
+      metadata: { query: trimmed }
+    });
     router.push(trimmed ? `/actividades?search=${encodeURIComponent(trimmed)}` : '/actividades');
   }
 

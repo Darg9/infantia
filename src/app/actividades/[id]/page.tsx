@@ -17,6 +17,8 @@ import { prisma } from '@/lib/db';
 import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
 import { ActivityDetailMap } from '@/components/ActivityDetailMap';
+import OutboundLink from '@/components/OutboundLink';
+import ActivityViewTracker from '@/components/ActivityViewTracker';
 import clsx from 'clsx';
 import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
 
@@ -244,6 +246,9 @@ export default async function ActividadDetallePage({
 
   return (
     <>
+      {/* Tracker Invisible de Visita Pura */}
+      <ActivityViewTracker activityId={id} />
+
       {/* JSON-LD: evento + breadcrumb */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
@@ -590,15 +595,14 @@ export default async function ActividadDetallePage({
 
             {/* CTA — link al origen */}
             {activity.sourceUrl && (
-              <a
+              <OutboundLink
+                activityId={id}
                 href={activity.sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
               >
               Ver sitio oficial
                 <span>↗</span>
-              </a>
+              </OutboundLink>
             )}
 
             {/* Favorito + Compartir */}
@@ -659,14 +663,13 @@ export default async function ActividadDetallePage({
               {activity.sourceUrl && (
                 <span>
                   Fuente:{' '}
-                  <a
+                  <OutboundLink
+                    activityId={id}
                     href={activity.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
                     className="text-gray-400 hover:text-orange-500 hover:underline transition-colors"
                   >
                     {(() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'fuente externa'; } })()}
-                  </a>{' '}(sitio oficial)
+                  </OutboundLink>{' '}(sitio oficial)
                 </span>
               )}
               {activity.sourceCapturedAt && (

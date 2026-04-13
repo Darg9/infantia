@@ -1,3 +1,5 @@
+"use client";
+
 // =============================================================================
 // ActivityCard — tarjeta de actividad para el grid de /actividades
 // =============================================================================
@@ -6,6 +8,7 @@ import clsx from 'clsx';
 import { getCategoryGradient, getCategoryEmoji } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { activityPath } from '@/lib/activity-url';
+import { trackEvent } from '@/lib/track';
 
 // Tipo local inferido desde lo que devuelve listActivities
 // Prisma retorna price como Decimal (objeto con toNumber()), no como number primitivo
@@ -254,7 +257,16 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
   // La tarjeta siempre enlaza a la página de detalle interna (URL canónica)
   return (
-    <a href={activityPath(activity.id, activity.title)} className="block h-full">
+    <a 
+      href={activityPath(activity.id, activity.title)} 
+      className="block h-full"
+      onClick={() => {
+        trackEvent({
+          type: "activity_click",
+          activityId: activity.id
+        });
+      }}
+    >
       {cardContent}
     </a>
   );

@@ -6,6 +6,7 @@ import { ScrapingCache } from './cache';
 import { ScrapingStorage } from './storage';
 import { ScrapingLogger } from './logger';
 import { createLogger } from '../../lib/logger';
+import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
 
 const log = createLogger('scraping:pipeline');
 
@@ -29,46 +30,54 @@ export class ScrapingPipeline {
     this.verticalSlug = options?.verticalSlug ?? 'kids';
   }
 
-  async runPipeline(url: string): Promise<ActivityNLPResult> {
-    log.info(`1. Iniciando extracción desde: ${url}`);
-
-    let extractionResult = await this.extractor.extract(url);
-
-    // Fallback a Playwright si Cheerio falló o devolvió texto insuficiente (SPA)
-    if (extractionResult.status === 'FAILED' || (extractionResult.sourceText ?? '').length < 50) {
-      log.warn('Cheerio devolvió texto insuficiente. Intentando con Playwright...');
-      if (!this.playwrightExtractor) {
-        this.playwrightExtractor = new PlaywrightExtractor();
+  async runPipeline(url: string, sourceHost?: string): Promise<ActivityNLPResult> {
+    log.info(`1. Iniciando extracción resiliente desde: ${url}`);
+    
+    let htmlContent = '';
+    const start = Date.now();
+    try {
+      const fallbackResult = await fetchWithFallback(url, 'WEBSITE', {
+        cheerio: () => this.extractor,
+        playwright: () => {
+          if (!this.playwrightExtractor) this.playwrightExtractor = new PlaywrightExtractor();
+          return this.playwrightExtractor;
+        }
+      });
+      htmlContent = fallbackResult.data;
+      
+      if (sourceHost) {
+        await updateSourceHealth(sourceHost, { success: true, responseTimeMs: fallbackResult.responseTime });
       }
-      const playwrightResult = await this.playwrightExtractor.extractWebText(url);
-      if (playwrightResult.status === 'SUCCESS') {
-        extractionResult = playwrightResult;
+    } catch (err: any) {
+      log.error(`[PIPELINE] Falló la extracción con fallbacks agotados: ${err.message}`);
+      if (sourceHost) {
+        await updateSourceHealth(sourceHost, { success: false, responseTimeMs: Date.now() - start });
       }
+      throw new Error(`[PIPELINE] Extracción abortada: ${err.message}`);
     }
 
-    if (extractionResult.status === 'FAILED' || !extractionResult.sourceText) {
-      throw new Error(`[PIPELINE] Falló la extracción inicial: ${extractionResult.error}`);
-    }
-
-    const textLength = extractionResult.sourceText.length;
+    const textLength = htmlContent.length;
     log.info(`2. Extracción exitosa. Longitud de texto crudo: ${textLength} caracteres`);
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
-    const finalData = await this.analyzer.analyze(extractionResult.sourceText, url);
+    const finalData = await this.analyzer.analyze(htmlContent, url);
 
     log.info(`4. Análisis IA completado con confianza: ${finalData.confidenceScore}`);
 
-    // Enriquecer con og:image extraída por el scraper (si Gemini no proveyó una)
-    if (!finalData.imageUrl && extractionResult.ogImage) {
-      finalData.imageUrl = extractionResult.ogImage;
-      log.info(`4b. og:image adjuntada desde scraper: ${extractionResult.ogImage}`);
-    }
-
+    // og:image no extraída en resilience proxy (para simplificar scope), NLP fallback handlea nullish.
     return finalData;
   }
 
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
     const { maxPages = 50, sitemapPatterns = [], concurrency = 1 } = opts;
+    
+    const host = new URL(listingUrl).hostname.replace('www.', '');
+    const { skip, reason } = await shouldSkipSource(host);
+    if (skip) {
+      log.warn(`Abortando BatchPipeline. Fuente ${host} está penalizada con status CRITICAL o por auto-recovery. Motivo: ${reason}`);
+      return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
+    }
+
     log.info(`\n[BATCH] ========== INICIO BATCH PIPELINE ==========`);
     log.info(`URL de listado: ${listingUrl}`);
     log.info(`Cache: ${this.cache.size} URLs ya scrapeadas`);
@@ -179,7 +188,7 @@ export class ScrapingPipeline {
       for (let i = 0; i < newUrls.length; i++) {
         const actUrl = newUrls[i];
         try {
-          const data = await this.runPipeline(actUrl);
+          const data = await this.runPipeline(actUrl, host);
           this.cache.add(actUrl, data.title);
           results.push({ url: actUrl, data });
         } catch (error: any) {
@@ -194,7 +203,7 @@ export class ScrapingPipeline {
         const batch = newUrls.slice(i, i + concurrency);
         const batchPromises = batch.map(async (actUrl) => {
           try {
-            const data = await this.runPipeline(actUrl);
+            const data = await this.runPipeline(actUrl, host);
             this.cache.add(actUrl, data.title);
             return { url: actUrl, data };
           } catch (error: any) {
@@ -267,6 +276,14 @@ export class ScrapingPipeline {
     const opts: InstagramExtractOptions = typeof options === 'number' ? { maxPosts: options } : options;
     const maxPosts = Math.min(Math.max(opts.maxPosts ?? 6, 1), 12);
     const contentMode = opts.contentMode ?? 'text';
+    
+    const host = new URL(profileUrl).hostname.replace('www.', ''); // 'instagram.com'
+    const { skip, reason } = await shouldSkipSource(host);
+    if (skip) {
+      log.warn(`Abortando Instagram Pipeline. Fuente ${host} está penalizada con status CRITICAL o por auto-recovery. Motivo: ${reason}`);
+      return { profileUrl, username: profileUrl, postsExtracted: 0, results: [] };
+    }
+
     log.info(`\n[IG-PIPELINE] ========== INICIO INSTAGRAM PIPELINE ==========`);
     log.info(`Perfil: ${profileUrl}`);
     log.info(`Max posts: ${maxPosts} | Content mode: ${contentMode}`);

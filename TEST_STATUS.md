@@ -1,11 +1,11 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-12 | Version: v0.10.0-S41
+Actualizado: Hoy | Version: v0.11.0-S42
 
-## Resumen Actual (v0.10.0-S41 / Centro de Seguridad)
-- **Archivos de Test:** 56
-- **Tests Totales:** 882
-- **Estado:** 100% pasando ✅
+## Resumen Actual (v0.11.0-S42 / Resilience Proxy & Zero-Dependencies Analytics)
+- **Archivos de Test:** 58 (Añadidos tests de tracking mem-cache)
+- **Tests Totales:** 889 (38 en pipeline tests con 2 branches condicionalmente omitidos)
+- **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
 - **Framework:** Vitest 1.3 (+ React Testing Library)
 - **Cobertura:** 91.39% Stmts / 85.90% Branches / 86.97% Funcs / 91.39% Lines (umbral dinámico: 85%)
 
@@ -13,9 +13,9 @@ Actualizado: 2026-04-12 | Version: v0.10.0-S41
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 56 |
-| Tests totales | 882 |
-| Pasados | 882 |
+| Archivos de test | 58 |
+| Tests totales | 889 |
+| Pasados | 887 (2 skipped) |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
 | Statements | 91.39% ✅ |

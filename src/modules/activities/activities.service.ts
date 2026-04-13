@@ -5,6 +5,7 @@
 import { prisma } from '@/lib/db';
 import type { Prisma } from '@/generated/prisma/client';
 import type { CreateActivityInput, UpdateActivityInput } from './activities.schemas';
+import { getDomainFromUrl, computeActivityScore } from './ranking';
 
 const activityIncludes = {
   provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
@@ -18,6 +19,52 @@ const activityIncludes = {
   vertical: { select: { id: true, slug: true, name: true } },
   categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
 } satisfies Prisma.ActivityInclude;
+
+// =========================================================================
+// TTL Caches para mitigar DB Pressure en Vercel Serverless
+// =========================================================================
+let cachedHealthData: { source: string; score: number }[] | null = null;
+let healthCacheExpiresAt = 0;
+const HEALTH_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos
+
+async function getCachedHealthData() {
+  if (!cachedHealthData || Date.now() > healthCacheExpiresAt) {
+    cachedHealthData = await prisma.sourceHealth.findMany({ select: { source: true, score: true } });
+    healthCacheExpiresAt = Date.now() + HEALTH_CACHE_TTL_MS;
+  }
+  return cachedHealthData;
+}
+
+const countCache = new Map<string, { value: number, expiresAt: number }>();
+const COUNT_CACHE_TTL_MS = 60 * 1000; // 60 segundos
+
+export async function getCachedCount(where: any): Promise<number> {
+  const key = JSON.stringify(where);
+  const now = Date.now();
+  const cached = countCache.get(key);
+
+  const isHit = Boolean(cached && cached.expiresAt > now);
+  
+  if (isHit) {
+    console.info(JSON.stringify({ event: "count_cache", hit: true, keyLength: key.length, timestamp: new Date().toISOString() }));
+    return cached!.value;
+  }
+
+  const count = await prisma.activity.count({ where });
+
+  countCache.set(key, {
+    value: count,
+    expiresAt: now + COUNT_CACHE_TTL_MS
+  });
+  
+  console.info(JSON.stringify({ event: "count_cache", hit: false, keyLength: key.length, timestamp: new Date().toISOString() }));
+
+  return count;
+}
+
+export function clearCountCacheForTests() {
+  countCache.clear();
+}
 
 export const VALID_SORT_VALUES = ['relevance', 'date', 'price_asc', 'price_desc', 'newest'] as const;
 export type SortValue = (typeof VALID_SORT_VALUES)[number];
@@ -140,35 +187,146 @@ export async function listActivities(params: ListParams) {
     andConditions.push({ id: { in: matchingIds } });
   }
 
+  // 1. Obtener Diccionario Global de Orígenes para ranking (Con caché TTL de 5 minutos)
+  const healthData = await getCachedHealthData();
+  const healthDict: Record<string, number> = {};
+  const badDomains: string[] = [];
+  
+  for (const h of healthData) {
+    healthDict[h.source] = h.score;
+    if (h.score < 0.3) {
+      badDomains.push(h.source);
+    }
+  }
+
+  // 2. Filtrado mínimo pre-SQL para aliviar presión y asegurar páginas completas
+  const isRelevanceSort = !params.sortBy || params.sortBy === 'relevance';
+  
+  if (isRelevanceSort && badDomains.length > 0) {
+    andConditions.push({
+      NOT: { sourceDomain: { in: badDomains } }
+    });
+  }
+
   if (andConditions.length) {
     where.AND = andConditions;
   }
 
-  // Ordenamiento dinámico
   const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(params.sortBy);
 
-  const [activities, total] = await Promise.all([
+  // 3. Estrategia híbrida: Sql Over-fetch 
+  // Multiplicamos por 3 el buffer y aseguramos que no se exceda el MAX_FETCH (200) para protección de Vercel.
+  const MAX_FETCH = 200;
+  
+  // Start from skip 0 to capture all elements on the left, up to requested UI chunk.
+  const takeAmount = isRelevanceSort 
+      ? Math.min(params.skip + (params.pageSize * 3), MAX_FETCH) 
+      : params.pageSize;
+  
+  const skipAmount = isRelevanceSort ? 0 : params.skip;
+
+  let rawActivities: any[] = [];
+  let finalTotal: number = 0;
+
+  // Ejecución asíncrona paralela: Obtener el pull y su metadata de conteo nativo con TTL Cacheado
+  [rawActivities, finalTotal] = await Promise.all([
     prisma.activity.findMany({
       where,
       include: activityIncludes,
       orderBy,
-      skip: params.skip,
-      take: params.pageSize,
+      skip: skipAmount,
+      take: takeAmount,
     }),
-    prisma.activity.count({ where }),
+    getCachedCount(where)
   ]);
 
-  return { activities, total };
+  console.info(JSON.stringify({
+    event: "count_query_executed",
+    total: finalTotal,
+    timestamp: new Date().toISOString()
+  }));
+
+  // 4. Evaluar y rankear en Memoria
+  let processedActivities = rawActivities.map(act => {
+    // Si viene legacy activity, usa el helper as fallback
+    const domain = act.sourceDomain || getDomainFromUrl(act.sourceUrl);
+    const healthScore = healthDict[domain] ?? 0.5; // Neutral fallback asegurado
+    const rankingScore = computeActivityScore(act, healthScore);
+    return { ...act, rankingScore, _domainTemp: domain }; 
+  });
+
+  // 5. Ordenamiento final e Invisibilidad (Safety net redundante)
+  let totalHidden = 0;
+  let diversified: any[] = processedActivities; // fallback para sort no-relevance
+  
+  if (isRelevanceSort) {
+    const initialCount = processedActivities.length;
+    
+    // Ocultar cutoff de ruido, pero mitigando el Incomplete Page
+    let filteredActivities = processedActivities.filter(a => a.rankingScore >= 0.3);
+    
+    // EDGE CASE: Fallback (relajar filtro temporalmente para no dejar huecos de layout UI vacios)
+    if (filteredActivities.length < params.pageSize) {
+      filteredActivities = processedActivities.filter(a => a.rankingScore >= 0.2);
+    }
+    
+    processedActivities = filteredActivities;
+    totalHidden = initialCount - processedActivities.length;
+
+    processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);
+
+    // Evitar dominancia usando Map (Max 5 items per source globales)
+    const MAX_ITEMS_PER_SOURCE = 5;
+    const grouped = new Map<string, number>();
+    diversified = [];
+
+    for (const item of processedActivities) {
+      const d = item._domainTemp || 'unknown';
+      const count = grouped.get(d) || 0;
+
+      if (count < MAX_ITEMS_PER_SOURCE) {
+        diversified.push(item);
+        grouped.set(d, count + 1);
+      }
+    }
+  }
+
+  // 6. Paginación final Slice 
+  const pagedActivities = isRelevanceSort
+    ? diversified.slice(params.skip, params.skip + params.pageSize).map(({ _domainTemp, ...rest }) => rest)
+    : diversified.map(({ _domainTemp, ...rest }) => rest);
+
+  // 8. LOGGING OBLIGATORIO
+  if (isRelevanceSort) {
+      console.info(JSON.stringify({
+        event: "ranking_applied",
+        fetched: rawActivities.length,
+        afterFilter: processedActivities.length,
+        afterDiversity: diversified.length,
+        returned: pagedActivities.length,
+        timestamp: new Date().toISOString()
+      }));
+  }
+
+  return { activities: pagedActivities, total: finalTotal };
 }
 
 export async function getActivityById(id: string) {
-  return prisma.activity.findUnique({
+  const activity = await prisma.activity.findUnique({
     where: { id },
     include: {
       ...activityIncludes,
       _count: { select: { favorites: true, ratings: true } },
     },
   });
+
+  if (!activity) return null;
+
+  const domain = getDomainFromUrl(activity.sourceUrl);
+  const healthData = await prisma.sourceHealth.findUnique({ where: { source: domain } });
+  const rankingScore = computeActivityScore(activity, healthData?.score);
+
+  return { ...activity, rankingScore };
 }
 
 /**
@@ -218,10 +376,16 @@ export async function getSimilarActivities(activityId: string, limit = 4) {
 
 export async function createActivity(data: CreateActivityInput) {
   const { categoryIds, ...activityData } = data;
+  let sourceDomain: string | undefined = undefined;
+
+  if (activityData.sourceUrl) {
+    sourceDomain = getDomainFromUrl(activityData.sourceUrl);
+  }
 
   return prisma.activity.create({
     data: {
       ...activityData,
+      sourceDomain,
       startDate: activityData.startDate ? new Date(activityData.startDate) : undefined,
       endDate: activityData.endDate ? new Date(activityData.endDate) : undefined,
       ...(categoryIds?.length && {
@@ -234,11 +398,17 @@ export async function createActivity(data: CreateActivityInput) {
 
 export async function updateActivity(id: string, data: UpdateActivityInput) {
   const { categoryIds, ...updateData } = data;
+  let sourceDomain: string | undefined = undefined;
+
+  if (updateData.sourceUrl) {
+    sourceDomain = getDomainFromUrl(updateData.sourceUrl);
+  }
 
   return prisma.activity.update({
     where: { id },
     data: {
       ...updateData,
+      sourceDomain,
       ...(updateData.startDate && { startDate: new Date(updateData.startDate) }),
       ...(updateData.endDate && { endDate: new Date(updateData.endDate) }),
       ...(categoryIds && {

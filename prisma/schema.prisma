@@ -16,37 +16,38 @@ datasource db {
 // =============================================================================
 
 model Activity {
-  id                String         @id @default(uuid())
-  title             String         @db.VarChar(255)
-  description       String         @db.Text
-  type              ActivityType      @default(ONE_TIME)
-  status            ActivityStatus    @default(DRAFT)
-  audience          ActivityAudience  @default(ALL)
+  id                String           @id @default(uuid())
+  title             String           @db.VarChar(255)
+  description       String           @db.Text
+  type              ActivityType     @default(ONE_TIME)
+  status            ActivityStatus   @default(DRAFT)
+  audience          ActivityAudience @default(ALL)
   startDate         DateTime?
   endDate           DateTime?
-  schedule          Json?          // { days: ["mon","wed"], start: "15:00", end: "17:00" }
+  schedule          Json?            // { days: ["mon","wed"], start: "15:00", end: "17:00" }
   ageMin            Int?
   ageMax            Int?
-  price             Decimal?       @db.Decimal(12, 2)
-  priceCurrency     String         @default("COP") @db.VarChar(3)
+  price             Decimal?         @db.Decimal(12, 2)
+  priceCurrency     String           @default("COP") @db.VarChar(3)
   pricePeriod       PricePeriod?
   capacity          Int?
   imageUrl          String?
   providerId        String
   locationId        String?
   verticalId        String
-  sourceType        SourceType     @default(MANUAL)
+  sourceType        SourceType       @default(MANUAL)
   sourceUrl         String?
-  sourcePlatform    String?        @db.VarChar(50)
-  sourceConfidence  Float          @default(0.5)
+  sourceDomain      String?          @db.VarChar(255)
+  sourcePlatform    String?          @db.VarChar(50)
+  sourceConfidence  Float            @default(0.5)
   sourceCapturedAt  DateTime?
-  isVerified        Boolean        @default(false)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  isVerified        Boolean          @default(false)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
 
-  provider   Provider  @relation(fields: [providerId], references: [id])
-  location   Location? @relation(fields: [locationId], references: [id])
-  vertical   Vertical  @relation(fields: [verticalId], references: [id])
+  provider   Provider          @relation(fields: [providerId], references: [id])
+  location   Location?         @relation(fields: [locationId], references: [id])
+  vertical   Vertical          @relation(fields: [verticalId], references: [id])
   categories ActivityCategory[]
   favorites  Favorite[]
   ratings    Rating[]
@@ -57,6 +58,7 @@ model Activity {
   @@index([locationId])
   @@index([startDate])
   @@index([status, verticalId, startDate])
+  @@index([sourceDomain])
   @@map("activities")
 }
 
@@ -116,19 +118,19 @@ model User {
 }
 
 model Child {
-  id              String   @id @default(uuid())
-  userId          String
-  name            String   @db.VarChar(100)
-  birthDate       DateTime @db.Date
-  gender          String?  @db.VarChar(20)
-  interests       Json     @default("[]")
+  id             String   @id @default(uuid())
+  userId         String
+  name           String   @db.VarChar(100)
+  birthDate      DateTime @db.Date
+  gender         String?  @db.VarChar(20)
+  interests      Json     @default("[]")
   // Consentimiento parental — Ley 1581 de 2012
-  consentGivenAt  DateTime
-  consentGivenBy  String   // userId del padre/tutor que aceptó
-  consentType     String   @default("parental") @db.VarChar(20) // 'parental' | 'self' (futuro Escenario B)
-  consentText     String   @db.Text // texto exacto mostrado al momento del consentimiento
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  consentGivenAt DateTime
+  consentGivenBy String   // userId del padre/tutor que aceptó
+  consentType    String   @default("parental") @db.VarChar(20) // 'parental' | 'self' (futuro Escenario B)
+  consentText    String   @db.Text // texto exacto mostrado al momento del consentimiento
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -158,15 +160,15 @@ model City {
 }
 
 model Location {
-  id                          String  @id @default(uuid())
-  name                        String  @db.VarChar(255)
-  address                     String  @db.VarChar(500)
-  neighborhood                String? @db.VarChar(100)
-  cityId                      String
-  latitude                    Decimal @db.Decimal(10, 8)
-  longitude                   Decimal @db.Decimal(11, 8)
-  isVirtual                   Boolean @default(false)
-  expirationHoursAfterStart   Int?    // horas tras startDate para expirar si no hay endDate; null = usar config fuente o default (3h)
+  id                        String  @id @default(uuid())
+  name                      String  @db.VarChar(255)
+  address                   String  @db.VarChar(500)
+  neighborhood              String? @db.VarChar(100)
+  cityId                    String
+  latitude                  Decimal @db.Decimal(10, 8)
+  longitude                 Decimal @db.Decimal(11, 8)
+  isVirtual                 Boolean @default(false)
+  expirationHoursAfterStart Int?    // horas tras startDate para expirar si no hay endDate; null = usar config fuente o default (3h)
 
   city       City               @relation(fields: [cityId], references: [id])
   activities Activity[]
@@ -192,15 +194,15 @@ model ProviderLocation {
 // =============================================================================
 
 model Vertical {
-  id              String  @id @default(uuid())
-  slug            String  @unique @db.VarChar(50)
-  name            String  @db.VarChar(100)
-  description     String  @db.Text
-  targetAudience  String  @db.VarChar(255)
-  icon            String? @db.VarChar(50)
-  color           String? @db.VarChar(7)
-  isActive        Boolean @default(true)
-  config          Json    @default("{}")
+  id             String  @id @default(uuid())
+  slug           String  @unique @db.VarChar(50)
+  name           String  @db.VarChar(100)
+  description    String  @db.Text
+  targetAudience String  @db.VarChar(255)
+  icon           String? @db.VarChar(50)
+  color          String? @db.VarChar(7)
+  isActive       Boolean @default(true)
+  config         Json    @default("{}")
 
   activities      Activity[]
   categories      Category[]
@@ -291,22 +293,22 @@ model PushSubscription {
 // =============================================================================
 
 model ScrapingSource {
-  id            String            @id @default(uuid())
-  name          String            @db.VarChar(255)
+  id            String          @id @default(uuid())
+  name          String          @db.VarChar(255)
   platform      ScrapingPlatform
   url           String
   cityId        String
   verticalId    String
-  scraperType   String            @db.VarChar(50)
-  scheduleCron  String            @db.VarChar(50)
-  isActive      Boolean           @default(true)
+  scraperType   String          @db.VarChar(50)
+  scheduleCron  String          @db.VarChar(50)
+  isActive      Boolean         @default(true)
   lastRunAt     DateTime?
   lastRunStatus ScrapingStatus?
   lastRunItems  Int?
   config        Json?
-  notes         String?           @db.Text
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  notes         String?         @db.Text
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   city     City         @relation(fields: [cityId], references: [id])
   vertical Vertical     @relation(fields: [verticalId], references: [id])
@@ -336,10 +338,10 @@ model ScrapingLog {
 }
 
 model ScrapingCache {
-  url        String   @id
-  title      String   @db.VarChar(500)
-  source     String   @db.VarChar(100)  // nombre de la fuente o 'unknown'
-  scrapedAt  DateTime @default(now())
+  url       String   @id
+  title     String   @db.VarChar(500)
+  source    String   @db.VarChar(100)
+  scrapedAt DateTime @default(now())
 
   @@index([source])
   @@index([scrapedAt])
@@ -358,10 +360,10 @@ enum ActivityType {
 }
 
 enum ActivityAudience {
-  KIDS    // Solo niños
-  FAMILY  // Toda la familia
-  ADULTS  // Solo adultos
-  ALL     // Aplica a todos (default para datos existentes)
+  KIDS
+  FAMILY
+  ADULTS
+  ALL
 }
 
 enum ActivityStatus {
@@ -385,7 +387,7 @@ enum SourceType {
 }
 
 // =============================================================================
-// Métricas / Analytics
+// Analytics / Metrics
 // =============================================================================
 
 model ActivityView {
@@ -419,8 +421,7 @@ model ContentQualityMetric {
   pctNoise       Float    @map("pct_noise")
   pctPromo       Float    @map("pct_promo")
   totalProcessed Int      @map("total_processed")
-
-  source         String?  @map("source") 
+  source         String?  @map("source")
   pipelineStage  String?  @map("pipeline_stage")
 
   @@map("content_quality_metrics")
@@ -441,6 +442,10 @@ model Sponsor {
   @@map("sponsors")
 }
 
+// =============================================================================
+// Provider Claims
+// =============================================================================
+
 model ProviderClaim {
   id         String      @id @default(uuid())
   providerId String
@@ -451,12 +456,17 @@ model ProviderClaim {
   status     ClaimStatus @default(PENDING)
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-  provider   Provider    @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
 
   @@index([providerId])
   @@index([status])
   @@map("provider_claims")
 }
+
+// =============================================================================
+// Enums (continued)
+// =============================================================================
 
 enum ClaimStatus {
   PENDING
@@ -493,4 +503,45 @@ enum ScrapingStatus {
   SUCCESS
   PARTIAL
   FAILED
+}
+
+// =============================================================================
+// Source Health (Ranking Engine)
+// =============================================================================
+
+model SourceHealth {
+  id            String    @id @default(uuid())
+  source        String    @unique @db.VarChar(255)
+  successCount  Int       @default(0) @map("success_count")
+  errorCount    Int       @default(0) @map("error_count")
+  lastSuccessAt DateTime? @map("last_success_at")
+  lastErrorAt   DateTime? @map("last_error_at")
+  avgResponseMs Int       @default(0) @map("avg_response_ms")
+  score         Float     @default(1.0)
+  status        String    @default("healthy") @db.VarChar(50)
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  @@index([source])
+  @@index([score])
+  @@map("source_health")
+}
+
+// =============================================================================
+// Product Analytics (Zero Dependencies Event Tracking)
+// =============================================================================
+
+model Event {
+  id         String   @id @default(uuid())
+  type       String   @db.VarChar(100)
+  activityId String?  @db.VarChar(255)
+  path       String?  @db.Text
+  metadata   Json?
+  userAgent  String?  @db.Text
+  ip         String?  @db.VarChar(50)
+  createdAt  DateTime @default(now())
+
+  @@index([type])
+  @@index([activityId])
+  @@index([createdAt])
+  @@map("events")
 }

@@ -273,15 +273,32 @@ async function runQueue(sources: Source[], maxPages: number) {
   console.log(`   Páginas máx por fuente: ${maxPages}`);
   console.log(`   Asegúrate de que el worker esté corriendo: npx tsx scripts/run-worker.ts\n`);
 
+  const { prisma } = require('../src/lib/db');
+  const healthData = await prisma.sourceHealth.findMany({ select: { source: true, score: true } });
+  const healthDict: Record<string, number> = {};
+  for (const h of healthData) {
+    healthDict[h.source] = h.score;
+  }
+
   for (const source of sources) {
+    const host = new URL(source.url).hostname.replace('www.', '');
+    const score = healthDict[host] ?? 0.5; // neutral fallback
+    
+    // Asignación de prioridad BullMQ dinámica:
+    // 1: Alta, 2: Normal, 3: Baja
+    let priority = 2;
+    if (score > 0.8) priority = 1;
+    else if (score < 0.4) priority = 3;
+
     const id = await enqueueBatchJob({
       url:             source.url,
       cityName:        source.cityName ?? 'Bogotá',
       verticalSlug:    source.verticalSlug ?? 'kids',
       maxPages,
       sitemapPatterns: source.sitemapPatterns,
-    });
-    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id}`);
+    }, { priority });
+    
+    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id} (Prioridad: ${priority})`);
   }
 
   console.log(`\n  ${sources.length} jobs encolados. El worker los procesa secuencialmente.\n`);

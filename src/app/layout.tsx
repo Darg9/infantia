@@ -56,6 +56,8 @@ export const metadata: Metadata = {
   },
 };
 
+import AnalyticsTracker from "@/components/AnalyticsTracker";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -66,6 +68,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <AnalyticsTracker />
         <AuthProvider>
           <div className="flex flex-col min-h-screen">
             <Header />

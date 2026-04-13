@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.10.0-S41 | Actualizado: 2026-04-12
+> Versión: v0.11.0-S42 | Actualizado: Hoy
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -95,6 +95,7 @@ habitaplan/
 │   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.9.1)
 │   │           │   └── [id]/             # PATCH approve / reject
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
+│   │           ├── analytics/             # Endpoint POST para ingestar eventos de Product Analytics (page_view, clics)
 │   │           ├── quality/               # Content Quality Dashboard — UI/UX Métricas de ingesta (NUEVO v0.10.0)
 │   │           └── scraping/
 │   │               ├── sources/           # CRUD de fuentes de scraping
@@ -108,10 +109,11 @@ habitaplan/
 │   │   ├── users/                  # Gestión de usuarios
 │   │   └── verticals/              # Verticales del negocio
 │   │
-│   ├── lib/                        # Utilidades compartidas
+│   lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
 │   │   ├── auth.ts                 # Helpers de Supabase Auth (getSession, requireRole)
 │   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.9.0)
+│   │   ├── track.ts                # Motor de Analytics In-House con throttle (NUEVO v0.11.0)
 │   │   ├── ratings.ts              # recalcProviderRating() — agrega ratingAvg/Count en Provider (NUEVO v0.9.1)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
@@ -613,6 +615,9 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Sentry condicional (solo si SENTRY_DSN) | Sin var = cero overhead; con var = error tracking completo sin cambios de código |
 | Filtro pre-Gemini de URLs binarias | Ahorra cuota del free tier (20 RPD) evitando procesar .jpg/.pdf/.mp4 |
 | `--channel` en ingest-sources.ts | Permite ejecutar solo redes sociales o solo web sin listar fuentes manualmente |
+| Analytics In-House Zero-Dependencies | Evita dependencias de un tercero (GA, Mixpanel), no añade peso al bundle de Next.js, fail-silent con soporte JSONB |
+| Hybrid Ranking Node Cache | Resuelve inconsistencias en páginas profundas, ahorra queries a la DB forzando el conteo 1 vez por minuto en Node.js |
+| Mock Resilience Test Pattern | Proxy `fetchWithFallback` en pipeline inyectado que aísla playrigth vs cheerio sin que un engine rompa al otro |
 
 ---
 

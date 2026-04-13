@@ -214,6 +214,24 @@ El pipeline de ingesta cuenta con un flujo estricto de **mitigación legal/copyr
 
 Para mantener total monitoreo sobre las fuentes, cada bloque ingestado se inserta temporalmente en la BD como un reporte de degradación (`ContentQualityMetric`) visible en `/admin/quality`. Evalúa % Cortas, % Ruido y % Promo de los strings.
 
+## Curaduría Adaptativa (NUEVO v0.11.0)
+El Pipeline cuenta con un **Filtro Adaptativo Inteligente** que evalúa dinámicamente si debe descartar una actividad antes de guardarla.
+Cruza la Calidad Global del sistema con la métrica de Salud de la Fuente (`SourceHealth`).
+
+Si una actividad falla el filtro adaptativo (`Math.max(adaptive, source)` para la longitud mínima de caracteres valiosos), se descarta con `method: "skipped"`, logrando **Trazabilidad sin Persistencia**.
+
+### Monitoring Toolkit (Log: `adaptive_filter_summary`)
+Parámetros a monitorear desde PM2/Vercel (evento `adaptive_filter_summary`):
+
+- **discardRate** ideal: `0.10 – 0.35`
+  - `< 0.05` → filtro débil (under-filtering). Acción: endurecer `normalize`.
+  - `> 0.50` → filtro agresivo (riesgo de over-filtering). Acción: revisar umbrales de Sources de baja salud.
+- **avgMinLength** ideal: `45 – 65`
+  - `> 75` → El sistema está siendo ultra severo globalmente (probablemente impulsado por una crisis histórica de ruido).
+  - `< 40` → El sistema está confiado y dejando pasar todo contenido pobre.
+
+Esta lógica descansa de forma determinista en `adaptive-rules.ts`.
+
 ## Deduplicación
 
 3 niveles independientes:

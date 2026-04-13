@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.9.8-S40 | **Fecha:** 2026-04-09
+**Version:** v0.11.0-S42 | **Fecha:** 2026-04-13
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.9.8-S40)
+## Cobertura actual (v0.11.0-S42)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -68,7 +68,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.9.3-S32: 90.95% stmts / 85.69% branches / 86.97% funcs / 92.41% lines | 832 tests | 54 archivos**
+**Total v0.11.0-S42: 91.39% stmts / 85.90% branches / 58 archivos | 889 tests**
 
 ---
 
@@ -142,7 +142,7 @@ npx vitest run <archivo>  # Test especifico
 
 ## Checklist por PR
 
-- [ ] `npm test` pasa (783+ tests)
+- [ ] `npm test` pasa (889+ tests)
 - [ ] `npm run test:coverage` supera 85% branches
 - [ ] Sin skip/todo sin justificacion
 - [ ] Happy path + al menos 1 caso de error por funcion publica

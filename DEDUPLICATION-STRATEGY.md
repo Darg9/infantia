@@ -7,8 +7,8 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.10.0-S41 — 2026-04-12):**
-- ~296 actividades (~44 activas / ~252 expiradas — 0% duplicados exactos)
+**Estado Actual (v0.11.0-S42 — Hoy):**
+- ~275 actividades en DB
 - Protección automática integrada en `ScrapingStorage`
 - 20 web + 12 Instagram (10 Bogotá + 2 Medellín) + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
 - **Caché dual:** `ScrapingCache` persiste URLs en BD (`scraping_cache`) + disco — evita re-scrapear entre máquinas

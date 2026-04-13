@@ -7,31 +7,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import type { Prisma } from '@/generated/prisma/client';
+import { normalizePrice } from '@/lib/decimal';
 
 type PrismaDecimal = number | string | { toNumber?: () => number; valueOf?: () => unknown } | null;
 
-function toNum(v: PrismaDecimal): number {
-  if (v === null) return 0;
-  if (typeof v === 'number') return v;
-  if (typeof v === 'string') {
-    const parsed = Number(v);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  if (typeof v.toNumber === 'function') {
-    const parsed = v.toNumber();
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  if (typeof v.valueOf === 'function') {
-    const raw = v.valueOf();
-    const parsed = typeof raw === 'number' ? raw : Number(raw);
-    return Number.isFinite(parsed) ? parsed : 0;
-  }
-  return 0;
-}
-
 function formatPrice(price: PrismaDecimal, currency: string, period: string | null): string {
   if (price === null) return '';
-  const n = toNum(price);
+  const n = normalizePrice(price) ?? 0;
   if (n === 0 || period === 'FREE') return 'Gratis';
   return new Intl.NumberFormat('es-CO', {
     style: 'currency', currency, minimumFractionDigits: 0,
@@ -144,8 +126,8 @@ export async function GET(req: NextRequest) {
       .map((r) => ({
         id:           r.id,
         title:        r.title,
-        lat:          toNum(r.location!.latitude  as PrismaDecimal),
-        lng:          toNum(r.location!.longitude as PrismaDecimal),
+        lat:          normalizePrice(r.location!.latitude) ?? 0,
+        lng:          normalizePrice(r.location!.longitude) ?? 0,
         category:     r.categories[0]?.category.name ?? null,
         locationName: r.location!.neighborhood ?? r.location!.name,
         priceLabel:   formatPrice(r.price as PrismaDecimal, r.priceCurrency, r.pricePeriod),

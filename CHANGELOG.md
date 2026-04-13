@@ -10,6 +10,8 @@ Relación con Documento Fundacional:
 ---
 
 ## [Unreleased]
+- **Hardening crítico**: mitigación generalizada de Errores 500 por serialización de decimales de precio (`normalizePrice` vía `decimal.ts`, refactor UI/API, suite dedicada de test 100% pasando e inspección continua ESLint previniendo usos directos).
+- **Tool preventivo**: herramienta custom para validar consistencia y prevenir drift de schema Prisma vs DB antes del build (`schema:check`).
 
 ---
 

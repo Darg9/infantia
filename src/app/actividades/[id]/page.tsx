@@ -21,6 +21,7 @@ import OutboundLink from '@/components/OutboundLink';
 import ActivityViewTracker from '@/components/ActivityViewTracker';
 import clsx from 'clsx';
 import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
+import { normalizePrice } from '@/lib/decimal';
 
 export async function generateMetadata({
   params,
@@ -85,29 +86,8 @@ function formatDate(dateStr: Date | string | null): string {
   });
 }
 
-function toNumberValue(value: unknown): number | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === 'number') return Number.isFinite(value) ? value : null;
-  if (typeof value === 'string') {
-    const parsed = Number(value);
-    return Number.isFinite(parsed) ? parsed : null;
-  }
-  if (typeof value === 'object') {
-    if ('toNumber' in value && typeof value.toNumber === 'function') {
-      const parsed = value.toNumber();
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-    if ('valueOf' in value && typeof value.valueOf === 'function') {
-      const raw = value.valueOf();
-      const parsed = typeof raw === 'number' ? raw : Number(raw);
-      return Number.isFinite(parsed) ? parsed : null;
-    }
-  }
-  return null;
-}
-
 function formatPrice(price: unknown, currency: string, period: string | null): string {
-  const num = toNumberValue(price);
+  const num = normalizePrice(price);
   if (num === null) return 'No disponible';
   if (num === 0 || period === 'FREE') return 'Gratis';
   const formatted = new Intl.NumberFormat('es-CO', {
@@ -234,7 +214,7 @@ export default async function ActividadDetallePage({
         : activity.price != null && {
           offers: {
             '@type': 'Offer',
-            price: toNumberValue(activity.price),
+            price: normalizePrice(activity.price),
             priceCurrency: activity.priceCurrency,
             availability: 'https://schema.org/InStock',
           },

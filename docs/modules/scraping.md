@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S45
-**Última actualización:** Hoy
+**Versión actual:** v0.9.3 (Alineado con v0.11.0-S45)
+**Última actualización:** 14 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -17,7 +17,8 @@ URL semilla / sitemap XML
    → [Falló Cheerio por JS Dinámico/SPA?] → Auto-Fallback a Playwright
    → Filtrado por cache (URLs ya vistas)
    → GeminiAnalyzer analiza en batches de 100
-   → Validación Zod (activityNLPResultSchema)
+   → Normalización Base (Spam/Reglas Cortas/Validation) Vía Data Pipeline Core v1
+   → Validación Zod (activityNLPResultSchema) Enriquecido con `Environment` (INDOOR/OUTDOOR/MIXED)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
    → Cache actualizado
@@ -66,6 +67,7 @@ ingest-sources.ts --queue
 | Archivo | Responsabilidad |
 |---|---|
 | `pipeline.ts` | Orquesta la lógica e invoca al pipeline a través de resiliencia |
+| `data-pipeline.ts` | **(NUEVO v0.9.3)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
 | `resilience.ts` | **(NUEVO v0.11.0)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |
 | `types.ts` | Tipos y schemas Zod de validación |
@@ -248,6 +250,21 @@ Parámetros a monitorear desde PM2/Vercel (evento `adaptive_filter_summary`):
 | avgMinLength <40 | 🟡 bajo     | endurecer reglas         |
 
 Esta lógica descansa de forma determinista en `adaptive-rules.ts`.
+
+## Diccionario Maestro de Categorías (Data Pipeline V1)
+Todo flujo de Ingesta, posterior al scraping NLP, está obligado a cruzar el `data-pipeline.ts`, el cual sanitiza el vector crudo de categorías que exporta Gemini hacia **10 Buckets Estrictos**:
+1. `Arte`
+2. `Deporte`
+3. `Ciencia`
+4. `Aire Libre`
+5. `Idiomas`
+6. `Música`
+7. `Juegos`
+8. `Talleres`
+9. `Eventos`
+10. `General`
+
+Cualquier variante externa (ej. "Taller de pintura al óleo") colapsará atómicamente al grupo correspondiente ("Arte", "Talleres") antes de ser introducida a PostgreSQL. Esta decisión elimina la "Basura Nominal" logrando resultados de búsqueda exactos y limpios.
 
 ## Deduplicación
 

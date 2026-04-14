@@ -1,6 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.11.0-S45
+**Versión:** ✅ v0.9.3 (Alineado con v0.11.0-S45)
+**Última actualización:** 14 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -15,19 +16,21 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 
 El buscador está diseñado para proveer una sugerencia fluida de resultados.
 - **Mix de Resultados**: Muestra hasta 5 entidades agrupadas (3 Actividades, 1 Categoría, 1 Ciudad). Esto evita que una categoría inunde y tape resultados directos.
-- **Tolerancia a "Fuzzy Matching" (pg_trgm)**: Soporta errores ortográficos e inversión de sílabas. Configurado a `similarity > 0.2` en Prisma `$queryRaw` para no quebrar la DB con comodines `%`.
+- **Búsqueda Avanzada Híbrida (`Search Engine V1`)**: Combina la flexibilidad de `pg_trgm` (tolerancia a errores ortográficos e inversión de sílabas, `similarity > 0.2`) con una normalización estricta mediante TypeScript. Esta estrategia previene el quiebre de base de datos causado por wildcards masivos `%` y pondera los puntajes antes de regresar los resultados.
+- **Normalización de Queries**: Tokeniza la entrada del usuario omitiendo "stopwords", colapsando espacios y reduciendo a la raíz semántica para una mejor correlación.
 - **LRU Cache & History**: Se guarda estado de sesión en caché usando `sessionStorage` (Búsquedas recientes).
 - **Control de Carreras Web (Aborts)**: El frontend siempre incluye un `AbortController` debounced (300ms) que frena queries viejos al tipear muy rápido.
+- **Fallback UX Inteligente**: Si la búsqueda arroja `0 resultados`, el motor atrapa el evento y arroja heurísticas de fallback (Ej: "Intenta con menos palabras", o resultados recomendados globales).
 
 ## 📈 Lógica de Ranking Algorítmico y Health Source
 
 Todo el sistema de listing no exhibe los "elementos más nuevos", sino "Los Elementos de Más Alta Calidad":
 
-El resultado final evaluado localmente (vía map memory) por _Actividad_ resulta de:
-- `50% Relevancia`: Concordancia estricta del NLP de contenido al perfil del listado.
-- `20% Freshness (Recency)`: Escalado inverso (1 punto para <3 días desde publicación; decae logarítmicamente hasta 0.2 a 30+ días).
+El resultado final evaluado localmente (vía map memory) por _Actividad_ resulta de una ponderación determinista `((textScore * 0.5) + (healthScore * 0.3) + (ctrBoost * 0.2))`:
+- `50% Relevancia (Text Score)`: Suma de proximidad `pg_trgm`, bonificando `+5.0` por el "Exact Match" y `+3.0` por el prefijo ilike.
 - `30% Health Trust Score`: Extraído de la evaluación del _SourceHealth_. Fuentes (DOMINIOS) con alto índice de fallos, falsos positivos o inestabilidad pierden posicionamiento global en la plataforma. Dominios con ratio < 0.3 terminan bloqueados.
-- `CTR Boost (+0 a +0.15)`: **(NUEVO v0.11.0-S44)** Señal de conversión real acumulada: `outbound_click / activity_view` por dominio. Boost se aplica como suma al score final. Tiers: >30% CTR → +0.15, >15% → +0.08, >5% → +0.03. Cold start safe (sin datos = 0).
+- `20% CTR Boost Impact`: **(NUEVO)** Señal de conversión real acumulada: `outbound_click / activity_view` por dominio. Boost se aplica como un impacto fundamental.
+- **Penalización por Edad Nula (-15%)**: Las actividades que el _Data Pipeline v1_ deja transitar aunque no haya parseado una edad mínima o máxima explícitamente (`null`), corren con una pérdida de posicionamiento masiva de `*= 0.85`, garantizando la máxima calidad algorítmica al tope del Search Engine.
 
 ## 🧩 Eventos UX Trackeados (Vínculo al módulo Analytics)
 

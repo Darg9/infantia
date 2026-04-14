@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.11.0-S47 | Actualizado: 2026-04-14
+> Versión: v0.9.3 | Actualizado: Hoy
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -36,19 +36,24 @@ flowchart TD
     CTRMetrics --> |"priority = min(health, ctr)"| Queue
     Queue --> Worker[Scraping Worker]
 
-    %% Resilient Pipeline + Adaptive Filter (S43)
+    %% Resilient Pipeline + Data Pipeline Core v1
     subgraph Scraping Pipeline
        Worker --> Proxy[Resilient Extraction Proxy]
        Proxy --> |"1. Try Fast"| Cheerio(Cheerio SSR)
        Proxy --> |"2. Try SPA Fallback"| Playwright(Playwright)
        Cheerio -.-> |"Falla / Bloqueo"| Playwright
-       Proxy --> AdaptiveFilter[Adaptive Quality Filter]
+       
+       %% NLP e IA
+       Proxy --> NLP{Google Gemini 2.5 Flash}
+       
+       %% Data Pipeline System V1
+       NLP --> DataPipeline[Data Pipeline Core v1]
+       DataPipeline --> |"Normalizar, Limpiar (Spam)"| DPValidator[Validar Reglas Críticas]
+       DPValidator --> |"Bucketing Categorías + Age Penalty"| Enriquecimiento[Enriquecer Environment/Price]
+       Enriquecimiento --> AdaptiveFilter[Adaptive Quality Filter]
        AdaptiveFilter --> |"minLength = max(global, source)"| StorageLayer[Storage + Deduplication]
     end
 
-    %% NLP e IA
-    Scraping Pipeline --> NLP{Google Gemini 2.5 Flash}
-    NLP --> |"Limpia, Clasifica y Formatea"| StorageLayer
     StorageLayer --> DB
 ```
 

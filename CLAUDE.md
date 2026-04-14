@@ -157,23 +157,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
 | v0.9.2 | V21 | Instagram 10 fuentes activas, --validate-only, ratings.test.ts, branches ✅ |
 | v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
-| v0.9.3-S31 | V22 | Caché dual disco+BD, ranking fuentes, fix Zod Gemini (null title/categories), 797 tests |
-| v0.9.3-S32 | V22 | Fix cobertura (cache.ts, source-scoring.ts tests), 832 tests, 85.69% branches ✅ |
-| v0.9.3-S33 | V23 | Rebrand Infantia → HabitaPlan, dominio habitaplan.com, RatingForm 3-step |
-| v0.9.3-S34 | V23 | URL classifier pre-Gemini (40% reducción), dashboard auto-pause, 863 tests |
-| v0.9.4-S35 | V23 | Multi-ciudad Medellín, admin toggle fuentes, source-pause-manager, 876 tests |
-| v0.9.4-S36 | V23 | Rebrand masivo UI (71 archivos), fix rutas CLAUDE.md, docs completos |
-| v0.9.5-S37 | V23 | Home UX: HeroSearch, ActivityCard compact, footer 4 cols, fix stats ACTIVE |
-| v0.9.6-S38 | V23 | Filtros /actividades: desktop 1 fila, precio pills, chips ✕, modal mobile |
-| v0.9.7-S39 | V23 | Header resultados: cabecera bg-white, subtítulo, spinner, FiltersSkeleton |
-| v0.9.8-S40 | V23 | Buscador mixto (acts+cats+ciudades), 3 bugs autocomplete, fix facets count |
-| v0.10.0-S41 | V24 | Centro de Seguridad SSOT, PDFs de Privacidad/Términos/Datos, 882 tests 100% |
-| v0.10.0-S42 | V24 | Backfill NLP 3-capas (Structured, rule-based, gemini), mitigación Copyright |
-| v0.10.0-S43 | V24 | Content Quality Dashboard (/admin/quality), UI con gráficas Recharts |
-| v0.11.0-S42 | V25 | Tracking Analytics Zero-Dependency, Resilience Extractor Playwright Fallback Proxy, Node Cache Hybrid Ranking. |
-| v0.11.0-S43 | V25 | Adaptive Quality Firewall activo (adaptive-rules.ts → storage.ts), filtro dinámico por métricas globales + SourceHealth. |
-| v0.11.0-S44 | V25 | CTR Feedback Loop: events → ranking → crawler. analytics/metrics.ts, ctrBoost en ranking, CTR priority en ingest. |
-| v0.11.0-S45 | V25 | ESLint freeze DEBT-02 (0 nuevos `any`), SPF resend.com, Privacy SSOT unificada, docs exhaustivo (45+ endpoints). |
+| v0.9.3-S31..44 | V22..V25 | Features iterativas de Pipeline, ranking híbrido y Rebrand Habitaplan completados listados abajo. |
+| v0.9.3 | V26 | Consolidación **Data Pipeline v1**, Search Engine v1 (penalización edad), zero-debt absoluto (60 tests files 100%). |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -217,10 +202,10 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.11.0-S45 — 2026-04-14)
+## Estado actual (v0.9.3 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **916 tests** en 60 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
-- Cobertura: **>91% stmts / >85% branches** ✅ (umbral 85%)
+- **916 tests** en 60 archivos — `npm test` pasa en ~12s — 0 errores TypeScript
+- Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://habitaplan-prod.vercel.app
 - BullMQ + Upstash Redis: OPERATIVO
@@ -238,6 +223,8 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **CTR Feedback Loop** activo — events → ranking (ctrBoost) → crawler (CTR priority en BullMQ)
 - **SEO landings:** 4 nuevas rutas dinámicas (categoria, publico, precio, ciudad) + breadcrumbs JSON-LD (S33)
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
+- **Data Pipeline v1:** Eliminación de `validation.ts` legacy a favor de `data-pipeline.ts` Atómico (Filtrado de Spam + 10 Categorías Estrictas).
+- **Search Engine v1:** Motor de Relevancia que penaliza falta de metadatos críticos como edad (`*= 0.85`).
 
 ### Known Technical Debt
 

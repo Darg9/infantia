@@ -191,15 +191,42 @@ describe('ScrapingStorage.saveBatchResults()', () => {
     expect(mocks.mockActivityCategoryUpsert).toHaveBeenCalledTimes(1);
   });
 
-  it('mapea "taller" como WORKSHOP en mapActivityType', async () => {
+  it('mapea "taller" como WORKSHOP en mapActivityType si está en el título', async () => {
     const batch = makeBatchResult([{
-      data: { ...actividadNLPBase, categories: ['Taller de pintura'] },
+      data: { ...actividadNLPBase, title: 'Taller creativo', categories: ['Talleres'] },
     }]);
     await storage.saveBatchResults(batch);
     const actividadCreada = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
     if (actividadCreada) {
       expect(actividadCreada.type).toBe('WORKSHOP');
     }
+  });
+
+  it('mapea "workshop" (inglés) como WORKSHOP', async () => {
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, title: 'Creative workshop for kids', categories: ['Arts'] },
+    }]);
+    await storage.saveBatchResults(batch);
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.type).toBe('WORKSHOP');
+  });
+
+  it('mapea "vacacional" como CAMP', async () => {
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, title: 'Club vacacional de verano', categories: ['Actividades'] },
+    }]);
+    await storage.saveBatchResults(batch);
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.type).toBe('CAMP');
+  });
+
+  it('mapea "camp" (inglés) como CAMP', async () => {
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, title: 'Summer camp for children', categories: ['Outdoor'] },
+    }]);
+    await storage.saveBatchResults(batch);
+    const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
+    expect(d.type).toBe('CAMP');
   });
 });
 
@@ -225,9 +252,9 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
     expect(result).toBeNull();
   });
 
-  it('mapea "campamento" como CAMP', async () => {
+  it('mapea "campamento" como CAMP si está en el título porque la categoría ahora es Aire Libre', async () => {
     const batch = makeBatchResult([{
-      data: { ...actividadNLPBase, categories: ['Campamento de verano'] },
+      data: { ...actividadNLPBase, title: 'Campamento de verano', categories: ['Aire Libre'] },
     }]);
     await storage.saveBatchResults(batch);
     const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
@@ -236,7 +263,7 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
 
   it('mapea categoría sin campamento ni taller como ONE_TIME', async () => {
     const batch = makeBatchResult([{
-      data: { ...actividadNLPBase, categories: ['Música', 'Danza'] },
+      data: { ...actividadNLPBase, title: 'Clase musical', categories: ['Música', 'Danza'] },
     }]);
     await storage.saveBatchResults(batch);
     const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;

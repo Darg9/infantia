@@ -132,7 +132,7 @@ export class ScrapingStorage {
       const activityData = {
         title: data.title.substring(0, 255),
         description: data.description || '',
-        type: this.mapActivityType(data.categories),
+        type: this.mapActivityType(data.categories, data.title),
         status: 'ACTIVE' as const,
         startDate: data.schedules?.[0]?.startDate ? new Date(data.schedules[0].startDate) : null,
         endDate: data.schedules?.[0]?.endDate ? new Date(data.schedules[0].endDate) : null,
@@ -284,12 +284,14 @@ export class ScrapingStorage {
   }
 
   /**
-   * Mapea categorías de Gemini a ActivityType del schema.
+   * Mapea el tipo de actividad (CAMP, WORKSHOP, RECURRING, ONE_TIME) combinando categorías nominales y el título.
    */
-  private mapActivityType(categories: string[]): 'RECURRING' | 'ONE_TIME' | 'CAMP' | 'WORKSHOP' {
-    const lower = categories.map((c) => c.toLowerCase());
-    if (lower.some((c) => c.includes('campamento'))) return 'CAMP';
-    if (lower.some((c) => c.includes('taller'))) return 'WORKSHOP';
+  private mapActivityType(categories: string[], title: string = ''): 'RECURRING' | 'ONE_TIME' | 'CAMP' | 'WORKSHOP' {
+    const textContext = `${categories.join(' ')} ${title}`.toLowerCase();
+    
+    if (textContext.includes('campamento') || textContext.includes('vacacional') || textContext.includes('camp')) return 'CAMP';
+    if (textContext.includes('taller') || textContext.includes('workshop')) return 'WORKSHOP';
+    
     // La mayoría de actividades culturales/eventos son ONE_TIME
     return 'ONE_TIME';
   }

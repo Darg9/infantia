@@ -1,15 +1,6 @@
-/**
- * HabitaPlan UI System — barrel export
- *
- * Uso:
- *   import { Button, Input, Card, Avatar } from '@/components/ui'
- *   import { ToastProvider, useToast }     from '@/components/ui'
- */
-
-export { Button, buttonVariants }               from './button'
-export { Input }                              from './input'
-export { Card }                               from './card'
-export { Avatar }                             from './avatar'
-export { Dropdown }                           from './dropdown'
-export { ToastProvider, useToast }            from './toast'
-export type { ToastType, ToastItem, ToastAPI } from './toast'
+// HabitaPlan Design System Components
+export { Button } from './button'
+export { Input } from './input'
+export { Card } from './card'
+export { ToastProvider, useToast, type ToastType, type ToastItem, type ToastAPI } from './toast'
+export { Avatar } from './avatar'

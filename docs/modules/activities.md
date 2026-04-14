@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S45
-**Última actualización:** Hoy
+**Versión actual:** v0.9.3 (Alineado con v0.11.0-S45)
+**Última actualización:** 14 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -84,11 +84,12 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | `cityId` | UUID | Filtrar por ciudad |
 | `ageMin` / `ageMax` | number | Rango de edad (0–120) |
 | `priceMin` / `priceMax` | number | Rango de precio |
-| `free` | boolean | Solo actividades gratuitas |
+| `free` | boolean | Solo actividades gratuitas (`PricePeriod.FREE` inferido o precio 0) |
 | `status` | enum | `ACTIVE`, `PAUSED`, `EXPIRED`, `DRAFT` |
 | `type` | enum | `RECURRING`, `ONE_TIME`, `CAMP`, `WORKSHOP` |
+| `environment` | enum | `INDOOR`, `OUTDOOR`, `MIXED` (Inyectado atómicamente por `Data Pipeline V1`) |
 | `audience` | enum | `KIDS`, `FAMILY`, `ADULTS`, `ALL` |
-| `search` | string | Búsqueda por texto (1–200 chars) |
+| `search` | string | Búsqueda por texto (1–200 chars) ponderada con pg_trgm + Health + Age Penalty |
 | `sortBy` | enum | `relevance` \| `date` \| `price_asc` \| `price_desc` \| `newest` |
 
 Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo su propia selección, garantizando 0 combinaciones vacías.

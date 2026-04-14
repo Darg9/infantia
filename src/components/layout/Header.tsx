@@ -18,7 +18,7 @@ export async function Header() {
   }
 
   return (
-    <header className="bg-white border-b border-gray-100">
+    <header aria-label="Sitio principal" className="bg-white border-b border-gray-100">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -26,7 +26,7 @@ export async function Header() {
         </Link>
 
         {/* Nav */}
-        <nav className="flex items-center gap-6 text-sm">
+        <nav aria-label="Navegación principal" className="flex items-center gap-6 text-sm">
           <Link href="/actividades" className="text-gray-600 hover:text-gray-900 transition-colors">
             Actividades
           </Link>

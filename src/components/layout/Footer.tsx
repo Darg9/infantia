@@ -34,7 +34,7 @@ const NAV_COLUMNS = [
 
 export function Footer() {
   return (
-    <footer className="bg-white border-t border-gray-100 mt-auto">
+    <footer aria-label="Pie de página" className="bg-white border-t border-gray-100 mt-auto">
       <div className="max-w-6xl mx-auto px-4 py-10">
 
         {/* ── Grid de columnas ─────────────────────────────────────── */}

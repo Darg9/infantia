@@ -126,6 +126,7 @@ export function Avatar({
         role="button"
         tabIndex={0}
         aria-label="Cambiar foto de perfil"
+        aria-busy={uploading}
         onClick={onClick}
         onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
         className={clsx(
@@ -141,7 +142,7 @@ export function Avatar({
   }
 
   return (
-    <div className={clsx('relative shrink-0', wrapper, className)}>
+    <div className={clsx('relative shrink-0', wrapper, className)} aria-busy={uploading}>
       {content}
     </div>
   )

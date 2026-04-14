@@ -39,6 +39,7 @@ export interface ToastItem {
   type: ToastType
   text: string
   duration: number
+  timestamp: number
 }
 
 interface ToastOptions {
@@ -76,6 +77,12 @@ type ToastAction =
 
 function toastReducer(state: ToastItem[], action: ToastAction): ToastItem[] {
   if (action.type === 'ADD') {
+    // Evitar duplicados (mismo type + text dentro de los últimos 2000ms)
+    const isDuplicate = state.some(
+      (t) => t.type === action.payload.type && t.text === action.payload.text && action.payload.timestamp - t.timestamp < 2000
+    )
+    if (isDuplicate) return state
+
     // FIFO: si ya hay MAX_VISIBLE, eliminar el más antiguo antes de agregar
     const trimmed = state.length >= MAX_VISIBLE ? state.slice(1) : state
     return [...trimmed, action.payload]
@@ -102,7 +109,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const add = useCallback((options: ToastOptions) => {
     const id       = ++counter.current
     const duration = options.duration ?? DEFAULT_DURATION
-    dispatch({ type: 'ADD', payload: { id, type: options.type, text: options.text, duration } })
+    dispatch({ type: 'ADD', payload: { id, type: options.type, text: options.text, duration, timestamp: Date.now() } })
     const t = setTimeout(() => dismiss(id), duration)
     timers.current.set(id, t)
   }, [dismiss])

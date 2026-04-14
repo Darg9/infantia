@@ -227,7 +227,7 @@ export default function EditarPerfilPage() {
 
   // ─── Handlers (useCallback — referencialmente estables) ───────────────────────
 
-  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -245,6 +245,34 @@ export default function EditarPerfilPage() {
     // Validar tamaño
     if (file.size > MAX_AVATAR_SIZE) {
       toast.error('El archivo es demasiado grande. Máximo 2 MB.')
+      e.target.value = ''
+      return
+    }
+
+    // Validar dimensiones / Integridad visual (manejo imagen corrupta antes del upload)
+    const url = URL.createObjectURL(file)
+    const imgInfo = await new Promise<{width: number, height: number} | null>((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        resolve({ width: img.width, height: img.height })
+        URL.revokeObjectURL(url)
+      }
+      img.onerror = () => {
+        resolve(null)
+        URL.revokeObjectURL(url)
+      }
+      img.src = url
+    })
+
+    if (!imgInfo) {
+      toast.error('El archivo de imagen parece estar dañado o es inválido.')
+      e.target.value = ''
+      return
+    }
+    
+    // Opcional: Límite mínimo de dimensiones para asegurar calidad
+    if (imgInfo.width < 100 || imgInfo.height < 100) {
+      toast.error('La imagen debe tener al menos 100x100 píxeles.')
       e.target.value = ''
       return
     }

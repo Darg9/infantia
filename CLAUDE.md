@@ -173,6 +173,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.11.0-S42 | V25 | Tracking Analytics Zero-Dependency, Resilience Extractor Playwright Fallback Proxy, Node Cache Hybrid Ranking. |
 | v0.11.0-S43 | V25 | Adaptive Quality Firewall activo (adaptive-rules.ts → storage.ts), filtro dinámico por métricas globales + SourceHealth. |
 | v0.11.0-S44 | V25 | CTR Feedback Loop: events → ranking → crawler. analytics/metrics.ts, ctrBoost en ranking, CTR priority en ingest. |
+| v0.11.0-S45 | V25 | ESLint freeze DEBT-02 (0 nuevos `any`), SPF resend.com, Privacy SSOT unificada, docs exhaustivo (45+ endpoints). |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -197,6 +198,9 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **isPremium ordering:** `{ provider: { isPremium: 'desc' } }` en relevance sort — actividades de providers premium aparecen primero sin queries extra.
 - **Provider dashboard access:** `getSessionWithRole()` → si ADMIN permite; si role=provider, verifica `provider.email === session.user.email && provider.isClaimed`.
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
+- **ESLint freeze (S45):** `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. Archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` ignorado. 0 nuevos `any` sin CI rojo.
+- **SPF email:** `v=spf1 include:zoho.com include:resend.com -all` — Zoho=usuario, Resend=transaccional. Cualquier nuevo proveedor de correo debe añadirse aquí antes de enviar.
+- **Privacy SSOT (S45):** `privacy.ts` cubre explícitamente datos de interacción + IP/UA + propósito + "no para identificación personal directa" — cubre el CTR Feedback Loop bajo Ley 1581.
 - **Logger:** `createLogger(ctx)` en `src/lib/logger.ts`. NO usar console.* en producción. `log.error(msg, { error })` — nunca `log.error(msg, errorObject)` directo (serializa como array de chars).
 - **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.
 - **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
@@ -213,7 +217,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.11.0-S44 — 2026-04-13)
+## Estado actual (v0.11.0-S45 — 2026-04-14)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **916 tests** en 60 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
 - Cobertura: **>91% stmts / >85% branches** ✅ (umbral 85%)
@@ -240,7 +244,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 | ID | Área | Descripción | Mitigación | Plan |
 |---|---|---|---|---|
 | DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright y falsa confianza. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP limitando la IA. UI con atribución exacta para asumir rol de "Agregador". Content Quality Dashboard midiendo degradación. | - |
-| DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | No afectan runtime ni comportamiento | Eliminar progresivamente en sprints de mantenimiento |
+| DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`; archivos legacy → `warn`. Boy Scout Rule activa. `src/lib/track.ts` ya corregido. | Reducir progresivamente al tocar cada archivo |
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado y linting estricto (no .toNumber()), sumado a pre-validador `schema:check`. | - |
 

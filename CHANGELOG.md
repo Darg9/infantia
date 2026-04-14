@@ -9,6 +9,37 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S45] — 2026-04-14 (ESLint Freeze + Legal SSOT + Docs Exhaustivo)
+**Documento Fundacional: V25** | Rama: master | Commits: `a7c8963`, `ba7fb32`, `4e16f7b`
+
+### Hardening
+
+#### ESLint Freeze — DEBT-02 (0 nuevos `any` posibles)
+- `eslint.config.mjs`: `@typescript-eslint/no-explicit-any: "error"` globalmente.
+- 31 archivos legacy + `scripts/**` + `__tests__/**` → `"warn"` (Boy Scout Rule activa).
+- `src/generated/**` → `globalIgnores` (Prisma auto-generado, no lintear).
+- `src/lib/track.ts`: fix real `Record<string, any>` → `Record<string, unknown>`.
+- Resultado: 0 nuevos `any` pueden entrar al codebase sin que CI falle.
+
+#### Legal SSOT — Privacy Policy
+- Texto unificado en `privacy.ts`: interacción + datos técnicos + propósito + "no para identificación personal directa".
+- Cubre explícitamente el CTR Feedback Loop bajo Ley 1581.
+- PDF y web actualizados automáticamente (SSOT).
+
+#### Email Security
+- SPF actualizado: `include:amazonses.com` → `include:resend.com` (más preciso, menor superficie).
+- SPF final: `v=spf1 include:zoho.com include:resend.com -all`.
+- `ARCHITECTURE.md` § Email Security actualizado con SPF final.
+
+### Documentación (auditoría exhaustiva)
+- `ARCHITECTURE.md` § API REST: de ~15 a 45+ endpoints documentados correctamente.
+- `docs/modules/legal.md`: disclaimers SSOT, rutas legales, datos de interacción S44.
+- `docs/modules/analytics.md`: endpoint POST /api/events, dashboard KPI, contrato JSON.
+- `docs/modules/activities.md`: tabla admin expandida de 8 a 18 rutas reales.
+- `TEST_STATUS.md`: corregido "56 total" → 60, añadidos ranking.test.ts + metrics.test.ts + price-normalization.test.ts.
+
+---
+
 ## [v0.11.0-S44] — 2026-04-13 (CTR Feedback Loop + Adaptive Quality Filter)
 **Documento Fundacional: V25** | Rama: master | Commits: `6d6e982`, `c93efd6`
 

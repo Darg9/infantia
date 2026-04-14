@@ -23,7 +23,7 @@ Actualizado: 2026-04-13 | Version: v0.11.0-S44
 | Functions | >88% ✅ |
 | Lines | >91% ✅ |
 
-## Archivos de test (56 total)
+## Archivos de test (60 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -76,6 +76,13 @@ Actualizado: 2026-04-13 | Version: v0.11.0-S44
 |---------|-------|--------|
 | schemas.test.ts | 24 | OK |
 | service.test.ts | 32 | OK — incluye relevance sort con isPremium |
+| ranking.test.ts | +7 | OK ← NUEVO S44 (ctrBoost default=0, tiers, score addition) |
+| price-normalization.test.ts | — | OK ← normalizePrice, edge cases |
+
+### modules/analytics/__tests__/
+| Archivo | Tests | Estado |
+|---------|-------|--------|
+| metrics.test.ts | 11 | OK ← NUEVO S44 (getCTRByDomain, ctrToBoost, cache TTL 5min, fail-safe, domain join) |
 
 ### app/__tests__/
 | Archivo | Tests | Estado |

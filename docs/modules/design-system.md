@@ -1,58 +1,143 @@
-# HabitaPlan Design System (Contrato de Diseño)
+# HabitaPlan Design System (v1)
 
-Este documento es la fuente viva (Single Source of Truth) para el sistema de diseño de HabitaPlan. Garantiza que todos los desarrolladores y agentes mantengan la coherencia visual sin generar deuda técnica por desalineamientos.
+El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
 
-## 1. Tokens de Color Semánticos
+## 1. Principios Core
 
-**Prohibido el uso de colores crudos de Tailwind** (`orange-500`, `green-600`, etc.) para componentes principales. Usar SIEMPRE sus equivalentes semánticos.
-
-### 1.1 Colores Principales (Mapeo a Brand)
-- El color primario del proyecto es **Naranja**. En Tailwind está mapeado al scope `brand`.
-- **Primary / CTA (Llamados a la acción o botones principales):** `bg-brand-500` (hover: `bg-brand-600`, active: `bg-brand-700`).
-- **Superficies destacadas sutiles (Fondo de alertas nativas o highlights):** `bg-brand-50` / `bg-brand-100`.
-- **Textos destacados (Enlaces primarios, active indicators):** `text-brand-500` / `text-brand-600`.
-- **Focus visible global (AA accesibilidad):** `ring-brand-500` o outline solid en layout principal.
-
-### 1.2 Interfaz de Estado (Semántica)
-| Propósito | Token a Usar | Reemplazo de (NO usar) |
-|---|---|---|
-| **Éxito** (Toasts, validaciones, finalizaciones) | `bg-success-*`, `text-success-*` | `green-500`, `emerald-500` |
-| **Error** (Destructive actions, validaciones, fallos) | `bg-error-*`, `text-error-*` | `red-500`, `rose-500` |
-| **Peligro / Atención** (Alertas no destructivas) | `bg-warning-*`, `text-warning-*` | `yellow-500`, `amber-500` |
-
-### 1.3 Interfaz de Superficie y Texto (CSS Variables)
-Para mantener dark mode de forma automatizada y sin ensuciar los componentes, usamos CSS properties:
-- Fondos de página: `var(--hp-bg-page)` (en Tailwind: aplica en clases globales o estilos estructurales).
-- Fondos de tarjeta/superficie: `var(--hp-bg-surface)`.
-- Texto principal: `var(--hp-text-primary)`.
-- Texto secundario: `var(--hp-text-secondary)`.
-- Bordes: `var(--hp-border)`.
-
-## 2. Componentes UI Primitivos
-
-Se localizan en `src/components/ui/` y son provistos nativamente mediante el Barrel export (`import { Button, Input, ... } from '@/components/ui'`).
-
-### Button (`<Button>`)
-- **Nunca usar `<button className="bg-brand-500">`**.
-- Variantes:
-  - `primary`: Acción principal por vista (naranja sólido).
-  - `secondary`: Acción de resguardo / outline (border brand, texto brand).
-  - `ghost`: Sin fondo hasta hacer hover.
-  - `destructive`: Acción de daño permanente, cancelar. (rojo sólido).
-- **Prohibido:** añadir márgenes (`mt-4`, `mb-2`) dentro de la definición del componente base. El espaciado debe dictarlo el padre layout que los invoca.
-
-### Input (`<InputField>` / `<Input>`)
-- Usar el componente estandarizado que maneja `aria-describedby` y `aria-invalid` automáticamente cuando hay props de error.
-- Soporta `rightSlot` / `leftSlot` (p.e.íconos de password visibility).
-
-### Card (`<Card>`)
-- Container predefinido: aplica correctamente `bg-surface`, `shadow-sm`, y radius.
-
-### Toast / Notificaciones (`useToast`)
-- Límite FIFO: 3 toasts en pantalla simultáneamente.
-- Dismiss automático: 2500ms.
-- API Plana: Nunca usar el object signature `toast({ type: 'success', text: '...' })` si los shorcuts aplican. Usa **`toast.success(...)`**.
+- **Consistencia Visual**: Jamás se usarán clases Tailwind hardcodeadas (como `bg-orange-600` o `bg-red-500`). Todo recaerá en el vocabulario semántico: `brand`, `success`, `error`, `warning`.
+- **Accesibilidad en su Raíz**: Los inputs esconden su label de forma accesible (`sr-only`), las acciones complejas emiten feedback semántico, interactivos proveen \`focus-visible\` states limpios y navegación guiada (`aria-busy`, `aria-label`).
+- **Simplicidad Funcional**: Evitar la recarga visual. Las escalas tipográficas y de ritmo (spacing) emplean bases unificadas (múltiplos de 4/8pt) apoyando layouts amplios.
 
 ---
 
-*Regla de Oro: Si ves una clase `bg-orange-500` en el código, existe Deuda Técnica (DEBT-UI). Refactorízala a `bg-brand-500` o, preferiblemente, al componente Primitive pertinente.*
+## 2. Tokens Oficiales
+
+Todas nuestras definiciones base yacen configuradas en el motor `@theme` de *Tailwind* V4, inyectadas localmente dentro del layer en `globals.css`.
+
+### Colores Semánticos
+
+| Variant   | Clases útiles (`text-*`, `bg-*`) | Rol principal                                              |
+| --------- | ---------------------------------- | ---------------------------------------------------------- |
+| **Brand**   | `brand-50` al `brand-900`            | Identidad HabitaPlan (Hero action, primary links, focus).  |
+| **Success** | `success-50` al `success-700`        | Acciones resueltas, toasts positivos.                      |
+| **Error**   | `error-50` al `error-600`            | Errores destructivos, state inválido de Input, fail Toast. |
+| **Warning** | `warning-50` al `warning-600`        | Advertencias preventivas, empty states blandos.            |
+
+### Superficies & Backgrounds
+
+- Variables unificadas: `--hp-bg-page`, `--hp-bg-surface`, `--hp-bg-subtle`.
+- Texto Nativo: `--hp-text-primary`, `--hp-text-secondary`, `--hp-text-muted`.
+
+### Dark Mode
+
+- **Regla Estricta de Paridad**: Se emplea soporte server-side inyectado (`Cookie SRR`), requiriendo que los componentes invirtan sin clases hardcodeadas (`dark:bg-gray-800`).
+- No deben existir colores exiliados del dark mode scheme. Si es blanco en light, debe resolverse automáticamente apoyándose en los tokens designados (o el variant dark invertido `dark:text-white`).
+
+### Tipografía, Spacing & Shadows
+
+- Spacing core: Multiplos de 4px, salto natural `8pt` (`space-y-4`, `p-8`).
+- Radio general: Estándar `rounded-lg` / `rounded-xl`.
+- Componentes modales o flotantes (`Card`, `Dropdown`): Emplean Drop Shadows (`shadow-md` a `shadow-lg`).
+
+---
+
+## 3. Catálogo de Componentes (Primitives)
+
+Todo reside exportado limpiamente en su Barrel `src/components/ui`.
+
+### Button (`<Button />`)
+
+- **Propósito**: Ejecuta las llamadas operacionales de navegación o forms.
+- **Variantes**:
+  - `primary` (default): Acción decisiva del container (Solo 1 por vista o jerarquía).
+  - `secondary`: Tareas alternativas (Botones de Cancelar, Menús no resaltados).
+  - `ghost`: Acciones de reducida presencia ubicadas como links incrustados.
+- **Ejemplo**:
+  ```tsx
+  import { Button } from '@/components/ui'
+  <Button variant="ghost" loading={isSubmitting}>Siguiente</Button>
+  ```
+- **Nota**: Se extraen los `buttonVariants` explícitamente cuando deban aplicarse a polimórficos como el tag `<Link>`.
+
+### Input (`<Input />`)
+
+- **Propósito**: Atrapa y valida los text-nodes de usuario.
+- **Props**: Soporta `label`, `hideLabel` (ideal para buscadores / accesible vía `sr-only`), `error` y `leftSlot` interactivo.
+- **Ejemplo**:
+  ```tsx
+  <Input label="Correo" error="Dominio inválido" />
+  ```
+
+### Card (`<Card />`)
+
+- **Propósito**: Superficie base enmarcadora que aporta las sombras, radius, y borders uniformes.
+- **Ejemplo**:
+  ```tsx
+  <Card className="max-w-md p-8"> {/* Layout Interno */} </Card>
+  ```
+
+### Avatar (`<Avatar />`)
+
+- **Propósito**: Renderiza rostros o iniciales dinámicas para cuentas.
+- **Props**: Soporta `src`, fallbacks (`name`), tamaño `size`, interactividad `editable` y loading spin (`uploading`).
+- **Ejemplo**:
+  ```tsx
+  <Avatar name="Roberto" uploading={isUploading} size="lg" />
+  ```
+
+### Toast (`useToast`)
+
+- **Propósito**: Notificaciones cruzadas FIFO (cap de 3 visibles).
+- **Regla**: Los toasts de \`error\` deben empatar con mensajes inline de inputs donde aplique, reforzando a11y. Los \`success\` van nativamente aislados en toast para no arruinar UI. Soporta \`deduplicación\` nativa.
+- **Ejemplo**:
+  ```tsx
+  const { toast } = useToast()
+  toast.success('Búsqueda depurada')
+  toast.error('Sesión vencida')
+  ```
+
+### Dropdown (`<Dropdown />`)
+
+- **Propósito**: Mantiene menús contextuales y de navegación anidados (como UserMenu).
+- **Key A11y**: Control nativo subyacente para teclas Arrow (⇧/⇩) atrapando el ciclo de focus. Cierra automáticamente con Tabulation y Esc.
+
+---
+
+## 4. Patrones de UX Críticos
+
+### Formularios (Loaders y Races)
+- Usar _Double Submit Guard_ atómico en Forms (`isSubmitting` en botones).
+- Atar `error` responses del API a mensajes visibles in-DOM de error sobre los Inputs alterados.
+
+### Búsqueda Semántica
+- Todos los inputs que emitan queries complejos (ej. `HeroSearch`) portan \`hideLabel\` para que convivan en Single Lines, mientras su Screen Reader lee correctamente su propósito.
+- Abort controllers para Debounces, liberando calls de network desactualizadas.
+
+### Navegación y Observabilidad
+- Los menús y Layout components (Nav, Header, footer) declaran sus Roles Landmark semánticos (`aria-label`).
+- Enviar logs del journey en background (`createLogger`), interceptando flujos en subidas y validaciones severas.
+
+---
+
+## 5. Do / Don'ts
+
+| Práctica | Do (Sí) | Don't (No) |
+| :--- | :--- | :--- |
+| **Colores** | Utilizar uniformente la familia `text-brand-*` , `bg-error-500` | Escapar la semántica por ad hoc strings `bg-orange-600` , `text-red-600`. |
+| **Elementos Accionables** | Invocar el primitive genérico `<Button />` o `buttonVariants()` en `<Link>`. | Construir botones inline `<button className="...">`. |
+| **Loading Flow** | Delegar el `loading={state}` interno del primitive. | Duplicar svgs spinners sobre layouts dispersos. |
+| **Manejo Output** | Inyectar el payload en `toast.error(msg)` global. | Olvidar al usuario dentro de un fallo de API silencioso. |
+
+---
+
+## 6. Integración Técnica Rápida
+
+Los root files inyectan y exponen el ecosistema de importación limpia:
+
+- El Core de Tailwind habita en `src/app/globals.css`.
+- Para consumo rápido sin largas rutas de imports, usar el barrel nativo `src/components/ui/index.ts`.
+
+```tsx
+// Correcto (Import limpio vía barrel)
+import { Button, Input, Card, useToast } from '@/components/ui'
+```

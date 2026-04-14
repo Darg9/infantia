@@ -27,6 +27,8 @@ const mocks = vi.hoisted(() => {
     mockProviderCreate: vi.fn().mockResolvedValue({ id: 'ig-new', name: '@nuevo' }),
     mockActivityFindMany: vi.fn().mockResolvedValue([]),
     mockDisconnect: vi.fn().mockResolvedValue(undefined),
+    mockContentQualityMetricFindFirst: vi.fn().mockResolvedValue(null),
+    mockSourceHealthFindMany: vi.fn().mockResolvedValue([]),
   };
 });
 
@@ -54,6 +56,8 @@ vi.mock('../../../generated/prisma/client', () => ({
       },
       category: { findMany: mocks.mockCategoryFindMany },
       activityCategory: { upsert: mocks.mockActivityCategoryUpsert },
+      contentQualityMetric: { findFirst: mocks.mockContentQualityMetricFindFirst },
+      sourceHealth: { findMany: mocks.mockSourceHealthFindMany },
       $disconnect: mocks.mockDisconnect,
     };
   }),
@@ -332,6 +336,98 @@ describe('ScrapingStorage.disconnect()', () => {
     const storage = new ScrapingStorage();
     await expect(storage.disconnect()).resolves.not.toThrow();
     expect(mocks.mockDisconnect).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Filtro adaptativo
+// ---------------------------------------------------------------------------
+describe('ScrapingStorage — filtro adaptativo (adaptive-rules)', () => {
+  let storage: ScrapingStorage;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.mockVerticalFindUnique.mockResolvedValue(mocks.mockVertical);
+    mocks.mockProviderFindFirst.mockResolvedValue(null);
+    mocks.mockProviderUpsert.mockResolvedValue(mocks.mockProvider);
+    mocks.mockActivityFindFirst.mockResolvedValue(null);
+    mocks.mockActivityCreate.mockResolvedValue(mocks.mockActivity);
+    mocks.mockActivityFindMany.mockResolvedValue([]);
+    mocks.mockContentQualityMetricFindFirst.mockResolvedValue(null);
+    mocks.mockSourceHealthFindMany.mockResolvedValue([]);
+    storage = new ScrapingStorage();
+  });
+
+  it('saveBatchResults carga contentQualityMetric y sourceHealth exactamente una vez', async () => {
+    const batch = makeBatchResult([{ data: actividadNLPBase }]);
+    await storage.saveBatchResults(batch);
+    expect(mocks.mockContentQualityMetricFindFirst).toHaveBeenCalledTimes(1);
+    expect(mocks.mockSourceHealthFindMany).toHaveBeenCalledTimes(1);
+  });
+
+  it('descarta actividad cuya descripción cae por debajo de minLength global (pctShort alto)', async () => {
+    // pctShort > 20 → getAdaptiveRules devuelve minDescriptionLength: 60
+    mocks.mockContentQualityMetricFindFirst.mockResolvedValue({ pctShort: 25, pctNoise: 5 });
+    const shortDesc = 'Texto corto.'; // 12 chars < 60
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, description: shortDesc },
+    }]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.discarded).toBe(1);
+    expect(result.saved).toBe(0);
+    expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
+  });
+
+  it('descarta actividad cuya descripción cae por debajo de minLength de fuente (score bajo)', async () => {
+    // score < 0.4 → getSourceRules devuelve minDescriptionLength: 80
+    mocks.mockSourceHealthFindMany.mockResolvedValue([
+      { source: 'ejemplo.com', score: 0.3 },
+    ]);
+    const mediumDesc = 'Descripción de longitud media que tiene menos de ochenta caracteres.'; // < 80
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, description: mediumDesc },
+    }]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.discarded).toBe(1);
+    expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
+  });
+
+  it('aplica Math.max entre regla global y de fuente (toma el más estricto)', async () => {
+    // global → minLength 60 (pctShort alto)
+    // fuente → minLength 80 (score bajo)  ← debe ganar
+    mocks.mockContentQualityMetricFindFirst.mockResolvedValue({ pctShort: 25, pctNoise: 5 });
+    mocks.mockSourceHealthFindMany.mockResolvedValue([
+      { source: 'ejemplo.com', score: 0.3 },
+    ]);
+    // descripción de 70 chars: pasa regla global (60) pero NO la de fuente (80)
+    const desc70 = 'A'.repeat(70);
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, description: desc70 },
+    }]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.discarded).toBe(1);
+  });
+
+  it('guarda actividad cuando descripción supera el minLength adaptativo', async () => {
+    mocks.mockContentQualityMetricFindFirst.mockResolvedValue({ pctShort: 25, pctNoise: 5 });
+    // descripción >= 60 chars → pasa
+    const desc65 = 'B'.repeat(65);
+    const batch = makeBatchResult([{
+      data: { ...actividadNLPBase, description: desc65 },
+    }]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.saved).toBe(1);
+    expect(result.discarded).toBe(0);
+  });
+
+  it('usa score 0.5 por defecto cuando la fuente no está en sourceHealthMap', async () => {
+    // score 0.5 → getSourceRules devuelve minLength 40 (rama default)
+    // global sin métricas → minLength 40
+    // Math.max(40, 40) = 40 → la actividad base (>40 chars) pasa
+    mocks.mockSourceHealthFindMany.mockResolvedValue([]); // fuente desconocida
+    const batch = makeBatchResult([{ data: actividadNLPBase }]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.saved).toBe(1);
   });
 });
 

@@ -7,6 +7,7 @@ import { geocodeAddress } from '../../lib/geocoding';
 import { createLogger } from '../../lib/logger';
 import { ambiguityScore } from './ambiguity';
 import { isValidActivity } from './validation';
+import { getAdaptiveRules, getSourceRules } from './adaptive-rules';
 
 const log = createLogger('scraping:storage');
 
@@ -21,6 +22,13 @@ type SaveResult = {
   errors: string[];
 };
 
+type AdaptiveContext = {
+  globalMetrics: { pctShort: number; pctNoise: number } | null;
+  sourceHealthMap: Record<string, number>;
+};
+
+const EMPTY_ADAPTIVE_CTX: AdaptiveContext = { globalMetrics: null, sourceHealthMap: {} };
+
 export class ScrapingStorage {
   /**
    * Guarda una actividad individual en la BD.
@@ -33,6 +41,7 @@ export class ScrapingStorage {
     sourceUrl: string,
     verticalSlug: string = 'kids',
     sourceOptions?: { platform?: string; instagramUsername?: string },
+    ctx: AdaptiveContext = EMPTY_ADAPTIVE_CTX,
   ): Promise<string | null> {
     try {
       const validation = isValidActivity({ title: data.title, description: data.description });
@@ -45,6 +54,27 @@ export class ScrapingStorage {
           title: data.title
         }));
         return "DISCARDED_QUALITY";
+      }
+
+      // Filtro adaptativo: ajusta minDescriptionLength según métricas globales + salud de la fuente
+      if (data.description) {
+        let domain = 'unknown';
+        try { domain = new URL(sourceUrl).hostname.replace('www.', ''); } catch { /* url inválida */ }
+        const sourceScore = ctx.sourceHealthMap[domain] ?? 0.5;
+        const adaptiveRules = getAdaptiveRules(ctx.globalMetrics);
+        const sourceRules = getSourceRules(sourceScore);
+        const minLength = Math.max(adaptiveRules.minDescriptionLength, sourceRules.minDescriptionLength);
+        if (data.description.length < minLength) {
+          log.info(JSON.stringify({
+            event: "activity_discarded_adaptive",
+            domain,
+            length: data.description.length,
+            minLength,
+            sourceScore,
+            title: data.title,
+          }));
+          return "DISCARDED_QUALITY";
+        }
       }
 
       // 1. Obtener vertical
@@ -167,6 +197,15 @@ export class ScrapingStorage {
   async saveBatchResults(batchResult: BatchPipelineResult): Promise<SaveResult> {
     const result: SaveResult = { saved: 0, skipped: 0, discarded: 0, errors: [] };
 
+    // Cargar contexto adaptativo UNA sola vez para todo el batch
+    const [globalMetrics, sourceHealthList] = await Promise.all([
+      prisma.contentQualityMetric.findFirst({ orderBy: { createdAt: 'desc' } }),
+      prisma.sourceHealth.findMany({ select: { source: true, score: true } }),
+    ]);
+    const sourceHealthMap: Record<string, number> = {};
+    for (const s of sourceHealthList) sourceHealthMap[s.source] = s.score;
+    const ctx: AdaptiveContext = { globalMetrics, sourceHealthMap };
+
     for (const item of batchResult.results) {
       if (!item.data) {
         result.skipped++;
@@ -179,7 +218,7 @@ export class ScrapingStorage {
         continue;
       }
 
-      const activityId = await this.saveActivity(item.data, item.url);
+      const activityId = await this.saveActivity(item.data, item.url, 'kids', undefined, ctx);
       if (activityId === "DISCARDED_QUALITY") {
         result.discarded++;
       } else if (activityId) {
@@ -189,13 +228,17 @@ export class ScrapingStorage {
       }
     }
 
+    const total = result.saved + result.discarded + result.skipped;
+    const discardRate = total > 0 ? Math.round((result.discarded / total) * 100) / 100 : 0;
     log.info(JSON.stringify({
-      event: "batch_quality_summary",
+      event: "adaptive_rules_applied",
       saved: result.saved,
       discarded: result.discarded,
       skipped: result.skipped,
+      discardRate,
       errors: result.errors.length,
-      sourceUrl: batchResult.sourceUrl
+      sourceUrl: batchResult.sourceUrl,
+      timestamp: new Date().toISOString(),
     }));
     return result;
   }

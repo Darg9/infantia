@@ -50,12 +50,32 @@ model Event {
 }
 ```
 
-## 📈 Dashboard Interno y KPIs
+## 🔌 Endpoints
 
-El dashboard ubicado en `/admin/analytics` totaliza el motor local y consolida métricas base vitales.
-1. **Tráfico General Promedio**.
-2. **CTR Real**: Proporción matemática extraíble dividiendo conteos (`outbound_click` / `activity_view`). Esto da la efectividad del scraping.
-3. **Conversión Orgánica**: Qué actividades incitan al clic una vez el NLP estructuró su visual general.
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/api/events` | No (público) | Ingesta un evento de tracking. Body: `{ type, activityId?, path?, metadata? }`. Devuelve `204 No Content`. |
+| `GET` | `/api/admin/analytics` | Admin | Agrega eventos de las últimas 24h por tipo. Devuelve `[{ type, _count }]`. |
+
+**Contrato POST `/api/events`:**
+```json
+{ "type": "outbound_click", "activityId": "uuid", "path": "/actividades/uuid-slug" }
+```
+- `type` es requerido — devuelve 400 si falta.
+- IP leída de `x-forwarded-for` o `x-real-ip` (compatible con Vercel).
+- Fail-silent en servidor: errores no rompen el request del usuario.
+
+## 📈 Dashboard Interno (`/admin/analytics`)
+
+El dashboard es un Client Component (`page.tsx`) que consume `GET /api/admin/analytics` (ventana 24h):
+
+**KPIs calculados en cliente:**
+| KPI | Fórmula | Descripción |
+|---|---|---|
+| CTR Exploración | `activity_click / page_view × 100` | % de usuarios que abren alguna actividad |
+| Conversión a Fuente | `outbound_click / activity_view × 100` | Tasa de interés que lleva al proveedor |
+
+**Tabla raw:** todos los eventos ordenados por volumen descendente — útil para detectar anomalías (spike en `page_view` sin `activity_click` = contenido no resonando).
 
 ## 🔄 CTR Feedback Loop (NUEVO v0.11.0-S44)
 

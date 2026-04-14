@@ -25,13 +25,49 @@ Las páginas web iteran los mismos arrays `dataTreatmentSections`, `termsSection
 ## ⚖️ Aspectos Legales Críticos Tratados
 
 ### 1. Actuación Exclusiva como Intermediarios Tecnológicos
-- **Validado en `terms.ts`**: HabitaPlan opera como un recopilador indexado y agregador, **no es responsable** de la calidad, salud ni riesgos físicos asociados a los eventos (campamentos, talleres) proporcionados por terceros. 
-- En cada Tarjeta de Listado (`ActivityCard.tsx`) y Página de Detalle de Actividad se incluye `ACTIVITY_DISCLAIMER_FULL` o `ACTIVITY_DISCLAIMER_SHORT`.
+- **Validado en `terms.ts`**: HabitaPlan opera como un recopilador indexado y agregador, **no es responsable** de la calidad, salud ni riesgos físicos asociados a los eventos (campamentos, talleres) proporcionados por terceros.
+- En cada Tarjeta de Listado (`ActivityCard.tsx`) y Página de Detalle de Actividad se incluye `ACTIVITY_DISCLAIMER_FULL` o `ACTIVITY_DISCLAIMER_SHORT` desde `legal-disclaimers.ts`.
+
+**Textos activos (SSOT):**
+```
+ACTIVITY_DISCLAIMER_FULL: "La información presentada puede provenir de entidades públicas,
+organizaciones privadas o proveedores externos y tiene fines exclusivamente informativos.
+HabitaPlan no garantiza su exactitud, disponibilidad o vigencia..."
+
+ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar sujeta a cambios."
+```
 
 ### 2. Tratamiento de Menores (Ley 1581)
 - La información vinculada al perfil del "Niño/Acudiente" en la app carece de vinculaciones peligrosas, rigiéndose estrictamente por el Interés Superior del Niño.
-- Ver documento `data-treatment.ts` donde se establece explícitamente el tratamiento excepcional, bajo tutela y custodia criptográfica.
+- Ver `data-treatment.ts` — sección "Menores": autorización parental previa requerida, datos sin vínculo directo riesgoso.
+
+### 3. Datos de Interacción y Analytics (NUEVO v0.11.0-S44)
+- **Declarado en `privacy.ts`**: "La Plataforma podrá recolectar y utilizar datos de interacción (como clics y navegación) y datos técnicos (como dirección IP, tipo de dispositivo y navegador) con fines de mejorar la relevancia del contenido, analizar el uso del servicio, y prevenir abusos o usos indebidos. Esta información se utiliza de forma agregada y **no para identificación personal directa**."
+- Esto cubre explícitamente el CTR Feedback Loop (S44): clics → ranking → crawler.
+- IP y User-Agent se almacenan en tabla `Event` (`ip VARCHAR(50)`, `userAgent TEXT`) — declarados en privacidad y tratamiento de datos.
+
+### 4. Coherencia UI ↔ PDF ↔ SSOT (estado actual)
+
+| Documento | Versión | Última actualización |
+|---|---|---|
+| Política de Privacidad | v1.0 | 11 de abril de 2026 |
+| Términos y Condiciones | v1.0 | 11 de abril de 2026 |
+| Tratamiento de Datos | v1.0 | 11 de abril de 2026 |
+
+Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/datos`) y sus PDF descargables consumen los mismos arrays TypeScript. **Imposible desincronización.**
+
+## Rutas del sistema legal
+
+| Ruta | Tipo | Descripción |
+|---|---|---|
+| `GET /seguridad/privacidad` | Web SSR | Política de Privacidad renderizada |
+| `GET /seguridad/terminos` | Web SSR | Términos y Condiciones |
+| `GET /seguridad/datos` | Web SSR | Tratamiento de Datos (Ley 1581) |
+| `GET /api/legal/privacidad/pdf` | API | Descarga PDF Privacidad |
+| `GET /api/legal/terminos/pdf` | API | Descarga PDF Términos |
+| `GET /api/legal/datos/pdf` | API | Descarga PDF Tratamiento Datos |
 
 ## 💡 Reglas de Modificación
 - *Nunca hardcodear* textos legales directamente en los componentes de React, UI, `Layout`, o modales.
-- Si requieres cambiar la política de privacidad, módificala directamente en `privacy.ts` y compila la app. La ruta de web y el endpoint de descarga de PDF quedarán actualizados simultáneamente sin margen de error.
+- Para cambiar cualquier texto legal: modificar el archivo `.ts` correspondiente en `src/modules/legal/constants/` → compila la app → web y PDF se actualizan simultáneamente.
+- Cambios en datos recolectados → actualizar `privacy.ts` **y** `data-treatment.ts` para mantener coherencia.

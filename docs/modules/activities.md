@@ -54,18 +54,24 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| **GET** | **`/api/health`** | **Pública** | **Health check DB + Redis — 200 si DB ok (fix S28), 503 solo si DB falla** |
-| GET | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |
-| GET | `/api/admin/scraping/logs` | Admin | Logs de scraping con filtros |
-| POST | `/api/admin/expire-activities` | Cron | Expira actividades con fecha pasada (5AM UTC) |
-| POST | `/api/admin/send-notifications` | Cron | Envía digest de email a usuarios suscritos |
-| GET | `/api/admin/queue/status` | Admin | Estado de la cola BullMQ |
-| POST | `/api/admin/queue/enqueue` | Admin | Encola un job de scraping |
-| GET | `/api/admin/metrics` | Admin | Vistas, búsquedas frecuentes, distribución |
-| **GET** | **`/api/admin/sponsors`** | **Admin** | **Lista sponsors (NUEVO v0.8.1)** |
-| **POST** | **`/api/admin/sponsors`** | **Admin** | **Crea sponsor (NUEVO v0.8.1)** |
-| **PATCH** | **`/api/admin/sponsors/:id`** | **Admin** | **Actualiza sponsor parcialmente (NUEVO v0.8.1)** |
-| **DELETE** | **`/api/admin/sponsors/:id`** | **Admin** | **Elimina sponsor (NUEVO v0.8.1)** |
+| `GET` | `/api/health` | Pública | Health check DB + Redis — 200 si DB ok, 503 solo si DB falla |
+| `POST` | `/api/admin/expire-activities` | CRON_SECRET | Expira actividades con fecha pasada (5AM UTC) |
+| `POST` | `/api/admin/send-notifications` | CRON_SECRET | Envía digest de email a usuarios suscritos |
+| `GET` | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |
+| `GET/PATCH` | `/api/admin/scraping/sources/[id]` | Admin | Toggle activo/pausado de fuente |
+| `GET` | `/api/admin/scraping/logs` | Admin | Logs de scraping con filtros |
+| `GET` | `/api/admin/queue/status` | Admin | Estado de la cola BullMQ |
+| `POST` | `/api/admin/queue/enqueue` | Admin | Encola un job de scraping manualmente |
+| `GET` | `/api/admin/analytics` | Admin | Eventos últimas 24h agrupados por tipo |
+| `GET` | `/api/admin/quality` | Admin | ContentQualityMetric — dashboard calidad (S43) |
+| `GET` | `/api/admin/alerts` | Admin | Alertas del sistema adaptive filter |
+| `GET` | `/api/admin/source-health` | Admin | SourceHealth scores por dominio |
+| `GET` | `/api/admin/sources/url-stats` | Admin | Estadísticas de URLs por fuente |
+| `GET/POST` | `/api/admin/sponsors` | Admin | Lista/crea sponsors |
+| `PATCH/DELETE` | `/api/admin/sponsors/[id]` | Admin | Actualiza/elimina sponsor |
+| `GET` | `/api/admin/claims` | Admin | Lista claims de proveedores |
+| `PATCH` | `/api/admin/claims/[id]` | Admin | Aprueba o rechaza claim |
+| `PUT/DELETE` | `/api/admin/activities/[id]` | Admin | Actualiza/elimina actividad (C-01) |
 
 ## Filtros disponibles (GET /api/activities)
 

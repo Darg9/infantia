@@ -509,30 +509,83 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | `GET/PUT/DELETE` | `/api/children/[id]` |
 
 ### Interacciones
-| Método | Ruta |
-|---|---|
-| `GET` | `/api/favorites` |
-| `POST/DELETE` | `/api/favorites/[activityId]` |
-| `GET` | `/api/ratings` |
-| `POST` | `/api/ratings/[activityId]` |
-
-### Monitoreo
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/health` | Pública | Estado DB + Redis en tiempo real (para UptimeRobot) |
+| `GET` | `/api/favorites` | Usuario | Lista activityIds favoritos |
+| `POST` | `/api/favorites` | Usuario | Añade favorito (upsert) |
+| `DELETE` | `/api/favorites/[activityId]` | Usuario | Elimina favorito |
+| `GET/POST` | `/api/ratings/[activityId]` | Mixto | Calificaciones por actividad |
+| `POST` | `/api/activities/[id]/view` | Pública | Registra vista (métricas) |
 
-### Admin (protegidas por middleware.ts global)
+### Analytics (Zero-Dependencies)
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/api/events` | Pública | Ingesta evento: `{ type, activityId?, path?, metadata? }`. `204` No Content. |
+| `GET` | `/api/admin/analytics` | ADMIN | Agrega eventos últimas 24h por tipo `[{ type, _count }]` |
+
+**Eventos válidos:** `page_view`, `activity_view`, `activity_click`, `outbound_click`, `search_applied`
+
+### Notificaciones Push
 | Método | Ruta | Auth |
 |---|---|---|
-| `POST` | `/api/auth/send-welcome` | Pública (post-registro) |
-| `POST` | `/api/admin/expire-activities` | CRON_SECRET |
-| `POST` | `/api/admin/send-notifications` | CRON_SECRET |
-| `GET` | `/api/admin/scraping/sources` | ADMIN |
-| `GET` | `/api/admin/scraping/logs` | ADMIN |
-| `GET/POST` | `/api/admin/sponsors` | ADMIN |
-| `PATCH/DELETE` | `/api/admin/sponsors/[id]` | ADMIN |
-| `GET/POST` | `/api/admin/queue/status` | ADMIN |
-| `GET` | `/api/admin/metrics` | ADMIN |
+| `POST` | `/api/push/subscribe` | Usuario |
+
+### Monitoreo y Contacto
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/health` | Pública | Estado DB + Redis en tiempo real (para UptimeRobot). 200 si DB ok, 503 solo si DB falla. |
+| `POST` | `/api/contact` | Pública | Formulario de contacto |
+| `POST` | `/api/search/log` | Pública | Registro de búsquedas para métricas |
+
+### Admin (protegidas por middleware.ts global)
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/api/auth/send-welcome` | Pública | Email bienvenida post-registro |
+| `POST` | `/api/admin/expire-activities` | CRON_SECRET | Expira actividades pasadas (5AM UTC) |
+| `POST` | `/api/admin/send-notifications` | CRON_SECRET | Digest email usuarios suscritos |
+| `GET` | `/api/admin/scraping/sources` | ADMIN | Lista fuentes de scraping |
+| `GET/PATCH` | `/api/admin/scraping/sources/[id]` | ADMIN | Detalle / toggle fuente |
+| `GET` | `/api/admin/scraping/logs` | ADMIN | Logs con filtros |
+| `GET/POST` | `/api/admin/sponsors` | ADMIN | CRUD sponsors |
+| `PATCH/DELETE` | `/api/admin/sponsors/[id]` | ADMIN | Update/delete sponsor |
+| `GET/POST` | `/api/admin/queue/status` | ADMIN | Estado cola BullMQ |
+| `POST` | `/api/admin/queue/enqueue` | ADMIN | Encola job manualmente |
+| `GET` | `/api/admin/source-health` | ADMIN | SourceHealth scores por dominio |
+| `GET` | `/api/admin/sources/[id]` | ADMIN | Stats URL por fuente |
+| `GET` | `/api/admin/sources/url-stats` | ADMIN | Estadísticas URLs |
+| `GET` | `/api/admin/quality` | ADMIN | ContentQualityMetric — dashboard calidad |
+| `GET` | `/api/admin/alerts` | ADMIN | Alertas del sistema (adaptive filter) |
+| `GET` | `/api/admin/claims` | ADMIN | Claims de proveedores pendientes |
+| `PATCH` | `/api/admin/claims/[id]` | ADMIN | Aprobar/rechazar claim |
+| `PUT/DELETE` | `/api/admin/activities/[id]` | ADMIN | Update/delete actividad (fix C-01) |
+
+### Proveedores y Claims
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/api/providers/[slug]/claim` | Usuario | Solicita reclamación de proveedor |
+
+### Ciudades
+| Método | Ruta | Auth |
+|---|---|---|
+| `GET` | `/api/cities` | Pública |
+
+### Legal (PDFs)
+| Método | Ruta | Auth |
+|---|---|---|
+| `GET` | `/api/legal/privacidad/pdf` | Pública |
+| `GET` | `/api/legal/terminos/pdf` | Pública |
+| `GET` | `/api/legal/datos/pdf` | Pública |
+
+### Perfil
+| Método | Ruta | Auth |
+|---|---|---|
+| `GET/PUT` | `/api/profile` | Usuario |
+| `PUT` | `/api/profile/avatar` | Usuario |
+| `GET` | `/api/profile/me` | Usuario |
+| `PATCH` | `/api/profile/onboarding` | Usuario |
+| `GET/PUT` | `/api/profile/notifications` | Usuario |
+| `GET/POST` | `/api/children` | Usuario |
+| `DELETE` | `/api/children/[id]` | Usuario |
 
 ---
 

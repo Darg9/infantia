@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.11.0-S42
+**Versión:** ✅ v0.11.0-S44
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -27,6 +27,7 @@ El resultado final evaluado localmente (vía map memory) por _Actividad_ resulta
 - `50% Relevancia`: Concordancia estricta del NLP de contenido al perfil del listado.
 - `20% Freshness (Recency)`: Escalado inverso (1 punto para <3 días desde publicación; decae logarítmicamente hasta 0.2 a 30+ días).
 - `30% Health Trust Score`: Extraído de la evaluación del _SourceHealth_. Fuentes (DOMINIOS) con alto índice de fallos, falsos positivos o inestabilidad pierden posicionamiento global en la plataforma. Dominios con ratio < 0.3 terminan bloqueados.
+- `CTR Boost (+0 a +0.15)`: **(NUEVO v0.11.0-S44)** Señal de conversión real acumulada: `outbound_click / activity_view` por dominio. Boost se aplica como suma al score final. Tiers: >30% CTR → +0.15, >15% → +0.08, >5% → +0.03. Cold start safe (sin datos = 0).
 
 ## 🧩 Eventos UX Trackeados (Vínculo al módulo Analytics)
 

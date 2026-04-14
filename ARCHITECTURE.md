@@ -553,7 +553,7 @@ NEXT_PUBLIC_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY
 GOOGLE_AI_STUDIO_KEY            # Gemini 2.5 Flash — 20 RPD free tier
 RESEND_API_KEY                  # Email transaccional
-RESEND_FROM_EMAIL               # Remitente (ej: HabitaPlan <hola@habitaplan.com>)
+RESEND_FROM_EMAIL               # Remitente (ej: HabitaPlan <info@habitaplan.com>)
 UPSTASH_REDIS_URL               # BullMQ queue (rediss://...)
 NEXT_PUBLIC_VAPID_PUBLIC_KEY    # Web Push
 VAPID_PRIVATE_KEY

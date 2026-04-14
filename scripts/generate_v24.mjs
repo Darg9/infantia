@@ -297,10 +297,10 @@ children.push(subHeading("5.4 Cumplimiento Ley 1581 / SIC"));
 children.push(twoColTable(
   ["Requisito SIC", "Estado"],
   [
-    ["Responsable del tratamiento identificado", "LISTO — HabitaPlan SAS, hola@habitaplan.com"],
+    ["Responsable del tratamiento identificado", "LISTO — HabitaPlan SAS, info@habitaplan.com"],
     ["Finalidades del tratamiento descritas", "LISTO — data-treatment.ts seccion 3 (13 finalidades)"],
     ["Derechos ARCO documentados", "LISTO — seccion 7 de data-treatment.ts"],
-    ["Procedimiento de atencion de derechos", "LISTO — 15 dias habiles, hola@habitaplan.com"],
+    ["Procedimiento de atencion de derechos", "LISTO — 15 dias habiles, info@habitaplan.com"],
     ["Transferencias internacionales divulgadas", "LISTO — Supabase/AWS EEUU + Vercel EEUU con nivel de proteccion explicito"],
     ["Politica de menores de edad", "LISTO — clausula parental en los 3 documentos (consentimiento previo del padre/tutor)"],
     ["Periodo de retencion de datos", "LISTO — condiciones de supresion con excepciones legales/contractuales"],

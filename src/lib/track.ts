@@ -27,7 +27,7 @@ export async function trackEvent({
   type: string;
   activityId?: string;
   path?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }) {
   try {
     let delay = 0;

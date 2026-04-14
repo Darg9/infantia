@@ -8,7 +8,8 @@ import { createLogger } from '@/lib/logger';
 const log = createLogger('email');
 
 const resend = new Resend(process.env.RESEND_API_KEY || 'placeholder');
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const FROM_EMAIL  = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
+const ADMIN_EMAIL = 'info@habitaplan.com';
 
 export interface SendWelcomeEmailParams {
   to: string;
@@ -115,7 +116,7 @@ export async function sendClaimNotification(params: SendClaimNotificationParams)
 
     const result = await resend.emails.send({
       from:    FROM_EMAIL,
-      to:      'hola@habitaplan.com',
+      to:      ADMIN_EMAIL,
       subject: `Nueva solicitud de reclamación — ${params.providerName}`,
       html,
     });

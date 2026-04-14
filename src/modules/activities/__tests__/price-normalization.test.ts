@@ -1,4 +1,5 @@
 import { normalizePrice } from "@/lib/decimal";
+import { describe, it, expect } from "vitest";
 
 describe("normalizePrice", () => {
   it("handles number", () => {

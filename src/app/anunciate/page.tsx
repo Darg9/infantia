@@ -6,7 +6,7 @@ export const metadata: Metadata = {
     'Patrocina el newsletter de HabitaPlan o destaca tu academia en nuestra plataforma. Llega a familias que buscan actividades para sus hijos en Bogotá.',
 };
 
-const CONTACT_EMAIL = 'hola@habitaplan.com';
+const CONTACT_EMAIL = 'info@habitaplan.com';
 
 const STATS = [
   { label: 'Actividades indexadas', value: '260+' },

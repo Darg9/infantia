@@ -19,7 +19,7 @@ export default function ContribuirPage() {
         ? 'Nombre de la actividad:\n\nInstitucion/Proveedor:\n\nDescripción:\n\nEdad recomendada:\n\nPrecio (si aplica):\n\nURL o fuente de información:\n\nObservaciones adicionales:'
         : 'Nombre de la institución o proveedor:\n\nCategoria de actividades:\n\nUrl del sitio web:\n\nRedes sociales:\n\nContacto / Email:\n\nObservaciones:'
     )
-    window.location.href = `mailto:contacto@habitaplan.com?subject=${subject}&body=${body}`
+    window.location.href = `mailto:info@habitaplan.com?subject=${subject}&body=${body}`
   }
 
   return (

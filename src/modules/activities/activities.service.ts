@@ -297,6 +297,11 @@ export async function listActivities(params: ListParams) {
       rankingScore = (textScore * 0.5) + (healthScore * 0.3) + (ctrBoost * 0.2);
     }
 
+    // Penalización por metadatos incompletos (Pipeline Requirement)
+    if (act.ageMin === null && act.ageMax === null) {
+      rankingScore *= 0.85;
+    }
+
     return { ...act, rankingScore, _domainTemp: domain };
   });
 

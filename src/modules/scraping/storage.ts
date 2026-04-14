@@ -6,8 +6,8 @@ import { calculateSimilarity, normalizeString } from './deduplication';
 import { geocodeAddress } from '../../lib/geocoding';
 import { createLogger } from '../../lib/logger';
 import { ambiguityScore } from './ambiguity';
-import { isValidActivity } from './validation';
 import { getAdaptiveRules, getSourceRules } from './adaptive-rules';
+import { runDataPipeline } from './data-pipeline';
 
 const log = createLogger('scraping:storage');
 
@@ -44,17 +44,25 @@ export class ScrapingStorage {
     ctx: AdaptiveContext = EMPTY_ADAPTIVE_CTX,
   ): Promise<string | null> {
     try {
-      const validation = isValidActivity({ title: data.title, description: data.description });
-      if (!validation.valid) {
-        log.info(JSON.stringify({
-          event: "activity_discarded",
-          reason: validation.reason,
+      log.info('Data Pipeline Iniciado', { action: 'pipeline_process', result: 'attempt', sourceUrl });
+      
+      const pipeline = runDataPipeline(data);
+      if (!pipeline.valid) {
+        log.warn('Actividad descartada por pipeline', {
+          action: 'pipeline_process',
+          result: 'error',
+          reason: pipeline.reason,
           ambiguityScore: ambiguityScore(data.description || ""),
           descriptionLength: data.description?.length || 0,
           title: data.title
-        }));
+        });
         return "DISCARDED_QUALITY";
       }
+
+      log.info('Actividad supero pipeline de datos', { action: 'pipeline_process', result: 'success', title: pipeline.data.title });
+      
+      // Override natural data param with sanitized Pipeline Data Output
+      data = pipeline.data;
 
       // Filtro adaptativo: ajusta minDescriptionLength según métricas globales + salud de la fuente
       if (data.description) {

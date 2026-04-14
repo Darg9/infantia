@@ -41,6 +41,7 @@ export const activityNLPResultSchema = z.object({
     endDate: coerceString,
     notes: coerceString,
   })).nullable().optional(),
+  environment: z.enum(['INDOOR', 'OUTDOOR', 'MIXED']).nullable().optional(),
   confidenceScore: z.number().min(0).max(1),
   imageUrl: z.string().url().nullable().optional(),
 });

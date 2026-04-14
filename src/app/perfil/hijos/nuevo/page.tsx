@@ -114,7 +114,7 @@ export default function NuevoHijoPage() {
         </div>
 
         {/* Autorización parental — Ley 1581 */}
-        <div className="bg-brand-50 border border-orange-200 rounded-xl p-4">
+        <div className="bg-brand-50 border border-brand-200 rounded-xl p-4">
           <h2 className="text-sm font-semibold text-brand-800 mb-2">
             Autorización de tratamiento de datos personales
           </h2>
@@ -146,7 +146,7 @@ export default function NuevoHijoPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
             {error}
           </p>
         )}

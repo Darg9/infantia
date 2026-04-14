@@ -30,9 +30,9 @@ export default function SourceHealthClient() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-success-100 text-success-800 border-green-200';
-      case 'degraded': return 'bg-warning-100 text-warning-800 border-yellow-200';
-      case 'critical': return 'bg-error-100 text-error-800 border-red-200';
+      case 'healthy': return 'bg-success-100 text-success-800 border-success-200';
+      case 'degraded': return 'bg-warning-100 text-warning-800 border-warning-200';
+      case 'critical': return 'bg-error-100 text-error-800 border-error-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -44,7 +44,7 @@ export default function SourceHealthClient() {
       
       {/* Alertas Proactivas */}
       {criticalSources > 0 && (
-        <div className="bg-error-50 border-l-4 border-red-500 p-4 rounded-md">
+        <div className="bg-error-50 border-l-4 border-error-500 p-4 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-error-400" viewBox="0 0 20 20" fill="currentColor">

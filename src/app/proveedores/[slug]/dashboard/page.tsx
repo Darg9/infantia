@@ -72,7 +72,7 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
       </div>
 
       {/* Estado premium */}
-      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-warning-200' : 'bg-gray-50 border-gray-200'}`}>
         <span className="text-2xl">{provider.isPremium ? '⭐' : '🏷️'}</span>
         <div>
           <p className="font-semibold text-gray-800">

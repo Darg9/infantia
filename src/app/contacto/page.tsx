@@ -109,7 +109,7 @@ export default function ContactoPage() {
       </p>
 
       {/* Takedown notice - always visible */}
-      <div className="bg-brand-50 border border-orange-200 rounded-xl p-4 mb-8">
+      <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-8">
         <h2 className="text-sm font-semibold text-brand-800 mb-1">Remoción de contenido</h2>
         <p className="text-sm text-brand-700">
           Si eres titular de contenido publicado en HabitaPlan y deseas su modificación o remoción,
@@ -227,7 +227,7 @@ export default function ContactoPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
             {error}
           </p>
         )}

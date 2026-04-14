@@ -62,7 +62,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
 
   if (error)
     return (
-      <div className="bg-error-50 border border-red-200 rounded-lg p-4 text-error-700">{error}</div>
+      <div className="bg-error-50 border border-error-200 rounded-lg p-4 text-error-700">{error}</div>
     );
 
   return (
@@ -75,17 +75,17 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
             <p className="text-2xl font-bold text-blue-600">{summary.total}</p>
           </div>
 
-          <div className="bg-success-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-success-50 border border-success-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Activas</p>
             <p className="text-2xl font-bold text-success-600">{summary.active}</p>
           </div>
 
-          <div className="bg-warning-50 border border-amber-200 rounded-lg p-4">
+          <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Pausadas</p>
             <p className="text-2xl font-bold text-warning-600">{summary.paused}</p>
           </div>
 
-          <div className="bg-error-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-error-50 border border-error-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Baja calidad</p>
             <p className="text-2xl font-bold text-error-600">{summary.lowQuality}</p>
           </div>

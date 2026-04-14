@@ -121,7 +121,7 @@ export default function EditarActividadPage() {
         <div className={`text-sm px-4 py-3 rounded-xl mb-5 ${
           msg.type === 'success'
             ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-            : 'bg-error-50 border border-red-200 text-error-600'
+            : 'bg-error-50 border border-error-200 text-error-600'
         }`}>
           {msg.text}
           {msg.type === 'success' && (

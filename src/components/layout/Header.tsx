@@ -52,7 +52,7 @@ export async function Header() {
               </Link>
               <Link
                 href="/registro"
-                className="border border-orange-400 text-brand-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors"
+                className="border border-brand-400 text-brand-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors"
               >
                 Regístrate
               </Link>

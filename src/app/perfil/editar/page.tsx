@@ -149,7 +149,7 @@ function InputField({
             'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0',
             rightSlot ? 'pr-10' : '',
             error
-              ? 'border-red-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-400'
+              ? 'border-error-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-400'
               : 'border-gray-200 dark:border-gray-700 focus:ring-orange-500/25 focus:border-orange-500 dark:focus:border-orange-400',
           ]
             .filter(Boolean)

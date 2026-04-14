@@ -138,7 +138,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               />
 
               {error && (
-                <p className="text-xs text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
+                <p className="text-xs text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -290,7 +290,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
           <p className={`text-sm px-3 py-2 rounded-lg ${
             msg.type === 'success'
               ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-              : 'text-error-600 bg-error-50 border border-red-200'
+              : 'text-error-600 bg-error-50 border border-error-200'
           }`}>
             {msg.text}
           </p>

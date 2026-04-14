@@ -165,7 +165,7 @@ export default function AdminActividadesPage() {
                           disabled={busy === act.id}
                           className={`text-xs px-3 py-1 rounded-lg border transition-colors disabled:opacity-50 ${
                             act.status === 'ACTIVE'
-                              ? 'border-amber-200 text-warning-600 hover:bg-amber-50'
+                              ? 'border-warning-200 text-warning-600 hover:bg-amber-50'
                               : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
                           }`}
                         >

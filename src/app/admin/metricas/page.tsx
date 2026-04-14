@@ -247,7 +247,7 @@ export default async function MetricasPage() {
           {zeroResultSearches.length === 0 ? (
             <EmptyMsg>¡Todas las búsquedas encontraron resultados!</EmptyMsg>
           ) : (
-            <div className="rounded-2xl border border-red-100 overflow-hidden bg-white">
+            <div className="rounded-2xl border border-error-100 overflow-hidden bg-white">
               <ul className="divide-y divide-gray-100">
                 {zeroResultSearches.map((row, i) => (
                   <li

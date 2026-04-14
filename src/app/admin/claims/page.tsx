@@ -134,7 +134,7 @@ export default function ClaimsAdminPage() {
                     <button
                       onClick={() => act(c.id, 'reject')}
                       disabled={busy === c.id}
-                      className="text-xs rounded-lg border border-red-200 text-error-500 px-4 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-50"
+                      className="text-xs rounded-lg border border-error-200 text-error-500 px-4 py-1.5 hover:bg-red-50 transition-colors disabled:opacity-50"
                     >
                       Rechazar
                     </button>

@@ -121,7 +121,7 @@ export default function NotificacionesPage() {
         <div className={`text-sm px-3 py-2 rounded-lg mb-4 ${
           msg.type === 'success'
             ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-            : 'text-error-600 bg-error-50 border border-red-200'
+            : 'text-error-600 bg-error-50 border border-error-200'
         }`}>
           {msg.text}
         </div>
@@ -166,7 +166,7 @@ export default function NotificacionesPage() {
               key={opt.value}
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                 prefs.frequency === opt.value
-                  ? 'bg-brand-50 border border-orange-200'
+                  ? 'bg-brand-50 border border-brand-200'
                   : 'border border-transparent hover:bg-gray-50'
               }`}
             >

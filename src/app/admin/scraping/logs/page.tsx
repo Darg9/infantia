@@ -117,7 +117,7 @@ export default async function ScrapingLogsPage() {
               .filter((l) => l.errorMessage)
               .slice(0, 5)
               .map((log) => (
-                <div key={log.id} className="bg-error-50 border border-red-200 rounded-xl p-4">
+                <div key={log.id} className="bg-error-50 border border-error-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-medium text-error-700 text-sm">{log.source.name}</span>
                     <span className="text-xs text-error-400">

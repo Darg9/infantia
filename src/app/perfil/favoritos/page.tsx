@@ -58,7 +58,7 @@ export default async function FavoritosPage() {
 
       {/* Aviso si hay expiradas */}
       {expiredCount > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
+        <div className="rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-800">
           {expiredCount === 1
             ? '1 actividad puede haber expirado o cambiado. Aparece al final.'
             : `${expiredCount} actividades pueden haber expirado o cambiado. Aparecen al final.`}

@@ -119,7 +119,7 @@ export default function QualityDashboardClient() {
       </div>
 
       {status === 'over' && (
-        <div className="bg-error-50 border-l-4 border-red-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-error-50 border-l-4 border-error-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">🚨</div>
             <div className="ml-3">
@@ -131,7 +131,7 @@ export default function QualityDashboardClient() {
       )}
 
       {status === 'under' && (
-        <div className="bg-warning-50 border-l-4 border-yellow-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-warning-50 border-l-4 border-warning-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">⚠️</div>
             <div className="ml-3">
@@ -143,7 +143,7 @@ export default function QualityDashboardClient() {
       )}
 
       {status === 'healthy' && (
-        <div className="bg-success-50 border-l-4 border-green-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-success-50 border-l-4 border-success-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">✅</div>
             <div className="ml-3">

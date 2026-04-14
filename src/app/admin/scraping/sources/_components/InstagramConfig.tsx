@@ -59,7 +59,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
                 onClick={() => setContentMode(mode)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                   contentMode === mode
-                    ? 'bg-brand-500 text-white border-orange-500'
+                    ? 'bg-brand-500 text-white border-brand-500'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
                 }`}
               >

@@ -4,6 +4,9 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Button, Input, Card } from '@/components/ui'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Auth')
 
 export default function RegistroPage() {
   const [name, setName] = useState('')
@@ -20,13 +23,14 @@ export default function RegistroPage() {
     setLoading(true)
 
     if (password.length < 8) {
+      logger.warn('Intento de password corto', { action: 'register', result: 'attempt', reason: 'password_too_short' })
       setError('La contraseña debe tener al menos 8 caracteres')
       setLoading(false)
       return
     }
 
     const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.signUp({
+    const { error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -35,11 +39,14 @@ export default function RegistroPage() {
       },
     })
 
-    if (error) {
-      setError(error.message)
+    if (authError) {
+      logger.error('Fallo en el registro', { action: 'register', result: 'error', reason: authError.message })
+      setError(authError.message)
       setLoading(false)
       return
     }
+
+    logger.info('Registro exitoso', { action: 'register', result: 'success' })
 
     // Email de bienvenida se envía en /auth/callback después de confirmar
     setSuccess(true)

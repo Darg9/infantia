@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Button, Input, Card } from '@/components/ui'
+import { createLogger } from '@/lib/logger'
+
+const logger = createLogger('Auth')
 
 function LoginForm() {
   const router = useRouter()
@@ -22,13 +25,16 @@ function LoginForm() {
     setLoading(true)
 
     const supabase = createSupabaseBrowserClient()
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
-    if (error) {
+    if (authError) {
+      logger.error('Error de credenciales', { action: 'login', result: 'error', reason: authError.message })
       setError('Correo o contraseña incorrectos')
       setLoading(false)
       return
     }
+
+    logger.info('Login exitoso', { action: 'login', result: 'success' })
 
     // Verificar si el usuario necesita onboarding
     const profileRes = await fetch('/api/profile/me')

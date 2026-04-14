@@ -12,6 +12,9 @@ const MIN_PASSWORD_LENGTH = 8
 const MAX_AVATAR_SIZE     = 2 * 1024 * 1024 // 2 MB
 const ALLOWED_MIME_TYPES  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
 
+import { createLogger } from '@/lib/logger'
+const logger = createLogger('Upload')
+
 // ─── Icons (inline SVG — no extra deps) ───────────────────────────────────────
 
 function CameraIcon({ className }: { className?: string }) {
@@ -315,12 +318,12 @@ export default function EditarPerfilPage() {
             signal: ac.signal,
           })
         } catch (fetchErr) {
-          // AbortError: usuario cambió archivo o desmontó el componente
           if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
             setUploadingAvatar(false)
             setBasicLoading(false)
             return
           }
+          logger.error('Error de red al subir avatar', { action: 'avatar_upload', result: 'error', reason: (fetchErr as Error).message })
           throw fetchErr
         }
 
@@ -330,11 +333,14 @@ export default function EditarPerfilPage() {
         if (!avatarRes.ok) {
           const data = (await avatarRes.json()) as { error?: string }
           const msg = data.error ?? 'Error al subir la foto'
+          logger.error('Error del servidor subiendo archivo', { action: 'avatar_upload', result: 'error', reason: msg })
           setAvatarUploadError(msg)
           toast.error(msg)
           setBasicLoading(false)
           return
         }
+
+        logger.info('Avatar subido correctamente', { action: 'avatar_upload', result: 'success' })
 
         setAvatarFile(null)
         setAvatarUploadError(null)

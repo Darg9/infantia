@@ -21,6 +21,26 @@ const PREFIXES: Record<Level, string> = {
   error: 'ERROR',
 };
 
+// ─── Browser Deduplication (UI Throttle) ──────────────────────────────────────
+const recentLogs = new Map<string, number>();
+const THROTTLE_MS = 2000;
+
+function isDuplicateBrowserLog(key: string): boolean {
+  if (typeof window === 'undefined') return false; // Only deduplicate on client
+  const now = Date.now();
+  const last = recentLogs.get(key);
+  if (last && now - last < THROTTLE_MS) return true;
+  
+  recentLogs.set(key, now);
+  if (recentLogs.size > 200) {
+    const threshold = now - THROTTLE_MS;
+    for (const [k, v] of recentLogs.entries()) {
+      if (v < threshold) recentLogs.delete(k);
+    }
+  }
+  return false;
+}
+
 function formatLine(level: Level, message: string, meta?: LogMeta): string {
   const ts  = new Date().toISOString();
   const ctx = meta?.ctx ? `[${meta.ctx}] ` : '';
@@ -34,6 +54,21 @@ function formatLine(level: Level, message: string, meta?: LogMeta): string {
 }
 
 function write(level: Level, message: string, meta?: LogMeta): void {
+  // 1. Deduplicación en Client-Side (React Strict Mode / Re-renders shielding)
+  if (typeof window !== 'undefined') {
+    const action = meta?.action ? String(meta.action) : '';
+    const result = meta?.result ? String(meta.result) : '';
+    const ctxStr = meta?.ctx ? String(meta.ctx) : '';
+    const dedupKey = `${level}:${ctxStr}:${message}:${action}:${result}`;
+    if (isDuplicateBrowserLog(dedupKey)) return;
+
+    // Producción Frontend limpia: inhibimos logs para no ensuciar consola (salvo hooks de analytics)
+    if (process.env.NODE_ENV === 'production') {
+      // trackAnalytics(level, message, meta) // Opcional integración
+      return; 
+    }
+  }
+
   const line = formatLine(level, message, meta);
 
   if (level === 'error') {

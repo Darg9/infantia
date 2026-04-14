@@ -12,6 +12,9 @@ import { trackEvent } from '@/lib/track';
 import { activityPath } from '@/lib/activity-url';
 import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
 import { Input, Button, useToast } from '@/components/ui';
+import { createLogger } from '@/lib/logger';
+
+const logger = createLogger('Search');
 
 const QUICK_CHIPS = [
   { label: 'Hoy',         href: '/actividades?sort=date'  },
@@ -194,6 +197,9 @@ export default function HeroSearch() {
       type: "search_applied",
       metadata: { query: trimmed }
     });
+    
+    logger.info('Búsqueda ejecutada', { action: 'submit', result: 'success', query: trimmed })
+
     router.push(`/actividades?search=${encodeURIComponent(trimmed)}`);
     
     // Release lock softly to allow subsequent consecutive searches safely

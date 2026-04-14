@@ -71,6 +71,10 @@ const SIZES: Record<ButtonSize, string> = {
   lg: 'px-6 py-3 text-base rounded-xl',
 }
 
+export function buttonVariants({ variant = 'primary', size = 'md', className }: Pick<ButtonProps, 'variant' | 'size' | 'className'>) {
+  return clsx(BASE, VARIANTS[variant], SIZES[size], className)
+}
+
 function SpinnerIcon({ className }: { className?: string }) {
   return (
     <svg
@@ -101,7 +105,7 @@ export function Button({
       disabled={isDisabled}
       aria-busy={loading || undefined}
       aria-disabled={isDisabled || undefined}
-      className={clsx(BASE, VARIANTS[variant], SIZES[size], className)}
+      className={buttonVariants({ variant, size, className })}
       {...props}
     >
       {loading && (

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
+import { buttonVariants } from '@/components/ui'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -46,13 +47,13 @@ export async function Header() {
             <div className="flex items-center gap-3">
               <Link
                 href="/login"
-                className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
               >
                 Inicia sesión
               </Link>
               <Link
                 href="/registro"
-                className="border border-brand-400 text-brand-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-brand-50 transition-colors"
+                className={buttonVariants({ variant: 'secondary', size: 'sm' })}
               >
                 Regístrate
               </Link>

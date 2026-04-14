@@ -6,7 +6,7 @@
  *   import { ToastProvider, useToast }     from '@/components/ui'
  */
 
-export { Button }                             from './button'
+export { Button, buttonVariants }               from './button'
 export { Input }                              from './input'
 export { Card }                               from './card'
 export { Avatar }                             from './avatar'

@@ -712,7 +712,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Hybrid Ranking Node Cache | Resuelve inconsistencias en páginas profundas, ahorra queries a la DB forzando el conteo 1 vez por minuto en Node.js |
 | Mock Resilience Test Pattern | Proxy `fetchWithFallback` en pipeline inyectado que aísla playrigth vs cheerio sin que un engine rompa al otro |
 | Normalización Fuerte de Precios | `normalizePrice(value)` impone un parseo seguro a Prisma Decimal evitando Error 500s |
-| Email Security `p=reject` y `-all` | Evita spoofing al 100%. Regla arquitectónica: cualquier nuevo proveedor de correo (ej. Supabase, CRM) DEBE añadirse explícitamente al registro SPF de Namecheap antes de enviar, o será bloqueado automáticamente. SPF final: `v=spf1 include:zoho.com include:resend.com -all` (Zoho = usuario, Resend = transaccional). |
+| Email Security SPF + DKIM + DMARC | Tríada de autenticación completa activa en producción. SPF: `v=spf1 include:zoho.com include:resend.com -all`. DKIM: firmado por Resend vía subdominio técnico `send.habitaplan.com` (aísla reputación del dominio principal). DMARC: `p=reject` — rechaza automáticamente cualquier emisor no autorizado. Validado Gmail: SPF PASS / DKIM PASS / DMARC PASS. Regla arquitectónica: cualquier nuevo proveedor de correo DEBE añadirse al SPF antes de enviar. FROM unificado: `notificaciones@habitaplan.com`. |
 | ESLint freeze DEBT-02 (S45) | `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. 31 archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` en `globalIgnores`. Bloquea `any` nuevo en CI sin romper legacy. Boy Scout Rule: reducir al tocar cada archivo. |
 
 ---

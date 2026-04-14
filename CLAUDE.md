@@ -199,7 +199,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Provider dashboard access:** `getSessionWithRole()` → si ADMIN permite; si role=provider, verifica `provider.email === session.user.email && provider.isClaimed`.
 - **tsconfig target ES2017:** No usar flag `/s` en regex — usar `[\s\S]` en su lugar.
 - **ESLint freeze (S45):** `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. Archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` ignorado. 0 nuevos `any` sin CI rojo.
-- **SPF email:** `v=spf1 include:zoho.com include:resend.com -all` — Zoho=usuario, Resend=transaccional. Cualquier nuevo proveedor de correo debe añadirse aquí antes de enviar.
+- **Email auth (SPF+DKIM+DMARC):** `v=spf1 include:zoho.com include:resend.com -all` — Zoho=usuario, Resend=transaccional. DKIM firmado vía subdominio técnico `send.habitaplan.com` (rebotes + aislamiento de reputación). DMARC `p=reject` activo. FROM unificado: `notificaciones@habitaplan.com`. Validado Gmail PASS. Cualquier nuevo proveedor de correo debe añadirse al SPF antes de enviar.
 - **Privacy SSOT (S45):** `privacy.ts` cubre explícitamente datos de interacción + IP/UA + propósito + "no para identificación personal directa" — cubre el CTR Feedback Loop bajo Ley 1581.
 - **Logger:** `createLogger(ctx)` en `src/lib/logger.ts`. NO usar console.* en producción. `log.error(msg, { error })` — nunca `log.error(msg, errorObject)` directo (serializa como array de chars).
 - **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.

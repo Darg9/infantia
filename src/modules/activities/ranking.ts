@@ -46,18 +46,21 @@ function computeRelevanceScore(activity: Partial<Activity>): number {
 
 /**
  * Mapeo oficial unificado para el Score global aplicable al listado en memoria.
+ * ctrBoost es una señal aditiva real de comportamiento de usuario (máx +0.15).
+ * NO reemplaza las señales existentes — las complementa.
  */
 export function computeActivityScore(
   activity: Partial<Activity>,
-  sourceHealthScore: number | undefined
+  sourceHealthScore: number | undefined,
+  ctrBoost: number = 0,
 ): number {
   const relevance = computeRelevanceScore(activity);
   const recency = computeRecencyScore(activity.createdAt || new Date());
-  
+
   // Asumimos un score neutral (0.5) si el dominio aún no ha sido medido
   const trustScore = sourceHealthScore ?? 0.5;
 
-  const rankingScore = (relevance * 0.5) + (recency * 0.2) + (trustScore * 0.3);
+  const rankingScore = (relevance * 0.5) + (recency * 0.2) + (trustScore * 0.3) + ctrBoost;
 
   return rankingScore;
 }

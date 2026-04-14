@@ -274,7 +274,12 @@ async function runQueue(sources: Source[], maxPages: number) {
   console.log(`   Asegúrate de que el worker esté corriendo: npx tsx scripts/run-worker.ts\n`);
 
   const { prisma } = require('../src/lib/db');
-  const healthData = await prisma.sourceHealth.findMany({ select: { source: true, score: true } });
+  const { getCTRByDomain, ctrToBoost } = await import('../src/modules/analytics/metrics');
+
+  const [healthData, ctrMap] = await Promise.all([
+    prisma.sourceHealth.findMany({ select: { source: true, score: true } }),
+    getCTRByDomain(),
+  ]);
   const healthDict: Record<string, number> = {};
   for (const h of healthData) {
     healthDict[h.source] = h.score;
@@ -283,12 +288,18 @@ async function runQueue(sources: Source[], maxPages: number) {
   for (const source of sources) {
     const host = new URL(source.url).hostname.replace('www.', '');
     const score = healthDict[host] ?? 0.5; // neutral fallback
-    
-    // Asignación de prioridad BullMQ dinámica:
-    // 1: Alta, 2: Normal, 3: Baja
-    let priority = 2;
-    if (score > 0.8) priority = 1;
-    else if (score < 0.4) priority = 3;
+
+    // Prioridad base por salud de la fuente (1=Alta, 2=Normal, 3=Baja)
+    let healthPriority = 2;
+    if (score > 0.8) healthPriority = 1;
+    else if (score < 0.4) healthPriority = 3;
+
+    // Prioridad por CTR real: fuentes con más conversión se scrapean primero
+    const ctr = (ctrMap as Record<string, number>)[host] ?? 0;
+    const ctrPriority = ctr > 0.3 ? 1 : ctr > 0.15 ? 2 : 3;
+
+    // Combinar: Math.min toma el más prioritario (número menor = más urgente)
+    const priority = Math.min(healthPriority, ctrPriority);
 
     const id = await enqueueBatchJob({
       url:             source.url,
@@ -297,8 +308,9 @@ async function runQueue(sources: Source[], maxPages: number) {
       maxPages,
       sitemapPatterns: source.sitemapPatterns,
     }, { priority });
-    
-    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id} (Prioridad: ${priority})`);
+
+    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id} (P:${priority} health:${score.toFixed(2)} ctr:${ctr.toFixed(3)})`);
+    console.info(JSON.stringify({ event: 'ctr_priority_applied', domain: host, ctr, priority }));
   }
 
   console.log(`\n  ${sources.length} jobs encolados. El worker los procesa secuencialmente.\n`);

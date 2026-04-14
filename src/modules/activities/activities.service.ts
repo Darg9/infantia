@@ -6,6 +6,7 @@ import { prisma } from '@/lib/db';
 import type { Prisma } from '@/generated/prisma/client';
 import type { CreateActivityInput, UpdateActivityInput } from './activities.schemas';
 import { getDomainFromUrl, computeActivityScore } from './ranking';
+import { getCachedCTR, ctrToBoost } from '@/modules/analytics/metrics';
 
 const activityIncludes = {
   provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
@@ -188,7 +189,10 @@ export async function listActivities(params: ListParams) {
   }
 
   // 1. Obtener Diccionario Global de Orígenes para ranking (Con caché TTL de 5 minutos)
-  const healthData = await getCachedHealthData();
+  const [healthData, ctrMap] = await Promise.all([
+    getCachedHealthData(),
+    getCachedCTR(),
+  ]);
   const healthDict: Record<string, number> = {};
   const badDomains: string[] = [];
   
@@ -251,8 +255,10 @@ export async function listActivities(params: ListParams) {
     // Si viene legacy activity, usa el helper as fallback
     const domain = act.sourceDomain || getDomainFromUrl(act.sourceUrl);
     const healthScore = healthDict[domain] ?? 0.5; // Neutral fallback asegurado
-    const rankingScore = computeActivityScore(act, healthScore);
-    return { ...act, rankingScore, _domainTemp: domain }; 
+    const ctr = ctrMap[domain] ?? 0;
+    const ctrBoost = ctrToBoost(ctr);
+    const rankingScore = computeActivityScore(act, healthScore, ctrBoost);
+    return { ...act, rankingScore, _domainTemp: domain };
   });
 
   // 5. Ordenamiento final e Invisibilidad (Safety net redundante)
@@ -298,12 +304,14 @@ export async function listActivities(params: ListParams) {
 
   // 8. LOGGING OBLIGATORIO
   if (isRelevanceSort) {
+      const domainsWithCTR = Object.entries(ctrMap).filter(([, v]) => v > 0).length;
       console.info(JSON.stringify({
         event: "ranking_applied",
         fetched: rawActivities.length,
         afterFilter: processedActivities.length,
         afterDiversity: diversified.length,
         returned: pagedActivities.length,
+        ctrDomainsActive: domainsWithCTR,
         timestamp: new Date().toISOString()
       }));
   }

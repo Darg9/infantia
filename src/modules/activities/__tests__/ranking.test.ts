@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeActivityScore } from '../ranking';
+import { ctrToBoost } from '../../analytics/metrics';
 import { Activity } from '../../../generated/prisma/client';
 
 describe('Activity Ranking Engine', () => {
@@ -52,5 +53,25 @@ describe('Activity Ranking Engine', () => {
     const score = computeActivityScore(baseActivity, undefined);
     // Relevance 0.35 + Recency 0.2 + Health (0.5 * 0.3 = 0.15) = 0.70
     expect(score).toBeCloseTo(0.70, 2);
+  });
+
+  it('ctrBoost = 0 por defecto — no altera el score base', () => {
+    const withBoost = computeActivityScore(baseActivity, 1.0, 0);
+    const withoutBoost = computeActivityScore(baseActivity, 1.0);
+    expect(withBoost).toBe(withoutBoost);
+  });
+
+  it('ctrBoost se suma al score final', () => {
+    const base = computeActivityScore(baseActivity, 1.0);
+    const boosted = computeActivityScore(baseActivity, 1.0, 0.15);
+    expect(boosted).toBeCloseTo(base + 0.15, 5);
+  });
+
+  describe('ctrToBoost — tiers correctos', () => {
+    it('CTR > 0.3 → boost 0.15', () => expect(ctrToBoost(0.35)).toBe(0.15));
+    it('CTR > 0.15 → boost 0.08', () => expect(ctrToBoost(0.20)).toBe(0.08));
+    it('CTR > 0.05 → boost 0.03', () => expect(ctrToBoost(0.10)).toBe(0.03));
+    it('CTR = 0 → boost 0',        () => expect(ctrToBoost(0)).toBe(0));
+    it('CTR = 0.05 → boost 0 (límite inferior exacto)', () => expect(ctrToBoost(0.05)).toBe(0));
   });
 });

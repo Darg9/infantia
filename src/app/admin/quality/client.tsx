@@ -192,7 +192,7 @@ export default function QualityDashboardClient() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} tickMargin={10} minTickGap={30} />
                   <YAxis tickFormatter={percentFormatter} tick={{fontSize: 12, fill: '#6B7280'}} />
-                  <Tooltip formatter={(value: number) => percentFormatter(value)} contentStyle={{ borderRadius: '8px' }} />
+                  <Tooltip formatter={(value) => percentFormatter(Number(value))} contentStyle={{ borderRadius: '8px' }} />
                   <ReferenceLine y={0.10} stroke="#EAB308" strokeDasharray="3 3" />
                   <ReferenceLine y={0.35} stroke="#22C55E" strokeDasharray="3 3" />
                   <ReferenceLine y={0.50} stroke="#EF4444" strokeDasharray="3 3" />
@@ -234,7 +234,7 @@ export default function QualityDashboardClient() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E5E7EB" />
                   <XAxis dataKey="createdAt" tick={{fontSize: 12, fill: '#6B7280'}} tickMargin={10} minTickGap={30} />
                   <YAxis tickFormatter={basePercentFormatter} tick={{fontSize: 12, fill: '#6B7280'}} />
-                  <Tooltip formatter={(value: number) => basePercentFormatter(value)} contentStyle={{ borderRadius: '8px', zIndex: 1000 }} />
+                  <Tooltip formatter={(value) => basePercentFormatter(Number(value))} contentStyle={{ borderRadius: '8px', zIndex: 1000 }} />
                   <Legend verticalAlign="top" height={36}/>
                   <Line type="monotone" dataKey="pctShort" stroke="#F59E0B" strokeWidth={2} dot={false} activeDot={{r: 5}} name="% Cortas" />
                   <Line type="monotone" dataKey="pctNoise" stroke="#EF4444" strokeWidth={2} dot={false} activeDot={{r: 5}} name="% Ruido" />

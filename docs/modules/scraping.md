@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S44
+**Versión actual:** v0.11.0-S45
 **Última actualización:** Hoy
 
 ## ¿Qué hace?
@@ -158,6 +158,8 @@ El pipeline integra geocoding automático en cada actividad guardada:
 | @teatropetra | 87K | Teatro — programación activa |
 | @distritojovenbta | 24K | Agenda juventudes Bogotá |
 | @centrodeljapon | 7K | Cultura japonesa — talleres |
+| @parqueexplora | — | Ciencia y tecnología — Medellín (NUEVO S35) |
+| @quehacerenmedellin | — | Agenda cultural — Medellín (NUEVO S35) |
 
 Configuración por fuente: `instagram.contentMode` (text/image/both) + `instagram.maxPosts` (1–12).
 Validación sin cuota: `npx tsx scripts/test-instagram.ts <URL> --validate-only`

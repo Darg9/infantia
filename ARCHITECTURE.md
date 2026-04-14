@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.11.0-S44 | Actualizado: 2026-04-13
+> Versión: v0.11.0-S45 | Actualizado: 2026-04-14
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -636,10 +636,10 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 894 tests, 59 archivos, 0 fallos
+- **Estado actual:** 916 tests, 60 archivos, 0 fallos
 - **Cobertura:** >85% stmts / >85% branches / >85% funcs / >85% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
-- **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`
+- **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`, `activities/ranking`, `analytics/metrics`
 - **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests
 
 **Patrón crítico para mocks:**
@@ -712,16 +712,17 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Mock Resilience Test Pattern | Proxy `fetchWithFallback` en pipeline inyectado que aísla playrigth vs cheerio sin que un engine rompa al otro |
 | Normalización Fuerte de Precios | `normalizePrice(value)` impone un parseo seguro a Prisma Decimal evitando Error 500s |
 | Email Security `p=reject` y `-all` | Evita spoofing al 100%. Regla arquitectónica: cualquier nuevo proveedor de correo (ej. Supabase, CRM) DEBE añadirse explícitamente al registro SPF de Namecheap antes de enviar, o será bloqueado automáticamente. SPF final: `v=spf1 include:zoho.com include:resend.com -all` (Zoho = usuario, Resend = transaccional). |
+| ESLint freeze DEBT-02 (S45) | `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. 31 archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` en `globalIgnores`. Bloquea `any` nuevo en CI sin romper legacy. Boy Scout Rule: reducir al tocar cada archivo. |
 
 ---
 
 ## 15. Roadmap Técnico Pendiente
 
 ### Corto plazo (v0.9.x)
-- [ ] **Activar Sentry** — crear cuenta sentry.io → agregar `SENTRY_DSN` en Vercel Dashboard
-- [ ] **UptimeRobot** — monitorear `/api/health` (gratuito, alertas por email)
+- [x] **Sentry activo** — SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN configurados en Vercel (S28)
+- [x] **UptimeRobot** — monitoreando `/api/health` (S28)
 - [ ] **Proxy IPRoyal** — activar vars `PLAYWRIGHT_PROXY_SERVER/USER/PASS` en Vercel ($7/GB)
-- [ ] **Banrep Cartagena** — reintentar ingest tras reset cuota Gemini (19:00 COL diario)
+- [x] **Banrep Cartagena** — ingestado
 - [x] Seguridad: PUT/DELETE activities protegidos con requireRole(ADMIN)
 - [x] Seguridad: CRON_SECRET sin fallback inseguro
 - [x] Seguridad: 0 vulnerabilidades npm (era 15)
@@ -750,7 +751,7 @@ El mismo desarrollador mantiene dos proyectos independientes. En el pasado hubo 
 
 | Proyecto | Directorio | DB | NLP activo |
 |---|---|---|---|
-| **HabitaPlan** | `C:\Users\denys\Projects\habitaplan` | PostgreSQL (Supabase) | Gemini 2.5 Flash |
+| **HabitaPlan** | `C:\Users\denys\Projects\infantia` | PostgreSQL (Supabase) | Gemini 2.5 Flash |
 | **Habit Challenge** | `C:\Users\denys\Projects\habit-challenge` | SQLite | Claude API |
 
 **Señales de contaminación:**

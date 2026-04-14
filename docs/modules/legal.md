@@ -1,6 +1,6 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.11.0-S44
+**Versión:** ✅ v0.11.0-S45
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 

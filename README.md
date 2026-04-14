@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.11.0-S44 | **Status:** Production | **Tests:** 916 passing / 60 files | **Coverage:** >91% stmts / >85% branches | **Quality Metrics:** ✅ Active
+**Version:** v0.11.0-S45 | **Status:** Production | **Tests:** 916 passing / 60 files | **Coverage:** >91% stmts / >85% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 
@@ -72,14 +72,14 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** Native Analytics UI, logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 889 unit tests (91.39% stmts / 85.90% branches), E2E tests
+- 🧪 **Well-tested:** 916 unit tests (>91% stmts / >85% branches), E2E tests
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production
-npm test                       # Run all tests (882 tests)
+npm test                       # Run all tests (916 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 
 # Scraping

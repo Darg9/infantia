@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S44
+**Versión actual:** v0.11.0-S45
 **Última actualización:** Hoy
 
 ## ¿Qué hace?

@@ -7,11 +7,11 @@ Se actualiza en cada PR que toca ese módulo.
 
 | Módulo | Doc | Estado |
 |---|---|---|
-| scraping | [scraping.md](scraping.md) | ✅ v0.11.0-S44 |
-| activities | [activities.md](activities.md) | ✅ v0.11.0-S44 |
-| product / ux | [product.md](product.md) | ✅ v0.11.0-S44 |
-| analytics | [analytics.md](analytics.md) | ✅ v0.11.0-S44 |
-| legal | [legal.md](legal.md) | ✅ v0.11.0-S44 |
+| scraping | [scraping.md](scraping.md) | ✅ v0.11.0-S45 |
+| activities | [activities.md](activities.md) | ✅ v0.11.0-S45 |
+| product / ux | [product.md](product.md) | ✅ v0.11.0-S45 |
+| analytics | [analytics.md](analytics.md) | ✅ v0.11.0-S45 |
+| legal | [legal.md](legal.md) | ✅ v0.11.0-S45 |
 | providers | providers.md | 🔜 pendiente |
 | search | search.md | *Ref. en product.md* |
 | verticals | verticals.md | 🔜 pendiente |

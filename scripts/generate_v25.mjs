@@ -350,7 +350,7 @@ children.push(bodyParagraph("instrumentation-client.ts inicializa Sentry en brow
 children.push(spacer());
 children.push(subHeading("7.3 Health Check + UptimeRobot ACTIVO"));
 children.push(bodyParagraph("GET /api/health — check DB + Redis. 200 ok | 200 degraded (Redis falla) | 503 down (DB falla).", { bullet: true }));
-children.push(bodyParagraph("UptimeRobot monitoreando https://habitaplan-activities.vercel.app/api/health.", { bullet: true }));
+children.push(bodyParagraph("UptimeRobot monitoreando https://habitaplan-prod.vercel.app/api/health.", { bullet: true }));
 children.push(spacer());
 
 // ── SECTION 8: MODELO DE DATOS ──────────────────────────────────────────────

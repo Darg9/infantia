@@ -591,7 +591,8 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 
 ## 10. Despliegue
 
-- **Plataforma:** Vercel (auto-deploy en push a `master`)
+- **Plataforma:** Vercel (auto-deploy en push a `master`) — proyecto `habitaplan-prod`, cuenta `Darg9`
+- **URL preview:** https://habitaplan-prod.vercel.app
 - **DB:** Supabase PostgreSQL (AWS us-east-1, proyecto `vjfhlrpfubbfnvpthwym`)
 - **Dominio:** `habitaplan.com` ✅ (DNS apuntado a Vercel — S35)
 - **Crons Vercel:** deduplicación diaria — `15 2 * * *`

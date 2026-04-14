@@ -127,7 +127,7 @@ RESEND_API_KEY=...
 REDIS_URL=rediss://...
 
 # Site
-NEXT_PUBLIC_SITE_URL=https://habitaplan-activities.vercel.app
+NEXT_PUBLIC_SITE_URL=https://habitaplan-prod.vercel.app
 
 # Proxy (optional — IPRoyal residential, pay-as-you-go $7/GB)
 PLAYWRIGHT_PROXY_SERVER=http://geo.iproyal.com:12321

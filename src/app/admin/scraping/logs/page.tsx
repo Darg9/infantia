@@ -18,7 +18,7 @@ export default async function ScrapingLogsPage() {
     SUCCESS: { bg: 'bg-success-100 text-success-700', icon: '✅' },
     PARTIAL: { bg: 'bg-warning-100 text-warning-700', icon: '⚠️' },
     FAILED: { bg: 'bg-error-100 text-error-700', icon: '❌' },
-    RUNNING: { bg: 'bg-blue-100 text-blue-700', icon: '🔄' },
+    RUNNING: { bg: 'bg-brand-100 text-brand-700', icon: '🔄' },
   }
 
   const platformEmoji: Record<string, string> = {

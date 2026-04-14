@@ -74,7 +74,7 @@ export default function QualityDashboardClient() {
           <h1 className="text-3xl font-semibold text-gray-900">Content Quality Dashboard</h1>
           <p className="text-gray-500 mt-1">Observabilidad del pipeline de contenido</p>
         </div>
-        <Link href="/admin" className="text-sm font-medium text-indigo-600 hover:text-indigo-500 px-4 py-2 border border-indigo-100 rounded-lg bg-indigo-50 hover:bg-indigo-100 transition">
+        <Link href="/admin" className="text-sm font-medium text-brand-600 hover:text-brand-500 px-4 py-2 border border-brand-100 rounded-lg bg-brand-50 hover:bg-brand-100 transition">
           ← Volver a Admin
         </Link>
       </div>
@@ -158,11 +158,11 @@ export default function QualityDashboardClient() {
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
             <h3 className="text-sm font-medium text-gray-500">Discard Rate (Actual)</h3>
-            <p className="text-3xl font-bold text-blue-600 mt-2">{percentFormatter(latest.discardRate)}</p>
+            <p className="text-3xl font-bold text-brand-500 mt-2">{percentFormatter(latest.discardRate)}</p>
           </div>
           <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
             <h3 className="text-sm font-medium text-gray-500">Avg Length (Actual)</h3>
-            <p className="text-3xl font-bold text-indigo-600 mt-2">{latest.avgLength}</p>
+            <p className="text-3xl font-bold text-brand-500 mt-2">{latest.avgLength}</p>
           </div>
         </div>
       )}

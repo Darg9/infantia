@@ -120,14 +120,14 @@ export default function EditarActividadPage() {
       {msg && (
         <div className={`text-sm px-4 py-3 rounded-xl mb-5 ${
           msg.type === 'success'
-            ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
+            ? 'bg-success-50 border border-success-200 text-success-700'
             : 'bg-error-50 border border-error-200 text-error-600'
         }`}>
           {msg.text}
           {msg.type === 'success' && (
             <button
               onClick={() => router.push('/admin/actividades')}
-              className="ml-3 underline text-emerald-700"
+              className="ml-3 underline text-success-700"
             >
               Volver a la lista
             </button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
+import { Button } from '@/components/ui'
 
 type Status = 'ACTIVE' | 'PAUSED' | 'DRAFT' | 'EXPIRED'
 
@@ -25,7 +26,7 @@ const STATUS_LABELS: Record<Status, string> = {
 }
 
 const STATUS_COLORS: Record<Status, string> = {
-  ACTIVE: 'bg-emerald-100 text-emerald-700',
+  ACTIVE: 'bg-success-100 text-success-700',
   PAUSED: 'bg-warning-100 text-warning-700',
   DRAFT: 'bg-gray-100 text-gray-600',
   EXPIRED: 'bg-error-100 text-error-600',
@@ -160,17 +161,14 @@ export default function AdminActividadesPage() {
                         Editar
                       </Link>
                       {(act.status === 'ACTIVE' || act.status === 'PAUSED') && (
-                        <button
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => toggleStatus(act)}
                           disabled={busy === act.id}
-                          className={`text-xs px-3 py-1 rounded-lg border transition-colors disabled:opacity-50 ${
-                            act.status === 'ACTIVE'
-                              ? 'border-warning-200 text-warning-600 hover:bg-warning-50'
-                              : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                          }`}
                         >
-                          {busy === act.id ? '...' : act.status === 'ACTIVE' ? 'Ocultar' : 'Activar'}
-                        </button>
+                          {busy === act.id ? '…' : act.status === 'ACTIVE' ? 'Ocultar' : 'Activar'}
+                        </Button>
                       )}
                       <Link
                         href={`/actividades/${act.id}`}
@@ -191,23 +189,25 @@ export default function AdminActividadesPage() {
       {/* Paginación */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-5">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-brand-400 transition-colors"
           >
             ← Anterior
-          </button>
+          </Button>
           <span className="text-sm text-gray-500">
             Página {page} de {totalPages}
           </span>
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-brand-400 transition-colors"
           >
             Siguiente →
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui';
 
 type ClaimStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -27,7 +28,7 @@ const STATUS_LABELS: Record<ClaimStatus, string> = {
 
 const STATUS_COLORS: Record<ClaimStatus, string> = {
   PENDING:  'bg-warning-100 text-warning-700',
-  APPROVED: 'bg-emerald-100 text-emerald-700',
+  APPROVED: 'bg-success-100 text-success-700',
   REJECTED: 'bg-gray-100 text-gray-500',
 };
 
@@ -68,7 +69,7 @@ export default function ClaimsAdminPage() {
           <h1 className="text-2xl font-bold text-gray-900">Solicitudes de perfil</h1>
           <p className="text-sm text-gray-500 mt-1">Aprueba o rechaza reclamaciones de proveedores</p>
         </div>
-        <a href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</a>
+        <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
 
       {/* Filtros */}
@@ -124,20 +125,22 @@ export default function ClaimsAdminPage() {
 
                 {c.status === 'PENDING' && (
                   <div className="flex gap-2 flex-shrink-0">
-                    <button
+                    <Button
+                      variant="primary"
+                      size="sm"
                       onClick={() => act(c.id, 'approve')}
                       disabled={busy === c.id}
-                      className="text-xs rounded-lg bg-emerald-500 hover:bg-emerald-600 disabled:opacity-50 text-white font-semibold px-4 py-1.5 transition-colors"
                     >
                       {busy === c.id ? '…' : 'Aprobar'}
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      size="sm"
                       onClick={() => act(c.id, 'reject')}
                       disabled={busy === c.id}
-                      className="text-xs rounded-lg border border-error-200 text-error-500 px-4 py-1.5 hover:bg-error-50 transition-colors disabled:opacity-50"
                     >
                       Rechazar
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>

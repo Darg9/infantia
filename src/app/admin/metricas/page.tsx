@@ -139,7 +139,7 @@ export default async function MetricasPage() {
         <SectionTitle>Resumen general</SectionTitle>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <StatCard label="Total actividades" value={totalActivities} />
-          <StatCard label="Activas"           value={activeActivities}  color="text-emerald-600" />
+          <StatCard label="Activas"           value={activeActivities}  color="text-success-600" />
           <StatCard label="Expiradas"         value={expiredActivities} color="text-warning-600" />
           <StatCard label="Usuarios"          value={totalUsers} />
           <StatCard label="Proveedores"       value={totalProviders} />
@@ -182,7 +182,7 @@ export default async function MetricasPage() {
                         {act ? (
                           <Link
                             href={`/admin/actividades/${act.id}/editar`}
-                            className="hover:text-indigo-600 transition-colors"
+                            className="hover:text-brand-600 transition-colors"
                           >
                             {act.title}
                           </Link>
@@ -195,7 +195,7 @@ export default async function MetricasPage() {
                           <StatusBadge status={act.status} />
                         )}
                       </td>
-                      <td className="px-4 py-3 text-right font-semibold text-indigo-600">
+                      <td className="px-4 py-3 text-right font-semibold text-brand-500">
                         {(row._count.activityId ?? 0).toLocaleString('es-CO')}
                       </td>
                     </tr>
@@ -226,7 +226,7 @@ export default async function MetricasPage() {
                       <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>
                       <Link
                         href={`/actividades?search=${encodeURIComponent(row.query)}`}
-                        className="text-sm font-medium text-gray-800 hover:text-indigo-600 transition-colors"
+                        className="text-sm font-medium text-gray-800 hover:text-brand-600 transition-colors"
                         target="_blank"
                       >
                         {row.query}
@@ -285,7 +285,7 @@ export default async function MetricasPage() {
                 </div>
                 <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                   <div
-                    className="h-full rounded-full bg-indigo-500 transition-all"
+                    className="h-full rounded-full bg-brand-500 transition-all"
                     style={{ width: `${((row._count.type ?? 0) / maxTypeCount) * 100}%` }}
                   />
                 </div>
@@ -348,10 +348,10 @@ function StatCard({
 
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
-    ACTIVE:  'bg-emerald-100 text-emerald-700',
+    ACTIVE:  'bg-success-100 text-success-700',
     EXPIRED: 'bg-warning-100 text-warning-700',
     DRAFT:   'bg-gray-100 text-gray-600',
-    PAUSED:  'bg-blue-100 text-blue-700',
+    PAUSED:  'bg-warning-100 text-warning-700',
   };
   return (
     <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${cfg[status] ?? cfg.DRAFT}`}>

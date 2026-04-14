@@ -31,7 +31,7 @@ export default async function ScrapingSourcesPage() {
     SUCCESS: 'bg-success-100 text-success-700',
     PARTIAL: 'bg-warning-100 text-warning-700',
     FAILED: 'bg-error-100 text-error-700',
-    RUNNING: 'bg-blue-100 text-blue-700',
+    RUNNING: 'bg-brand-100 text-brand-700',
   }
 
   return (

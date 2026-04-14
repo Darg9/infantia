@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui';
 
 interface Sponsor {
   id: string;
@@ -85,7 +86,7 @@ export default function SponsorsAdminPage() {
       <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
       <input
         type={type}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         value={form[k] as string}
         onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
       />
@@ -99,7 +100,7 @@ export default function SponsorsAdminPage() {
           <h1 className="text-2xl font-bold text-gray-900">Patrocinadores</h1>
           <p className="text-sm text-gray-500 mt-1">Gestiona sponsors para el newsletter</p>
         </div>
-        <a href="/admin" className="text-sm text-indigo-600 hover:underline">← Admin</a>
+        <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
 
       {/* Formulario */}
@@ -118,25 +119,27 @@ export default function SponsorsAdminPage() {
               id="isActive"
               checked={form.isActive}
               onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
-              className="rounded"
+              className="rounded accent-brand-500"
             />
             <label htmlFor="isActive" className="text-sm text-gray-700">Activo (aparece en emails)</label>
           </div>
         </div>
         <div className="flex items-center gap-3 mt-4">
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={save}
+            loading={saving}
             disabled={saving || !form.name || !form.tagline || !form.url}
-            className="rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-semibold py-2 px-5 text-sm transition-colors"
           >
-            {saving ? 'Guardando…' : editId ? 'Actualizar' : 'Crear'}
-          </button>
+            {editId ? 'Actualizar' : 'Crear'}
+          </Button>
           {editId && (
-            <button onClick={() => { setEditId(null); setForm(EMPTY); }} className="text-sm text-gray-500 hover:text-gray-700">
+            <Button variant="ghost" size="sm" onClick={() => { setEditId(null); setForm(EMPTY); }}>
               Cancelar
-            </button>
+            </Button>
           )}
-          {msg && <span className="text-sm text-emerald-600">{msg}</span>}
+          {msg && <span className="text-sm text-success-600">{msg}</span>}
         </div>
       </div>
 
@@ -154,7 +157,7 @@ export default function SponsorsAdminPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-gray-900">{s.name}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-success-100 text-success-700' : 'bg-gray-100 text-gray-500'}`}>
                     {s.isActive ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
@@ -164,24 +167,15 @@ export default function SponsorsAdminPage() {
                 </p>
               </div>
               <div className="flex gap-2 flex-shrink-0">
-                <button
-                  onClick={() => toggleActive(s)}
-                  className="text-xs rounded-lg border border-gray-200 px-3 py-1.5 hover:bg-gray-50 transition-colors"
-                >
+                <Button variant="ghost" size="sm" onClick={() => toggleActive(s)}>
                   {s.isActive ? 'Desactivar' : 'Activar'}
-                </button>
-                <button
-                  onClick={() => edit(s)}
-                  className="text-xs rounded-lg border border-indigo-200 text-indigo-600 px-3 py-1.5 hover:bg-indigo-50 transition-colors"
-                >
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => edit(s)}>
                   Editar
-                </button>
-                <button
-                  onClick={() => remove(s.id)}
-                  className="text-xs rounded-lg border border-error-200 text-error-500 px-3 py-1.5 hover:bg-error-50 transition-colors"
-                >
+                </Button>
+                <Button variant="destructive" size="sm" onClick={() => remove(s.id)}>
                   Eliminar
-                </button>
+                </Button>
               </div>
             </div>
           ))}

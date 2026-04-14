@@ -40,7 +40,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/metricas"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-indigo-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">📊</div>
           <h2 className="font-semibold text-gray-900">Métricas</h2>
@@ -67,7 +67,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/sources"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-purple-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">📈</div>
           <h2 className="font-semibold text-gray-900">URL Score Dashboard</h2>
@@ -76,7 +76,7 @@ export default async function AdminPage() {
         
         <Link
           href="/admin/quality"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">🛡️</div>
           <h2 className="font-semibold text-gray-900">Content Quality</h2>

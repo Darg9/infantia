@@ -70,9 +70,9 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
       {/* Summary cards */}
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Total</p>
-            <p className="text-2xl font-bold text-blue-600">{summary.total}</p>
+            <p className="text-2xl font-bold text-brand-600">{summary.total}</p>
           </div>
 
           <div className="bg-success-50 border border-success-200 rounded-lg p-4">
@@ -162,7 +162,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/sources/${source.id}`}
-                      className="text-indigo-600 hover:text-indigo-700 font-medium"
+                      className="text-brand-600 hover:text-brand-700 font-medium"
                     >
                       Ver detalles →
                     </Link>

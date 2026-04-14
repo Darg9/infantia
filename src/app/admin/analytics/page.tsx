@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
           <div className="text-sm font-semibold text-gray-500 mb-1 tracking-wide uppercase">CTR (Exploración)</div>
           <div className="flex items-end gap-3">
-            <span className="text-4xl font-extrabold text-indigo-600">{ctrRatio}%</span>
+            <span className="text-4xl font-extrabold text-brand-500">{ctrRatio}%</span>
             <span className="text-sm text-gray-400 mb-1">
               ({activityClicks} clicks / {pageViews} vistas)
             </span>
@@ -66,9 +66,9 @@ export default function AnalyticsPage() {
 
         {/* Conversion Card */}
         <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-          <div className="text-sm font-semibold text-emerald-600 mb-1 tracking-wide uppercase">Conversión a Fuente</div>
+          <div className="text-sm font-semibold text-success-600 mb-1 tracking-wide uppercase">Conversión a Fuente</div>
           <div className="flex items-end gap-3">
-            <span className="text-4xl font-extrabold text-emerald-500">{convRatio}%</span>
+            <span className="text-4xl font-extrabold text-success-500">{convRatio}%</span>
             <span className="text-sm text-gray-400 mb-1">
               ({outboundClicks} ops / {activityViews} aperturas)
             </span>

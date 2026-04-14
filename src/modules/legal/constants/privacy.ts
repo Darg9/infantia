@@ -50,6 +50,7 @@ export const PRIVACY_SECTIONS = [
       { type: 'bullet' as const, text: 'Datos de identificación (correo electrónico, nombre opcional)' },
       { type: 'bullet' as const, text: 'Datos de uso (interacciones dentro de la plataforma)' },
       { type: 'bullet' as const, text: 'Datos técnicos (dirección IP, dispositivo, navegador)' },
+      { type: 'text' as const, text: 'La Plataforma podrá utilizar datos de interacción (como clics o navegación dentro del sitio) de forma agregada y anónima para mejorar la relevancia del contenido mostrado.' },
       { type: 'bullet' as const, text: 'Datos de configuración (preferencias del usuario)' },
       { type: 'bullet' as const, text: 'Datos asociados a cuentas de menores bajo autorización parental (cuando aplique)' },
       { type: 'text' as const, text: 'No recolectamos datos sensibles de forma intencional.' },

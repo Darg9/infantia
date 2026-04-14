@@ -171,6 +171,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.10.0-S42 | V24 | Backfill NLP 3-capas (Structured, rule-based, gemini), mitigación Copyright |
 | v0.10.0-S43 | V24 | Content Quality Dashboard (/admin/quality), UI con gráficas Recharts |
 | v0.11.0-S42 | V25 | Tracking Analytics Zero-Dependency, Resilience Extractor Playwright Fallback Proxy, Node Cache Hybrid Ranking. |
+| v0.11.0-S43 | V25 | Adaptive Quality Firewall activo (adaptive-rules.ts → storage.ts), filtro dinámico por métricas globales + SourceHealth. |
+| v0.11.0-S44 | V25 | CTR Feedback Loop: events → ranking → crawler. analytics/metrics.ts, ctrBoost en ranking, CTR priority en ingest. |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -208,17 +210,19 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
 - **Testing Edge Cases (S42):** Cuando utilices `countCache` en Node.js o el `lastEventMap` en `track.ts`, los tests concurrentes de Vitest retendrán la memoria Map(). Asegurar `mockCount.clear()` o exponer un método `clearCountCacheForTests` para tests de unidad.
 - **Resilient Pipeline (S42):** Si fallan métodos del Pipeline por undefined de dependencias (ej. `this.playwrightExtractor`), revisar si tus proxies mockeados pasaron bien por `fetchWithFallback`. Siempre usar `vi.hoisted` antes del wrap.
+- **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
+- **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.11.0-S42 — Hoy)
+## Estado actual (v0.11.0-S44 — 2026-04-13)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **894 tests** en 59 archivos — `npm test` pasa en ~10s — 0 errores TypeScript
-- Cobertura: **>85% stmts / >85% branches** ✅ (umbral 85%)
+- **916 tests** en 60 archivos — `npm test` pasa en ~13s — 0 errores TypeScript
+- Cobertura: **>91% stmts / >85% branches** ✅ (umbral 85%)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
-- Documento Fundacional: **V24** pendiente de generar (v0.10.0-S43 hitos legales/calidad)
+- Documento Fundacional: **V25** generado (`scripts/generate_v25.mjs`)
 - **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)
 - **0 console.*** en producción (migrado a logger estructurado)
 - Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅
@@ -226,9 +230,10 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **UptimeRobot** monitoreando `/api/health`
 - **URL classifier** activo en gemini.analyzer.ts — pre-filtra ~40% URLs antes de Gemini
 - **Auto-pause dashboard** en `/admin/sources` — score monitoring + toggle por fuente
+- **Adaptive Quality Filter** activo en storage.ts — `minDescriptionLength` dinámico por métricas + SourceHealth
+- **CTR Feedback Loop** activo — events → ranking (ctrBoost) → crawler (CTR priority en BullMQ)
 - **SEO landings:** 4 nuevas rutas dinámicas (categoria, publico, precio, ciudad) + breadcrumbs JSON-LD (S33)
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
-- **UI cleanup:** sin uppercase sostenido, title case en labels (S33)
 
 ### Known Technical Debt
 

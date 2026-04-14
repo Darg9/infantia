@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S42
+**Versión actual:** v0.11.0-S44
 **Última actualización:** Hoy
 
 ## ¿Qué hace?
@@ -100,6 +100,32 @@ Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo s
 | `newest` | Recién agregadas a HabitaPlan |
 
 > **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
+
+## CTR Boost en Ranking (NUEVO v0.11.0-S44)
+
+`computeActivityScore()` en `src/modules/activities/ranking.ts` acepta un tercer parámetro opcional `ctrBoost: number = 0` que se suma al score final:
+
+```typescript
+computeActivityScore(activity, sourceHealthScore, ctrBoost)
+// score = (relevance × 0.5) + (recency × 0.2) + (trust × 0.3) + ctrBoost
+```
+
+El boost proviene de `src/modules/analytics/metrics.ts`:
+
+| CTR del dominio fuente | Boost aplicado |
+|------------------------|---------------|
+| > 30% | +0.15 |
+| > 15% | +0.08 |
+| > 5% | +0.03 |
+| ≤ 5% | 0 |
+
+**Flujo en `activities.service.ts`:**
+1. `getCachedCTR()` — CTR por dominio (cache 5min, 0 queries repetidos en el mismo ciclo)
+2. `activity.sourceUrl → getDomainFromUrl()` — extrae dominio de la actividad
+3. `ctrToBoost(ctr)` — convierte CTR a boost numérico
+4. `computeActivityScore(act, healthScore, ctrBoost)` — score final con señal de conversión
+
+**Cold start:** sin eventos acumulados, `ctrMap = {}` → `ctr = 0` → boost = 0 → comportamiento idéntico al sistema previo. Sin riesgo de regresión.
 
 ## Modelo Sponsor (NUEVO v0.8.1)
 

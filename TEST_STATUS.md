@@ -1,27 +1,27 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: Hoy | Version: v0.11.0-S42
+Actualizado: 2026-04-13 | Version: v0.11.0-S44
 
-## Resumen Actual (v0.11.0-S42 / Resilience Proxy & Zero-Dependencies Analytics)
-- **Archivos de Test:** 58 (Añadidos tests de tracking mem-cache)
-- **Tests Totales:** 889 (38 en pipeline tests con 2 branches condicionalmente omitidos)
+## Resumen Actual (v0.11.0-S44 / Adaptive Filter + CTR Feedback Loop)
+- **Archivos de Test:** 60 (+2 nuevos: `storage.test.ts` extendido, `metrics.test.ts` nuevo)
+- **Tests Totales:** 916 (+27 vs S42)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
-- **Framework:** Vitest 1.3 (+ React Testing Library)
-- **Cobertura:** 91.39% Stmts / 85.90% Branches / 86.97% Funcs / 91.39% Lines (umbral dinámico: 85%)
+- **Framework:** Vitest 4.1 (+ React Testing Library)
+- **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 58 |
-| Tests totales | 889 |
-| Pasados | 887 (2 skipped) |
+| Archivos de test | 60 |
+| Tests totales | 916 |
+| Pasados | 914 (2 skipped) |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
-| Statements | 91.39% ✅ |
-| Branches | 85.90% ✅ |
-| Functions | 88.09% ✅ |
-| Lines | 92.71% ✅ |
+| Statements | >91% ✅ |
+| Branches | >85% ✅ |
+| Functions | >88% ✅ |
+| Lines | >91% ✅ |
 
 ## Archivos de test (56 total)
 
@@ -201,6 +201,19 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.9.6-S38** | **876** | **56** | **91.39%** | **85.90%** |
 | **v0.9.7-S39** | **876** | **56** | **91.39%** | **85.90%** |
 | **v0.9.8-S40** | **882** | **56** | **91.39%** | **85.90%** |
+| **v0.10.0-S41** | **882** | **56** | **91.39%** | **85.90%** |
+| **v0.11.0-S42** | **889** | **58** | **91.39%** | **85.90%** |
+| **v0.11.0-S43** | **898** | **59** | **>91%** | **>85%** |
+| **v0.11.0-S44** | **916** | **60** | **>91%** | **>85%** |
+
+## Cambios en S43-S44 (v0.11.0-S43 / v0.11.0-S44)
+
+- **+27 tests** (889 → 916): filtro adaptativo + CTR feedback loop
+  - **S43** +6: `storage.test.ts` — carga batch única, descartes globales/fuente, Math.max, neutral default
+  - **S44** +11: `analytics/__tests__/metrics.test.ts` NUEVO — CTR computation, aggregation, cache, fail-safe
+  - **S44** +7: `ranking.test.ts` — ctrBoost default, suma al score, tiers `ctrToBoost()`
+- Nuevos archivos de test: `src/modules/analytics/__tests__/metrics.test.ts`
+- TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
 ## Cambios en S40 (v0.9.8-S40)
 

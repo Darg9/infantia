@@ -9,14 +9,41 @@ Relación con Documento Fundacional:
 
 ---
 
-## [Unreleased]
-- **Hardening crítico**: mitigación generalizada de Errores 500 por serialización de decimales de precio (`normalizePrice` vía `decimal.ts`, refactor UI/API, suite dedicada de test 100% pasando e inspección continua ESLint previniendo usos directos).
-- **Tool preventivo**: herramienta custom para validar consistencia y prevenir drift de schema Prisma vs DB antes del build (`schema:check`).
+## [v0.11.0-S44] — 2026-04-13 (CTR Feedback Loop + Adaptive Quality Filter)
+**Documento Fundacional: V25** | Rama: master | Commits: `6d6e982`, `c93efd6`
+
+### Features
+
+#### S43 — Adaptive Quality Firewall (filtro adaptativo real)
+- **`adaptive-rules.ts` conectado al pipeline**: `getAdaptiveRules(globalMetrics)` + `getSourceRules(sourceScore)` ahora gobiernan `minDescriptionLength` dinámicamente en `storage.ts`.
+- **Carga batch única**: `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` una sola vez antes del loop (0 queries N+1).
+- **`Math.max(global, source)`**: el threshold final toma el más estricto entre métricas globales y salud de la fuente específica.
+- **Trazabilidad**: log `activity_discarded_adaptive` con `domain/length/minLength/sourceScore` por cada descarte.
+- **Log batch**: `adaptive_rules_applied` con `discardRate` al final de cada batch.
+- **Parámetro `ctx` opcional**: `saveActivity()` backward-compatible — pipeline Instagram en `pipeline.ts` no requiere cambios.
+- **+6 tests** en `storage.test.ts` cubriendo reglas globales, reglas por fuente, Math.max, default neutral, carga única.
+
+#### S44 — CTR Feedback Loop (eventos → ranking → crawler)
+- **`src/modules/analytics/metrics.ts`** nuevo módulo: `getCTRByDomain()` agrega eventos `outbound_click` / `activity_view` via join `Event.activityId → Activity.sourceUrl → getDomainFromUrl()`. Cache TTL 5min. Fail-safe retorna `{}` ante error.
+- **`ctrToBoost(ctr)`**: tiers conservadores `0.03 / 0.08 / 0.15` — señal aditiva, nunca reemplaza ranking base.
+- **`computeActivityScore()` extendido**: parámetro opcional `ctrBoost = 0` (100% backward-compatible).
+- **`activities.service.ts`**: carga CTR en `Promise.all` con healthData. Boost aplicado por dominio en el loop de ranking. Log `ranking_applied` incluye `ctrDomainsActive`.
+- **`ingest-sources.ts`**: CTR priority `(ctr > 0.3 → P1, ctr > 0.15 → P2, else P3)` combinada con health priority via `Math.min()`. Fuentes con mayor conversión se scrapean primero.
+- **Log `ctr_priority_applied`** por cada fuente encolada.
+- **+18 tests**: `metrics.test.ts` (11 tests) + extensiones `ranking.test.ts` (7 tests).
+
+### Hardening & Fixes (S42 base)
+- **`src/lib/decimal.ts`**: `normalizePrice()` centraliza conversión de Prisma Decimal → number. ESLint custom rule previene `.toNumber()` directo.
+- **`schema:check`**: script de validación pre-build para detectar drift de schema.
+
+### Estado de tests
+- **916 tests** en 60 archivos — 0 fallos — 2 skipped (mocks fuera de scope)
+- Cobertura: **>91% stmts / >85% branches** ✅
 
 ---
 
-## [v0.11.0-S42] — Hoy (Product Analytics Zero-Dependencies + Hybrid Ranking Fixes)
-**Documento Fundacional: V25** | Rama: master | Commit: por generar
+## [v0.11.0-S42] — 2026-04-13 (Product Analytics Zero-Dependencies + Hybrid Ranking Fixes)
+**Documento Fundacional: V25** | Rama: master | Commit: `ef2aee1`
 
 ### Features
 - **Zero-Dependencies Product Analytics**: Infraestructura de tracking nativa montada 100% sobre Prisma + Serverless, eliminando dependencia de GA/Mixpanel para mantener filosofía de *Zero Debt*.

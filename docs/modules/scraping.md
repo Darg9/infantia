@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S42
+**Versión actual:** v0.11.0-S44
 **Última actualización:** Hoy
 
 ## ¿Qué hace?
@@ -51,11 +51,15 @@ Canal público (@handle)
 
 ```
 ingest-sources.ts --queue
+   → getCachedCTR() — CTR por dominio (cache 5min)
+   → priority = Math.min(healthPriority, ctrPriority) — más urgente gana
    → enqueueBatchJob() / enqueueInstagramJob() → Upstash Redis
    → run-worker.ts → Worker BullMQ concurrencia=1
    → Procesa jobs respetando rate limit Gemini (12s entre requests)
    → 3 reintentos con backoff exponencial (5s)
 ```
+
+**CTR Priority (NUEVO v0.11.0-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
 
 ## Archivos clave
 
@@ -214,11 +218,13 @@ El pipeline de ingesta cuenta con un flujo estricto de **mitigación legal/copyr
 
 Para mantener total monitoreo sobre las fuentes, cada bloque ingestado se inserta temporalmente en la BD como un reporte de degradación (`ContentQualityMetric`) visible en `/admin/quality`. Evalúa % Cortas, % Ruido y % Promo de los strings.
 
-## Curaduría Adaptativa (NUEVO v0.11.0)
+## Curaduría Adaptativa (NUEVO v0.11.0-S43)
 El Pipeline cuenta con un **Filtro Adaptativo Inteligente** que evalúa dinámicamente si debe descartar una actividad antes de guardarla.
 Cruza la Calidad Global del sistema con la métrica de Salud de la Fuente (`SourceHealth`).
 
-Si una actividad falla el filtro adaptativo (`Math.max(adaptive, source)` para la longitud mínima de caracteres valiosos), se descarta con `method: "skipped"`, logrando **Trazabilidad sin Persistencia**.
+Si una actividad falla el filtro adaptativo (`Math.max(adaptive, source)` para la longitud mínima de caracteres valiosos), se descarta con `"DISCARDED_QUALITY"`, logrando **Trazabilidad sin Persistencia**.
+
+**Integración en `storage.ts`:** `saveActivity()` recibe un 5º param opcional `ctx: AdaptiveContext` con `globalMetrics` y `sourceHealthMap`. `saveBatchResults()` carga ambas tablas una sola vez (batch context) y pasa el contexto a cada llamada individual — sin N+1 queries. Retorna log `adaptive_rules_applied` con `discardRate` al finalizar el lote.
 
 ### Monitoring Toolkit (Log: `adaptive_filter_summary`)
 Parámetros a monitorear desde PM2/Vercel (evento `adaptive_filter_summary`):

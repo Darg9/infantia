@@ -1,6 +1,6 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.11.0-S42
+**Versión:** ✅ v0.11.0-S44
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
 
@@ -56,3 +56,63 @@ El dashboard ubicado en `/admin/analytics` totaliza el motor local y consolida m
 1. **Tráfico General Promedio**.
 2. **CTR Real**: Proporción matemática extraíble dividiendo conteos (`outbound_click` / `activity_view`). Esto da la efectividad del scraping.
 3. **Conversión Orgánica**: Qué actividades incitan al clic una vez el NLP estructuró su visual general.
+
+## 🔄 CTR Feedback Loop (NUEVO v0.11.0-S44)
+
+Los eventos acumulados en la BD se convierten en señales activas que gobiernan el sistema.
+
+### `src/modules/analytics/metrics.ts`
+
+Módulo que agrega eventos en CTR por dominio de fuente:
+
+```typescript
+getCTRByDomain(): Promise<Record<string, number>>
+// Retorna: { "biblored.gov.co": 0.24, "idartes.gov.co": 0.18, ... }
+```
+
+**Flujo interno:**
+1. `event.groupBy({ type: 'outbound_click', activityId: { not: null } })` — clicks por actividad
+2. `event.groupBy({ type: 'activity_view', activityId: { not: null } })` — views por actividad
+3. Join `activityId → Activity.sourceUrl → getDomainFromUrl()` — mapeo a dominio
+4. Agrega clicks y views por dominio → CTR = clicks / views
+5. Cache TTL 5min en memoria — 0 queries repetidas en el mismo ciclo
+6. Fail-safe: retorna `{}` ante cualquier error de BD
+
+**`ctrToBoost(ctr: number): number`** — convierte CTR en boost de ranking:
+
+| CTR | Boost |
+|-----|-------|
+| > 0.30 | +0.15 |
+| > 0.15 | +0.08 |
+| > 0.05 | +0.03 |
+| ≤ 0.05 | 0 |
+
+### Impacto en el sistema
+
+| Capa | Efecto |
+|------|--------|
+| **Ranking** | `computeActivityScore(act, health, ctrBoost)` — dominios con más conversión suben en listados |
+| **Crawler** | `ingest-sources.ts` — `Math.min(healthPriority, ctrPriority)` — fuentes con mejor CTR se scrapean primero |
+
+### Cold start behavior
+
+Con 0 eventos (despliegue nuevo o reset de BD): `ctrMap = {}` → todos los dominios usan `ctr = 0` → boost = 0 → comportamiento idéntico al sistema previo. Sin riesgo de regresión.
+
+### Señales a monitorear
+
+```json
+{ "event": "ranking_applied", "ctrDomainsActive": 5 }
+{ "event": "ctr_priority_applied", "domain": "biblored.gov.co", "ctr": 0.24, "priority": 1 }
+```
+
+**Evolución esperada de `ctrDomainsActive`:**
+- Día 1: 0–2
+- Día 3: 5–15
+- Día 7: crecimiento sostenido
+
+### Próximo paso (cuando haya ~1000+ eventos)
+
+Aplicar suavizado de Laplace en `getCTRByDomain()` para evitar CTR inflado con pocos datos:
+```typescript
+result[domain] = clicks / (views + 5); // Laplace smoothing
+```

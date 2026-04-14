@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.11.0-S42 | Actualizado: Hoy
+> Versión: v0.11.0-S44 | Actualizado: 2026-04-13
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -26,21 +26,30 @@ flowchart TD
     NextJS -.-> |"Async Fail-Silent"| EdgeAnalytics[Endpoint /api/events]
     EdgeAnalytics --> |"Guarda tracking JSONB"| DB
 
+    %% CTR Feedback Loop (S44)
+    DB --> |"outbound_click / activity_view"| CTRMetrics[analytics/metrics.ts CTR por dominio]
+    CTRMetrics --> |"ctrBoost por dominio TTL 5min"| RankingEngine[Ranking Engine]
+    RankingEngine --> |"score = relevance + recency + trust + CTR"| NextJS
+
     %% Ingesta (Cron / Admin)
     Admin([Cron / Admin]) --> |"Dispara Ingesta"| Queue[BullMQ / Upstash]
+    CTRMetrics --> |"priority = min(health, ctr)"| Queue
     Queue --> Worker[Scraping Worker]
 
-    %% Resilient Pipeline
+    %% Resilient Pipeline + Adaptive Filter (S43)
     subgraph Scraping Pipeline
        Worker --> Proxy[Resilient Extraction Proxy]
        Proxy --> |"1. Try Fast"| Cheerio(Cheerio SSR)
        Proxy --> |"2. Try SPA Fallback"| Playwright(Playwright)
        Cheerio -.-> |"Falla / Bloqueo"| Playwright
+       Proxy --> AdaptiveFilter[Adaptive Quality Filter]
+       AdaptiveFilter --> |"minLength = max(global, source)"| StorageLayer[Storage + Deduplication]
     end
 
     %% NLP e IA
     Scraping Pipeline --> NLP{Google Gemini 2.5 Flash}
-    NLP --> |"Limpia, Clasifica y Formatea"| DB
+    NLP --> |"Limpia, Clasifica y Formatea"| StorageLayer
+    StorageLayer --> DB
 ```
 
 ---

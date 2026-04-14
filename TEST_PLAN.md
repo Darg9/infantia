@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.11.0-S42 | **Fecha:** 2026-04-13
+**Version:** v0.11.0-S44 | **Fecha:** 2026-04-13
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.11.0-S42)
+## Cobertura actual (v0.11.0-S44)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -50,7 +50,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | scraping/cache | cache.test.ts | 100% | 100% | OK |
 | scraping/types | types.test.ts | 100% | 100% | OK |
 | scraping/deduplication | deduplication.test.ts | 94% | 100% | OK |
-| scraping/storage | storage.test.ts | 100% | 100% | OK |
+| scraping/storage | storage.test.ts | 100% | 100% | OK ← NUEVO S43 (adaptive filter, batch context, discardRate) |
 | scraping/logger | logger.test.ts | 100% | 100% | OK |
 | scraping/pipeline | pipeline.test.ts | 98% | 100% | OK |
 | scraping/cheerio-extractor | cheerio-extractor.test.ts | 94% | 100% | OK |
@@ -62,13 +62,15 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | scraping/queue/scraping.worker | queue-worker.test.ts | 100% | 100% | OK |
 | scraping/queue/producer | queue.test.ts | 100% | 100% | OK |
 | activities/schemas | schemas.test.ts | 100% | 100% | OK |
+| activities/ranking | ranking.test.ts | 100% | 100% | OK ← NUEVO S44 (ctrBoost default, tiers, score addition) |
 | activities/service | service.test.ts | 100% | 100% | OK |
+| analytics/metrics | metrics.test.ts | 100% | 100% | OK ← NUEVO S44 (getCTRByDomain, ctrToBoost, cache, fail-safe) |
 | api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK |
 | lib/ratings | — | Sin test dedicado (testeado via ratings API) | — | OK |
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.11.0-S42: 91.39% stmts / 85.90% branches / 58 archivos | 889 tests**
+**Total v0.11.0-S44: >91% stmts / >85% branches / 60 archivos | 916 tests**
 
 ---
 
@@ -114,7 +116,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 ## Comandos
 
 ```bash
-npm test                  # Suite rapida sin cobertura (748 tests)
+npm test                  # Suite rapida sin cobertura (916 tests)
 npm run test:coverage     # Con reporte (verifica threshold 85%)
 npx vitest run <archivo>  # Test especifico
 ```
@@ -122,6 +124,12 @@ npx vitest run <archivo>  # Test especifico
 ---
 
 ## Roadmap de pruebas
+
+### Completado hasta v0.11.0-S44
+- ✅ 916 tests, 60 archivos, todos verdes
+- ✅ analytics/metrics.test.ts: 11 tests (getCTRByDomain, ctrToBoost tiers, cache TTL, fail-safe, domain join)
+- ✅ activities/ranking.test.ts +7: ctrBoost default/addition/tiers (S44)
+- ✅ scraping/storage.test.ts +6: adaptive filter batch context, global rule, source rule, Math.max, passing case (S43)
 
 ### Completado hasta v0.9.0
 - ✅ 783 tests, 51 archivos, todos verdes
@@ -142,7 +150,7 @@ npx vitest run <archivo>  # Test especifico
 
 ## Checklist por PR
 
-- [ ] `npm test` pasa (889+ tests)
+- [ ] `npm test` pasa (916+ tests)
 - [ ] `npm run test:coverage` supera 85% branches
 - [ ] Sin skip/todo sin justificacion
 - [ ] Happy path + al menos 1 caso de error por funcion publica

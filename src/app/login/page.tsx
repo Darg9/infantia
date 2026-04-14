@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
+import { Button, Input, Card } from '@/components/ui'
 
 function LoginForm() {
   const router = useRouter()
@@ -44,35 +45,31 @@ function LoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+    <Card className="w-full max-w-md p-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-2">Inicia sesión</h1>
       <p className="text-gray-500 text-sm mb-6">Bienvenido de vuelta a HabitaPlan</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Correo electrónico
-          </label>
-          <input
+          <Input
+            id="login-email"
+            label="Correo electrónico"
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="tu@correo.com"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Contraseña
-          </label>
-          <input
+          <Input
+            id="login-password"
+            label="Contraseña"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="••••••••"
           />
         </div>
@@ -83,13 +80,14 @@ function LoginForm() {
           </p>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+          loading={loading}
+          className="w-full"
         >
           {loading ? 'Ingresando...' : 'Ingresar'}
-        </button>
+        </Button>
       </form>
 
       <p className="mt-6 text-center text-sm text-gray-500">
@@ -98,7 +96,7 @@ function LoginForm() {
           Regístrate
         </Link>
       </p>
-    </div>
+    </Card>
   )
 }
 

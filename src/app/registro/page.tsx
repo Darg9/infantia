@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
+import { Button, Input, Card } from '@/components/ui'
 
 export default function RegistroPage() {
   const [name, setName] = useState('')
@@ -47,7 +48,7 @@ export default function RegistroPage() {
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8 text-center">
+        <Card className="w-full max-w-md text-center">
           <div className="text-4xl mb-4">📧</div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">Revisa tu correo</h1>
           <p className="text-gray-500 text-sm">
@@ -58,58 +59,52 @@ export default function RegistroPage() {
             href="/login"
             className="mt-6 inline-block text-brand-600 text-sm font-medium hover:underline"
           >
-            Volver al inicio de sesión
+            Volver a inicio de sesión
           </Link>
-        </div>
+        </Card>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Crear cuenta</h1>
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">Crea tu cuenta</h1>
         <p className="text-gray-500 text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
+            <Input
+              id="registro-nombre"
+              label="Nombre o apodo"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-              placeholder="Tu nombre"
+              placeholder="Ej: Mamá de Sofi"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Correo electrónico
-            </label>
-            <input
+            <Input
+              id="registro-email"
+              label="Correo electrónico"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="tu@correo.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
-            <input
+            <Input
+              id="registro-password"
+              label="Contraseña"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="Mínimo 8 caracteres"
             />
           </div>
@@ -142,13 +137,14 @@ export default function RegistroPage() {
             </p>
           )}
 
-          <button
+          <Button
             type="submit"
             disabled={loading || !aceptaTerminos}
-            className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            loading={loading}
+            className="w-full"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
-          </button>
+          </Button>
         </form>
 
         <p className="mt-6 text-center text-sm text-gray-500">
@@ -157,7 +153,7 @@ export default function RegistroPage() {
             Inicia sesión
           </Link>
         </p>
-      </div>
+      </Card>
     </div>
   )
 }

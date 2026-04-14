@@ -52,7 +52,61 @@ Relación con Documento Fundacional:
 - **916 tests** en 60 archivos — 0 fallos — 2 skipped
 - Cobertura: **>91% stmts / >85% branches** ✅
 
+## [v0.11.0-S46] — 2026-04-14 (UI Hardening — Toast global + Upload AbortController + Password align + A11y + Performance)
+**Documento Fundacional: V25** | Rama: master | Sin tag propio (hardening incremental)
+
+### Features / Hardening
+
+#### 1. Toast System — activación global
+- `src/app/layout.tsx`: `<ToastProvider>` montado dentro de `<AuthProvider>` — sistema de toasts activo en toda la app.
+- `src/components/ui/index.ts` **[NEW]**: barrel export del Design System (`Button`, `Input`, `Card`, `Avatar`, `ToastProvider`, `useToast`).
+- `ToastProvider` ya tenía FIFO max-3, auto-dismiss 2500ms, dismiss manual, aria-live="polite" (implementado en S anterior).
+
+#### 2. Upload avatar — AbortController + validación cliente
+- `src/app/perfil/editar/page.tsx`: `useRef<AbortController>` cancela fetch en vuelo:
+  - Si el usuario cambia de archivo → abort del upload anterior automático.
+  - `useEffect` cleanup en unmount → abort si el componente se desmonta mid-upload (0 memory leaks).
+- Validación MIME en cliente antes de enviar (`ALLOWED_MIME_TYPES` constante) — mensaje de error inmediato sin round-trip al servidor.
+- `AbortError` capturado explícitamente — no genera toast de error al abortar intencionalmente.
+- Estado `uploading / error / success` completo con feedback visual en tiempo real.
+- Retry funcional (reutiliza submit del form principal).
+
+#### 3. Password — alineación frontend ↔ backend
+- `MIN_PASSWORD_LENGTH = 8` como constante exportable en `perfil/editar/page.tsx`.
+- `src/app/registro/page.tsx`: validación frontend actualizada de 6 → 8 caracteres (alineada con Supabase Auth policy y `perfil/editar`).
+- Mensajes de error consistentes usando la constante (no hardcodeados).
+- Strength meter y criterios usan la misma constante.
+
+#### 4. A11y — audit y fixes
+- `ProfileSidebar.tsx`: indicador activo `absolute` corregido — `Link` padre tiene `relative overflow-hidden` (el span absolute no hacía nada sin el padre relativo).
+- `aria-current="page"` en nav items (desktop + mobile) — ya implementado.
+- Toggle botones de contraseña: `aria-label` descriptivos por campo ("Mostrar contraseña actual", "Mostrar nueva contraseña", etc.).
+- `focus-visible:ring-2` en todos los toggles de contraseña.
+- `aria-live="polite"` en panel de estado de avatar.
+- `aria-label` en `<ul>` de criterios de contraseña.
+- `aria-label` descriptivo en strength meter con `aria-live="polite"`.
+
+#### 5. Performance — render control
+- `useEffect` para carga de usuario (eliminado side-effect durante render — anti-pattern React).
+- `useCallback` en `handleFileChange`, `handleBasicSave`, `handlePasswordSubmit` — referencialmente estables, evitan re-renders de hijos.
+- Toast local eliminado de `perfil/editar` — único sistema global activo (reduce estado duplicado).
+
+### Archivos creados/modificados
+| Archivo | Cambio |
+|---|---|
+| `src/app/layout.tsx` | +ToastProvider import y wrap |
+| `src/components/ui/index.ts` | **[NEW]** barrel export |
+| `src/app/perfil/editar/page.tsx` | Reescritura completa (hardening) |
+| `src/app/registro/page.tsx` | Password 6→8 chars |
+| `src/components/profile/ProfileSidebar.tsx` | Fix absolute indicator + dark mode |
+
+### Estado de tests
+- **916 tests** en 60 archivos — 0 fallos — 2 skipped ✅
+- TypeScript: 0 errores ✅
+- ESLint freeze mantenido (0 nuevos `any`) ✅
+
 ---
+
 
 ## [v0.11.0-S44] — 2026-04-13 (CTR Feedback Loop + Adaptive Quality Filter)
 **Documento Fundacional: V25** | Rama: master | Commits: `6d6e982`, `c93efd6`

@@ -1,319 +1,781 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
+import { useToast } from '@/components/ui/toast'
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+// Alineado con Supabase Auth password policy (mínimo 8 caracteres, custom desde S45).
+// Si cambias este valor, actualiza también /registro/page.tsx y /api/* que validen passwords.
+const MIN_PASSWORD_LENGTH = 8
+const MAX_AVATAR_SIZE     = 2 * 1024 * 1024 // 2 MB
+const ALLOWED_MIME_TYPES  = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'] as const
+
+// ─── Icons (inline SVG — no extra deps) ───────────────────────────────────────
+
+function CameraIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+    </svg>
+  )
+}
+
+function EyeIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+    </svg>
+  )
+}
+
+function EyeSlashIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 0 0 1.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.451 10.451 0 0 1 12 4.5c4.756 0 8.773 3.162 10.065 7.498a10.522 10.522 0 0 1-4.293 5.774M6.228 6.228 3 3m3.228 3.228 3.65 3.65m7.894 7.894L21 21m-3.228-3.228-3.65-3.65m0 0a3 3 0 1 0-4.243-4.243m4.242 4.242L9.88 9.88" />
+    </svg>
+  )
+}
+
+function CheckIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+    </svg>
+  )
+}
+
+function SpinnerIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" aria-hidden="true">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    </svg>
+  )
+}
+
+function CheckCircleIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+    </svg>
+  )
+}
+
+function ExclamationIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+    </svg>
+  )
+}
+
+// ─── Password strength helpers ─────────────────────────────────────────────────
+
+function getPasswordStrength(pass: string): number {
+  if (!pass) return 0
+  let score = 0
+  if (pass.length >= MIN_PASSWORD_LENGTH) score++
+  if (/[A-Z]/.test(pass)) score++
+  if (/[0-9]/.test(pass)) score++
+  if (/[^A-Za-z0-9]/.test(pass)) score++
+  return score
+}
+
+const STRENGTH_LABEL      = ['', 'Débil', 'Regular', 'Buena', 'Fuerte']
+const STRENGTH_TEXT_COLOR = ['', 'text-red-500', 'text-orange-500', 'text-yellow-500', 'text-emerald-600 dark:text-emerald-400']
+const STRENGTH_BAR_COLOR  = ['', 'bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-emerald-500']
+
+// ─── InputField component ──────────────────────────────────────────────────────
+// Componente local: no se importa del DS porque necesita onChange:(string)=>void
+// En un futuro merge al DS si el patron se generaliza.
+
+interface InputFieldProps {
+  id: string
+  label: string
+  type?: string
+  value: string
+  onChange: (v: string) => void
+  error?: string | null
+  placeholder?: string
+  required?: boolean
+  maxLength?: number
+  autoComplete?: string
+  rightSlot?: React.ReactNode
+}
+
+function InputField({
+  id,
+  label,
+  type = 'text',
+  value,
+  onChange,
+  error,
+  placeholder,
+  required,
+  maxLength,
+  autoComplete,
+  rightSlot,
+}: InputFieldProps) {
+  return (
+    <div className="space-y-1.5">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+        {label}
+        {required && (
+          <span className="text-red-500 ml-0.5" aria-hidden="true">
+            *
+          </span>
+        )}
+      </label>
+      <div className="relative">
+        <input
+          id={id}
+          type={type}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          required={required}
+          maxLength={maxLength}
+          autoComplete={autoComplete}
+          aria-required={required}
+          aria-describedby={error ? `${id}-error` : undefined}
+          aria-invalid={error ? true : undefined}
+          className={[
+            'w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white dark:bg-gray-800',
+            'text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0',
+            rightSlot ? 'pr-10' : '',
+            error
+              ? 'border-red-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-400'
+              : 'border-gray-200 dark:border-gray-700 focus:ring-orange-500/25 focus:border-orange-500 dark:focus:border-orange-400',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        />
+        {rightSlot && (
+          <div className="absolute right-3 top-1/2 -translate-y-1/2">{rightSlot}</div>
+        )}
+      </div>
+      {error && (
+        <p id={`${id}-error`} role="alert" className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+          <span aria-hidden="true">⚠</span>
+          {error}
+        </p>
+      )}
+    </div>
+  )
+}
+
+// ─── Page ──────────────────────────────────────────────────────────────────────
 
 export default function EditarPerfilPage() {
   const router = useRouter()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toast } = useToast()
+  const fileInputRef   = useRef<HTMLInputElement>(null)
+  // AbortController ref: cancela el upload en vuelo si cambia archivo o desmonta
+  const uploadAbortRef = useRef<AbortController | null>(null)
 
-  // Name section
-  const [name, setName] = useState('')
+  // ── Basic info ──
+  const [name, setName]             = useState('')
   const [nameLoaded, setNameLoaded] = useState(false)
-  const [nameLoading, setNameLoading] = useState(false)
-  const [nameMsg, setNameMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [basicLoading, setBasicLoading] = useState(false)
+  const [nameError, setNameError]   = useState<string | null>(null)
 
-  // Avatar section
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
-  const [avatarFile, setAvatarFile] = useState<File | null>(null)
-  const [avatarLoading, setAvatarLoading] = useState(false)
-  const [avatarMsg, setAvatarMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  // ── Avatar ──
+  const [avatarPreview, setAvatarPreview]       = useState<string | null>(null)
+  const [avatarFile, setAvatarFile]             = useState<File | null>(null)
+  const [uploadingAvatar, setUploadingAvatar]   = useState(false)
+  const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null)
 
-  // Password section
+  // ── Password ──
+  const [showCurrent, setShowCurrent]   = useState(false)
+  const [showNew, setShowNew]           = useState(false)
+  const [showConfirm, setShowConfirm]   = useState(false)
   const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
+  const [newPassword, setNewPassword]   = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [passLoading, setPassLoading] = useState(false)
-  const [passMsg, setPassMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [passLoading, setPassLoading]   = useState(false)
+  const [passErrors, setPassErrors]     = useState<{
+    current?: string
+    newPwd?: string
+    confirm?: string
+  }>({})
 
-  // Load user data on first render
-  if (!nameLoaded) {
+  // ── Load user (useEffect — no render side-effects) ──
+  useEffect(() => {
     const supabase = createSupabaseBrowserClient()
     supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: Record<string, string> } | null } }) => {
       if (data.user) {
         setName(data.user.user_metadata?.name ?? '')
         if (data.user.user_metadata?.avatar_url) {
-          setAvatarPreview(data.user.user_metadata.avatar_url)
+          setAvatarPreview(data.user.user_metadata.avatar_url as string)
         }
       }
       setNameLoaded(true)
     })
-  }
+  }, [])
 
-  async function handleNameSubmit(e: React.FormEvent) {
+  // ── Cleanup: abortar upload en vuelo al desmontar ──
+  useEffect(() => {
+    return () => {
+      uploadAbortRef.current?.abort()
+    }
+  }, [])
+
+  // ─── Handlers (useCallback — referencialmente estables) ───────────────────────
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Abortar upload anterior si aún está en curso
+    uploadAbortRef.current?.abort()
+    uploadAbortRef.current = null
+
+    // Validar tipo MIME antes de aceptar el archivo
+    if (!ALLOWED_MIME_TYPES.includes(file.type as typeof ALLOWED_MIME_TYPES[number])) {
+      toast.error('Formato no soportado. Usa JPG, PNG, WebP o GIF.')
+      e.target.value = ''
+      return
+    }
+
+    // Validar tamaño
+    if (file.size > MAX_AVATAR_SIZE) {
+      toast.error('El archivo es demasiado grande. Máximo 2 MB.')
+      e.target.value = ''
+      return
+    }
+
+    setAvatarFile(file)
+    setAvatarUploadError(null)
+
+    const reader = new FileReader()
+    reader.onload = () => setAvatarPreview(reader.result as string)
+    reader.readAsDataURL(file)
+  }, [toast])
+
+  const handleBasicSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    setNameMsg(null)
-    setNameLoading(true)
+    if (!name.trim()) {
+      setNameError('El nombre es obligatorio')
+      return
+    }
+    setNameError(null)
+    setBasicLoading(true)
 
     try {
+      // Upload avatar si hay uno nuevo seleccionado
+      if (avatarFile) {
+        // Nueva instancia del AbortController para este upload
+        const ac = new AbortController()
+        uploadAbortRef.current = ac
+
+        setUploadingAvatar(true)
+        setAvatarUploadError(null)
+
+        const formData = new FormData()
+        formData.append('avatar', avatarFile)
+
+        let avatarRes: Response
+        try {
+          avatarRes = await fetch('/api/profile/avatar', {
+            method: 'POST',
+            body: formData,
+            signal: ac.signal,
+          })
+        } catch (fetchErr) {
+          // AbortError: usuario cambió archivo o desmontó el componente
+          if (fetchErr instanceof Error && fetchErr.name === 'AbortError') {
+            setUploadingAvatar(false)
+            setBasicLoading(false)
+            return
+          }
+          throw fetchErr
+        }
+
+        setUploadingAvatar(false)
+        uploadAbortRef.current = null
+
+        if (!avatarRes.ok) {
+          const data = (await avatarRes.json()) as { error?: string }
+          const msg = data.error ?? 'Error al subir la foto'
+          setAvatarUploadError(msg)
+          toast.error(msg)
+          setBasicLoading(false)
+          return
+        }
+
+        setAvatarFile(null)
+        setAvatarUploadError(null)
+      }
+
+      // Guardar nombre
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
       })
-
       if (!res.ok) {
-        const data = await res.json()
-        setNameMsg({ type: 'error', text: data.error ?? 'Error al actualizar nombre' })
-      } else {
-        setNameMsg({ type: 'success', text: 'Nombre actualizado' })
-        router.refresh()
+        const data = (await res.json()) as { error?: string }
+        toast.error(data.error ?? 'Error al actualizar el perfil')
+        return
       }
+
+      toast.success('Perfil actualizado correctamente')
+      router.refresh()
     } catch {
-      setNameMsg({ type: 'error', text: 'Error de conexion' })
+      toast.error('Error de conexión al guardar el perfil')
     } finally {
-      setNameLoading(false)
+      setBasicLoading(false)
+      setUploadingAvatar(false)
     }
-  }
+  }, [name, avatarFile, toast, router])
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (file.size > 2 * 1024 * 1024) {
-      setAvatarMsg({ type: 'error', text: 'El archivo es demasiado grande. Maximo 2MB.' })
-      return
-    }
-
-    setAvatarFile(file)
-    setAvatarMsg(null)
-    const reader = new FileReader()
-    reader.onload = () => setAvatarPreview(reader.result as string)
-    reader.readAsDataURL(file)
-  }
-
-  async function handleAvatarSubmit(e: React.FormEvent) {
+  const handlePasswordSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!avatarFile) return
-    setAvatarMsg(null)
-    setAvatarLoading(true)
-
-    try {
-      const formData = new FormData()
-      formData.append('avatar', avatarFile)
-
-      const res = await fetch('/api/profile/avatar', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!res.ok) {
-        const data = await res.json()
-        setAvatarMsg({ type: 'error', text: data.error ?? 'Error al subir avatar' })
-      } else {
-        setAvatarMsg({ type: 'success', text: 'Avatar actualizado' })
-        setAvatarFile(null)
-        router.refresh()
-      }
-    } catch {
-      setAvatarMsg({ type: 'error', text: 'Error de conexion' })
-    } finally {
-      setAvatarLoading(false)
-    }
-  }
-
-  async function handlePasswordSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setPassMsg(null)
-
-    if (newPassword.length < 6) {
-      setPassMsg({ type: 'error', text: 'La nueva contrasena debe tener al menos 6 caracteres' })
+    const errors: typeof passErrors = {}
+    if (!currentPassword)                         errors.current = 'Ingresá tu contraseña actual'
+    if (newPassword.length < MIN_PASSWORD_LENGTH) errors.newPwd  = `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`
+    if (newPassword !== confirmPassword)          errors.confirm = 'Las contraseñas no coinciden'
+    if (Object.keys(errors).length > 0) {
+      setPassErrors(errors)
       return
     }
-
-    if (newPassword !== confirmPassword) {
-      setPassMsg({ type: 'error', text: 'Las contrasenas no coinciden' })
-      return
-    }
-
+    setPassErrors({})
     setPassLoading(true)
 
     try {
       const supabase = createSupabaseBrowserClient()
-
-      // Verify current password
       const { data: userData } = await supabase.auth.getUser()
       if (!userData.user?.email) {
-        setPassMsg({ type: 'error', text: 'No se pudo obtener el email del usuario' })
-        setPassLoading(false)
+        toast.error('No se pudo obtener el email del usuario')
         return
       }
 
+      // Re-autenticar para confirmar la contraseña actual
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: userData.user.email,
         password: currentPassword,
       })
-
       if (signInError) {
-        setPassMsg({ type: 'error', text: 'La contrasena actual es incorrecta' })
-        setPassLoading(false)
+        setPassErrors({ current: 'Contraseña actual incorrecta' })
         return
       }
 
-      // Update password
-      const { error: updateError } = await supabase.auth.updateUser({
-        password: newPassword,
-      })
-
+      const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
       if (updateError) {
-        setPassMsg({ type: 'error', text: updateError.message })
+        // Mensaje de Supabase en español si es posible
+        toast.error(updateError.message)
       } else {
-        setPassMsg({ type: 'success', text: 'Contrasena actualizada' })
+        toast.success('Contraseña actualizada correctamente')
         setCurrentPassword('')
         setNewPassword('')
         setConfirmPassword('')
       }
     } catch {
-      setPassMsg({ type: 'error', text: 'Error al cambiar contrasena' })
+      toast.error('Error al cambiar la contraseña')
     } finally {
       setPassLoading(false)
     }
-  }
+  }, [currentPassword, newPassword, confirmPassword, toast])
+
+  // ─── Render helpers ───────────────────────────────────────────────────────────
+
+  const pwStrength = getPasswordStrength(newPassword)
+  const pwCriteria = [
+    { ok: newPassword.length >= MIN_PASSWORD_LENGTH, label: `Mínimo ${MIN_PASSWORD_LENGTH} caracteres` },
+    { ok: /[A-Z]/.test(newPassword),                 label: 'Una mayúscula' },
+    { ok: /[0-9]/.test(newPassword),                 label: 'Un número' },
+    { ok: /[^A-Za-z0-9]/.test(newPassword),          label: 'Un símbolo' },
+  ]
 
   return (
-    <div className="max-w-lg mx-auto px-4 py-8 space-y-8">
-      <h1 className="text-2xl font-bold text-gray-900">Editar perfil</h1>
+    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
 
-      {/* Name section */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Nombre</h2>
-        <form onSubmit={handleNameSubmit} className="space-y-3">
-          <input
-            type="text"
+      {/* ── Page header ── */}
+      <div>
+        <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-gray-900 dark:text-white">
+          Editar perfil
+        </h1>
+        <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+          Actualizá tu información personal y contraseña
+        </p>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════════
+          Sección 1 — Información básica
+      ══════════════════════════════════════════════════════════════ */}
+      <section
+        aria-labelledby="basic-info-heading"
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+      >
+        <div className="mb-6">
+          <h2
+            id="basic-info-heading"
+            className="text-base font-semibold text-gray-900 dark:text-white"
+          >
+            Información básica
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Tu nombre y foto visibles en la plataforma
+          </p>
+        </div>
+
+        <form onSubmit={handleBasicSave} className="space-y-6" noValidate>
+
+          {/* Avatar — clicable con overlay */}
+          <div className="flex items-center gap-4">
+            <div
+              role="button"
+              tabIndex={0}
+              aria-label="Cambiar foto de perfil"
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+              className="group/avatar relative w-20 h-20 shrink-0 rounded-full cursor-pointer
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+            >
+              {/* Avatar image or initials placeholder */}
+              {avatarPreview ? (
+                <img
+                  src={avatarPreview}
+                  alt="Foto de perfil"
+                  className="w-20 h-20 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700
+                             group-hover/avatar:ring-orange-400 transition-all"
+                />
+              ) : (
+                <div
+                  className="w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900/30
+                               text-orange-600 dark:text-orange-400 font-bold text-2xl
+                               flex items-center justify-center select-none
+                               ring-2 ring-gray-200 dark:ring-gray-700
+                               group-hover/avatar:ring-orange-400 transition-all"
+                >
+                  {(name?.[0] ?? '?').toUpperCase()}
+                </div>
+              )}
+
+              {/* Upload spinner (prioridad sobre hover overlay) */}
+              {uploadingAvatar ? (
+                <div
+                  className="absolute inset-0 rounded-full bg-black/60 flex items-center justify-center pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <SpinnerIcon className="w-6 h-6 text-white animate-spin" />
+                </div>
+              ) : (
+                /* Hover overlay — cámara + texto */
+                <div
+                  className="absolute inset-0 rounded-full bg-black/50 opacity-0
+                               group-hover/avatar:opacity-100 transition-opacity
+                               flex flex-col items-center justify-center gap-1
+                               pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <CameraIcon className="w-5 h-5 text-white" />
+                  <span className="text-white text-[10px] font-semibold leading-none">
+                    Cambiar
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* File info */}
+            <div className="min-w-0" aria-live="polite">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Foto de perfil
+              </p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                JPG, PNG, WebP o GIF · Máx. 2 MB
+              </p>
+              {uploadingAvatar && (
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1">
+                  <SpinnerIcon className="w-3 h-3 animate-spin shrink-0" />
+                  Subiendo foto…
+                </p>
+              )}
+              {!uploadingAvatar && avatarFile && !avatarUploadError && (
+                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1.5 font-medium flex items-center gap-1">
+                  <CheckIcon className="w-3 h-3 shrink-0" />
+                  Nueva foto lista para guardar
+                </p>
+              )}
+              {avatarUploadError && (
+                <p className="text-xs text-red-600 dark:text-red-400 mt-1.5 flex items-center gap-1">
+                  <ExclamationIcon className="w-3 h-3 shrink-0" />
+                  {avatarUploadError}
+                  {/* Retry dispara el submit del form para reintentar upload + save */}
+                  <button
+                    type="submit"
+                    className="ml-1 underline underline-offset-2 font-medium hover:no-underline"
+                  >
+                    Reintentar
+                  </button>
+                </p>
+              )}
+            </div>
+
+            {/* Input file oculto — tabIndex=-1, aria-hidden: accesible solo via div[role=button] */}
+            <input
+              ref={fileInputRef}
+              id="avatar-input"
+              type="file"
+              accept={ALLOWED_MIME_TYPES.join(',')}
+              onChange={handleFileChange}
+              className="hidden"
+              aria-hidden="true"
+              tabIndex={-1}
+            />
+          </div>
+
+          {/* Nombre */}
+          <InputField
+            id="name"
+            label="Nombre"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(v) => {
+              setName(v)
+              setNameError(null)
+            }}
+            error={nameError}
+            placeholder="Tu nombre completo"
             required
             maxLength={100}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            placeholder="Tu nombre"
+            autoComplete="name"
           />
-          {nameMsg && (
-            <p className={`text-sm px-3 py-2 rounded-lg ${
-              nameMsg.type === 'success'
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-                : 'text-red-600 bg-red-50 border border-red-200'
-            }`}>
-              {nameMsg.text}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={nameLoading}
-            className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
-          >
-            {nameLoading ? 'Guardando...' : 'Guardar nombre'}
-          </button>
-        </form>
-      </section>
 
-      {/* Avatar section */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Foto de perfil</h2>
-        <form onSubmit={handleAvatarSubmit} className="space-y-4">
-          <div className="flex items-center gap-4">
-            {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt="Avatar"
-                className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-              />
-            ) : (
-              <div className="w-16 h-16 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-bold text-xl">
-                {(name?.[0] ?? '?').toUpperCase()}
-              </div>
-            )}
-            <div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-sm text-orange-600 hover:text-orange-700 font-medium"
-              >
-                Cambiar foto
-              </button>
-              <p className="text-xs text-gray-400 mt-0.5">JPG, PNG, WebP o GIF. Max 2MB.</p>
-            </div>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp,image/gif"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-          {avatarMsg && (
-            <p className={`text-sm px-3 py-2 rounded-lg ${
-              avatarMsg.type === 'success'
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-                : 'text-red-600 bg-red-50 border border-red-200'
-            }`}>
-              {avatarMsg.text}
-            </p>
-          )}
-          {avatarFile && (
+          {/* CTA único */}
+          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
             <button
               type="submit"
-              disabled={avatarLoading}
-              className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
+              disabled={basicLoading || !nameLoaded}
+              aria-busy={basicLoading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                         bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white
+                         disabled:bg-orange-200 dark:disabled:bg-orange-900/40
+                         disabled:text-orange-400 disabled:cursor-not-allowed
+                         transition-colors focus:outline-none focus:ring-2
+                         focus:ring-orange-500 focus:ring-offset-2"
             >
-              {avatarLoading ? 'Subiendo...' : 'Guardar foto'}
+              {basicLoading ? (
+                <>
+                  <SpinnerIcon className="w-4 h-4 animate-spin" />
+                  Guardando…
+                </>
+              ) : (
+                'Guardar cambios'
+              )}
             </button>
-          )}
+          </div>
         </form>
       </section>
 
-      {/* Password section */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Cambiar contrasena</h2>
-        <form onSubmit={handlePasswordSubmit} className="space-y-3">
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Contrasena actual</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Nueva contrasena</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">Confirmar nueva contrasena</label>
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
-          </div>
-          {passMsg && (
-            <p className={`text-sm px-3 py-2 rounded-lg ${
-              passMsg.type === 'success'
-                ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-                : 'text-red-600 bg-red-50 border border-red-200'
-            }`}>
-              {passMsg.text}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={passLoading}
-            className="bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-medium py-2 px-4 rounded-lg text-sm transition-colors"
+      {/* ══════════════════════════════════════════════════════════════
+          Sección 2 — Seguridad
+      ══════════════════════════════════════════════════════════════ */}
+      <section
+        aria-labelledby="security-heading"
+        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+      >
+        <div className="mb-6">
+          <h2
+            id="security-heading"
+            className="text-base font-semibold text-gray-900 dark:text-white"
           >
-            {passLoading ? 'Cambiando...' : 'Cambiar contrasena'}
-          </button>
+            Seguridad
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Cambiá tu contraseña para mantener tu cuenta protegida
+          </p>
+        </div>
+
+        <form onSubmit={handlePasswordSubmit} className="space-y-5" noValidate>
+
+          {/* Contraseña actual */}
+          <InputField
+            id="current-password"
+            label="Contraseña actual"
+            type={showCurrent ? 'text' : 'password'}
+            value={currentPassword}
+            onChange={(v) => {
+              setCurrentPassword(v)
+              setPassErrors((prev) => ({ ...prev, current: undefined }))
+            }}
+            error={passErrors.current}
+            required
+            autoComplete="current-password"
+            rightSlot={
+              <button
+                type="button"
+                onClick={() => setShowCurrent((v) => !v)}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                aria-label={showCurrent ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}
+              >
+                {showCurrent ? (
+                  <EyeSlashIcon className="w-4 h-4" />
+                ) : (
+                  <EyeIcon className="w-4 h-4" />
+                )}
+              </button>
+            }
+          />
+
+          {/* Nueva contraseña + strength meter */}
+          <div className="space-y-2">
+            <InputField
+              id="new-password"
+              label="Nueva contraseña"
+              type={showNew ? 'text' : 'password'}
+              value={newPassword}
+              onChange={(v) => {
+                setNewPassword(v)
+                setPassErrors((prev) => ({ ...prev, newPwd: undefined }))
+              }}
+              error={passErrors.newPwd}
+              required
+              autoComplete="new-password"
+              rightSlot={
+                <button
+                  type="button"
+                  onClick={() => setShowNew((v) => !v)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                  aria-label={showNew ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
+                >
+                  {showNew ? (
+                    <EyeSlashIcon className="w-4 h-4" />
+                  ) : (
+                    <EyeIcon className="w-4 h-4" />
+                  )}
+                </button>
+              }
+            />
+
+            {/* Strength meter (solo si hay input) */}
+            {newPassword.length > 0 && (
+              <div className="space-y-2 pt-1">
+                {/* Barras */}
+                <div className="flex gap-1" aria-hidden="true">
+                  {[1, 2, 3, 4].map((level) => (
+                    <div
+                      key={level}
+                      className={[
+                        'h-1.5 flex-1 rounded-full transition-colors',
+                        pwStrength >= level
+                          ? STRENGTH_BAR_COLOR[pwStrength]
+                          : 'bg-gray-200 dark:bg-gray-700',
+                      ].join(' ')}
+                    />
+                  ))}
+                </div>
+
+                <p
+                  className={`text-xs font-semibold ${STRENGTH_TEXT_COLOR[pwStrength]}`}
+                  aria-live="polite"
+                  aria-label={`Fortaleza de contraseña: ${STRENGTH_LABEL[pwStrength]}`}
+                >
+                  {STRENGTH_LABEL[pwStrength]}
+                </p>
+
+                {/* Criterios */}
+                <ul className="grid grid-cols-2 gap-x-4 gap-y-1" aria-label="Requisitos de contraseña">
+                  {pwCriteria.map(({ ok, label }) => (
+                    <li
+                      key={label}
+                      className={`flex items-center gap-1.5 text-xs transition-colors ${
+                        ok
+                          ? 'text-emerald-600 dark:text-emerald-400'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                    >
+                      <CheckIcon
+                        className={`w-3 h-3 shrink-0 transition-opacity ${ok ? 'opacity-100' : 'opacity-30'}`}
+                      />
+                      {label}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Confirmar contraseña */}
+          <div className="space-y-1">
+            <InputField
+              id="confirm-password"
+              label="Confirmar nueva contraseña"
+              type={showConfirm ? 'text' : 'password'}
+              value={confirmPassword}
+              onChange={(v) => {
+                setConfirmPassword(v)
+                setPassErrors((prev) => ({ ...prev, confirm: undefined }))
+              }}
+              error={passErrors.confirm}
+              required
+              autoComplete="new-password"
+              rightSlot={
+                <button
+                  type="button"
+                  onClick={() => setShowConfirm((v) => !v)}
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                  aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
+                >
+                  {showConfirm ? (
+                    <EyeSlashIcon className="w-4 h-4" />
+                  ) : (
+                    <EyeIcon className="w-4 h-4" />
+                  )}
+                </button>
+              }
+            />
+
+            {/* Match indicator en tiempo real */}
+            {confirmPassword.length > 0 && !passErrors.confirm && (
+              <p
+                aria-live="polite"
+                className={`text-xs flex items-center gap-1 pt-0.5 ${
+                  confirmPassword === newPassword
+                    ? 'text-emerald-600 dark:text-emerald-400'
+                    : 'text-red-500 dark:text-red-400'
+                }`}
+              >
+                <CheckCircleIcon className="w-3 h-3 shrink-0" />
+                {confirmPassword === newPassword
+                  ? 'Las contraseñas coinciden'
+                  : 'Las contraseñas no coinciden'}
+              </p>
+            )}
+          </div>
+
+          {/* CTA seguridad */}
+          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+            <button
+              type="submit"
+              disabled={passLoading}
+              aria-busy={passLoading}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+                         border-2 border-gray-800 dark:border-gray-500
+                         text-gray-800 dark:text-gray-300
+                         hover:bg-gray-800 hover:text-white
+                         dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-700
+                         disabled:opacity-40 disabled:cursor-not-allowed
+                         transition-colors focus:outline-none focus:ring-2
+                         focus:ring-gray-800 dark:focus:ring-gray-500 focus:ring-offset-2"
+            >
+              {passLoading ? (
+                <>
+                  <SpinnerIcon className="w-4 h-4 animate-spin" />
+                  Actualizando…
+                </>
+              ) : (
+                'Actualizar contraseña'
+              )}
+            </button>
+          </div>
         </form>
       </section>
     </div>

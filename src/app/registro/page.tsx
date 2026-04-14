@@ -18,8 +18,8 @@ export default function RegistroPage() {
     setError(null)
     setLoading(true)
 
-    if (password.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
+    if (password.length < 8) {
+      setError('La contraseña debe tener al menos 8 caracteres')
       setLoading(false)
       return
     }
@@ -110,7 +110,7 @@ export default function RegistroPage() {
               onChange={(e) => setPassword(e.target.value)}
               required
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              placeholder="Mínimo 6 caracteres"
+              placeholder="Mínimo 8 caracteres"
             />
           </div>
 

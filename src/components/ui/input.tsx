@@ -22,6 +22,8 @@ interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, '
   label: string
   /** Mensaje de error inline. También cambia el estilo del borde. */
   error?: string | null
+  /** Permite esconder el label visualmente pero mantiene accesibilidad */
+  hideLabel?: boolean
   /** Descripción auxiliar debajo del label */
   hint?: string
   leftSlot?: React.ReactNode
@@ -37,6 +39,7 @@ export function Input({
   rightSlot,
   required,
   disabled,
+  hideLabel,
   className,
   ...props
 }: InputProps) {
@@ -45,7 +48,9 @@ export function Input({
       {/* Label */}
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+        className={clsx(
+          hideLabel ? 'sr-only' : 'block text-sm font-medium text-gray-700 dark:text-gray-300'
+        )}
       >
         {label}
         {required && (
@@ -62,7 +67,7 @@ export function Input({
       {/* Input wrapper */}
       <div className="relative">
         {leftSlot && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             {leftSlot}
           </div>
         )}

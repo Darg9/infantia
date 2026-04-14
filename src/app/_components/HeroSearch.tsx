@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from 'react';
 import { trackEvent } from '@/lib/track';
 import { activityPath } from '@/lib/activity-url';
 import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
+import { Input, Button, useToast } from '@/components/ui';
 
 const QUICK_CHIPS = [
   { label: 'Hoy',         href: '/actividades?sort=date'  },
@@ -49,12 +50,14 @@ function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
 
 export default function HeroSearch() {
   const router = useRouter();
+  const { toast } = useToast();
 
   const [query, setQuery]             = useState('');
   const [suggestions, setSugg]        = useState<SuggestionItem[]>([]);
   const [showSugg, setShowSugg]       = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [isFetching, setIsFetching]   = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [recentSearches, setRecent]   = useState<string[]>([]);
 
@@ -71,6 +74,14 @@ export default function HeroSearch() {
     } catch {}
   }, []);
 
+  function closeDropdown() {
+    setShowSugg(false);
+    setShowHistory(false);
+    setSugg([]);
+    setActiveIndex(-1);
+    setIsFetching(false);
+  }
+
   // Cerrar al clic fuera — limpiar para evitar reaparición en siguiente foco
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -81,14 +92,6 @@ export default function HeroSearch() {
     document.addEventListener('mousedown', onClickOutside);
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, []);
-
-  function closeDropdown() {
-    setShowSugg(false);
-    setShowHistory(false);
-    setSugg([]);
-    setActiveIndex(-1);
-    setIsFetching(false);
-  }
 
   function saveToHistory(q: string) {
     if (!q || q.trim().length < 3) return;
@@ -176,14 +179,25 @@ export default function HeroSearch() {
   }
 
   function submitSearch(q: string) {
+    if (isSubmitting) return;
+
     const trimmed = q.trim();
+    if (!trimmed) {
+      toast.warning('Ingresa un término de búsqueda');
+      return;
+    }
+
+    setIsSubmitting(true);
     closeDropdown();
     saveToHistory(trimmed);
     trackEvent({
       type: "search_applied",
       metadata: { query: trimmed }
     });
-    router.push(trimmed ? `/actividades?search=${encodeURIComponent(trimmed)}` : '/actividades');
+    router.push(`/actividades?search=${encodeURIComponent(trimmed)}`);
+    
+    // Release lock softly to allow subsequent consecutive searches safely
+    setTimeout(() => setIsSubmitting(false), 800);
   }
 
   function handleChange(value: string) {
@@ -224,21 +238,10 @@ export default function HeroSearch() {
 
       {/* ── Input + dropdown ───────────────────────────────────────────── */}
       <div className="relative" ref={containerRef}>
-
-        {/* Lupa — clickeable */}
-        <button
-          type="button"
-          onClick={() => submitSearch(query)}
-          aria-label="Buscar"
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors z-10 p-0.5"
-        >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-              d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-          </svg>
-        </button>
-
-        <input
+        <Input
+          id="hero-search"
+          label="Buscar actividades"
+          hideLabel
           type="text"
           value={query}
           onChange={e => handleChange(e.target.value)}
@@ -255,10 +258,31 @@ export default function HeroSearch() {
           placeholder="Ej: hoy, gratis, niños 5 años, talleres…"
           autoComplete="off"
           spellCheck={false}
-          aria-label="Buscar actividades"
+          disabled={isSubmitting}
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
-          className="w-full rounded-2xl border border-gray-200 bg-white py-4 pl-12 pr-4 text-base text-gray-900 placeholder:text-gray-400 shadow-md focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-shadow"
+          className="rounded-2xl shadow-md py-4 text-base bg-white focus:ring-brand-100 focus:border-brand-400"
+          leftSlot={
+            <button
+              type="button"
+              disabled={isSubmitting}
+              onClick={() => submitSearch(query)}
+              aria-label="Ejecutar búsqueda"
+              aria-busy={isSubmitting}
+              className="text-gray-400 hover:text-brand-500 disabled:opacity-50 transition-colors p-0.5 ml-1"
+            >
+              {isSubmitting ? (
+                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
+              )}
+            </button>
+          }
         />
 
         {/* Dropdown */}
@@ -317,7 +341,7 @@ export default function HeroSearch() {
               <div className="px-4 py-8 text-center">
                 <p className="text-sm text-gray-500">
                   No encontramos resultados para{' '}
-                  <span className="font-medium text-gray-700">"{query}"</span>
+                  <span className="font-medium text-gray-700">&quot;{query}&quot;</span>
                 </p>
               </div>
             )}
@@ -380,14 +404,16 @@ export default function HeroSearch() {
       {/* ── Chips rápidos ─────────────────────────────────────────────── */}
       <div className="flex gap-2 justify-center mt-3 flex-wrap">
         {QUICK_CHIPS.map(chip => (
-          <button
+          <Button
             key={chip.label}
-            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={isSubmitting}
             onClick={() => router.push(chip.href)}
-            className="rounded-full border border-gray-200 bg-white/80 px-4 py-1.5 text-sm text-gray-600 hover:border-indigo-300 hover:text-indigo-700 hover:bg-indigo-50 transition-all"
+            className="rounded-full border border-gray-200 bg-white/80 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 font-normal"
           >
             {chip.label}
-          </button>
+          </Button>
         ))}
       </div>
     </div>

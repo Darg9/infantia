@@ -247,6 +247,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 | DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`; archivos legacy → `warn`. Boy Scout Rule activa. `src/lib/track.ts` ya corregido. | Reducir progresivamente al tocar cada archivo |
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado y linting estricto (no .toNumber()), sumado a pre-validador `schema:check`. | - |
+| DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`: `prefer-const` (1), `@ts-ignore` (2), `no-require-imports` (1), `react/no-unescaped-entities` (6), `@next/next/no-html-link-for-pages` (5), `setState-in-effect` (4), `no-restricted-syntax/.toNumber()` (1), otros (5). Ninguno es `no-explicit-any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
 
 ### Features v0.9.0 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

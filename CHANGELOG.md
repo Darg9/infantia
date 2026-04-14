@@ -9,8 +9,8 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.11.0-S45] — 2026-04-14 (ESLint Freeze + Legal SSOT + Docs Exhaustivo)
-**Documento Fundacional: V25** | Rama: master | Commits: `a7c8963`, `ba7fb32`, `4e16f7b`
+## [v0.11.0-S45] — 2026-04-14 (ESLint Freeze + Legal SSOT + Docs Exhaustivo + QA Cierre)
+**Documento Fundacional: V25** | Rama: master | Commits: `a7c8963`, `ba7fb32`, `4e16f7b`, `2506999`, `48721d7`, `0947b8b`, `86628fe`
 
 ### Hardening
 
@@ -37,6 +37,20 @@ Relación con Documento Fundacional:
 - `docs/modules/analytics.md`: endpoint POST /api/events, dashboard KPI, contrato JSON.
 - `docs/modules/activities.md`: tabla admin expandida de 8 a 18 rutas reales.
 - `TEST_STATUS.md`: corregido "56 total" → 60, añadidos ranking.test.ts + metrics.test.ts + price-normalization.test.ts.
+- Auditoría completa 15 documentos `.md`: todos sincronizados a v0.11.0-S45.
+- `docs/modules/scraping.md`: añadidos @parqueexplora y @quehacerenmedellin (2 fuentes Medellín faltantes).
+
+### Infraestructura / Ops
+- **Vercel rename**: todas las referencias `infantia-activities` → `habitaplan-prod` (CLAUDE.md, README.md, ARCHITECTURE.md, .env.example, scripts/generate_v25.mjs).
+- **Email auth documentada (tríada completa)**: SPF `v=spf1 include:zoho.com include:resend.com -all` + DKIM vía `send.habitaplan.com` + DMARC `p=reject`. FROM unificado: `notificaciones@habitaplan.com`. Validado Gmail PASS.
+- `.env.example`: `RESEND_FROM_EMAIL` corregido de `Infantia <notificaciones@infantia.co>` → `HabitaPlan <notificaciones@habitaplan.com>`.
+
+### Deuda técnica (registro)
+- **DEBT-05** registrado: 25 errores ESLint pre-existentes no relacionados con `any` (`prefer-const`, `@ts-ignore`, `no-require-imports`, `react/no-unescaped-entities`, `no-html-link-for-pages`, `setState-in-effect`, etc.). No bloquean CI — Boy Scout Rule activa.
+
+### Estado de tests
+- **916 tests** en 60 archivos — 0 fallos — 2 skipped
+- Cobertura: **>91% stmts / >85% branches** ✅
 
 ---
 

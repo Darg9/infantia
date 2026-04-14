@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-13 | Version: v0.11.0-S44
+Actualizado: 2026-04-14 | Version: v0.11.0-S45
 
-## Resumen Actual (v0.11.0-S44 / Adaptive Filter + CTR Feedback Loop)
+## Resumen Actual (v0.11.0-S45 / ESLint Freeze + Legal SSOT + Docs Exhaustivo)
 - **Archivos de Test:** 60 (+2 nuevos: `storage.test.ts` extendido, `metrics.test.ts` nuevo)
 - **Tests Totales:** 916 (+27 vs S42)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)

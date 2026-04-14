@@ -98,7 +98,7 @@ export default async function ProveedorPage({ params }: PageProps) {
             />
           </div>
         ) : (
-          <div className="shrink-0 w-[72px] h-[72px] rounded-2xl bg-orange-50 flex items-center justify-center text-3xl select-none">
+          <div className="shrink-0 w-[72px] h-[72px] rounded-2xl bg-brand-50 flex items-center justify-center text-3xl select-none">
             🏫
           </div>
         )}
@@ -224,7 +224,7 @@ export default async function ProveedorPage({ params }: PageProps) {
         <div className="text-center py-16 text-gray-400">
           <div className="text-4xl mb-3">📭</div>
           <p className="text-sm">Este proveedor no tiene actividades publicadas aún.</p>
-          <Link href="/actividades" className="mt-4 inline-block text-sm text-orange-500 underline">
+          <Link href="/actividades" className="mt-4 inline-block text-sm text-brand-500 underline">
             Ver todas las actividades
           </Link>
         </div>

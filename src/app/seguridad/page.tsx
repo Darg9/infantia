@@ -94,7 +94,7 @@ export default function SeguridadPage() {
 
         {/* ── Header ───────────────────────────────────────────────── */}
         <header>
-          <p className="text-sm text-orange-400/80 uppercase tracking-widest font-medium">
+          <p className="text-sm text-brand-400/80 uppercase tracking-widest font-medium">
             Legal
           </p>
 
@@ -135,7 +135,7 @@ export default function SeguridadPage() {
               <ul className="space-y-2.5 text-sm text-gray-300">
                 {items.map((item) => (
                   <li key={item} className="flex items-start gap-2">
-                    <span className="text-orange-500/70 shrink-0 mt-0.5">•</span>
+                    <span className="text-brand-500/70 shrink-0 mt-0.5">•</span>
                     <span>{item}</span>
                   </li>
                 ))}

@@ -47,7 +47,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
         {avatarUrl ? (
           <img src={avatarUrl} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
         ) : (
-          <div className="w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs font-semibold">
+          <div className="w-8 h-8 bg-brand-100 text-brand-600 rounded-full flex items-center justify-center text-xs font-semibold">
             {initial}
           </div>
         )}
@@ -68,7 +68,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-orange-600 font-medium hover:bg-orange-50 transition-colors"
+              className="block px-4 py-2 text-sm text-brand-600 font-medium hover:bg-orange-50 transition-colors"
             >
               Admin
             </Link>

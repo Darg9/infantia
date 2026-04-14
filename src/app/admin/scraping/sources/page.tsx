@@ -28,9 +28,9 @@ export default async function ScrapingSourcesPage() {
   }
 
   const statusColor: Record<string, string> = {
-    SUCCESS: 'bg-green-100 text-green-700',
-    PARTIAL: 'bg-yellow-100 text-yellow-700',
-    FAILED: 'bg-red-100 text-red-700',
+    SUCCESS: 'bg-success-100 text-success-700',
+    PARTIAL: 'bg-warning-100 text-warning-700',
+    FAILED: 'bg-error-100 text-error-700',
     RUNNING: 'bg-blue-100 text-blue-700',
   }
 
@@ -38,7 +38,7 @@ export default async function ScrapingSourcesPage() {
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <Link href="/admin" className="text-sm text-orange-600 hover:underline mb-2 inline-block">
+          <Link href="/admin" className="text-sm text-brand-600 hover:underline mb-2 inline-block">
             &larr; Panel admin
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Fuentes de scraping</h1>
@@ -64,7 +64,7 @@ export default async function ScrapingSourcesPage() {
                     <span className="text-xl">{platformEmoji[source.platform] ?? '🔗'}</span>
                     <h2 className="font-semibold text-gray-900">{source.name}</h2>
                     {source.isActive ? (
-                      <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Activa</span>
+                      <span className="text-xs bg-success-100 text-success-700 px-2 py-0.5 rounded-full">Activa</span>
                     ) : (
                       <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactiva</span>
                     )}

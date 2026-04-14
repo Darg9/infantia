@@ -298,7 +298,7 @@ export default async function ActividadDetallePage({
                   {priceLabel !== 'No disponible' && (
                     <span className={clsx(
                       'rounded-full px-3 py-1 text-xs font-semibold',
-                      priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-50 text-orange-700'
+                      priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'
                     )}>
                       {priceLabel}
                     </span>
@@ -348,7 +348,7 @@ export default async function ActividadDetallePage({
                 {priceLabel !== 'No disponible' && (
                   <span className={clsx(
                     'rounded-full px-3 py-1 text-xs font-semibold',
-                    priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-50 text-orange-700'
+                    priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'
                   )}>
                     {priceLabel}
                   </span>
@@ -456,7 +456,7 @@ export default async function ActividadDetallePage({
                     </span>
                   </div>
                   {activity.provider.slug && (
-                    <Link href={`/proveedores/${activity.provider.slug}`} className="shrink-0 text-xs text-orange-500 hover:underline">
+                    <Link href={`/proveedores/${activity.provider.slug}`} className="shrink-0 text-xs text-brand-500 hover:underline">
                       Ver más →
                     </Link>
                   )}
@@ -647,7 +647,7 @@ export default async function ActividadDetallePage({
           {ACTIVITY_DISCLAIMER_FULL}{' '}
           <a
             href={`/contacto?motivo=reportar&url=${encodeURIComponent(canonicalPath)}`}
-            className="text-orange-500 hover:underline"
+            className="text-brand-500 hover:underline"
           >
             Reportar error o solicitar remoción
           </a>

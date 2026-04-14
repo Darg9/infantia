@@ -59,7 +59,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
                 onClick={() => setContentMode(mode)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                   contentMode === mode
-                    ? 'bg-orange-500 text-white border-orange-500'
+                    ? 'bg-brand-500 text-white border-orange-500'
                     : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
                 }`}
               >
@@ -93,12 +93,12 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
           <button
             onClick={handleSave}
             disabled={saving}
-            className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
+            className="px-4 py-1.5 bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
           >
             {saving ? 'Guardando…' : 'Guardar'}
           </button>
-          {saved && <span className="text-xs text-green-600 font-medium">✓ Guardado</span>}
-          {error && <span className="text-xs text-red-500">{error}</span>}
+          {saved && <span className="text-xs text-success-600 font-medium">✓ Guardado</span>}
+          {error && <span className="text-xs text-error-500">{error}</span>}
         </div>
       </div>
     </div>

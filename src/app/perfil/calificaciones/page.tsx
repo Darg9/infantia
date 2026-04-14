@@ -29,7 +29,7 @@ export default async function CalificacionesPage() {
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Mis calificaciones</h1>
         {ratings.length > 0 && (
-          <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">
+          <span className="rounded-full bg-warning-100 px-2.5 py-0.5 text-xs font-semibold text-warning-700">
             {ratings.length}
           </span>
         )}
@@ -65,7 +65,7 @@ export default async function CalificacionesPage() {
                   className="w-16 h-16 rounded-xl object-cover shrink-0"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-amber-50 flex items-center justify-center text-2xl shrink-0">
+                <div className="w-16 h-16 rounded-xl bg-warning-50 flex items-center justify-center text-2xl shrink-0">
                   ⭐
                 </div>
               )}

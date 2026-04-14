@@ -96,7 +96,7 @@ export default function EditarActividadPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8 text-center text-gray-500">
         Actividad no encontrada.{' '}
-        <Link href="/admin/actividades" className="text-orange-500 underline">Volver</Link>
+        <Link href="/admin/actividades" className="text-brand-500 underline">Volver</Link>
       </div>
     )
   }
@@ -121,7 +121,7 @@ export default function EditarActividadPage() {
         <div className={`text-sm px-4 py-3 rounded-xl mb-5 ${
           msg.type === 'success'
             ? 'bg-emerald-50 border border-emerald-200 text-emerald-700'
-            : 'bg-red-50 border border-red-200 text-red-600'
+            : 'bg-error-50 border border-red-200 text-error-600'
         }`}>
           {msg.text}
           {msg.type === 'success' && (
@@ -236,7 +236,7 @@ export default function EditarActividadPage() {
           {activity.sourceUrl && (
             <div className="col-span-2">
               <span className="font-medium text-gray-500">Fuente:</span>{' '}
-              <a href={activity.sourceUrl} target="_blank" className="text-orange-500 underline truncate" rel="noreferrer">
+              <a href={activity.sourceUrl} target="_blank" className="text-brand-500 underline truncate" rel="noreferrer">
                 {activity.sourceUrl}
               </a>
             </div>
@@ -249,7 +249,7 @@ export default function EditarActividadPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="px-6 py-2.5 bg-orange-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
+          className="px-6 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>

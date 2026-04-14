@@ -40,7 +40,7 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
       title={active ? 'Desactivar fuente' : 'Activar fuente'}
       className={`
         relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
-        ${active ? 'bg-green-500' : 'bg-gray-300'}
+        ${active ? 'bg-success-500' : 'bg-gray-300'}
         ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}
       `}
     >

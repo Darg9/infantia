@@ -30,9 +30,9 @@ export default function SourceHealthClient() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-green-100 text-green-800 border-green-200';
-      case 'degraded': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
+      case 'healthy': return 'bg-success-100 text-success-800 border-green-200';
+      case 'degraded': return 'bg-warning-100 text-warning-800 border-yellow-200';
+      case 'critical': return 'bg-error-100 text-error-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
@@ -44,16 +44,16 @@ export default function SourceHealthClient() {
       
       {/* Alertas Proactivas */}
       {criticalSources > 0 && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+        <div className="bg-error-50 border-l-4 border-red-500 p-4 rounded-md">
           <div className="flex">
             <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+              <svg className="h-5 w-5 text-error-400" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Cuidado: {criticalSources} orígenes tienen estado CRITICAL</h3>
-              <div className="mt-2 text-sm text-red-700">
+              <h3 className="text-sm font-medium text-error-800">Cuidado: {criticalSources} orígenes tienen estado CRITICAL</h3>
+              <div className="mt-2 text-sm text-error-700">
                 <p>Las extracciones a este dominio están suspendidas algorítmicamente y en ventana de enfriamiento (6 horas).</p>
               </div>
             </div>
@@ -109,7 +109,7 @@ export default function SourceHealthClient() {
                     <div className="flex items-center">
                       <span className="mr-2">{sRate}%</span>
                       <div className="relative w-full overflow-hidden bg-gray-200 rounded-full h-2">
-                         <div style={{width: `${sRate}%`}} className={`h-2 rounded-full ${sRate > 70 ? 'bg-green-500' : sRate > 40 ? 'bg-yellow-500' : 'bg-red-500'}`}></div>
+                         <div style={{width: `${sRate}%`}} className={`h-2 rounded-full ${sRate > 70 ? 'bg-success-500' : sRate > 40 ? 'bg-warning-500' : 'bg-error-500'}`}></div>
                       </div>
                     </div>
                   </td>

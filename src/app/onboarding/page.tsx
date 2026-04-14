@@ -24,7 +24,7 @@ function StepDots({ step }: { step: number }) {
         <div
           key={s}
           className={`h-2 rounded-full transition-all ${
-            s === step ? 'w-8 bg-orange-500' : s < step ? 'w-2 bg-orange-300' : 'w-2 bg-gray-200'
+            s === step ? 'w-8 bg-brand-500' : s < step ? 'w-2 bg-brand-300' : 'w-2 bg-gray-200'
           }`}
         />
       ))}
@@ -67,7 +67,7 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
             onClick={() => setCityId(c.id)}
             className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
               cityId === c.id
-                ? 'border-orange-400 bg-orange-50 text-orange-700'
+                ? 'border-orange-400 bg-brand-50 text-brand-700'
                 : 'border-gray-200 text-gray-700 hover:border-gray-300'
             }`}
           >
@@ -79,7 +79,7 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
       <button
         onClick={handleNext}
         disabled={loading}
-        className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
       >
         {cityId ? 'Continuar →' : 'Saltar por ahora →'}
       </button>
@@ -124,7 +124,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         </p>
         <button
           onClick={onNext}
-          className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
+          className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
         >
           Continuar →
         </button>
@@ -178,14 +178,14 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
       </div>
 
       {error && (
-        <p className="text-xs text-red-600 mb-4 bg-red-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
+        <p className="text-xs text-error-600 mb-4 bg-error-50 border border-red-200 rounded-lg px-3 py-2">{error}</p>
       )}
 
       <div className="flex flex-col gap-2">
         <button
           onClick={handleSave}
           disabled={saving || !name.trim() || !birthDate || !consentAccepted}
-          className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+          className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
         >
           {saving ? 'Guardando…' : 'Guardar y continuar →'}
         </button>
@@ -212,7 +212,7 @@ function StepListo({ onFinish }: { onFinish: () => void }) {
       </p>
       <button
         onClick={onFinish}
-        className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
       >
         Ver actividades →
       </button>
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-sm">
         {/* Logo / marca */}
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-orange-500">habitaplan</span>
+          <span className="text-2xl font-bold text-brand-500">habitaplan</span>
           <p className="text-xs text-gray-400 mt-1">Configura tu cuenta en 2 minutos</p>
         </div>
 

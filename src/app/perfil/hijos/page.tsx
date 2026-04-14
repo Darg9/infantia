@@ -37,7 +37,7 @@ export default async function HijosPage() {
         </div>
         <Link
           href="/perfil/hijos/nuevo"
-          className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+          className="bg-brand-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
         >
           + Agregar
         </Link>
@@ -49,7 +49,7 @@ export default async function HijosPage() {
           <p className="text-gray-500 text-sm mb-4">Aun no has agregado perfiles de hijos.</p>
           <Link
             href="/perfil/hijos/nuevo"
-            className="text-orange-600 text-sm font-medium hover:underline"
+            className="text-brand-600 text-sm font-medium hover:underline"
           >
             Agregar primer perfil
           </Link>
@@ -64,7 +64,7 @@ export default async function HijosPage() {
                 className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-4"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-orange-600 font-bold text-sm">
+                  <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-600 font-bold text-sm">
                     {child.name[0].toUpperCase()}
                   </div>
                   <div>

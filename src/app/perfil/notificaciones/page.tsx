@@ -45,7 +45,7 @@ function Toggle({
         disabled
           ? 'bg-gray-200 cursor-not-allowed'
           : checked
-          ? 'bg-orange-500 cursor-pointer'
+          ? 'bg-brand-500 cursor-pointer'
           : 'bg-gray-300 cursor-pointer'
       }`}
     >
@@ -121,7 +121,7 @@ export default function NotificacionesPage() {
         <div className={`text-sm px-3 py-2 rounded-lg mb-4 ${
           msg.type === 'success'
             ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-            : 'text-red-600 bg-red-50 border border-red-200'
+            : 'text-error-600 bg-error-50 border border-red-200'
         }`}>
           {msg.text}
         </div>
@@ -166,7 +166,7 @@ export default function NotificacionesPage() {
               key={opt.value}
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                 prefs.frequency === opt.value
-                  ? 'bg-orange-50 border border-orange-200'
+                  ? 'bg-brand-50 border border-orange-200'
                   : 'border border-transparent hover:bg-gray-50'
               }`}
             >
@@ -176,7 +176,7 @@ export default function NotificacionesPage() {
                 value={opt.value}
                 checked={prefs.frequency === opt.value}
                 onChange={() => save({ ...prefs, frequency: opt.value })}
-                className="h-4 w-4 text-orange-500 focus:ring-orange-500"
+                className="h-4 w-4 text-brand-500 focus:ring-orange-500"
               />
               <div>
                 <p className="text-sm font-medium text-gray-700">{opt.label}</p>

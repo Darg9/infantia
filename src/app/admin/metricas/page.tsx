@@ -140,7 +140,7 @@ export default async function MetricasPage() {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           <StatCard label="Total actividades" value={totalActivities} />
           <StatCard label="Activas"           value={activeActivities}  color="text-emerald-600" />
-          <StatCard label="Expiradas"         value={expiredActivities} color="text-amber-600" />
+          <StatCard label="Expiradas"         value={expiredActivities} color="text-warning-600" />
           <StatCard label="Usuarios"          value={totalUsers} />
           <StatCard label="Proveedores"       value={totalProviders} />
         </div>
@@ -258,7 +258,7 @@ export default async function MetricasPage() {
                       <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>
                       <span className="text-sm font-medium text-gray-800">{row.query}</span>
                     </div>
-                    <span className="text-xs font-semibold text-red-500 bg-red-50 rounded-full px-2 py-0.5">
+                    <span className="text-xs font-semibold text-error-500 bg-error-50 rounded-full px-2 py-0.5">
                       {row._count.query ?? 0}×
                     </span>
                   </li>
@@ -349,7 +349,7 @@ function StatCard({
 function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
     ACTIVE:  'bg-emerald-100 text-emerald-700',
-    EXPIRED: 'bg-amber-100 text-amber-700',
+    EXPIRED: 'bg-warning-100 text-warning-700',
     DRAFT:   'bg-gray-100 text-gray-600',
     PAUSED:  'bg-blue-100 text-blue-700',
   };

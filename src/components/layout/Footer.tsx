@@ -42,7 +42,7 @@ export function Footer() {
 
           {/* Columna 1 — Brand */}
           <div className="col-span-2 sm:col-span-1">
-            <span className="text-lg font-bold text-orange-500">HabitaPlan</span>
+            <span className="text-lg font-bold text-brand-500">HabitaPlan</span>
             <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-xs">
               Encuentra actividades para disfrutar en familia
             </p>

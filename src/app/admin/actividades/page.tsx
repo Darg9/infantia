@@ -26,9 +26,9 @@ const STATUS_LABELS: Record<Status, string> = {
 
 const STATUS_COLORS: Record<Status, string> = {
   ACTIVE: 'bg-emerald-100 text-emerald-700',
-  PAUSED: 'bg-amber-100 text-amber-700',
+  PAUSED: 'bg-warning-100 text-warning-700',
   DRAFT: 'bg-gray-100 text-gray-600',
-  EXPIRED: 'bg-red-100 text-red-600',
+  EXPIRED: 'bg-error-100 text-error-600',
 }
 
 export default function AdminActividadesPage() {
@@ -165,7 +165,7 @@ export default function AdminActividadesPage() {
                           disabled={busy === act.id}
                           className={`text-xs px-3 py-1 rounded-lg border transition-colors disabled:opacity-50 ${
                             act.status === 'ACTIVE'
-                              ? 'border-amber-200 text-amber-600 hover:bg-amber-50'
+                              ? 'border-amber-200 text-warning-600 hover:bg-amber-50'
                               : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
                           }`}
                         >

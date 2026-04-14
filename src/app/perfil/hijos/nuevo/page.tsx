@@ -66,7 +66,7 @@ export default function NuevoHijoPage() {
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre <span className="text-red-500">*</span>
+            Nombre <span className="text-error-500">*</span>
           </label>
           <input
             type="text"
@@ -82,7 +82,7 @@ export default function NuevoHijoPage() {
         {/* Fecha de nacimiento */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Fecha de nacimiento <span className="text-red-500">*</span>
+            Fecha de nacimiento <span className="text-error-500">*</span>
           </label>
           <input
             type="date"
@@ -114,8 +114,8 @@ export default function NuevoHijoPage() {
         </div>
 
         {/* Autorización parental — Ley 1581 */}
-        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4">
-          <h2 className="text-sm font-semibold text-orange-800 mb-2">
+        <div className="bg-brand-50 border border-orange-200 rounded-xl p-4">
+          <h2 className="text-sm font-semibold text-brand-800 mb-2">
             Autorización de tratamiento de datos personales
           </h2>
           <p className="text-xs text-gray-600 leading-relaxed mb-3">{CONSENT_TEXT}</p>
@@ -124,7 +124,7 @@ export default function NuevoHijoPage() {
             <Link
               href="/tratamiento-datos"
               target="_blank"
-              className="text-orange-600 hover:underline"
+              className="text-brand-600 hover:underline"
             >
               Política de Tratamiento de Datos Personales
             </Link>{' '}
@@ -136,17 +136,17 @@ export default function NuevoHijoPage() {
               id="consent"
               checked={consentAccepted}
               onChange={(e) => setConsentAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-orange-500"
             />
             <label htmlFor="consent" className="text-xs text-gray-700 font-medium leading-relaxed">
               Confirmo que soy el padre, madre o tutor legal de este menor y acepto la autorización
-              de tratamiento de sus datos personales. <span className="text-red-500">*</span>
+              de tratamiento de sus datos personales. <span className="text-error-500">*</span>
             </label>
           </div>
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -161,7 +161,7 @@ export default function NuevoHijoPage() {
           <button
             type="submit"
             disabled={loading || !consentAccepted}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+            className="flex-1 bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Guardando...' : 'Guardar perfil'}
           </button>

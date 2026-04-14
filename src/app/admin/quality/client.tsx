@@ -119,36 +119,36 @@ export default function QualityDashboardClient() {
       </div>
 
       {status === 'over' && (
-        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-error-50 border-l-4 border-red-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">🚨</div>
             <div className="ml-3">
-              <h3 className="text-sm font-bold text-red-800">Over-filtering detectado</h3>
-              <p className="mt-1 text-sm text-red-700">El sistema evaluativo es demasiado severo. Rebaja los thresholds.</p>
+              <h3 className="text-sm font-bold text-error-800">Over-filtering detectado</h3>
+              <p className="mt-1 text-sm text-error-700">El sistema evaluativo es demasiado severo. Rebaja los thresholds.</p>
             </div>
           </div>
         </div>
       )}
 
       {status === 'under' && (
-        <div className="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-warning-50 border-l-4 border-yellow-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">⚠️</div>
             <div className="ml-3">
-              <h3 className="text-sm font-bold text-yellow-800">Under-filtering detectado</h3>
-              <p className="mt-1 text-sm text-yellow-700">El sistema está permitiendo que contenido muy pobre penetre. Endurece las reglas.</p>
+              <h3 className="text-sm font-bold text-warning-800">Under-filtering detectado</h3>
+              <p className="mt-1 text-sm text-warning-700">El sistema está permitiendo que contenido muy pobre penetre. Endurece las reglas.</p>
             </div>
           </div>
         </div>
       )}
 
       {status === 'healthy' && (
-        <div className="bg-green-50 border-l-4 border-green-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className="bg-success-50 border-l-4 border-green-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
             <div className="flex-shrink-0 text-xl">✅</div>
             <div className="ml-3">
-              <h3 className="text-sm font-bold text-green-800">Sistema saludable</h3>
-              <p className="mt-1 text-sm text-green-700">La curaduría opera dentro de márgenes totalmente seguros.</p>
+              <h3 className="text-sm font-bold text-success-800">Sistema saludable</h3>
+              <p className="mt-1 text-sm text-success-700">La curaduría opera dentro de márgenes totalmente seguros.</p>
             </div>
           </div>
         </div>

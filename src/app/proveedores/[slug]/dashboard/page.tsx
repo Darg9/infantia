@@ -72,14 +72,14 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
       </div>
 
       {/* Estado premium */}
-      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-amber-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
+      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-amber-200' : 'bg-gray-50 border-gray-200'}`}>
         <span className="text-2xl">{provider.isPremium ? '⭐' : '🏷️'}</span>
         <div>
           <p className="font-semibold text-gray-800">
             {provider.isPremium ? 'Proveedor Destacado (Premium)' : 'Proveedor Estándar'}
           </p>
           {provider.isPremium && provider.premiumSince && (
-            <p className="text-xs text-amber-700">
+            <p className="text-xs text-warning-700">
               Premium desde {new Date(provider.premiumSince).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric' })}
             </p>
           )}
@@ -135,8 +135,8 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                       a.status === 'ACTIVE'  ? 'bg-emerald-100 text-emerald-700' :
-                      a.status === 'DRAFT'   ? 'bg-orange-100 text-orange-700' :
-                      a.status === 'PAUSED'  ? 'bg-yellow-100 text-yellow-700' :
+                      a.status === 'DRAFT'   ? 'bg-brand-100 text-brand-700' :
+                      a.status === 'PAUSED'  ? 'bg-warning-100 text-warning-700' :
                                                'bg-gray-100 text-gray-500'
                     }`}>
                       {a.status === 'ACTIVE' ? 'Activa' : a.status === 'DRAFT' ? 'Borrador' : a.status === 'PAUSED' ? 'Pausada' : 'Expirada'}

@@ -53,7 +53,7 @@ export default function ContribuirPage() {
               <p className="text-sm text-gray-600 mb-4">
                 ¿Conoces un taller, club, campamento o evento que no aparece en HabitaPlan?
               </p>
-              <span className="inline-flex items-center gap-1 text-sm text-orange-600 group-hover:translate-x-1 transition-transform">
+              <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
             </button>
@@ -68,7 +68,7 @@ export default function ContribuirPage() {
               <p className="text-sm text-gray-600 mb-4">
                 ¿Hay una academia, biblioteca o centro comunitario que ofrezca actividades?
               </p>
-              <span className="inline-flex items-center gap-1 text-sm text-orange-600 group-hover:translate-x-1 transition-transform">
+              <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
             </button>
@@ -133,7 +133,7 @@ export default function ContribuirPage() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-orange-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
+                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
                   </button>
@@ -188,7 +188,7 @@ export default function ContribuirPage() {
 
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-orange-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
+                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
                   </button>

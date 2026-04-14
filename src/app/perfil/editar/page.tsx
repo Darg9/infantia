@@ -86,8 +86,8 @@ function getPasswordStrength(pass: string): number {
 }
 
 const STRENGTH_LABEL      = ['', 'Débil', 'Regular', 'Buena', 'Fuerte']
-const STRENGTH_TEXT_COLOR = ['', 'text-red-500', 'text-orange-500', 'text-yellow-500', 'text-emerald-600 dark:text-emerald-400']
-const STRENGTH_BAR_COLOR  = ['', 'bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-emerald-500']
+const STRENGTH_TEXT_COLOR = ['', 'text-error-500', 'text-brand-500', 'text-warning-500', 'text-emerald-600 dark:text-emerald-400']
+const STRENGTH_BAR_COLOR  = ['', 'bg-error-400', 'bg-brand-400', 'bg-warning-400', 'bg-emerald-500']
 
 // ─── InputField component ──────────────────────────────────────────────────────
 // Componente local: no se importa del DS porque necesita onChange:(string)=>void
@@ -125,7 +125,7 @@ function InputField({
       <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
         {label}
         {required && (
-          <span className="text-red-500 ml-0.5" aria-hidden="true">
+          <span className="text-error-500 ml-0.5" aria-hidden="true">
             *
           </span>
         )}
@@ -160,7 +160,7 @@ function InputField({
         )}
       </div>
       {error && (
-        <p id={`${id}-error`} role="alert" className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+        <p id={`${id}-error`} role="alert" className="text-xs text-error-600 dark:text-red-400 flex items-center gap-1">
           <span aria-hidden="true">⚠</span>
           {error}
         </p>
@@ -447,8 +447,8 @@ export default function EditarPerfilPage() {
                 />
               ) : (
                 <div
-                  className="w-20 h-20 rounded-full bg-orange-100 dark:bg-orange-900/30
-                               text-orange-600 dark:text-orange-400 font-bold text-2xl
+                  className="w-20 h-20 rounded-full bg-brand-100 dark:bg-orange-900/30
+                               text-brand-600 dark:text-orange-400 font-bold text-2xl
                                flex items-center justify-center select-none
                                ring-2 ring-gray-200 dark:ring-gray-700
                                group-hover/avatar:ring-orange-400 transition-all"
@@ -497,13 +497,13 @@ export default function EditarPerfilPage() {
                 </p>
               )}
               {!uploadingAvatar && avatarFile && !avatarUploadError && (
-                <p className="text-xs text-orange-600 dark:text-orange-400 mt-1.5 font-medium flex items-center gap-1">
+                <p className="text-xs text-brand-600 dark:text-orange-400 mt-1.5 font-medium flex items-center gap-1">
                   <CheckIcon className="w-3 h-3 shrink-0" />
                   Nueva foto lista para guardar
                 </p>
               )}
               {avatarUploadError && (
-                <p className="text-xs text-red-600 dark:text-red-400 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-error-600 dark:text-red-400 mt-1.5 flex items-center gap-1">
                   <ExclamationIcon className="w-3 h-3 shrink-0" />
                   {avatarUploadError}
                   {/* Retry dispara el submit del form para reintentar upload + save */}
@@ -553,7 +553,7 @@ export default function EditarPerfilPage() {
               disabled={basicLoading || !nameLoaded}
               aria-busy={basicLoading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                         bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white
+                         bg-brand-500 hover:bg-orange-600 active:bg-orange-700 text-white
                          disabled:bg-orange-200 dark:disabled:bg-orange-900/40
                          disabled:text-orange-400 disabled:cursor-not-allowed
                          transition-colors focus:outline-none focus:ring-2
@@ -740,7 +740,7 @@ export default function EditarPerfilPage() {
                 className={`text-xs flex items-center gap-1 pt-0.5 ${
                   confirmPassword === newPassword
                     ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-red-500 dark:text-red-400'
+                    : 'text-error-500 dark:text-red-400'
                 }`}
               >
                 <CheckCircleIcon className="w-3 h-3 shrink-0" />

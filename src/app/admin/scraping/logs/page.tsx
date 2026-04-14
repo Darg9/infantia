@@ -15,9 +15,9 @@ export default async function ScrapingLogsPage() {
   })
 
   const statusStyle: Record<string, { bg: string; icon: string }> = {
-    SUCCESS: { bg: 'bg-green-100 text-green-700', icon: '✅' },
-    PARTIAL: { bg: 'bg-yellow-100 text-yellow-700', icon: '⚠️' },
-    FAILED: { bg: 'bg-red-100 text-red-700', icon: '❌' },
+    SUCCESS: { bg: 'bg-success-100 text-success-700', icon: '✅' },
+    PARTIAL: { bg: 'bg-warning-100 text-warning-700', icon: '⚠️' },
+    FAILED: { bg: 'bg-error-100 text-error-700', icon: '❌' },
     RUNNING: { bg: 'bg-blue-100 text-blue-700', icon: '🔄' },
   }
 
@@ -34,7 +34,7 @@ export default async function ScrapingLogsPage() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-12">
       <div className="mb-8">
-        <Link href="/admin" className="text-sm text-orange-600 hover:underline mb-2 inline-block">
+        <Link href="/admin" className="text-sm text-brand-600 hover:underline mb-2 inline-block">
           &larr; Panel admin
         </Link>
         <h1 className="text-2xl font-bold text-gray-900">Logs de ejecucion</h1>
@@ -117,14 +117,14 @@ export default async function ScrapingLogsPage() {
               .filter((l) => l.errorMessage)
               .slice(0, 5)
               .map((log) => (
-                <div key={log.id} className="bg-red-50 border border-red-200 rounded-xl p-4">
+                <div key={log.id} className="bg-error-50 border border-red-200 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-medium text-red-700 text-sm">{log.source.name}</span>
-                    <span className="text-xs text-red-400">
+                    <span className="font-medium text-error-700 text-sm">{log.source.name}</span>
+                    <span className="text-xs text-error-400">
                       {new Date(log.startedAt).toLocaleDateString('es-CO')}
                     </span>
                   </div>
-                  <p className="text-sm text-red-600 font-mono">{log.errorMessage}</p>
+                  <p className="text-sm text-error-600 font-mono">{log.errorMessage}</p>
                 </div>
               ))}
           </div>

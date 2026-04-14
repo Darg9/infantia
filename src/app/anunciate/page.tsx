@@ -92,7 +92,7 @@ export default function AnunciatePage() {
               key={opt.id}
               className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col"
             >
-              <span className="inline-block rounded-full bg-amber-100 text-amber-800 text-xs font-semibold px-3 py-1 mb-4 w-fit">
+              <span className="inline-block rounded-full bg-warning-100 text-warning-800 text-xs font-semibold px-3 py-1 mb-4 w-fit">
                 {opt.badge}
               </span>
               <h3 className="text-xl font-bold text-gray-900 mb-1">{opt.title}</h3>

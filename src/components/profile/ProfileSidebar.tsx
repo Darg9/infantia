@@ -42,7 +42,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                 className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-700 shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+              <div className="w-10 h-10 bg-brand-100 dark:bg-orange-900/30 text-brand-600 dark:text-orange-400 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                 {(userName?.[0] ?? userEmail?.[0] ?? '?').toUpperCase()}
               </div>
             )}
@@ -67,14 +67,14 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                 className={[
                   'relative flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-sm transition-colors overflow-hidden',
                   active
-                    ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400 font-semibold'
+                    ? 'bg-brand-50 dark:bg-orange-900/20 text-brand-700 dark:text-orange-400 font-semibold'
                     : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white',
                 ].join(' ')}
               >
                 {/* Active indicator bar — requiere relative en el Link padre */}
                 <span
                   className={[
-                    'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-orange-500 transition-opacity',
+                    'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-brand-500 transition-opacity',
                     active ? 'opacity-100' : 'opacity-0',
                   ].join(' ')}
                   aria-hidden="true"
@@ -100,7 +100,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                 className={[
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors',
                   active
-                    ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 font-semibold'
+                    ? 'bg-brand-100 dark:bg-orange-900/30 text-brand-700 dark:text-orange-400 font-semibold'
                     : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200',
                 ].join(' ')}
               >

@@ -115,7 +115,7 @@ export default async function MapaPage() {
           </div>
           <a
             href="/actividades"
-            className="shrink-0 text-sm text-orange-600 hover:text-orange-700 font-medium"
+            className="shrink-0 text-sm text-brand-600 hover:text-orange-700 font-medium"
           >
             ← Ver listado
           </a>

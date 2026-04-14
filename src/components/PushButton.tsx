@@ -106,7 +106,7 @@ export function PushButton() {
 
   if (state === 'denied') {
     return (
-      <span className="text-xs text-amber-600">
+      <span className="text-xs text-warning-600">
         Bloqueado — activa en configuración del navegador
       </span>
     )
@@ -124,7 +124,7 @@ export function PushButton() {
         busy
           ? 'bg-gray-200 cursor-wait'
           : checked
-          ? 'bg-orange-500 cursor-pointer'
+          ? 'bg-brand-500 cursor-pointer'
           : 'bg-gray-300 cursor-pointer'
       }`}
     >

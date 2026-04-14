@@ -62,7 +62,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
 
   if (error)
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">{error}</div>
+      <div className="bg-error-50 border border-red-200 rounded-lg p-4 text-error-700">{error}</div>
     );
 
   return (
@@ -75,19 +75,19 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
             <p className="text-2xl font-bold text-blue-600">{summary.total}</p>
           </div>
 
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="bg-success-50 border border-green-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Activas</p>
-            <p className="text-2xl font-bold text-green-600">{summary.active}</p>
+            <p className="text-2xl font-bold text-success-600">{summary.active}</p>
           </div>
 
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+          <div className="bg-warning-50 border border-amber-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Pausadas</p>
-            <p className="text-2xl font-bold text-amber-600">{summary.paused}</p>
+            <p className="text-2xl font-bold text-warning-600">{summary.paused}</p>
           </div>
 
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="bg-error-50 border border-red-200 rounded-lg p-4">
             <p className="text-sm text-gray-600">Baja calidad</p>
-            <p className="text-2xl font-bold text-red-600">{summary.lowQuality}</p>
+            <p className="text-2xl font-bold text-error-600">{summary.lowQuality}</p>
           </div>
         </div>
       )}
@@ -111,10 +111,10 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                 source.urlScore === null
                   ? 'text-gray-400'
                   : source.urlScore >= 60
-                    ? 'text-green-600'
+                    ? 'text-success-600'
                     : source.urlScore >= 45
-                      ? 'text-amber-600'
-                      : 'text-red-600';
+                      ? 'text-warning-600'
+                      : 'text-error-600';
 
               const isLowQuality = source.urlScore !== null && source.urlScore < 45;
 
@@ -133,7 +133,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                     {source.urlScore !== null ? (
                       <div>
                         <p className={`font-semibold ${scoreColor}`}>{source.urlScore}/100</p>
-                        {isLowQuality && <p className="text-xs text-red-500">⚠️ Baja calidad</p>}
+                        {isLowQuality && <p className="text-xs text-error-500">⚠️ Baja calidad</p>}
                       </div>
                     ) : (
                       <p className="text-gray-400 text-xs">Sin datos</p>
@@ -144,16 +144,16 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
 
                   <td className="px-4 py-3 text-center">
                     {source.paused ? (
-                      <div className="inline-block bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-medium">
+                      <div className="inline-block bg-warning-100 text-warning-700 px-2 py-1 rounded text-xs font-medium">
                         ⏸️ Pausada
                         {source.pausedAt && (
-                          <p className="text-xs text-amber-600">
+                          <p className="text-xs text-warning-600">
                             {new Date(source.pausedAt).toLocaleDateString()}
                           </p>
                         )}
                       </div>
                     ) : (
-                      <div className="inline-block bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-medium">
+                      <div className="inline-block bg-success-100 text-success-700 px-2 py-1 rounded text-xs font-medium">
                         ✅ Activa
                       </div>
                     )}

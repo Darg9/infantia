@@ -122,7 +122,7 @@ export function ShareButton({
     return (
       <button
         onClick={handleWebShare}
-        className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-100 px-4 py-2.5 text-sm font-medium text-orange-600 hover:bg-orange-200 transition-colors"
+        className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-orange-200 transition-colors"
       >
         <span>📤</span>
         Compartir
@@ -134,7 +134,7 @@ export function ShareButton({
     <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-center gap-2 rounded-lg bg-orange-100 px-4 py-2.5 text-sm font-medium text-orange-600 hover:bg-orange-200 transition-colors"
+        className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-orange-200 transition-colors"
       >
         <span>📤</span>
         Compartir
@@ -148,7 +148,7 @@ export function ShareButton({
               copyToClipboard()
               setIsOpen(false)
             }}
-            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-gray-50 transition-colors border-b border-gray-100 ${copied ? 'text-green-600' : 'text-gray-700'}`}
+            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-gray-50 transition-colors border-b border-gray-100 ${copied ? 'text-success-600' : 'text-gray-700'}`}
           >
             <span>{copied ? '✓' : '🔗'}</span>
             {copied ? 'Vínculo copiado' : 'Copiar vínculo'}

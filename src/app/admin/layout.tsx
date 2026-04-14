@@ -22,7 +22,7 @@ function GlobalAlert() {
 
   if (status === 'over') {
     return (
-      <div className="sticky top-0 z-50 w-full bg-red-600 text-white text-center py-2 px-4 shadow text-sm font-semibold tracking-wider uppercase">
+      <div className="sticky top-0 z-50 w-full bg-error-600 text-white text-center py-2 px-4 shadow text-sm font-semibold tracking-wider uppercase">
         🚨 Sistema de ingesta en estado crítico (Over-Filtering)
       </div>
     );

@@ -58,7 +58,7 @@ export async function SimilarActivities({ activityId }: Props) {
                     className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
                       priceLabel === 'Gratis'
                         ? 'bg-emerald-100 text-emerald-700'
-                        : 'bg-orange-100 text-orange-700'
+                        : 'bg-brand-100 text-brand-700'
                     }`}
                   >
                     {priceLabel}

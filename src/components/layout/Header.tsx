@@ -21,7 +21,7 @@ export async function Header() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-orange-500">HabitaPlan</span>
+          <span className="text-xl font-bold text-brand-500">HabitaPlan</span>
         </Link>
 
         {/* Nav */}
@@ -52,7 +52,7 @@ export async function Header() {
               </Link>
               <Link
                 href="/registro"
-                className="border border-orange-400 text-orange-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors"
+                className="border border-orange-400 text-brand-500 px-4 py-1.5 rounded-full text-sm font-medium hover:bg-orange-50 transition-colors"
               >
                 Regístrate
               </Link>

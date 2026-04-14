@@ -78,7 +78,7 @@ function LoginForm() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -86,7 +86,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+          className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
         >
           {loading ? 'Ingresando...' : 'Ingresar'}
         </button>
@@ -94,7 +94,7 @@ function LoginForm() {
 
       <p className="mt-6 text-center text-sm text-gray-500">
         ¿No tienes cuenta?{' '}
-        <Link href="/registro" className="text-orange-600 font-medium hover:underline">
+        <Link href="/registro" className="text-brand-600 font-medium hover:underline">
           Regístrate
         </Link>
       </p>

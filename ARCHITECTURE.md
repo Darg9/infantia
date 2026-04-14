@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.11.0-S45 | Actualizado: 2026-04-14
+> Versión: v0.11.0-S47 | Actualizado: 2026-04-14
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -688,6 +688,16 @@ vi.mock('./module', () => ({ fn: mockFn }));
 ### Componentes
 - **UserMenu**: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", separator, "Salir" y enlace admin condicional
 - **Header**: UserMenu reemplazó avatar + links dispersos
+
+## 13. Design System (SSOT)
+
+A partir de S47, HabitaPlan estandariza su sistema visual usando Tokens Semánticos para prevenir divergencias en la paleta y escalabilidad (soporte oscuro centralizado).
+La documentación técnica detallada está en `docs/modules/design-system.md`.
+
+Reglas fundamentales:
+1. **No colores nativos de Tailwind:** Prohibido `bg-orange-X`, `text-green-X`. Usar `brand`, `success`, `error`, `warning`.
+2. **Componentes Primitivos:** Importar desde `src/components/ui/` (`Button`, `Input`, `Card`, `useToast`, `Avatar`).
+3. **Manejo de Estado:** Los primitivos manejan sus propios focus visibles (ACC: AA global con `ring-brand-500`), estados *disabled* y de *carga*.
 
 ## 14. Decisiones de Arquitectura
 

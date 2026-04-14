@@ -644,7 +644,7 @@ export default function Filters({
 
             {/* ── Error de sugerencias ─────────────────────────────── */}
             {suggError && (
-              <div className="px-4 py-3 text-xs text-red-400 text-center">
+              <div className="px-4 py-3 text-xs text-error-400 text-center">
                 No se pudieron cargar sugerencias
               </div>
             )}

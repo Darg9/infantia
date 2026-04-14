@@ -41,7 +41,7 @@ export default async function PerfilPage() {
         </div>
         <Link
           href="/perfil/editar"
-          className="inline-block text-sm text-orange-600 hover:text-orange-700 font-medium"
+          className="inline-block text-sm text-brand-600 hover:text-orange-700 font-medium"
         >
           Editar perfil →
         </Link>

@@ -91,7 +91,7 @@ export default function ContactoPage() {
           </p>
           <button
             onClick={() => { setEnviado(false); setMotivo(''); setNombre(''); setEmail(''); setMensaje(''); setActividadUrl(''); }}
-            className="mt-6 text-sm text-orange-600 hover:underline"
+            className="mt-6 text-sm text-brand-600 hover:underline"
           >
             Enviar otra solicitud
           </button>
@@ -109,9 +109,9 @@ export default function ContactoPage() {
       </p>
 
       {/* Takedown notice - always visible */}
-      <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-8">
-        <h2 className="text-sm font-semibold text-orange-800 mb-1">Remoción de contenido</h2>
-        <p className="text-sm text-orange-700">
+      <div className="bg-brand-50 border border-orange-200 rounded-xl p-4 mb-8">
+        <h2 className="text-sm font-semibold text-brand-800 mb-1">Remoción de contenido</h2>
+        <p className="text-sm text-brand-700">
           Si eres titular de contenido publicado en HabitaPlan y deseas su modificación o remoción,
           selecciona el motivo <strong>&quot;Solicitud de remoción de contenido&quot;</strong> abajo.
           Nos comprometemos a responder en un máximo de <strong>5 días hábiles</strong>.
@@ -122,7 +122,7 @@ export default function ContactoPage() {
         {/* Motivo */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Motivo de contacto <span className="text-red-500">*</span>
+            Motivo de contacto <span className="text-error-500">*</span>
           </label>
           <select
             value={motivo}
@@ -140,7 +140,7 @@ export default function ContactoPage() {
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Nombre completo <span className="text-red-500">*</span>
+            Nombre completo <span className="text-error-500">*</span>
           </label>
           <input
             type="text"
@@ -155,7 +155,7 @@ export default function ContactoPage() {
         {/* Email */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Correo electrónico <span className="text-red-500">*</span>
+            Correo electrónico <span className="text-error-500">*</span>
           </label>
           <input
             type="email"
@@ -171,7 +171,7 @@ export default function ContactoPage() {
         {(isReporte || isTakedown) && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              URL de la actividad en HabitaPlan {isTakedown && <span className="text-red-500">*</span>}
+              URL de la actividad en HabitaPlan {isTakedown && <span className="text-error-500">*</span>}
             </label>
             <input
               type="url"
@@ -214,7 +214,7 @@ export default function ContactoPage() {
         {/* Mensaje */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            Mensaje <span className="text-red-500">*</span>
+            Mensaje <span className="text-error-500">*</span>
           </label>
           <textarea
             value={mensaje}
@@ -227,7 +227,7 @@ export default function ContactoPage() {
         </div>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+          <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
             {error}
           </p>
         )}
@@ -235,7 +235,7 @@ export default function ContactoPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+          className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
         >
           {loading ? 'Enviando...' : 'Enviar solicitud'}
         </button>

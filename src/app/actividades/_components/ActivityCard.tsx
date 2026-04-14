@@ -135,14 +135,14 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Badge expirada */}
         {activity.status === 'EXPIRED' && (
-          <span className="absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-amber-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+          <span className="absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
             Verificar disponibilidad
           </span>
         )}
 
         {/* Badge Destacado — proveedor premium */}
         {activity.provider?.isPremium && (
-          <span className="absolute bottom-1.5 left-2 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-sm">
+          <span className="absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-sm">
             ⭐ Destacado
           </span>
         )}

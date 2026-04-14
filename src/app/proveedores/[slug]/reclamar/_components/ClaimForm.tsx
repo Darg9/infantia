@@ -57,7 +57,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
         </p>
         <a
           href={`/proveedores/${providerSlug}`}
-          className="mt-6 inline-block text-sm text-orange-600 underline"
+          className="mt-6 inline-block text-sm text-brand-600 underline"
         >
           Volver al perfil de {providerName}
         </a>
@@ -108,7 +108,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       </div>
 
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+        <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
@@ -116,7 +116,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       <button
         type="submit"
         disabled={loading || !name.trim()}
-        className="w-full rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2.5 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2.5 text-sm transition-colors"
       >
         {loading ? 'Enviando solicitud…' : 'Enviar solicitud'}
       </button>

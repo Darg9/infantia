@@ -31,7 +31,7 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
       {/* ── Volver al Centro de Seguridad ──────────────────────────── */}
       <Link
         href="/seguridad"
-        className="inline-flex items-center gap-1 text-sm text-orange-600 hover:text-orange-700 mb-8 transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-orange-700 mb-8 transition-colors"
       >
         ← Centro de Seguridad
       </Link>
@@ -57,7 +57,7 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
               className={[
                 'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
                 isActive
-                  ? 'border-orange-500 text-orange-600'
+                  ? 'border-orange-500 text-brand-600'
                   : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300',
               ].join(' ')}
             >

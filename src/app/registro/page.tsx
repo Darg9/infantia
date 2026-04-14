@@ -56,7 +56,7 @@ export default function RegistroPage() {
           </p>
           <Link
             href="/login"
-            className="mt-6 inline-block text-orange-600 text-sm font-medium hover:underline"
+            className="mt-6 inline-block text-brand-600 text-sm font-medium hover:underline"
           >
             Volver al inicio de sesión
           </Link>
@@ -122,22 +122,22 @@ export default function RegistroPage() {
               checked={aceptaTerminos}
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               required
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-orange-500"
             />
             <label htmlFor="acepta-terminos" className="text-xs text-gray-500 leading-relaxed">
               Acepto la{' '}
-              <Link href="/tratamiento-datos" target="_blank" className="text-orange-600 hover:underline">
+              <Link href="/tratamiento-datos" target="_blank" className="text-brand-600 hover:underline">
                 Política de Tratamiento de Datos Personales
               </Link>{' '}
               y los{' '}
-              <Link href="/terminos" target="_blank" className="text-orange-600 hover:underline">
+              <Link href="/terminos" target="_blank" className="text-brand-600 hover:underline">
                 Términos de Uso
               </Link>.
             </label>
           </div>
 
           {error && (
-            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-sm text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
               {error}
             </p>
           )}
@@ -145,7 +145,7 @@ export default function RegistroPage() {
           <button
             type="submit"
             disabled={loading || !aceptaTerminos}
-            className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>
@@ -153,7 +153,7 @@ export default function RegistroPage() {
 
         <p className="mt-6 text-center text-sm text-gray-500">
           ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-orange-600 font-medium hover:underline">
+          <Link href="/login" className="text-brand-600 font-medium hover:underline">
             Inicia sesión
           </Link>
         </p>

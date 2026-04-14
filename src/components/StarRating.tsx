@@ -37,7 +37,7 @@ export function StarRating({ value, onChange, readonly = false, size = 'md' }: S
             aria-label={`${star} estrella${star > 1 ? 's' : ''}`}
           >
             <svg
-              className={`${sizeClass} ${active ? 'text-orange-400' : 'text-gray-300'}`}
+              className={`${sizeClass} ${active ? 'text-brand-400' : 'text-gray-300'}`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >

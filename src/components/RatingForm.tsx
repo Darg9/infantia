@@ -98,7 +98,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
             </p>
             <button
               onClick={onClose}
-              className="mt-4 text-sm text-orange-600 hover:underline font-medium"
+              className="mt-4 text-sm text-brand-600 hover:underline font-medium"
             >
               Entendido
             </button>
@@ -138,7 +138,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               />
 
               {error && (
-                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+                <p className="text-xs text-error-600 bg-error-50 border border-red-200 rounded-lg px-3 py-2">
                   {error}
                 </p>
               )}
@@ -146,7 +146,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-orange-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+                className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
               >
                 {loading
                   ? 'Un momento...'
@@ -162,7 +162,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 <>¿No tienes cuenta?{' '}
                   <button
                     onClick={() => { setMode('register'); setError(null) }}
-                    className="text-orange-600 font-medium hover:underline"
+                    className="text-brand-600 font-medium hover:underline"
                   >
                     Regístrate
                   </button>
@@ -171,7 +171,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 <>¿Ya tienes cuenta?{' '}
                   <button
                     onClick={() => { setMode('login'); setError(null) }}
-                    className="text-orange-600 font-medium hover:underline"
+                    className="text-brand-600 font-medium hover:underline"
                   >
                     Inicia sesión
                   </button>
@@ -290,7 +290,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
           <p className={`text-sm px-3 py-2 rounded-lg ${
             msg.type === 'success'
               ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
-              : 'text-red-600 bg-red-50 border border-red-200'
+              : 'text-error-600 bg-error-50 border border-red-200'
           }`}>
             {msg.text}
           </p>
@@ -300,7 +300,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         <button
           type="submit"
           disabled={loading || score === 0}
-          className="self-start bg-orange-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
+          className="self-start bg-brand-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
         >
           {loading
             ? 'Enviando...'

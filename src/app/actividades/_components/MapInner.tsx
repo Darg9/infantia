@@ -168,7 +168,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       {/* Overlay: error */}
       {error && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-50">
-          <p className="text-sm text-red-500">{error}</p>
+          <p className="text-sm text-error-500">{error}</p>
         </div>
       )}
 

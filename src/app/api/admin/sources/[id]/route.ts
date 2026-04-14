@@ -29,3 +29,19 @@ export async function PATCH(
   log.info(`Fuente ${source.name} → isActive=${source.isActive}`);
   return NextResponse.json(source);
 }
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  await requireRole([UserRole.ADMIN]);
+  const { id } = await params;
+
+  const source = await prisma.scrapingSource.delete({
+    where: { id },
+    select: { name: true },
+  });
+
+  log.info(`Fuente eliminada: ${source.name}`);
+  return new NextResponse(null, { status: 204 });
+}

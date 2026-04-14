@@ -19,7 +19,7 @@ export function DeleteChildButton({ id, name }: { id: string; name: string }) {
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs text-error-400 hover:text-red-600 transition-colors disabled:opacity-40"
+      className="text-xs text-error-400 hover:text-error-600 transition-colors disabled:opacity-40"
     >
       {loading ? 'Eliminando...' : 'Eliminar'}
     </button>

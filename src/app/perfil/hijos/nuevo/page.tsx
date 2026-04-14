@@ -74,7 +74,7 @@ export default function NuevoHijoPage() {
             onChange={(e) => setName(e.target.value)}
             required
             maxLength={100}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="Nombre del niño o niña"
           />
         </div>
@@ -91,7 +91,7 @@ export default function NuevoHijoPage() {
             required
             min={minDate}
             max={maxDate}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
           <p className="text-xs text-gray-400 mt-1">Solo perfiles de menores de 18 años</p>
         </div>
@@ -104,7 +104,7 @@ export default function NuevoHijoPage() {
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value="">Prefiero no indicar</option>
             <option value="niño">Niño</option>
@@ -136,7 +136,7 @@ export default function NuevoHijoPage() {
               id="consent"
               checked={consentAccepted}
               onChange={(e) => setConsentAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-orange-500"
+              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
             />
             <label htmlFor="consent" className="text-xs text-gray-700 font-medium leading-relaxed">
               Confirmo que soy el padre, madre o tutor legal de este menor y acepto la autorización
@@ -161,7 +161,7 @@ export default function NuevoHijoPage() {
           <button
             type="submit"
             disabled={loading || !consentAccepted}
-            className="flex-1 bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+            className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Guardando...' : 'Guardar perfil'}
           </button>

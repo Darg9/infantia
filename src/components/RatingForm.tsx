@@ -125,7 +125,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="tu@correo.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
               <input
                 type="password"
@@ -134,7 +134,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 required
                 placeholder="Contraseña"
                 minLength={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
 
               {error && (
@@ -146,7 +146,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+                className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
               >
                 {loading
                   ? 'Un momento...'
@@ -281,7 +281,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
             placeholder="Cuéntanos tu experiencia..."
             maxLength={500}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
           />
         </div>
 
@@ -300,7 +300,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         <button
           type="submit"
           disabled={loading || score === 0}
-          className="self-start bg-brand-500 hover:bg-orange-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
+          className="self-start bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
         >
           {loading
             ? 'Enviando...'

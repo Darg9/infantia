@@ -149,8 +149,8 @@ function InputField({
             'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0',
             rightSlot ? 'pr-10' : '',
             error
-              ? 'border-error-400 dark:border-red-500 focus:ring-red-400/30 focus:border-red-400'
-              : 'border-gray-200 dark:border-gray-700 focus:ring-orange-500/25 focus:border-orange-500 dark:focus:border-orange-400',
+              ? 'border-error-400 dark:border-red-500 focus:ring-error-400/30 focus:border-error-400'
+              : 'border-gray-200 dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -435,7 +435,7 @@ export default function EditarPerfilPage() {
               onClick={() => fileInputRef.current?.click()}
               onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
               className="group/avatar relative w-20 h-20 shrink-0 rounded-full cursor-pointer
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
             >
               {/* Avatar image or initials placeholder */}
               {avatarPreview ? (
@@ -553,11 +553,11 @@ export default function EditarPerfilPage() {
               disabled={basicLoading || !nameLoaded}
               aria-busy={basicLoading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                         bg-brand-500 hover:bg-orange-600 active:bg-orange-700 text-white
+                         bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white
                          disabled:bg-orange-200 dark:disabled:bg-orange-900/40
                          disabled:text-orange-400 disabled:cursor-not-allowed
                          transition-colors focus:outline-none focus:ring-2
-                         focus:ring-orange-500 focus:ring-offset-2"
+                         focus:ring-brand-500 focus:ring-offset-2"
             >
               {basicLoading ? (
                 <>
@@ -611,7 +611,7 @@ export default function EditarPerfilPage() {
                 type="button"
                 onClick={() => setShowCurrent((v) => !v)}
                 className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                 aria-label={showCurrent ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}
               >
                 {showCurrent ? (
@@ -642,7 +642,7 @@ export default function EditarPerfilPage() {
                   type="button"
                   onClick={() => setShowNew((v) => !v)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label={showNew ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
                 >
                   {showNew ? (
@@ -721,7 +721,7 @@ export default function EditarPerfilPage() {
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 rounded"
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
                 >
                   {showConfirm ? (

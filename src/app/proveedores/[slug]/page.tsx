@@ -143,31 +143,31 @@ export default async function ProveedorPage({ params }: PageProps) {
             )}
             {provider.website && (
               <a href={provider.website} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 🌐 Sitio web
               </a>
             )}
             {provider.instagram && (
               <a href={`https://instagram.com/${provider.instagram.replace('@', '')}`} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 📷 Instagram
               </a>
             )}
             {provider.facebook && (
               <a href={provider.facebook} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 👥 Facebook
               </a>
             )}
             {provider.email && (
               <a href={`mailto:${provider.email}`}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 ✉️ {provider.email}
               </a>
             )}
             {provider.phone && (
               <a href={`tel:${provider.phone}`}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 📞 {provider.phone}
               </a>
             )}

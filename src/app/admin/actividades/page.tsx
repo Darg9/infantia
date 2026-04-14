@@ -97,12 +97,12 @@ export default function AdminActividadesPage() {
           placeholder="Buscar por título..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="border border-gray-200 rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-orange-400"
+          className="border border-gray-200 rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-brand-400"
         />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as Status | ''); setPage(1) }}
-          className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+          className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
         >
           <option value="">Todos los estados</option>
           <option value="ACTIVE">Activas</option>
@@ -155,7 +155,7 @@ export default function AdminActividadesPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/admin/actividades/${act.id}/editar`}
-                        className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:border-orange-400 hover:text-orange-600 transition-colors"
+                        className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors"
                       >
                         Editar
                       </Link>
@@ -165,7 +165,7 @@ export default function AdminActividadesPage() {
                           disabled={busy === act.id}
                           className={`text-xs px-3 py-1 rounded-lg border transition-colors disabled:opacity-50 ${
                             act.status === 'ACTIVE'
-                              ? 'border-warning-200 text-warning-600 hover:bg-amber-50'
+                              ? 'border-warning-200 text-warning-600 hover:bg-warning-50'
                               : 'border-emerald-200 text-emerald-600 hover:bg-emerald-50'
                           }`}
                         >
@@ -194,7 +194,7 @@ export default function AdminActividadesPage() {
           <button
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-orange-400 transition-colors"
+            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-brand-400 transition-colors"
           >
             ← Anterior
           </button>
@@ -204,7 +204,7 @@ export default function AdminActividadesPage() {
           <button
             onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
             disabled={page === totalPages}
-            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-orange-400 transition-colors"
+            className="px-4 py-2 text-sm border border-gray-200 rounded-xl disabled:opacity-40 hover:border-brand-400 transition-colors"
           >
             Siguiente →
           </button>

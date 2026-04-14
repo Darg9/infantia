@@ -252,7 +252,7 @@ export default async function MetricasPage() {
                 {zeroResultSearches.map((row, i) => (
                   <li
                     key={row.query}
-                    className="flex items-center justify-between px-4 py-2.5 hover:bg-red-50"
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-error-50"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>

@@ -81,7 +81,7 @@ export default function RegistroPage() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="Tu nombre"
             />
           </div>
@@ -95,7 +95,7 @@ export default function RegistroPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="tu@correo.com"
             />
           </div>
@@ -109,7 +109,7 @@ export default function RegistroPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="Mínimo 8 caracteres"
             />
           </div>
@@ -122,7 +122,7 @@ export default function RegistroPage() {
               checked={aceptaTerminos}
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               required
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-orange-500"
+              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
             />
             <label htmlFor="acepta-terminos" className="text-xs text-gray-500 leading-relaxed">
               Acepto la{' '}
@@ -145,7 +145,7 @@ export default function RegistroPage() {
           <button
             type="submit"
             disabled={loading || !aceptaTerminos}
-            className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+            className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </button>

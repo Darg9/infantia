@@ -13,7 +13,7 @@ export default async function AdminPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/admin/scraping/sources"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">🕷️</div>
           <h2 className="font-semibold text-gray-900">Fuentes de scraping</h2>
@@ -22,7 +22,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/scraping/logs"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">📋</div>
           <h2 className="font-semibold text-gray-900">Logs de ejecución</h2>
@@ -31,7 +31,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/actividades"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">🎯</div>
           <h2 className="font-semibold text-gray-900">Gestión de actividades</h2>
@@ -49,7 +49,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/sponsors"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-amber-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-warning-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">💛</div>
           <h2 className="font-semibold text-gray-900">Patrocinadores</h2>
@@ -58,7 +58,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/claims"
-          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-orange-300 hover:shadow-sm transition-all"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
         >
           <div className="text-2xl mb-2">✋</div>
           <h2 className="font-semibold text-gray-900">Solicitudes de perfil</h2>

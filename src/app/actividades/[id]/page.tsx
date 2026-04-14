@@ -320,7 +320,7 @@ export default async function ActividadDetallePage({
                   <p className="text-sm text-gray-500">
                     por{' '}
                     {activity.provider.slug ? (
-                      <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                      <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-brand-600 transition-colors">
                         {activity.provider.name}
                       </Link>
                     ) : (
@@ -378,7 +378,7 @@ export default async function ActividadDetallePage({
                 <p className="text-sm text-gray-500">
                   por{' '}
                   {activity.provider.slug ? (
-                    <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-orange-600 transition-colors">
+                    <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-brand-600 transition-colors">
                       {activity.provider.name}
                     </Link>
                   ) : (
@@ -441,7 +441,7 @@ export default async function ActividadDetallePage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       {activity.provider.slug ? (
-                        <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-900 hover:text-orange-600 transition-colors">
+                        <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-900 hover:text-brand-600 transition-colors">
                           {activity.provider.name}
                         </Link>
                       ) : (
@@ -660,7 +660,7 @@ export default async function ActividadDetallePage({
                   <OutboundLink
                     activityId={id}
                     href={activity.sourceUrl}
-                    className="text-gray-400 hover:text-orange-500 hover:underline transition-colors"
+                    className="text-gray-400 hover:text-brand-500 hover:underline transition-colors"
                   >
                     {(() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'fuente externa'; } })()}
                   </OutboundLink>{' '}(sitio oficial)

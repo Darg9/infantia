@@ -79,7 +79,7 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
       <button
         onClick={handleNext}
         disabled={loading}
-        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
       >
         {cityId ? 'Continuar →' : 'Saltar por ahora →'}
       </button>
@@ -124,7 +124,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         </p>
         <button
           onClick={onNext}
-          className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
+          className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 text-sm transition-colors"
         >
           Continuar →
         </button>
@@ -148,7 +148,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={100}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
             placeholder="Nombre"
           />
         </div>
@@ -160,7 +160,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
             onChange={(e) => setBirthDate(e.target.value)}
             min={minDate}
             max={maxDate}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
           />
         </div>
         <div className="flex items-start gap-2">
@@ -185,7 +185,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         <button
           onClick={handleSave}
           disabled={saving || !name.trim() || !birthDate || !consentAccepted}
-          className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
+          className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
         >
           {saving ? 'Guardando…' : 'Guardar y continuar →'}
         </button>
@@ -212,7 +212,7 @@ function StepListo({ onFinish }: { onFinish: () => void }) {
       </p>
       <button
         onClick={onFinish}
-        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 text-white font-semibold py-3 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 text-sm transition-colors"
       >
         Ver actividades →
       </button>

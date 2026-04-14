@@ -36,7 +36,7 @@ export default function HistorialPage() {
         {history.length > 0 && (
           <button
             onClick={clearHistory}
-            className="text-xs text-gray-400 hover:text-red-500 transition-colors"
+            className="text-xs text-gray-400 hover:text-error-500 transition-colors"
           >
             Borrar historial
           </button>
@@ -63,7 +63,7 @@ export default function HistorialPage() {
             <Link
               key={entry.activityId}
               href={activityPath(entry.activityId, entry.title)}
-              className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-3 hover:border-orange-300 transition-colors group"
+              className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-3 hover:border-brand-300 transition-colors group"
             >
               {entry.imageUrl ? (
                 <img
@@ -77,7 +77,7 @@ export default function HistorialPage() {
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 group-hover:text-orange-600 transition-colors truncate">
+                <p className="text-sm font-medium text-gray-900 group-hover:text-brand-600 transition-colors truncate">
                   {entry.title}
                 </p>
                 <p className="text-xs text-gray-400">{timeAgo(entry.viewedAt)}</p>

@@ -37,7 +37,7 @@ export async function SimilarActivities({ activityId }: Props) {
             <Link
               key={act.id}
               href={activityPath(act.id, act.title)}
-              className="group flex flex-col rounded-2xl border border-gray-200 bg-white hover:border-orange-300 hover:shadow-sm transition-all overflow-hidden"
+              className="group flex flex-col rounded-2xl border border-gray-200 bg-white hover:border-brand-300 hover:shadow-sm transition-all overflow-hidden"
             >
               {/* Imagen o gradiente */}
               <div
@@ -68,7 +68,7 @@ export async function SimilarActivities({ activityId }: Props) {
 
               {/* Info */}
               <div className="p-3 flex flex-col gap-1 flex-1">
-                <p className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-orange-600 transition-colors leading-tight">
+                <p className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-brand-600 transition-colors leading-tight">
                   {act.title}
                 </p>
                 {act.location && (

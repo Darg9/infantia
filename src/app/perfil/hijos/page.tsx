@@ -37,7 +37,7 @@ export default async function HijosPage() {
         </div>
         <Link
           href="/perfil/hijos/nuevo"
-          className="bg-brand-500 hover:bg-orange-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+          className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
         >
           + Agregar
         </Link>

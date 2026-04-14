@@ -40,7 +40,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+        className="flex items-center gap-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
         aria-label="Menú de usuario"
         aria-expanded={open}
       >
@@ -68,7 +68,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
             <Link
               href="/admin"
               onClick={() => setOpen(false)}
-              className="block px-4 py-2 text-sm text-brand-600 font-medium hover:bg-orange-50 transition-colors"
+              className="block px-4 py-2 text-sm text-brand-600 font-medium hover:bg-brand-50 transition-colors"
             >
               Admin
             </Link>
@@ -99,7 +99,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
           <div className="my-1 border-t border-gray-100" />
           <button
             onClick={handleLogout}
-            className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors"
+            className="w-full text-left px-4 py-2 text-sm text-gray-500 hover:text-error-600 hover:bg-error-50 transition-colors"
           >
             Salir
           </button>

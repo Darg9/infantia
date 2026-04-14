@@ -128,7 +128,7 @@ export default function ContactoPage() {
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value="">Seleccione un motivo</option>
             {MOTIVOS.map((m) => (
@@ -147,7 +147,7 @@ export default function ContactoPage() {
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="Tu nombre"
           />
         </div>
@@ -162,7 +162,7 @@ export default function ContactoPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="tu@correo.com"
           />
         </div>
@@ -178,7 +178,7 @@ export default function ContactoPage() {
               value={actividadUrl}
               onChange={(e) => setActividadUrl(e.target.value)}
               required={isTakedown}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="https://habitaplan.com/actividades/..."
             />
             <p className="text-xs text-gray-400 mt-1">Copie la URL de la actividad desde la barra de su navegador</p>
@@ -221,7 +221,7 @@ export default function ContactoPage() {
             onChange={(e) => setMensaje(e.target.value)}
             required
             rows={5}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-y"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-y"
             placeholder="Describe tu consulta o solicitud..."
           />
         </div>
@@ -235,7 +235,7 @@ export default function ContactoPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-500 hover:bg-orange-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
         >
           {loading ? 'Enviando...' : 'Enviar solicitud'}
         </button>

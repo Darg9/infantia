@@ -16,7 +16,7 @@ export function LogoutButton() {
   return (
     <button
       onClick={handleLogout}
-      className="text-sm text-gray-500 hover:text-red-600 transition-colors"
+      className="text-sm text-gray-500 hover:text-error-600 transition-colors"
     >
       Salir
     </button>

@@ -157,7 +157,7 @@ export default function SeguridadPage() {
               <Link
                 key={href}
                 href={href}
-                className="text-gray-400 hover:text-orange-400 transition-colors"
+                className="text-gray-400 hover:text-brand-400 transition-colors"
               >
                 {label} →
               </Link>

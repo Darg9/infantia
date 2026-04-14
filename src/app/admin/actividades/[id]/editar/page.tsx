@@ -144,7 +144,7 @@ export default function EditarActividadPage() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
           />
         </div>
 
@@ -155,7 +155,7 @@ export default function EditarActividadPage() {
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400 resize-none"
+            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400 resize-none"
           />
         </div>
 
@@ -166,7 +166,7 @@ export default function EditarActividadPage() {
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as Status)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             >
               <option value="ACTIVE">Activa</option>
               <option value="PAUSED">Oculta (pausada)</option>
@@ -179,7 +179,7 @@ export default function EditarActividadPage() {
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             >
               <option value="ALL">Todos</option>
               <option value="KIDS">Niños</option>
@@ -199,7 +199,7 @@ export default function EditarActividadPage() {
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0 = Gratis"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
           <div>
@@ -210,7 +210,7 @@ export default function EditarActividadPage() {
               max="120"
               value={ageMin}
               onChange={(e) => setAgeMin(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
           <div>
@@ -221,7 +221,7 @@ export default function EditarActividadPage() {
               max="120"
               value={ageMax}
               onChange={(e) => setAgeMax(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-orange-400"
+              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
         </div>
@@ -249,7 +249,7 @@ export default function EditarActividadPage() {
         <button
           onClick={save}
           disabled={saving}
-          className="px-6 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-orange-600 disabled:opacity-50 transition-colors"
+          className="px-6 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Guardando...' : 'Guardar cambios'}
         </button>

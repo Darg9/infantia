@@ -74,7 +74,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
           placeholder="Nombre completo"
           required
         />
@@ -101,7 +101,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
           onChange={(e) => setMessage(e.target.value)}
           maxLength={1000}
           rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
           placeholder="Ej: Soy el director de la academia, mi email corporativo es..."
         />
         <p className="text-xs text-gray-400 mt-1 text-right">{message.length}/1000</p>
@@ -116,7 +116,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       <button
         type="submit"
         disabled={loading || !name.trim()}
-        className="w-full rounded-xl bg-brand-500 hover:bg-orange-600 disabled:opacity-50 text-white font-semibold py-2.5 text-sm transition-colors"
+        className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-2.5 text-sm transition-colors"
       >
         {loading ? 'Enviando solicitud…' : 'Enviar solicitud'}
       </button>

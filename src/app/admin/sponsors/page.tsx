@@ -178,7 +178,7 @@ export default function SponsorsAdminPage() {
                 </button>
                 <button
                   onClick={() => remove(s.id)}
-                  className="text-xs rounded-lg border border-error-200 text-error-500 px-3 py-1.5 hover:bg-red-50 transition-colors"
+                  className="text-xs rounded-lg border border-error-200 text-error-500 px-3 py-1.5 hover:bg-error-50 transition-colors"
                 >
                   Eliminar
                 </button>

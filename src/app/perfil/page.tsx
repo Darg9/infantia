@@ -41,7 +41,7 @@ export default async function PerfilPage() {
         </div>
         <Link
           href="/perfil/editar"
-          className="inline-block text-sm text-brand-600 hover:text-orange-700 font-medium"
+          className="inline-block text-sm text-brand-600 hover:text-brand-700 font-medium"
         >
           Editar perfil →
         </Link>
@@ -53,7 +53,7 @@ export default async function PerfilPage() {
           <Link
             key={stat.href}
             href={stat.href}
-            className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-orange-300 hover:shadow-sm transition-all group"
+            className="bg-white border border-gray-200 rounded-2xl p-5 hover:border-brand-300 hover:shadow-sm transition-all group"
           >
             <div className="flex items-center gap-3 mb-2">
               <span className="text-2xl">{stat.icon}</span>

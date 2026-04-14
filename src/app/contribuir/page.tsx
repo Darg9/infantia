@@ -46,7 +46,7 @@ export default function ContribuirPage() {
             {/* Card: Sugerir actividad */}
             <button
               onClick={() => setTipo('actividad')}
-              className="group relative rounded-2xl border-2 border-gray-100 bg-white p-6 text-left hover:border-orange-300 hover:bg-orange-50 transition-all"
+              className="group relative rounded-2xl border-2 border-gray-100 bg-white p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
             >
               <div className="absolute top-4 right-4 text-2xl">📝</div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Sugerir una actividad</h2>
@@ -61,7 +61,7 @@ export default function ContribuirPage() {
             {/* Card: Sugerir institución */}
             <button
               onClick={() => setTipo('institucion')}
-              className="group relative rounded-2xl border-2 border-gray-100 bg-white p-6 text-left hover:border-orange-300 hover:bg-orange-50 transition-all"
+              className="group relative rounded-2xl border-2 border-gray-100 bg-white p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
             >
               <div className="absolute top-4 right-4 text-2xl">🏢</div>
               <h2 className="text-xl font-bold text-gray-900 mb-2">Sugerir una institución</h2>
@@ -102,7 +102,7 @@ export default function ContribuirPage() {
                     <input
                       type="text"
                       placeholder="Ej: Taller de programación infantil"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       required
                     />
                   </div>
@@ -114,7 +114,7 @@ export default function ContribuirPage() {
                     <input
                       type="text"
                       placeholder="Ej: Academia Tech Kids"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       required
                     />
                   </div>
@@ -126,14 +126,14 @@ export default function ContribuirPage() {
                     <input
                       type="url"
                       placeholder="https://..."
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       required
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
+                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-brand-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
                   </button>
@@ -159,7 +159,7 @@ export default function ContribuirPage() {
                     <input
                       type="text"
                       placeholder="Ej: Centro Deportivo Municipal"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                       required
                     />
                   </div>
@@ -171,7 +171,7 @@ export default function ContribuirPage() {
                     <input
                       type="text"
                       placeholder="Ej: Deportes, arte, música"
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
 
@@ -182,13 +182,13 @@ export default function ContribuirPage() {
                     <input
                       type="url"
                       placeholder="https://..."
-                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full rounded-lg border border-gray-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-orange-600 transition-colors text-sm"
+                    className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-brand-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
                   </button>

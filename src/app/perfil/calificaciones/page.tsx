@@ -55,7 +55,7 @@ export default async function CalificacionesPage() {
             <Link
               key={rating.id}
               href={activityPath(rating.activity.id, rating.activity.title)}
-              className="flex items-start gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:border-orange-300 transition-colors group"
+              className="flex items-start gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:border-brand-300 transition-colors group"
             >
               {/* Image or placeholder */}
               {rating.activity.imageUrl ? (
@@ -71,7 +71,7 @@ export default async function CalificacionesPage() {
               )}
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-orange-600 transition-colors truncate">
+                <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors truncate">
                   {rating.activity.title}
                 </p>
                 <div className="mt-1">

@@ -31,7 +31,7 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
       {/* ── Volver al Centro de Seguridad ──────────────────────────── */}
       <Link
         href="/seguridad"
-        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-orange-700 mb-8 transition-colors"
+        className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700 mb-8 transition-colors"
       >
         ← Centro de Seguridad
       </Link>

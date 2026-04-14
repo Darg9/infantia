@@ -176,7 +176,7 @@ export default function NotificacionesPage() {
                 value={opt.value}
                 checked={prefs.frequency === opt.value}
                 onChange={() => save({ ...prefs, frequency: opt.value })}
-                className="h-4 w-4 text-brand-500 focus:ring-orange-500"
+                className="h-4 w-4 text-brand-500 focus:ring-brand-500"
               />
               <div>
                 <p className="text-sm font-medium text-gray-700">{opt.label}</p>

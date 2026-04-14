@@ -658,7 +658,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 | Hybrid Ranking Node Cache | Resuelve inconsistencias en páginas profundas, ahorra queries a la DB forzando el conteo 1 vez por minuto en Node.js |
 | Mock Resilience Test Pattern | Proxy `fetchWithFallback` en pipeline inyectado que aísla playrigth vs cheerio sin que un engine rompa al otro |
 | Normalización Fuerte de Precios | `normalizePrice(value)` impone un parseo seguro a Prisma Decimal evitando Error 500s |
-| Email Security `p=reject` y `-all` | Evita spoofing al 100%. Regla arquitectónica: cualquier nuevo proveedor de correo (ej. Supabase, CRM) DEBE añadirse explícitamente al registro SPF de Namecheap antes de enviar, o será bloqueado automáticamente. |
+| Email Security `p=reject` y `-all` | Evita spoofing al 100%. Regla arquitectónica: cualquier nuevo proveedor de correo (ej. Supabase, CRM) DEBE añadirse explícitamente al registro SPF de Namecheap antes de enviar, o será bloqueado automáticamente. SPF final: `v=spf1 include:zoho.com include:resend.com -all` (Zoho = usuario, Resend = transaccional). |
 
 ---
 

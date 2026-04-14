@@ -4,6 +4,7 @@
 // =============================================================================
 
 import { getCategoryEmoji } from '@/lib/category-utils';
+import ActivityCard from './ActivityCard';
 
 interface PopularCategory {
   id: string;
@@ -19,6 +20,8 @@ interface EmptyStateProps {
   type?: string;
   audience?: string;
   popularCategories: PopularCategory[];
+  fallbackActivities?: any[];
+  favoriteIds?: Set<string>;
 }
 
 const TYPE_LABELS: Record<string, string> = {
@@ -43,6 +46,8 @@ export function EmptyState({
   type,
   audience,
   popularCategories,
+  fallbackActivities = [],
+  favoriteIds = new Set(),
 }: EmptyStateProps) {
   const hasFilters = search || ageMin != null || ageMax != null || categoryId || type || audience;
 
@@ -127,6 +132,24 @@ export function EmptyState({
                 <span>{getCategoryEmoji(cat.name)}</span>
                 {cat.name}
               </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* UX Fallback: Actividades de recomendación en caso nulo */}
+      {fallbackActivities.length > 0 && (
+        <div className="mt-12 text-left w-full border-t border-gray-100 pt-10">
+          <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">
+            No encontramos resultados. Estas actividades podrían gustarte:
+          </h3>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {fallbackActivities.slice(0, 4).map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                isFavorited={favoriteIds.has(activity.id)}
+              />
             ))}
           </div>
         </div>

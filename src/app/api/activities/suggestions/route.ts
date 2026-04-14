@@ -9,6 +9,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { normalizeSearchQuery } from '@/lib/search';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('api:suggestions');
 
 export type SuggestionType = 'activity' | 'category' | 'city';
 
@@ -26,12 +30,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ suggestions: [] });
   }
 
-  const qLower = q.toLowerCase();
+  const qLower = normalizeSearchQuery(q);
+  
+  if (!qLower) {
+    return NextResponse.json({ suggestions: [] });
+  }
+
+  const isExact = (text: string) => text.toLowerCase() === qLower;
   const isPrefix = (text: string) => text.toLowerCase().startsWith(qLower);
-  // Score 2 = empieza por q (mejor match), 1 = contiene q
-  const rankScore = (text: string) => (isPrefix(text) ? 2 : 1);
+  // Score 5 = exact, 3 = prefix, 1 = contiene
+  const rankScore = (text: string) => isExact(text) ? 5 : isPrefix(text) ? 3 : 1;
 
   try {
+    log.info('Búsqueda de sugerencia', { action: 'suggestion_attempt', query: q, normalized: qLower });
     const [activities, categories, cities] = await Promise.all([
 
       // Actividades: coincidencia en título (mayor confianza primero)
@@ -55,7 +66,7 @@ export async function GET(req: NextRequest) {
       // Categorías: con al menos 1 actividad activa que coincida
       prisma.category.findMany({
         where: {
-          name: { contains: q, mode: 'insensitive' },
+          name: { contains: qLower, mode: 'insensitive' },
           activities: { some: { activity: { status: 'ACTIVE' } } },
         },
         select: {
@@ -73,7 +84,7 @@ export async function GET(req: NextRequest) {
       // Ciudades: con al menos 1 actividad activa
       prisma.city.findMany({
         where: {
-          name: { contains: q, mode: 'insensitive' },
+          name: { contains: qLower, mode: 'insensitive' },
           locations: {
             some: { activities: { some: { status: 'ACTIVE' } } },
           },

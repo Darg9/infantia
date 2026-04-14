@@ -278,6 +278,13 @@ export default async function ActividadesPage({
     }
   }
 
+  // Fallback Data UX: si el usuario buscó texto pero no hay matches
+  let fallbackActivities: any[] = [];
+  if (total === 0 && filters.search) {
+    const { activities } = await listActivities({ skip: 0, pageSize: 4, sortBy: 'relevance' });
+    fallbackActivities = activities;
+  }
+
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
@@ -362,6 +369,8 @@ export default async function ActividadesPage({
                 type={filters.type}
                 audience={filters.audience}
                 popularCategories={topCategories}
+                fallbackActivities={fallbackActivities}
+                favoriteIds={favoriteIds}
               />
             ) : (
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">

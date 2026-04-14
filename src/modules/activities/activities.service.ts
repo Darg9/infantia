@@ -7,6 +7,10 @@ import type { Prisma } from '@/generated/prisma/client';
 import type { CreateActivityInput, UpdateActivityInput } from './activities.schemas';
 import { getDomainFromUrl, computeActivityScore } from './ranking';
 import { getCachedCTR, ctrToBoost } from '@/modules/analytics/metrics';
+import { normalizeSearchQuery } from '@/lib/search';
+import { createLogger } from '@/lib/logger';
+
+const log = createLogger('activities:search');
 
 const activityIncludes = {
   provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
@@ -169,20 +173,48 @@ export async function listActivities(params: ListParams) {
     });
   }
 
+  let textScoreMap: Map<string, number> | null = null;
+
   if (params.search) {
-    // pg_trgm: búsqueda fuzzy con tolerancia a errores tipográficos
-    // Combina ILIKE (coincidencia exacta de substring) + similarity (fuzzy)
-    const searchPattern = `%${params.search}%`;
-    const searchResults = await prisma.$queryRaw<{ id: string }[]>`
-      SELECT id FROM activities
+    const rawSearch = params.search;
+    const cleanSearch = normalizeSearchQuery(rawSearch);
+    const q = cleanSearch.length > 0 ? cleanSearch : rawSearch;
+
+    const patternExact = `%${q}%`;
+    const patternPrefix = `${q}%`;
+
+    const searchResults = await prisma.$queryRaw<{ id: string, exact_match: boolean, prefix_match: boolean, sim_title: number }[]>`
+      SELECT 
+        id,
+        (title ILIKE ${patternExact} OR description ILIKE ${patternExact}) as exact_match,
+        (title ILIKE ${patternPrefix}) as prefix_match,
+        similarity(title, ${q}) as sim_title
+      FROM activities
       WHERE
-        title ILIKE ${searchPattern}
-        OR description ILIKE ${searchPattern}
-        OR similarity(title, ${params.search}) > 0.2
-      LIMIT 500
+        title ILIKE ${patternExact}
+        OR description ILIKE ${patternExact}
+        OR similarity(title, ${q}) > 0.15
+      LIMIT 50
     `;
-    const matchingIds = searchResults.map((r) => r.id);
+
+    log.info('Intento de búsqueda de actividades', { action: 'activity_search', result: 'attempt', queryLength: rawSearch.length, raw: rawSearch, normalized: q });
+
+    const matchingIds: string[] = [];
+    textScoreMap = new Map();
+
+    for (const r of searchResults) {
+      matchingIds.push(r.id);
+      
+      let textScore = 0;
+      if (r.exact_match) textScore += 5;
+      else if (r.prefix_match) textScore += 3;
+      textScore += Number(r.sim_title || 0);
+
+      textScoreMap.set(r.id, textScore);
+    }
+
     if (matchingIds.length === 0) {
+      log.info('Búsqueda sin resultados', { action: 'activity_search', result: 'success', results: 0 });
       return { activities: [], total: 0 };
     }
     andConditions.push({ id: { in: matchingIds } });
@@ -252,12 +284,19 @@ export async function listActivities(params: ListParams) {
 
   // 4. Evaluar y rankear en Memoria
   let processedActivities = rawActivities.map(act => {
-    // Si viene legacy activity, usa el helper as fallback
     const domain = act.sourceDomain || getDomainFromUrl(act.sourceUrl);
-    const healthScore = healthDict[domain] ?? 0.5; // Neutral fallback asegurado
+    const healthScore = healthDict[domain] ?? 0.5;
     const ctr = ctrMap[domain] ?? 0;
     const ctrBoost = ctrToBoost(ctr);
-    const rankingScore = computeActivityScore(act, healthScore, ctrBoost);
+
+    let rankingScore = computeActivityScore(act, healthScore, ctrBoost);
+    
+    // Si viene de una busqueda con score textual, aplicamos la nueva formula hibrida
+    if (textScoreMap && textScoreMap.has(act.id)) {
+      const textScore = textScoreMap.get(act.id)!;
+      rankingScore = (textScore * 0.5) + (healthScore * 0.3) + (ctrBoost * 0.2);
+    }
+
     return { ...act, rankingScore, _domainTemp: domain };
   });
 
@@ -314,6 +353,10 @@ export async function listActivities(params: ListParams) {
         ctrDomainsActive: domainsWithCTR,
         timestamp: new Date().toISOString()
       }));
+  }
+
+  if (params.search) {
+    log.info('Búsqueda de actividades completada', { action: 'activity_search', result: 'success', results: finalTotal });
   }
 
   return { activities: pagedActivities, total: finalTotal };

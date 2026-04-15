@@ -180,10 +180,15 @@ export async function listActivities(params: ListParams) {
     const cleanSearch = normalizeSearchQuery(rawSearch);
     const q = cleanSearch.length > 0 ? cleanSearch : rawSearch;
 
-    const patternExact = `%${q}%`;
+    const patternExact  = `%${q}%`;
+    const patternPrefix = `${q}%`;
 
-    // ── pg_trgm: similarity en título + word_similarity para frases largas
-    // ── Fallback ILIKE garantiza compatibilidad si el índice aún no existe
+    // ── pg_trgm: similarity en título + word_similarity para frases largas  ──
+    // Umbrales calibrados:
+    //   title similarity  > 0.25  (evita ruido, title es señal fuerte)
+    //   word_similarity   > 0.30  (funciona mejor para queries cortos en frases largas)
+    //   description sim.  > 0.15  (más permisivo — texto largo diluye similaridad)
+    //   ILIKE fallback   siempre  (garantiza resultados exactos aunque sim sea baja)
     const searchResults = await prisma.$queryRaw<{
       id: string;
       sim_title: number;
@@ -193,22 +198,21 @@ export async function listActivities(params: ListParams) {
     }[]>`
       SELECT
         id,
-        similarity(title, ${q})              AS sim_title,
+        similarity(title, ${q})                  AS sim_title,
         similarity(left(description, 500), ${q}) AS sim_desc,
-        (title ILIKE ${patternExact})         AS exact_title,
-        (title ILIKE ${q + '%'})              AS prefix_title
+        (title ILIKE ${patternExact})             AS exact_title,
+        (title ILIKE ${patternPrefix})            AS prefix_title
       FROM activities
       WHERE
-        similarity(title, ${q}) > 0.12
-        OR word_similarity(${q}, title) > 0.25
+        similarity(title, ${q}) > 0.25
+        OR word_similarity(${q}, title) > 0.30
         OR title ILIKE ${patternExact}
-        OR similarity(left(description, 500), ${q}) > 0.12
+        OR similarity(left(description, 500), ${q}) > 0.15
       ORDER BY
-        GREATEST(
-          similarity(title, ${q}),
-          word_similarity(${q}, title),
-          similarity(left(description, 500), ${q})
-        ) DESC
+        similarity(title, ${q}) * 0.7 +
+        similarity(left(description, 500), ${q}) * 0.3 +
+        CASE WHEN title ILIKE ${patternPrefix} THEN 0.10 ELSE 0 END
+      DESC
       LIMIT 60
     `;
 
@@ -220,11 +224,12 @@ export async function listActivities(params: ListParams) {
     for (const r of searchResults) {
       matchingIds.push(r.id);
 
-      // Scoring: exact/prefix boosts sobre similitud base
+      // Scoring JS: combinación ponderada 70/30 + boosts por exact/prefix
       const simTitle = Number(r.sim_title || 0);
       const simDesc  = Number(r.sim_desc  || 0);
-      let textScore  = Math.max(simTitle, simDesc * 0.6); // descripción pondera menos
+      let textScore  = simTitle * 0.7 + simDesc * 0.3;
       if (r.exact_title)  textScore += 5;
+      if (r.prefix_title) textScore += 0.10;
       if (r.prefix_title) textScore += 2;
 
       textScoreMap.set(r.id, textScore);

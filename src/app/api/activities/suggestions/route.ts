@@ -56,13 +56,15 @@ export async function GET(req: NextRequest) {
         GREATEST(
           similarity(a.title, ${term}),
           word_similarity(${term}, a.title)
-        ) AS score
+        ) +
+        CASE WHEN a.title ILIKE ${term + '%'} THEN 0.10 ELSE 0 END
+        AS score
       FROM activities a
       WHERE
         a.status = 'ACTIVE'
         AND (
-          similarity(a.title, ${term}) > 0.12
-          OR word_similarity(${term}, a.title) > 0.20
+          similarity(a.title, ${term}) > 0.25
+          OR word_similarity(${term}, a.title) > 0.30
           OR a.title ILIKE ${`%${term}%`}
         )
       ORDER BY score DESC, a."sourceConfidence" DESC NULLS LAST

@@ -63,6 +63,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ enqueued: 0, skipped: 0 });
   }
 
+  // ── Marcar lastRunAt inmediatamente para evitar re-encolado en condición de carrera
+  // (el worker puede tardar minutos; sin esto un cron solapado re-encolaría las mismas fuentes)
+  await prisma.scrapingSource.updateMany({
+    where: { id: { in: sources.map((s) => s.id) } },
+    data:  { lastRunAt: new Date() },
+  });
+
   // ── Encolado ───────────────────────────────────────────────────────────────
   const results = await Promise.allSettled(
     sources.map((s) =>

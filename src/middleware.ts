@@ -13,6 +13,7 @@ import { updateSession } from '@/lib/supabase/middleware';
 // Rutas de cron que se autentican con CRON_SECRET, no con cookies de sesión.
 // El middleware las deja pasar — cada route handler valida su propio secreto.
 const CRON_PATHS = [
+  '/api/admin/cron/scrape',
   '/api/admin/expire-activities',
   '/api/admin/send-notifications',
 ];

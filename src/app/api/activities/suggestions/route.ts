@@ -2,7 +2,7 @@
 // GET /api/activities/suggestions?q=texto
 //
 // Devuelve hasta 5 sugerencias mixtas: actividades, categorías, ciudades.
-// Ranking por tipo: coincidencia exacta (prefix) > popularidad > parcial.
+// Ranking por tipo: similitud pg_trgm > prefix > popularidad.
 // Orden de mezcla: actividades primero, luego categorías, luego ciudades.
 // Mínimo 3 caracteres.
 // =============================================================================
@@ -19,8 +19,8 @@ export type SuggestionType = 'activity' | 'category' | 'city';
 export interface SuggestionItem {
   type: SuggestionType;
   id: string;
-  label: string;       // Texto principal a mostrar y resaltar
-  sublabel: string | null; // Texto secundario (categoría, conteo, etc.)
+  label: string;
+  sublabel: string | null;
 }
 
 export async function GET(req: NextRequest) {
@@ -30,112 +30,110 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ suggestions: [] });
   }
 
-  const qLower = normalizeSearchQuery(q);
-  
-  if (!qLower) {
-    return NextResponse.json({ suggestions: [] });
-  }
-
-  const isExact = (text: string) => text.toLowerCase() === qLower;
-  const isPrefix = (text: string) => text.toLowerCase().startsWith(qLower);
-  // Score 5 = exact, 3 = prefix, 1 = contiene
-  const rankScore = (text: string) => isExact(text) ? 5 : isPrefix(text) ? 3 : 1;
+  const qNorm = normalizeSearchQuery(q);
+  const term  = qNorm.length > 0 ? qNorm : q.toLowerCase();
 
   try {
-    log.info('Búsqueda de sugerencia', { action: 'suggestion_attempt', query: q, normalized: qLower });
-    const [activities, categories, cities] = await Promise.all([
+    log.info('Búsqueda de sugerencia', { action: 'suggestion_attempt', query: q, normalized: term });
 
-      // Actividades: coincidencia en título (mayor confianza primero)
-      prisma.activity.findMany({
-        where: {
-          status: 'ACTIVE',
-          title: { contains: q, mode: 'insensitive' },
-        },
-        select: {
-          id: true,
-          title: true,
-          sourceConfidence: true,
-          categories: {
-            select: { category: { select: { name: true } } },
-            take: 1,
+    // ── Actividades: pg_trgm similarity + word_similarity ──────────────────
+    const actRows = await prisma.$queryRaw<{
+      id: string;
+      title: string;
+      cat_name: string | null;
+      score: number;
+    }[]>`
+      SELECT
+        a.id,
+        a.title,
+        (
+          SELECT c2.name
+          FROM "ActivityCategory" ac2
+          JOIN "Category" c2 ON c2.id = ac2."categoryId"
+          WHERE ac2."activityId" = a.id
+          LIMIT 1
+        ) AS cat_name,
+        GREATEST(
+          similarity(a.title, ${term}),
+          word_similarity(${term}, a.title)
+        ) AS score
+      FROM activities a
+      WHERE
+        a.status = 'ACTIVE'
+        AND (
+          similarity(a.title, ${term}) > 0.12
+          OR word_similarity(${term}, a.title) > 0.20
+          OR a.title ILIKE ${`%${term}%`}
+        )
+      ORDER BY score DESC, a."sourceConfidence" DESC NULLS LAST
+      LIMIT 8
+    `;
+
+    const rankedActivities: SuggestionItem[] = actRows.slice(0, 3).map((a) => ({
+      type: 'activity',
+      id:   a.id,
+      label: a.title,
+      sublabel: a.cat_name ?? null,
+    }));
+
+    // ── Categorías: Prisma (tabla pequeña, ILIKE suficiente) ───────────────
+    const catRows = await prisma.category.findMany({
+      where: {
+        name: { contains: term, mode: 'insensitive' },
+        activities: { some: { activity: { status: 'ACTIVE' } } },
+      },
+      select: {
+        id: true,
+        name: true,
+        _count: {
+          select: {
+            activities: { where: { activity: { status: 'ACTIVE' } } },
           },
         },
-        take: 10, // Tomamos más para rankear localmente
-      }),
+      },
+      orderBy: { name: 'asc' },
+      take: 5,
+    });
 
-      // Categorías: con al menos 1 actividad activa que coincida
-      prisma.category.findMany({
-        where: {
-          name: { contains: qLower, mode: 'insensitive' },
-          activities: { some: { activity: { status: 'ACTIVE' } } },
-        },
-        select: {
-          id: true,
-          name: true,
-          _count: {
-            select: {
-              activities: { where: { activity: { status: 'ACTIVE' } } },
-            },
-          },
-        },
-        take: 5,
-      }),
-
-      // Ciudades: con al menos 1 actividad activa
-      prisma.city.findMany({
-        where: {
-          name: { contains: qLower, mode: 'insensitive' },
-          locations: {
-            some: { activities: { some: { status: 'ACTIVE' } } },
-          },
-        },
-        select: { id: true, name: true },
-        take: 3,
-      }),
-    ]);
-
-    // Rank actividades: prefix primero, luego sourceConfidence → max 3
-    const rankedActivities: SuggestionItem[] = activities
+    const rankedCategories: SuggestionItem[] = catRows
       .sort((a, b) => {
-        const sd = rankScore(b.title) - rankScore(a.title);
-        if (sd !== 0) return sd;
-        return (b.sourceConfidence ?? 0) - (a.sourceConfidence ?? 0);
-      })
-      .slice(0, 3)
-      .map(a => ({
-        type: 'activity',
-        id: a.id,
-        label: a.title,
-        sublabel: a.categories[0]?.category.name ?? null,
-      }));
-
-    // Rank categorías: prefix primero, luego conteo → max 1
-    const rankedCategories: SuggestionItem[] = categories
-      .sort((a, b) => {
-        const sd = rankScore(b.name) - rankScore(a.name);
-        if (sd !== 0) return sd;
+        const aPrefix = a.name.toLowerCase().startsWith(term) ? 1 : 0;
+        const bPrefix = b.name.toLowerCase().startsWith(term) ? 1 : 0;
+        if (aPrefix !== bPrefix) return bPrefix - aPrefix;
         return b._count.activities - a._count.activities;
       })
       .slice(0, 1)
-      .map(c => ({
+      .map((c) => ({
         type: 'category',
-        id: c.id,
+        id:   c.id,
         label: c.name,
         sublabel: `${c._count.activities} actividad${c._count.activities !== 1 ? 'es' : ''}`,
       }));
 
-    // Rank ciudades: prefix primero → max 1
-    const rankedCities: SuggestionItem[] = cities
-      .sort((a, b) => rankScore(b.name) - rankScore(a.name))
+    // ── Ciudades: Prisma (pocas filas) ─────────────────────────────────────
+    const cityRows = await prisma.city.findMany({
+      where: {
+        name: { contains: term, mode: 'insensitive' },
+        locations: { some: { activities: { some: { status: 'ACTIVE' } } } },
+      },
+      select: { id: true, name: true },
+      take: 3,
+    });
+
+    const rankedCities: SuggestionItem[] = cityRows
+      .sort((a, b) => {
+        const aP = a.name.toLowerCase().startsWith(term) ? 1 : 0;
+        const bP = b.name.toLowerCase().startsWith(term) ? 1 : 0;
+        return bP - aP;
+      })
       .slice(0, 1)
-      .map(c => ({
+      .map((c) => ({
         type: 'city',
-        id: c.id,
+        id:   c.id,
         label: c.name,
         sublabel: null,
       }));
 
-    // Mezcla final: actividades → categorías → ciudades, máximo 5
     const suggestions = [
       ...rankedActivities,
       ...rankedCategories,
@@ -145,6 +143,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ suggestions });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Error desconocido';
+    log.error('Error en suggestions', { error: err instanceof Error ? err : new Error(message) });
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -181,20 +181,35 @@ export async function listActivities(params: ListParams) {
     const q = cleanSearch.length > 0 ? cleanSearch : rawSearch;
 
     const patternExact = `%${q}%`;
-    const patternPrefix = `${q}%`;
 
-    const searchResults = await prisma.$queryRaw<{ id: string, exact_match: boolean, prefix_match: boolean, sim_title: number }[]>`
-      SELECT 
+    // ── pg_trgm: similarity en título + word_similarity para frases largas
+    // ── Fallback ILIKE garantiza compatibilidad si el índice aún no existe
+    const searchResults = await prisma.$queryRaw<{
+      id: string;
+      sim_title: number;
+      sim_desc: number;
+      exact_title: boolean;
+      prefix_title: boolean;
+    }[]>`
+      SELECT
         id,
-        (title ILIKE ${patternExact} OR description ILIKE ${patternExact}) as exact_match,
-        (title ILIKE ${patternPrefix}) as prefix_match,
-        similarity(title, ${q}) as sim_title
+        similarity(title, ${q})              AS sim_title,
+        similarity(left(description, 500), ${q}) AS sim_desc,
+        (title ILIKE ${patternExact})         AS exact_title,
+        (title ILIKE ${q + '%'})              AS prefix_title
       FROM activities
       WHERE
-        title ILIKE ${patternExact}
-        OR description ILIKE ${patternExact}
-        OR similarity(title, ${q}) > 0.15
-      LIMIT 50
+        similarity(title, ${q}) > 0.12
+        OR word_similarity(${q}, title) > 0.25
+        OR title ILIKE ${patternExact}
+        OR similarity(left(description, 500), ${q}) > 0.12
+      ORDER BY
+        GREATEST(
+          similarity(title, ${q}),
+          word_similarity(${q}, title),
+          similarity(left(description, 500), ${q})
+        ) DESC
+      LIMIT 60
     `;
 
     log.info('Intento de búsqueda de actividades', { action: 'activity_search', result: 'attempt', queryLength: rawSearch.length, raw: rawSearch, normalized: q });
@@ -204,11 +219,13 @@ export async function listActivities(params: ListParams) {
 
     for (const r of searchResults) {
       matchingIds.push(r.id);
-      
-      let textScore = 0;
-      if (r.exact_match) textScore += 5;
-      else if (r.prefix_match) textScore += 3;
-      textScore += Number(r.sim_title || 0);
+
+      // Scoring: exact/prefix boosts sobre similitud base
+      const simTitle = Number(r.sim_title || 0);
+      const simDesc  = Number(r.sim_desc  || 0);
+      let textScore  = Math.max(simTitle, simDesc * 0.6); // descripción pondera menos
+      if (r.exact_title)  textScore += 5;
+      if (r.prefix_title) textScore += 2;
 
       textScoreMap.set(r.id, textScore);
     }

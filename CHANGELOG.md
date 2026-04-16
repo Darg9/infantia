@@ -9,6 +9,25 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S48c] — 2026-04-16 (Date Preflight v2 — instrumentación + logging estructurado)
+
+### Features
+
+#### Instrumentación completa del preflight
+- `src/modules/scraping/utils/date-preflight.ts` **[EXTENDED]**: tipos `PreflightReason`, `PreflightResult`, `PreflightStats`; función `evaluatePreflight()` devuelve `{ skip, reason, datesFound }`; contadores de sesión (`skipped_datetime/text_date/past_year/keyword + sent_to_gemini + total`); `getPreflightStats()` + `resetPreflightStats()`. `isPastEventContent()` sigue siendo backward-compatible.
+- `src/modules/scraping/pipeline.ts` **[MODIFIED]**: logging estructurado por URL (`[DATE-PREFLIGHT]` con reason + dates_found); resumen al final del batch (`[DATE-PREFLIGHT:SUMMARY]` con tasas skip/gemini por razón); `resetPreflightStats()` al inicio del batch.
+- `src/modules/scraping/__tests__/date-preflight.test.ts` **[EXTENDED]**: 31 → 43 tests (+12). Nuevos tests cubren: `evaluatePreflight` reason/datesFound, contadores acumulados por tipo, reset entre tests (`beforeEach`).
+
+### Estado de tests
+- **1082 tests** en 69 archivos — 0 fallos — 2 skipped ✅
+- TypeScript: 0 errores ✅
+
+### Validación pendiente (próxima corrida BibloRed)
+- Ejecutar BibloRed con cuota renovada y leer `[DATE-PREFLIGHT:SUMMARY]` en logs
+- Medir conversión vs baseline 15% — target >40% → sistema sano
+
+---
+
 ## [v0.11.0-S48b] — 2026-04-15 (Date Preflight v2 — datetime HTML + keywords + años pasados)
 
 ### Features

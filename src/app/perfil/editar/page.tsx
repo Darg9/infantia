@@ -183,9 +183,11 @@ export default function EditarPerfilPage() {
 
   // ── Basic info ──
   const [name, setName]             = useState('')
+  const [initialName, setInitialName] = useState('')
   const [nameLoaded, setNameLoaded] = useState(false)
   const [basicLoading, setBasicLoading] = useState(false)
   const [nameError, setNameError]   = useState<string | null>(null)
+  const [basicSaved, setBasicSaved] = useState(false)
 
   // ── Avatar ──
   const [avatarPreview, setAvatarPreview]       = useState<string | null>(null)
@@ -194,15 +196,13 @@ export default function EditarPerfilPage() {
   const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null)
 
   // ── Password ──
-  const [showCurrent, setShowCurrent]   = useState(false)
   const [showNew, setShowNew]           = useState(false)
   const [showConfirm, setShowConfirm]   = useState(false)
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword]   = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passLoading, setPassLoading]   = useState(false)
+  const [passSaved, setPassSaved]       = useState(false)
   const [passErrors, setPassErrors]     = useState<{
-    current?: string
     newPwd?: string
     confirm?: string
   }>({})
@@ -213,6 +213,7 @@ export default function EditarPerfilPage() {
     supabase.auth.getUser().then(({ data }: { data: { user: { user_metadata?: Record<string, string> } | null } }) => {
       if (data.user) {
         setName(data.user.user_metadata?.name ?? '')
+        setInitialName(data.user.user_metadata?.name ?? '')
         if (data.user.user_metadata?.avatar_url) {
           setAvatarPreview(data.user.user_metadata.avatar_url as string)
         }
@@ -227,6 +228,21 @@ export default function EditarPerfilPage() {
       uploadAbortRef.current?.abort()
     }
   }, [])
+
+  // ── Auto-hide feedback ──
+  useEffect(() => {
+    if (basicSaved) {
+      const t = setTimeout(() => setBasicSaved(false), 2500)
+      return () => clearTimeout(t)
+    }
+  }, [basicSaved])
+
+  useEffect(() => {
+    if (passSaved) {
+      const t = setTimeout(() => setPassSaved(false), 2500)
+      return () => clearTimeout(t)
+    }
+  }, [passSaved])
 
   // ─── Handlers (useCallback — referencialmente estables) ───────────────────────
 
@@ -282,11 +298,14 @@ export default function EditarPerfilPage() {
 
     setAvatarFile(file)
     setAvatarUploadError(null)
+    setBasicSaved(false)
 
     const reader = new FileReader()
     reader.onload = () => setAvatarPreview(reader.result as string)
     reader.readAsDataURL(file)
   }, [toast])
+
+  const isDirty = name !== initialName || avatarFile !== null
 
   const handleBasicSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -294,8 +313,11 @@ export default function EditarPerfilPage() {
       setNameError('El nombre es obligatorio')
       return
     }
+    if (!isDirty) return
+
     setNameError(null)
     setBasicLoading(true)
+    setBasicSaved(false)
 
     try {
       // Upload avatar si hay uno nuevo seleccionado
@@ -358,7 +380,8 @@ export default function EditarPerfilPage() {
         return
       }
 
-      toast.success('Perfil actualizado correctamente')
+      setInitialName(name)
+      setBasicSaved(true)
       router.refresh()
     } catch {
       toast.error('Error de conexión al guardar el perfil')
@@ -366,12 +389,11 @@ export default function EditarPerfilPage() {
       setBasicLoading(false)
       setUploadingAvatar(false)
     }
-  }, [name, avatarFile, toast, router])
+  }, [name, isDirty, avatarFile, toast, router])
 
   const handlePasswordSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
     const errors: typeof passErrors = {}
-    if (!currentPassword)                         errors.current = 'Ingresá tu contraseña actual'
     if (newPassword.length < MIN_PASSWORD_LENGTH) errors.newPwd  = `Mínimo ${MIN_PASSWORD_LENGTH} caracteres`
     if (newPassword !== confirmPassword)          errors.confirm = 'Las contraseñas no coinciden'
     if (Object.keys(errors).length > 0) {
@@ -380,32 +402,19 @@ export default function EditarPerfilPage() {
     }
     setPassErrors({})
     setPassLoading(true)
+    setPassSaved(false)
 
     try {
       const supabase = createSupabaseBrowserClient()
-      const { data: userData } = await supabase.auth.getUser()
-      if (!userData.user?.email) {
-        toast.error('No se pudo obtener el email del usuario')
-        return
-      }
-
-      // Re-autenticar para confirmar la contraseña actual
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: userData.user.email,
-        password: currentPassword,
-      })
-      if (signInError) {
-        setPassErrors({ current: 'Contraseña actual incorrecta' })
-        return
-      }
+      
+      // NOTA: Si en el futuro es necesario, el sistema podrá pedir verificación 
+      // adicional re-autenticando al usuario aquí antes de cambiar la contraseña.
 
       const { error: updateError } = await supabase.auth.updateUser({ password: newPassword })
       if (updateError) {
-        // Mensaje de Supabase en español si es posible
         toast.error(updateError.message)
       } else {
-        toast.success('Contraseña actualizada correctamente')
-        setCurrentPassword('')
+        setPassSaved(true)
         setNewPassword('')
         setConfirmPassword('')
       }
@@ -414,7 +423,7 @@ export default function EditarPerfilPage() {
     } finally {
       setPassLoading(false)
     }
-  }, [currentPassword, newPassword, confirmPassword, toast])
+  }, [newPassword, confirmPassword, toast])
 
   // ─── Render helpers ───────────────────────────────────────────────────────────
 
@@ -572,6 +581,7 @@ export default function EditarPerfilPage() {
             onChange={(v) => {
               setName(v)
               setNameError(null)
+              setBasicSaved(false)
             }}
             error={nameError}
             placeholder="Tu nombre completo"
@@ -581,15 +591,20 @@ export default function EditarPerfilPage() {
           />
 
           {/* CTA único */}
-          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+            {basicSaved && !isDirty && (
+              <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
+                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                Cambios guardados
+              </span>
+            )}
             <button
               type="submit"
-              disabled={basicLoading || !nameLoaded}
+              disabled={!isDirty || basicLoading || !nameLoaded}
               aria-busy={basicLoading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
                          bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white
-                         disabled:bg-orange-200 dark:disabled:bg-orange-900/40
-                         disabled:text-orange-400 disabled:cursor-not-allowed
+                         disabled:opacity-50 disabled:cursor-not-allowed
                          transition-colors focus:outline-none focus:ring-2
                          focus:ring-brand-500 focus:ring-offset-2"
             >
@@ -627,36 +642,6 @@ export default function EditarPerfilPage() {
 
         <form onSubmit={handlePasswordSubmit} className="space-y-5" noValidate>
 
-          {/* Contraseña actual */}
-          <InputField
-            id="current-password"
-            label="Contraseña actual"
-            type={showCurrent ? 'text' : 'password'}
-            value={currentPassword}
-            onChange={(v) => {
-              setCurrentPassword(v)
-              setPassErrors((prev) => ({ ...prev, current: undefined }))
-            }}
-            error={passErrors.current}
-            required
-            autoComplete="current-password"
-            rightSlot={
-              <button
-                type="button"
-                onClick={() => setShowCurrent((v) => !v)}
-                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
-                           focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
-                aria-label={showCurrent ? 'Ocultar contraseña actual' : 'Mostrar contraseña actual'}
-              >
-                {showCurrent ? (
-                  <EyeSlashIcon className="w-4 h-4" />
-                ) : (
-                  <EyeIcon className="w-4 h-4" />
-                )}
-              </button>
-            }
-          />
-
           {/* Nueva contraseña + strength meter */}
           <div className="space-y-2">
             <InputField
@@ -667,6 +652,7 @@ export default function EditarPerfilPage() {
               onChange={(v) => {
                 setNewPassword(v)
                 setPassErrors((prev) => ({ ...prev, newPwd: undefined }))
+                setPassSaved(false)
               }}
               error={passErrors.newPwd}
               required
@@ -746,6 +732,7 @@ export default function EditarPerfilPage() {
               onChange={(v) => {
                 setConfirmPassword(v)
                 setPassErrors((prev) => ({ ...prev, confirm: undefined }))
+                setPassSaved(false)
               }}
               error={passErrors.confirm}
               required
@@ -786,10 +773,16 @@ export default function EditarPerfilPage() {
           </div>
 
           {/* CTA seguridad */}
-          <div className="flex justify-end pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+            {passSaved && (
+              <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
+                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+                Contraseña actualizada
+              </span>
+            )}
             <button
               type="submit"
-              disabled={passLoading}
+              disabled={passLoading || !newPassword || !confirmPassword}
               aria-busy={passLoading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
                          border-2 border-gray-800 dark:border-gray-500

@@ -67,17 +67,38 @@ export default async function FavoritosPage() {
 
       {/* Grid or empty state */}
       {activities.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
-          <span className="text-6xl">🤍</span>
-          <p className="text-gray-600 font-medium text-lg">Aún no tienes favoritos</p>
-          <p className="text-sm text-gray-400 max-w-sm">
-            Toca el corazón en cualquier actividad para guardarla aquí y encontrarla fácilmente después.
-          </p>
+        <div className="flex flex-col items-center justify-center py-12 gap-6 text-center px-4">
+          <div className="space-y-1.5 max-w-[320px]">
+            <p className="text-lg font-bold text-gray-900 dark:text-white leading-snug">
+              Guarda lo que te guste <br/> y encuéntralo fácilmente después
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Toca el corazón para guardar lo que te guste
+            </p>
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="w-full max-w-[260px] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none"
+          >
+            <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 relative">
+              <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm rounded-full p-2 cursor-pointer hover:scale-110 transition-transform">
+                <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 fill-current transition-colors" viewBox="0 0 24 24">
+                  <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                </svg>
+              </div>
+            </div>
+            <div className="p-4 flex flex-col gap-2.5">
+              <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
+              <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded w-1/2"></div>
+            </div>
+          </div>
+
           <a
             href="/actividades"
-            className="mt-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            className="mt-2 inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 active:bg-brand-700 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 w-full sm:w-auto"
           >
-            Explorar actividades
+            Ver actividades
           </a>
         </div>
       ) : (

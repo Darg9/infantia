@@ -207,7 +207,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **1056 tests** en 69 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
-- Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://habitaplan-prod.vercel.app
+- Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100

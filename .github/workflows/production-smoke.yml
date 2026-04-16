@@ -17,7 +17,7 @@ jobs:
       - name: Hit /api/health (con retry anti-jitter)
         id: health
         run: |
-          URL="https://habitaplan-prod.vercel.app/api/health"
+          URL="https://www.habitaplan.com/api/health"
           ATTEMPTS=3
           FAIL_COUNT=0
           LAST_CODE=""

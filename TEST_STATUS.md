@@ -217,6 +217,14 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S47** | **1039** | **68** | **>91%** | **>85%** |
 | **v0.11.0-S48** | **1056** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S48b** | **1070** | **69** | **>91%** | **>85%** |
+| **v0.11.0-S49** | **1082** | **69** | **>91%** | **>85%** |
+
+## Cambios en S49 (v0.11.0-S49 / Favoritos Polimórficos)
+
+- **+12 tests** netos (reescritura total de 26 tests en `favorites.test.ts` por cambio polimórfico).
+- TargetId y TargetType reemplazan dependency acoplada a ActivityId.
+- `GET`, `POST` y `DELETE` validados íntegros contra Primary Key (UUID) en vez de llave compuesta vieja.
+- TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
 ## Cambios en S48 (v0.11.0-S48 / Observabilidad Confiable v2)
 

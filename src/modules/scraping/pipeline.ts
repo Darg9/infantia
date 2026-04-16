@@ -95,11 +95,13 @@ export class ScrapingPipeline {
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
 
-    // Construimos ScrapedRawData mínimo para que el fallback mapper tenga contexto
+    // Construimos ScrapedRawData para que el fallback mapper tenga contexto.
+    // sourceText = texto limpio (sin tags HTML) para que la descripción fallback
+    // no incluya markup en casos donde Gemini no está disponible.
     const rawForFallback: ScrapedRawData = {
       url,
       html:        htmlContent,
-      sourceText:  htmlContent,
+      sourceText:  CheerioExtractor.textFromHtml(htmlContent),
       extractedAt: new Date(),
       status:      'SUCCESS',
     };

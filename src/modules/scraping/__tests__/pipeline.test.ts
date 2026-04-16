@@ -45,13 +45,16 @@ const { mockExtractSitemapLinks } = vi.hoisted(() => ({
   mockExtractSitemapLinks: vi.fn(),
 }));
 
-vi.mock('../extractors/cheerio.extractor', () => ({
-  CheerioExtractor: vi.fn(function(this: Record<string, unknown>) {
+vi.mock('../extractors/cheerio.extractor', () => {
+  const Ctor = vi.fn(function(this: Record<string, unknown>) {
     this.extract = mockExtract;
     this.extractLinksAllPages = mockExtractLinksAllPages;
     this.extractSitemapLinks = mockExtractSitemapLinks;
-  }),
-}));
+  }) as any;
+  // Método estático requerido por pipeline.ts (rawForFallback.sourceText)
+  Ctor.textFromHtml = (html: string) => html.replace(/<[^>]*>/g, ' ').trim();
+  return { CheerioExtractor: Ctor };
+});
 
 vi.mock('../extractors/playwright.extractor', () => ({
   PlaywrightExtractor: vi.fn(function(this: Record<string, unknown>) {

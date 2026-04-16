@@ -99,6 +99,24 @@ export class CheerioExtractor implements Extractor {
     }
   }
 
+  /**
+   * Extrae texto limpio de un HTML ya cargado (sin hacer fetch).
+   * Útil para construir ScrapedRawData desde HTML previamente descargado.
+   */
+  static textFromHtml(html: string): string {
+    try {
+      const $ = cheerio.load(html);
+      $('script, style, noscript, iframe, svg, path, nav, footer, header').remove();
+      const rawText = $('body').text();
+      return rawText
+        .replace(/\s\s+/g, ' ')
+        .replace(/\n\s*\n/g, '\n')
+        .trim();
+    } catch {
+      return '';
+    }
+  }
+
   async extractLinks(url: string): Promise<DiscoveredLink[]> {
     const response = await fetch(url, {
       ...fetchOptions(url),

@@ -47,10 +47,10 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
         )}
 
         <Link href="/perfil" tabIndex={-1}>
-          <Dropdown.Item>Mi perfil</Dropdown.Item>
+          <Dropdown.Item>Cuenta</Dropdown.Item>
         </Link>
         <Link href="/perfil/favoritos" tabIndex={-1}>
-          <Dropdown.Item>Mis favoritos</Dropdown.Item>
+          <Dropdown.Item>Favoritos</Dropdown.Item>
         </Link>
 
         <Dropdown.Divider />

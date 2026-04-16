@@ -10,12 +10,11 @@ interface ProfileSidebarProps {
 }
 
 const NAV_ITEMS = [
-  { href: '/perfil', label: 'Mi perfil', icon: '👤' },
-  { href: '/perfil/editar', label: 'Editar perfil', icon: '✏️' },
-  { href: '/perfil/favoritos', label: 'Mis favoritos', icon: '❤️' },
-  { href: '/perfil/hijos', label: 'Mis hijos', icon: '👶' },
+  { href: '/perfil', label: 'Cuenta', icon: '👤' },
+  { href: '/perfil/favoritos', label: 'Favoritos', icon: '❤️' },
+  { href: '/perfil/hijos', label: 'Familia', icon: '👨‍👩‍👧' },
   { href: '/perfil/historial', label: 'Historial', icon: '🕐' },
-  { href: '/perfil/calificaciones', label: 'Mis calificaciones', icon: '⭐' },
+  { href: '/perfil/calificaciones', label: 'Calificaciones', icon: '⭐' },
   { href: '/perfil/notificaciones', label: 'Notificaciones', icon: '🔔' },
 ]
 

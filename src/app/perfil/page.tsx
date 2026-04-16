@@ -11,7 +11,7 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Mi perfil | HabitaPlan',
+  title: 'Tu cuenta | HabitaPlan',
   description: 'Tu información de perfil en HabitaPlan',
 }
 
@@ -26,9 +26,9 @@ const ROLE_LABELS: Record<string, string> = {
 
 // ── Empty states por KPI ─────────────────────────────────────────────────────
 const EMPTY_LABELS: Record<string, string> = {
-  Favoritos: 'Sin favoritos aún',
-  Hijos: 'Sin hijos registrados',
-  Calificaciones: 'Sin calificaciones aún',
+  Favoritos: 'Aún no tienes favoritos',
+  Hijos: 'Aún no has agregado niñas o niños',
+  Calificaciones: 'Aún no tienes calificaciones',
 }
 
 export default async function PerfilPage() {
@@ -125,7 +125,7 @@ export default async function PerfilPage() {
             "
           >
             <EditIcon />
-            Editar perfil
+            Editar información
           </Link>
         </div>
       </div>

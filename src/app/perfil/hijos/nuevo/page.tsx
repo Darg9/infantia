@@ -57,9 +57,9 @@ export default function NuevoHijoPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Agregar perfil de hijo</h1>
+      <h1 className="text-2xl font-bold text-gray-900 mb-1">Agregar una niña o niño</h1>
       <p className="text-sm text-gray-500 mb-8">
-        Solo se necesitan datos básicos. Cuantos más datos, mejores recomendaciones.
+        Esto nos ayuda a recomendarte actividades adecuadas para su edad.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -75,7 +75,7 @@ export default function NuevoHijoPage() {
             required
             maxLength={100}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            placeholder="Nombre del niño o niña"
+            placeholder="Nombre de la niña o niño"
           />
         </div>
 

@@ -432,7 +432,7 @@ export default function EditarPerfilPage() {
       {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-gray-900 dark:text-white">
-          Editar perfil
+          Editar información
         </h1>
         <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
           Actualizá tu información personal y contraseña

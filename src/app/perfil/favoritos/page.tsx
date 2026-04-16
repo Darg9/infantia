@@ -9,7 +9,7 @@ import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 
 export const metadata: Metadata = {
-  title: 'Mis favoritos | HabitaPlan',
+  title: 'Favoritos | HabitaPlan',
   description: 'Tus actividades guardadas en HabitaPlan',
 };
 
@@ -48,7 +48,7 @@ export default async function FavoritosPage() {
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Mis favoritos</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Favoritos</h1>
         {activities.length > 0 && (
           <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
             {activities.length}

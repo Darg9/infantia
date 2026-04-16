@@ -5,7 +5,7 @@ import type { Metadata } from 'next'
 import { DeleteChildButton } from './DeleteChildButton'
 
 export const metadata: Metadata = {
-  title: 'Mis hijos',
+  title: 'Tu familia | HabitaPlan',
 }
 
 function calcAge(birthDate: Date): number {
@@ -30,7 +30,7 @@ export default async function HijosPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Mis hijos</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Tu familia</h1>
           <p className="text-sm text-gray-500 mt-1">
             Los perfiles ayudan a filtrar actividades por edad e intereses.
           </p>
@@ -46,12 +46,13 @@ export default async function HijosPage() {
       {children.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl">
           <p className="text-4xl mb-3">👶</p>
-          <p className="text-gray-500 text-sm mb-4">Aun no has agregado perfiles de hijos.</p>
+          <p className="text-gray-500 text-sm mb-1">Aún no has agregado niñas o niños.</p>
+          <p className="text-gray-400 text-xs mb-4">Agrega una niña o niño para recibir mejores recomendaciones.</p>
           <Link
             href="/perfil/hijos/nuevo"
             className="text-brand-600 text-sm font-medium hover:underline"
           >
-            Agregar primer perfil
+            Agregar niña o niño
           </Link>
         </div>
       ) : (

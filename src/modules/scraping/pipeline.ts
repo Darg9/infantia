@@ -9,7 +9,7 @@ import { createLogger } from '../../lib/logger';
 import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
 import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './utils/date-preflight';
 import { savePreflightLog } from './utils/preflight-db';
-import { parseActivity, discoverWithFallback } from './parser/parser';
+import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
 
 const log = createLogger('scraping:pipeline');
 
@@ -119,6 +119,7 @@ export class ScrapingPipeline {
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
     const { maxPages = 50, sitemapPatterns = [], concurrency = 1 } = opts;
     resetPreflightStats();
+    resetParserMetrics();
 
     const host = new URL(listingUrl).hostname.replace('www.', '');
     const { skip, reason } = await shouldSkipSource(host);
@@ -292,6 +293,19 @@ export class ScrapingPipeline {
         skip_rate:         pct(ps.total - ps.sent_to_gemini),
       });
     }
+
+    // ── Summary parser — visibilidad de resiliencia Gemini ────────────────────
+    const pm = getParserMetrics();
+    log.info('[PARSER:SUMMARY]', {
+      gemini_ok:              pm.geminiOk,
+      fallback_analyze_count: pm.fallbackUsed,
+      gemini_errors:          pm.geminiErrors,
+      discover_ok:            pm.discoverOk,
+      fallback_discover_count: pm.discoverFallback,
+      fallback_rate: (pm.geminiOk + pm.fallbackUsed) > 0
+        ? `${Math.round(pm.fallbackUsed / (pm.geminiOk + pm.fallbackUsed) * 100)}%`
+        : '0%',
+    });
 
     const batchResult: BatchPipelineResult = {
       sourceUrl: listingUrl,

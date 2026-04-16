@@ -19,8 +19,8 @@ export function ThemeToggle() {
     <button
       id="theme-toggle"
       onClick={toggleTheme}
-      aria-label={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      title={isDark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+      aria-label={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
+      title={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
       className="
         flex items-center justify-center
         w-8 h-8 rounded-[var(--hp-radius-md)]

@@ -10,6 +10,10 @@
 // Prioridad:
 //   1. localStorage.theme  → elección manual del usuario
 //   2. prefers-color-scheme → valor inicial del sistema
+//
+// Funcionalidades de producción:
+//   - SSR-safe: guard typeof window en initializer (ajuste 2)
+//   - Cross-tab sync: storage event propaga el tema a otras pestañas (ajuste 1)
 // =============================================================================
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
@@ -34,11 +38,30 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
   })
 
-  // Sincronizar en caso de que el estado cambie externamente (poco probable,
-  // pero defensivo).
+  // Sincronización inicial + cross-tab:
+  // - En mount, lee el estado real del <html> (defensivo contra hydration gaps)
+  // - Escucha el evento 'storage' para propagar cambios desde otras pestañas
+  //   sin reload. Si el usuario cambia el tema en tab A, tab B lo refleja
+  //   instantáneamente.
   useEffect(() => {
+    // SSR guard redundante pero explícito (ajuste 2)
+    if (typeof window === 'undefined') return
+
+    // Sincronización inicial
     const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
     setTheme(current)
+
+    // Cross-tab sync (ajuste 1)
+    function handleStorageChange(e: StorageEvent) {
+      if (e.key !== 'theme') return
+      const next = e.newValue
+      if (next !== 'dark' && next !== 'light') return
+      document.documentElement.classList.toggle('dark', next === 'dark')
+      setTheme(next)
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+    return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
   const toggleTheme = useCallback(() => {

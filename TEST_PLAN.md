@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.11.0-S45 | **Fecha:** 2026-04-14
+**Version:** v0.11.0-S48 | **Fecha:** 2026-04-15
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -70,7 +70,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.11.0-S45: >91% stmts / >85% branches / 60 archivos | 916 tests**
+**Total v0.11.0-S48: >91% stmts / >85% branches / 69 archivos | 1056 tests**
 
 ---
 
@@ -125,6 +125,11 @@ npx vitest run <archivo>  # Test especifico
 
 ## Roadmap de pruebas
 
+### Completado hasta v0.11.0-S48
+- ✅ 1056 tests, 69 archivos, todos verdes
+- ✅ date-preflight.test.ts: 17 tests (isPastEventContent, 3 formatos, buffer 14d, conservador)
+- ✅ e2e/health.spec.ts: 5 Playwright tests (/api/health, by_city shape, latencia < 3s)
+
 ### Completado hasta v0.11.0-S45
 - ✅ 916 tests, 60 archivos, todos verdes
 - ✅ analytics/metrics.test.ts: 11 tests (getCTRByDomain, ctrToBoost tiers, cache TTL, fail-safe, domain join)
@@ -150,7 +155,7 @@ npx vitest run <archivo>  # Test especifico
 
 ## Checklist por PR
 
-- [ ] `npm test` pasa (916+ tests) — `npm run lint` sin errores nuevos (ESLint freeze S45)
+- [ ] `npm test` pasa (1056+ tests) — `npm run lint` sin errores nuevos (ESLint freeze S45)
 - [ ] `npm run test:coverage` supera 85% branches
 - [ ] Sin skip/todo sin justificacion
 - [ ] Happy path + al menos 1 caso de error por funcion publica

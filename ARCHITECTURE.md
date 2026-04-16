@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.9.3 | Actualizado: Hoy
+> Versión: v0.11.0-S48 | Actualizado: 2026-04-15
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -130,7 +130,7 @@ habitaplan/
 │   │       │   └── notifications/
 │   │       ├── auth/
 │   │       │   └── send-welcome/   # Email de bienvenida post-registro
-│   │       ├── health/                    # Health check DB + Redis — GET (NUEVO v0.9.0)
+│   │       ├── health/                    # Health check DB + Redis — timeouts 2000ms, ok/degraded/down, by_city (S48)
 │   │       └── admin/                     # Protegidas por middleware.ts (ADMIN o CRON_SECRET)
 │   │           ├── cron/
 │   │           │   └── scrape/           # Scheduler automático de scraping (cron */6h) — CRON_SECRET
@@ -540,7 +540,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 ### Monitoreo y Contacto
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| `GET` | `/api/health` | Pública | Estado DB + Redis en tiempo real (para UptimeRobot). 200 si DB ok, 503 solo si DB falla. |
+| `GET` | `/api/health` | Pública | Health check con timeouts explícitos (DB/Redis 2000ms). Semántica `ok\|degraded\|down`. `business_signal` con `operational`, `stale` (48h), `by_city` (JOIN SQL→NFD slug). 503 solo si DB falla. |
 | `POST` | `/api/contact` | Pública | Formulario de contacto |
 | `POST` | `/api/search/log` | Pública | Registro de búsquedas para métricas |
 
@@ -747,7 +747,9 @@ Reglas fundamentales:
 - [x] Seguridad: 0 vulnerabilidades npm (era 15)
 - [x] Observabilidad: logger estructurado, 0 console.* en producción
 - [x] Middleware global /api/admin/*
-- [x] /api/health health check
+- [x] /api/health v2 — timeouts, semántica ok/degraded/down, by_city (S48)
+- [x] GitHub Actions smoke `*/15` — retry 3/3 + Slack alert (S48)
+- [x] Date preflight filter — omite Gemini para eventos pasados > 14d (S48)
 - [x] Security headers (CSP, HSTS, X-Frame-Options)
 - [x] Filtro pre-Gemini de URLs binarias (ahorro de cuota)
 - [x] Sistema de canales en ingest-sources.ts

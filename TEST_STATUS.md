@@ -1,21 +1,21 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-14 | Version: v0.11.0-S45
+Actualizado: 2026-04-15 | Version: v0.11.0-S48
 
-## Resumen Actual (v0.11.0-S45 / ESLint Freeze + Legal SSOT + Docs Exhaustivo)
-- **Archivos de Test:** 60 (+2 nuevos: `storage.test.ts` extendido, `metrics.test.ts` nuevo)
-- **Tests Totales:** 916 (+27 vs S42)
+## Resumen Actual (v0.11.0-S48 / Observabilidad Confiable v2 + Date Preflight + Smoke CI)
+- **Archivos de Test:** 69 (+9 vs S45: date-preflight, pipeline, health e2e, + suites existentes ampliadas)
+- **Tests Totales:** 1056 (+140 vs S45)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
-- **Framework:** Vitest 4.1 (+ React Testing Library)
+- **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 60 |
-| Tests totales | 916 |
-| Pasados | 914 (2 skipped) |
+| Archivos de test | 69 |
+| Tests totales | 1056 |
+| Pasados | 1054 (2 skipped) |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 16) |
 | Statements | >91% ✅ |
@@ -23,7 +23,7 @@ Actualizado: 2026-04-14 | Version: v0.11.0-S45
 | Functions | >88% ✅ |
 | Lines | >91% ✅ |
 
-## Archivos de test (60 total)
+## Archivos de test (69 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -70,6 +70,7 @@ Actualizado: 2026-04-14 | Version: v0.11.0-S45
 | queue-connection.test.ts | 6 | OK |
 | queue-worker.test.ts | 5 | OK |
 | queue.test.ts | 9 | OK |
+| date-preflight.test.ts | 17 | OK ← NUEVO S48 (isPastEventContent, 3 formatos, buffer 14d, REF fija) |
 
 ### modules/activities/__tests__/
 | Archivo | Tests | Estado |
@@ -212,6 +213,22 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S42** | **889** | **58** | **91.39%** | **85.90%** |
 | **v0.11.0-S43** | **898** | **59** | **>91%** | **>85%** |
 | **v0.11.0-S44** | **916** | **60** | **>91%** | **>85%** |
+| **v0.11.0-S45** | **916** | **60** | **>91%** | **>85%** |
+| **v0.11.0-S47** | **1039** | **68** | **>91%** | **>85%** |
+| **v0.11.0-S48** | **1056** | **69** | **>91%** | **>85%** |
+
+## Cambios en S48 (v0.11.0-S48 / Observabilidad Confiable v2)
+
+- **+17 tests** (1039 → 1056): date preflight filter + nuevos archivos de test
+  - **S48** +17: `date-preflight.test.ts` NUEVO — `isPastEventContent`, 3 formatos fecha, buffer 14d, fecha fija REF
+- Nuevo archivo de test: `src/modules/scraping/__tests__/date-preflight.test.ts`
+- Nuevo archivo E2E: `e2e/health.spec.ts` (Playwright, 5 tests `/api/health`)
+- TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
+
+## Cambios en S47 (v0.11.0-S47 / Sources CRUD · pg_trgm · Scheduler)
+
+- **+123 tests** (916 → 1039): suites existentes ampliadas, nuevos archivos
+- Nuevos archivos: `suggestions.test.ts` ampliado, `queue/producer.test.ts`, varios módulos admin
 
 ## Cambios en S43-S44 (v0.11.0-S43 / v0.11.0-S44)
 

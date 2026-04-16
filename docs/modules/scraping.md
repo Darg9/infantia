@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.9.3 (Alineado con v0.11.0-S45)
-**Última actualización:** 14 de abril de 2026
+**Versión actual:** v0.11.0-S48
+**Última actualización:** 15 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -62,11 +62,34 @@ ingest-sources.ts --queue
 
 **CTR Priority (NUEVO v0.11.0-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
 
+## Date Preflight Filter — conservación de cuota Gemini (NUEVO S48)
+
+Antes de invocar el NLP, `pipeline.ts` pasa el contenido HTML/texto por `isPastEventContent()`. Si detecta que **todas** las fechas del texto son > 14 días en el pasado, omite la llamada a Gemini y retorna un resultado neutro.
+
+```typescript
+// src/modules/scraping/utils/date-preflight.ts
+isPastEventContent(text: string, referenceDate = new Date()): boolean
+```
+
+**Formatos detectados:**
+- Español: "15 de abril de 2026"
+- ISO: 2026-04-15
+- Numérico: DD/MM/YYYY (15/04/2026)
+
+**Lógica conservadora:**
+- Sin fechas detectadas → `false` (no descarta)
+- Cualquier fecha futura presente → `false` (no descarta)
+- Fechas dentro del buffer 14 días → `false` (no descarta)
+- Solo descarta si TODAS las fechas son > 14 días en el pasado
+
+**Impacto:** conserva los 20 RPD de cuota Gemini para contenido fresco. Idartes/BibloRed con cientos de URLs históricas ya no consumen quota antes de llegar al contenido útil.
+
 ## Archivos clave
 
 | Archivo | Responsabilidad |
 |---|---|
 | `pipeline.ts` | Orquesta la lógica e invoca al pipeline a través de resiliencia |
+| `utils/date-preflight.ts` | **(NUEVO S48)** Gate pre-NLP: detecta eventos pasados y omite llamada a Gemini |
 | `data-pipeline.ts` | **(NUEVO v0.9.3)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
 | `resilience.ts` | **(NUEVO v0.11.0)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
-import { buttonVariants } from '@/components/ui'
+import { buttonVariants } from '@/components/ui/button'
 
 export async function Header() {
   const session = await getSessionWithRole()

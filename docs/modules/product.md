@@ -11,6 +11,7 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 2. **Hero Search** (Búsqueda Principal): Un ecosistema compuesto capaz de devolver predicciones mixtas. Enlaza con el listado `/actividades`.
 3. **Listado de Actividades**: Experiencia de filtros facetados (que actualizan conteos reales de categorías concurrentes en PostgreSQL vs Memoria Node).
 4. **Detalle de la Actividad**: Resumen unificado por la IA de NLP, protegiendo sobre cargas cognitivas o fotos gigantes cuando el texto es la metadata esencial. Enlaza siempre hacia la ruta saliente `outbound_click`.
+5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) estructurado por la base de datos de manera tipo-segura (XOR foreign keys). Agrupa el inventario en una única vista unificada (`/perfil/favoritos`) con tarjetas visuales polimórficas (identificación visual Actividad/Lugar) sin incurrir en deudas de integridad.
 
 ## 🔍 Motor de Búsqueda y Filtros (`HeroSearch` & `Filters`)
 

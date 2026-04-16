@@ -9,6 +9,29 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S49] — 2026-04-16 (Favoritos Mixtos: Actividades + Lugares)
+
+### Features
+
+#### Arquitectura Híbrida de Favoritos
+- **Modelo de Base de Datos:** Se actualizó `Favorite` (en `prisma/schema.prisma`) para soportar `activityId` y `locationId` (fk opcionales), manteniendo el `userId`.
+- **Integridad y Restricciones:** Se establecieron índices relacionales `@@unique([userId, activityId])` y `@@unique([userId, locationId])` junto a lógica implícita XOR para evitar colisiones sin deuda técnica.
+- **Rutas API Refactorizadas:** La ruta POST `/api/favorites/route.ts` ahora admite un target polimórfico (`targetId`, `type`). La ruta de borrado fue migrada de `[activityId]` a `[targetId]` admitiendo el filtrado de Query por `type`. Manejo seguro de llaves únicas empleando `findFirst` + `create/deleteMany`.
+
+#### User Experience (UX) y Frontend
+- **FavoriteButton Polimórfico:** Reescrito para aceptar los parámetros `targetId` y `targetType`, integrándose de forma armónica al nuevo backend.
+- **Página de Favoritos:** Rediseño completo en `/perfil/favoritos/page.tsx` para cargar en paralelo actividades vs lugares. Se introducen tarjetas visuales para Actividades y para Lugares.
+- **Badges Visuales (Refinement):** Eliminadas las mayúsculas en las insignias tipográficas (`Actividad` / `Lugar`). Peso visual disminuido a `text-xs font-medium tracking-wide`.
+
+#### Operaciones Mantenimiento
+- **Package.json:** Se añadió el script manual y controlado `"migrate:prod": "prisma migrate deploy"` evitando el anti-patrón de auto-migración de Vercel y resguardando transacciones de BD frente al autoescalado.
+
+### Estado de tests
+- **1082 tests** — 11 del `FavoriteButton` testeados unitariamente para la nueva interfaz.
+- TypeScript: 0 errores ✅ (Filtrados nulos solucionados exitosamente).
+
+---
+
 ## [v0.11.0-S48c] — 2026-04-16 (Date Preflight v2 — instrumentación + logging estructurado)
 
 ### Features

@@ -227,6 +227,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
 - **Data Pipeline v1:** Eliminación de `validation.ts` legacy a favor de `data-pipeline.ts` Atómico (Filtrado de Spam + 10 Categorías Estrictas).
 - **Search Engine v1:** Motor de Relevancia que penaliza falta de metadatos críticos como edad (`*= 0.85`).
+- **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK) y renderer híbrido (`v0.11.0-S49`).
 
 ### Known Technical Debt
 

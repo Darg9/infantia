@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.11.0-S48
-**Última actualización:** 15 de abril de 2026
+**Versión:** ✅ v0.11.0-S52
+**Última actualización:** 16 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 

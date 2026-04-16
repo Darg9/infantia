@@ -43,11 +43,15 @@ flowchart TD
        Proxy --> |"2. Try SPA Fallback"| Playwright(Playwright)
        Cheerio -.-> |"Falla / Bloqueo"| Playwright
        
-       %% NLP e IA
-       Proxy --> NLP{Google Gemini 2.5 Flash}
-       
+       %% Parser Resiliente (S52)
+       Proxy --> ParserOrch{Parser Orchestrator}
+       ParserOrch --> |"PARSER_FALLBACK=true"| NLP{Google Gemini 2.5 Flash}
+       ParserOrch --> |"429/503 → fallback"| CheerioFallback[Cheerio Fallback confidence=0.4]
+       NLP --> |"source=gemini"| DataPipeline
+       CheerioFallback --> |"source=fallback"| DataPipeline
+
        %% Data Pipeline System V1
-       NLP --> DataPipeline[Data Pipeline Core v1]
+       DataPipeline[Data Pipeline Core v1]
        DataPipeline --> |"Normalizar, Limpiar (Spam)"| DPValidator[Validar Reglas Críticas]
        DPValidator --> |"Bucketing Categorías + Age Penalty"| Enriquecimiento[Enriquecer Environment/Price]
        Enriquecimiento --> AdaptiveFilter[Adaptive Quality Filter]
@@ -154,6 +158,11 @@ habitaplan/
 │   │   ├── search/                 # Búsqueda (stub — Meilisearch pendiente)
 │   │   ├── users/                  # Gestión de usuarios
 │   │   └── verticals/              # Verticales del negocio
+│   │
+│   ├── config/                     # Configuración de la aplicación
+│   │   ├── constants.ts            # Constantes globales
+│   │   ├── site.ts                 # Metadata del sitio (nombre, URL, SEO)
+│   │   └── feature-flags.ts        # NUEVO S52 — Feature flags (PARSER_FALLBACK_ENABLED)
 │   │
 │   lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
@@ -290,20 +299,30 @@ El motor de scraping es el núcleo diferenciador de HabitaPlan. Extrae actividad
 
 ```
 src/modules/scraping/
-├── types.ts                    # Contratos de datos del módulo
+├── types.ts                    # Contratos de datos del módulo (ActivityNLPResult, ScrapedRawData...)
 ├── pipeline.ts                 # Orquestador: runBatchPipeline, runInstagramPipeline
+│                               #   → usa discoverWithFallback (Fase 2) + parseActivity (Fase 3)
+│                               #   → controlado por FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
 ├── storage.ts                  # Persistencia en BD con deduplicación Nivel 1
 ├── cache.ts                    # Cache incremental en data/scraping-cache.json
 ├── logger.ts                   # Registro en ScrapingLog
 ├── deduplication.ts            # Jaccard, fingerprint SHA-256, isProbablyDuplicate
+├── resilience.ts               # fetchWithFallback, updateSourceHealth, shouldSkipSource
 ├── index.ts                    # Re-exportaciones públicas
 ├── extractors/
-│   ├── cheerio.extractor.ts    # Sitios estáticos + paginación automática
+│   ├── cheerio.extractor.ts    # Sitios estáticos + paginación + textFromHtml() estático (S52)
 │   ├── playwright.extractor.ts # Instagram con Chromium headless + sesión persistente
 │   └── telegram.extractor.ts   # Canales públicos via gramjs MTProto (NUEVO v0.9.1)
-└── nlp/
-    ├── gemini.analyzer.ts      # Motor NLP activo (Gemini 2.5 Flash)
-    └── claude.analyzer.ts      # Alternativa futura (API Anthropic — no activo)
+├── nlp/
+│   ├── gemini.analyzer.ts      # Motor NLP activo (Gemini 2.5 Flash) — retry x3 backoff
+│   └── claude.analyzer.ts      # Alternativa futura (API Anthropic — no activo)
+├── parser/                     # NUEVO S52 — Parser Resiliente
+│   ├── parser.types.ts         # ParseResult, isRetryableError, ParserMetrics
+│   ├── fallback-mapper.ts      # fallbackFromCheerio() — Cheerio→ActivityNLPResult (confidence 0.4)
+│   └── parser.ts               # parseActivity() + discoverWithFallback() + re-exports
+└── utils/
+    ├── date-preflight.ts       # evaluatePreflight() — skip NLP para eventos pasados >14d
+    └── preflight-db.ts         # savePreflightLog() — fire-and-forget a date_preflight_logs
 ```
 
 ### Flujo — Scraping Web
@@ -318,21 +337,29 @@ CheerioExtractor.extractLinksAllPages(baseUrl, maxPages)
     └─ Paginación automática: busca "Siguiente / Next / › / »" o ?page=N+1
     │
     ▼
-GeminiAnalyzer.discoverActivityLinks(links)
-    ├─ Pre-filtro: excluye URLs con query params y extensiones binarias (.jpg/.pdf/etc.)
-    ├─ Divide en chunks de 100 URLs/lote (CHUNK_SIZE=100 desde S34 — benchmark reveló 200 causaba 429 disfrazados)
-    │   Banrep Bogotá (1.083 URLs): 11 lotes → mejor resiliencia ante cuota parcial ✅
-    └─ Retorna índices de links identificados como actividades
+discoverWithFallback(links, sourceUrl, analyzer)   [NUEVO S52]
+    ├─ Si PARSER_FALLBACK_ENABLED=true:
+    │   ├─ Intenta GeminiAnalyzer.discoverActivityLinks(links)
+    │   │   ├─ Pre-filtro: excluye URLs con query params y extensiones binarias
+    │   │   ├─ Chunks de 100 URLs/lote (CHUNK_SIZE=100 — benchmark S34)
+    │   │   │   Banrep Bogotá (1.083 URLs): 11 lotes → resiliencia cuota parcial ✅
+    │   │   └─ Retorna índices de links identificados como actividades
+    │   └─ Si 429/503/timeout → pasa TODOS los URLs (cero pérdida de actividades)
+    └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini, propaga error)
     │
     ▼
 ScrapingCache.filterNew()  ← omite URLs ya procesadas
     │
     ▼
-GeminiAnalyzer.analyze(sourceText, url)   [concurrencia: 3]
-    ├─ Trunca a 15,000 chars
-    ├─ Llama Gemini con responseMimeType: 'application/json'
-    ├─ Valida con Zod (ActivityNLPResult)
-    └─ Retry x3 con backoff exponencial (errores 429 / 503)
+parseActivity(html, url, raw, analyzer)   [NUEVO S52 — concurrencia: 1]
+    ├─ Si PARSER_FALLBACK_ENABLED=true:
+    │   ├─ Intenta GeminiAnalyzer.analyze(sourceText, url)
+    │   │   ├─ Trunca a 15,000 chars
+    │   │   ├─ Llama Gemini con responseMimeType: 'application/json'
+    │   │   ├─ Valida con Zod (ActivityNLPResult)
+    │   │   └─ Retry x3 con backoff exponencial (errores 429 / 503)
+    │   └─ Si 429/503/timeout → fallbackFromCheerio(raw) [confidence 0.4, sin NLP]
+    └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini)
     │
     ▼
 ScrapingStorage.saveActivity()
@@ -645,8 +672,8 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 916 tests, 60 archivos, 0 fallos
-- **Cobertura:** >85% stmts / >85% branches / >85% funcs / >85% lines
+- **Estado actual:** 1123 tests, 71 archivos, 0 fallos (v0.11.0-S52)
+- **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`, `activities/ranking`, `analytics/metrics`
 - **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests
@@ -732,6 +759,8 @@ Reglas fundamentales:
 | Normalización Fuerte de Precios | `normalizePrice(value)` impone un parseo seguro a Prisma Decimal evitando Error 500s |
 | Email Security SPF + DKIM + DMARC | Tríada de autenticación completa activa en producción. SPF: `v=spf1 include:zoho.com include:resend.com -all`. DKIM: firmado por Resend vía subdominio técnico `send.habitaplan.com` (aísla reputación del dominio principal). DMARC: `p=reject` — rechaza automáticamente cualquier emisor no autorizado. Validado Gmail: SPF PASS / DKIM PASS / DMARC PASS. Regla arquitectónica: cualquier nuevo proveedor de correo DEBE añadirse al SPF antes de enviar. FROM unificado: `notificaciones@habitaplan.com`. |
 | ESLint freeze DEBT-02 (S45) | `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. 31 archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` en `globalIgnores`. Bloquea `any` nuevo en CI sin romper legacy. Boy Scout Rule: reducir al tocar cada archivo. |
+| Parser resiliente en módulo separado (S52) | `parser/` desacoplado de `pipeline.ts` y `gemini.analyzer.ts` — usa `Pick<GeminiAnalyzer, 'analyze'>` para no acoplar al constructor. `isRetryableError` centralizado en `parser.types.ts`. Fallback no modifica `ActivityNLPResult` (schema Zod inmutable) — usa wrapper `ParseResult`. |
+| Feature flag `PARSER_FALLBACK_ENABLED` (S52) | Control de activación en `src/config/feature-flags.ts`. Default: `true`. Override: `PARSER_FALLBACK=false` en Vercel env vars. Rollback sin redeploy en ~2 min. Flag vive solo en el punto de orquestación (`pipeline.ts`) — no contamina módulos internos. |
 
 ---
 
@@ -750,9 +779,14 @@ Reglas fundamentales:
 - [x] /api/health v2 — timeouts, semántica ok/degraded/down, by_city (S48)
 - [x] GitHub Actions smoke `*/15` — retry 3/3 + Slack alert (S48)
 - [x] Date preflight filter — omite Gemini para eventos pasados > 14d (S48)
+- [x] Date preflight métricas DB — `date_preflight_logs` + `savePreflightLog` fire-and-forget (S50)
+- [x] Favoritos mixtos — sistema polimórfico (Actividades + Lugares) con XOR FK (S49/S51)
+- [x] Parser resiliente — fallback Cheerio ante 429/503 + feature flag rollback (S52)
 - [x] Security headers (CSP, HSTS, X-Frame-Options)
 - [x] Filtro pre-Gemini de URLs binarias (ahorro de cuota)
 - [x] Sistema de canales en ingest-sources.ts
+- [ ] **Pendiente operativo:** `npx tsx scripts/migrate-favorites-xor.ts` + `npx tsx scripts/migrate-date-preflight-logs.ts`
+- [ ] **Pendiente validación:** run real post-cuota → leer `[PARSER:SUMMARY]` + `[DATE-PREFLIGHT:SUMMARY]`
 
 ### Mediano plazo (v1.0.0)
 - [ ] Segunda vertical (ej: adultos mayores o mascotas)

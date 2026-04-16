@@ -204,7 +204,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 
 ## Estado actual (v0.11.0 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1056 tests** en 69 archivos — `npm test` pasa — 0 errores TypeScript
+- **1070 tests** en 69 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)

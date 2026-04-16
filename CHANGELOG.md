@@ -9,6 +9,28 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S48b] — 2026-04-15 (Date Preflight v2 — datetime HTML + keywords + años pasados)
+
+### Features
+
+#### Date Preflight v2 — jerarquía de señales determinísticas
+- `src/modules/scraping/utils/date-preflight.ts` **[REWRITTEN]**: 3 capas en orden de confiabilidad:
+  - **Capa 1 (nueva):** `extractDatetimeAttributes(html)` lee atributos `datetime="YYYY-MM-DD"` — señal estructurada del CMS, la más confiable. Impacto esperado: ↓ 40–50% llamadas Gemini en BibloRed/Idartes.
+  - **Capa 2:** texto plano (igual que v1) — formatos ES/ISO/DD-MM-YYYY como fallback.
+  - **Capa 3 (nueva):** keywords explícitos (`finalizado`, `cerrado`, `inscripciones cerradas`) + detección de solo-años-pasados sin año actual. Impacto: ↓ 10–15% global.
+- Principio: primero lo determinístico, luego lo probabilístico — inteligencia migrada de AI → lógica de reglas.
+- `src/modules/scraping/__tests__/date-preflight.test.ts` **[EXTENDED]**: 17 → 31 tests (+14). Nuevos tests cubren: `datetime` simple/con hora/múltiple, HTML real de BibloRed (evento pasado/futuro), keywords con/sin año actual, años pasados sin año futuro.
+
+### Estado de tests
+- **1070 tests** en 69 archivos — 0 fallos — 2 skipped ✅
+- TypeScript: 0 errores ✅
+
+### Validación pendiente (mañana 19:00 COL)
+- Ejecutar BibloRed con cuota renovada y medir conversión vs baseline 15%
+- Target: >40% → sistema sano; >60% → escalar cuota tiene ROI
+
+---
+
 ## [v0.11.0-S48] — 2026-04-15 (Observabilidad Confiable v2 · by_city · Date Preflight · Smoke CI)
 
 ### Features

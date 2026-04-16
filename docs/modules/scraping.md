@@ -71,18 +71,27 @@ Antes de invocar el NLP, `pipeline.ts` pasa el contenido HTML/texto por `isPastE
 isPastEventContent(text: string, referenceDate = new Date()): boolean
 ```
 
-**Formatos detectados:**
-- Español: "15 de abril de 2026"
-- ISO: 2026-04-15
-- Numérico: DD/MM/YYYY (15/04/2026)
+**Jerarquía de señales (v2 — S48b):**
 
-**Lógica conservadora:**
-- Sin fechas detectadas → `false` (no descarta)
-- Cualquier fecha futura presente → `false` (no descarta)
-- Fechas dentro del buffer 14 días → `false` (no descarta)
-- Solo descarta si TODAS las fechas son > 14 días en el pasado
+| Capa | Señal | Calidad |
+|---|---|---|
+| 1 | `datetime="YYYY-MM-DD"` en HTML | Alta (estructurada, CMS) |
+| 2 | Texto plano ES/ISO/DD-MM-YYYY | Media |
+| 3 | Keywords + años pasados sin año actual | Baja (heurística) |
 
-**Impacto:** conserva los 20 RPD de cuota Gemini para contenido fresco. Idartes/BibloRed con cientos de URLs históricas ya no consumen quota antes de llegar al contenido útil.
+**Capa 1 — `extractDatetimeAttributes(html)`:**  
+Lee `<time datetime="2025-03-15">` antes que cualquier regex. Señal del CMS, no del contenido editorial. BibloRed e Idartes usan esta convención → impacto inmediato.
+
+**Capa 3 — keywords y años:**  
+`finalizado`, `cerrado`, `inscripciones cerradas` + presencia de solo años pasados (2023/2024/2025) sin año actual o futuro.
+
+**Lógica conservadora (todas las capas):**
+- Sin señales → `false` (no descarta)
+- Cualquier fecha futura → `false` (no descarta)
+- Dentro del buffer 14 días → `false` (no descarta)
+- Solo descarta si TODAS las señales apuntan a pasado confirmado
+
+**Impacto esperado:** ↓ 50–65% llamadas Gemini vs v1. Validación mañana con BibloRed (baseline: 15% conversión → target: >40%).
 
 ## Archivos clave
 

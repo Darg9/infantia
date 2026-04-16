@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-15 | Version: v0.11.0-S48
+Actualizado: 2026-04-16 | Version: v0.11.0-S50
 
-## Resumen Actual (v0.11.0-S48 / Observabilidad Confiable v2 + Date Preflight + Smoke CI)
-- **Archivos de Test:** 69 (+9 vs S45: date-preflight, pipeline, health e2e, + suites existentes ampliadas)
-- **Tests Totales:** 1056 (+140 vs S45)
+## Resumen Actual (v0.11.0-S50 / Date Preflight métricas DB)
+- **Archivos de Test:** 70 (+1 vs S49: `preflight-db.test.ts` nuevo)
+- **Tests Totales:** 1101 (+19 vs S49)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
@@ -70,7 +70,8 @@ Actualizado: 2026-04-15 | Version: v0.11.0-S48
 | queue-connection.test.ts | 6 | OK |
 | queue-worker.test.ts | 5 | OK |
 | queue.test.ts | 9 | OK |
-| date-preflight.test.ts | 17 | OK ← NUEVO S48 (isPastEventContent, 3 formatos, buffer 14d, REF fija) |
+| date-preflight.test.ts | 36 | OK ← +19 S50 (matchedText, extractFirstRawDateText, evaluatePreflight matchedText) |
+| preflight-db.test.ts | 8 | OK ← NUEVO S50 (savePreflightLog, used_fallback, fire-and-forget, vi.hoisted) |
 
 ### modules/activities/__tests__/
 | Archivo | Tests | Estado |
@@ -218,6 +219,7 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S48** | **1056** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S48b** | **1070** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S49** | **1082** | **69** | **>91%** | **>85%** |
+| **v0.11.0-S50** | **1101** | **70** | **>91%** | **>85%** |
 
 ## Cambios en S49 (v0.11.0-S49 / Favoritos Polimórficos)
 

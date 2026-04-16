@@ -9,6 +9,51 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S50] — 2026-04-16 (Date Preflight — métricas DB + matchedText)
+
+### Features
+
+#### Persistencia de métricas Date Preflight (paso 1 del plan de validación)
+- **`src/modules/scraping/utils/date-preflight.ts`**: `PreflightResult` extendido con campo `matchedText: string | null` — la primera cadena de fecha/señal detectada (raw, sin parsear). Nuevo helper exportado `extractFirstRawDateText(html)` — busca en capa 1 (datetime attr), capa 2 (ES/ISO/DD-MM-YYYY) y capa 3 (año pasado/keyword), devuelve el primer match o `null`.
+- **`src/modules/scraping/utils/preflight-db.ts`** — nuevo módulo. `savePreflightLog()`: inserta fila en `date_preflight_logs` (fire-and-forget, no bloquea pipeline). Incluye `_resetPrismaForTests()` para tests. Documentación embebida de las 5 queries de métricas (skip_rate, distribución reason, fallback_rate, dataset falsos negativos, cleanup TTL).
+- **`src/modules/scraping/pipeline.ts`**: wiring de `savePreflightLog()` después de `evaluatePreflight()` — fire-and-forget con `void`. `matched_text` añadido al log estructurado de skip y de process.
+- **`scripts/migrate-date-preflight-logs.ts`** — migración DDL: tabla `date_preflight_logs` con campos `id, source_id, url, raw_date_text, parsed_date, reason, used_fallback, skip, created_at` + 4 índices (`created_at DESC`, `reason`, `source_id`, `skip`).
+
+#### Vocabulario de `reason` (alineado con codebase, no con propuesta externa)
+| reason | descripción | used_fallback |
+|---|---|---|
+| `process` | URL enviada a Gemini (= "ok") | false |
+| `datetime_past` | descartada por atributo datetime HTML (capa 1) | false |
+| `text_date_past` | descartada por fecha en texto plano (capa 2) | true |
+| `past_year_only` | descartada por años pasados sin año actual (capa 3a) | true |
+| `keyword_past` | descartada por keyword de evento finalizado (capa 3b) | true |
+
+#### Queries de métricas (ejecutar en Supabase SQL editor)
+```sql
+-- Skip rate + distribución reason (últimos 7 días)
+SELECT reason, COUNT(*) * 1.0 / SUM(COUNT(*)) OVER() AS pct
+FROM date_preflight_logs WHERE created_at >= now() - interval '7 days'
+GROUP BY reason ORDER BY pct DESC;
+
+-- Dataset falsos negativos (muestra manual 30 URLs rechazadas)
+SELECT url, raw_date_text FROM date_preflight_logs
+WHERE skip = true ORDER BY random() LIMIT 30;
+```
+
+### Tests
+- **+19 tests** (1082 → 1101): `date-preflight.test.ts` (+13) + `preflight-db.test.ts` NUEVO (+8, -2 por refactor)
+  - `extractFirstRawDateText`: 8 casos (capa 1/2a/2b/2c/3a/3b, null, precedencia)
+  - `evaluatePreflight matchedText`: 5 casos
+  - `savePreflightLog`: 8 casos (parámetros correctos, used_fallback por reason, fire-and-forget, null sourceId, matchedText null)
+- **70 archivos** de test — 0 fallos ✅
+- Patrón `vi.hoisted` + constructor `function` (no arrow) para mocks de clases Prisma
+
+### Pendiente (no en este commit)
+- Ejecutar migración en BD: `npx tsx scripts/migrate-date-preflight-logs.ts`
+- Correr `--source=biblored --save-db` con cuota Gemini disponible (19:00 COL) y leer `[DATE-PREFLIGHT:SUMMARY]` + queries de métricas
+
+---
+
 ## [v0.11.0-S49] — 2026-04-16 (Favoritos Mixtos: Actividades + Lugares)
 
 ### Features

@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S48
-**Última actualización:** 15 de abril de 2026
+**Versión actual:** v0.11.0-S50
+**Última actualización:** 16 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -62,14 +62,9 @@ ingest-sources.ts --queue
 
 **CTR Priority (NUEVO v0.11.0-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
 
-## Date Preflight Filter — conservación de cuota Gemini (NUEVO S48)
+## Date Preflight Filter — conservación de cuota Gemini (S48 → S50)
 
-Antes de invocar el NLP, `pipeline.ts` pasa el contenido HTML/texto por `isPastEventContent()`. Si detecta que **todas** las fechas del texto son > 14 días en el pasado, omite la llamada a Gemini y retorna un resultado neutro.
-
-```typescript
-// src/modules/scraping/utils/date-preflight.ts
-isPastEventContent(text: string, referenceDate = new Date()): boolean
-```
+Antes de invocar el NLP, `pipeline.ts` pasa el contenido HTML/texto por `evaluatePreflight()`. Si detecta que **todas** las fechas del texto son > 14 días en el pasado, omite Gemini y retorna resultado neutro. Cada evaluación se persiste en `date_preflight_logs` (fire-and-forget) para análisis posterior.
 
 **Jerarquía de señales (v2 — S48b):**
 
@@ -79,26 +74,39 @@ isPastEventContent(text: string, referenceDate = new Date()): boolean
 | 2 | Texto plano ES/ISO/DD-MM-YYYY | Media |
 | 3 | Keywords + años pasados sin año actual | Baja (heurística) |
 
-**Capa 1 — `extractDatetimeAttributes(html)`:**  
-Lee `<time datetime="2025-03-15">` antes que cualquier regex. Señal del CMS, no del contenido editorial. BibloRed e Idartes usan esta convención → impacto inmediato.
+**Lógica conservadora:** Sin señales → no descarta. Cualquier fecha futura → no descarta. Buffer 14 días → no descarta. Solo descarta si TODAS las señales apuntan a pasado confirmado.
 
-**Capa 3 — keywords y años:**  
-`finalizado`, `cerrado`, `inscripciones cerradas` + presencia de solo años pasados (2023/2024/2025) sin año actual o futuro.
+**Tabla `date_preflight_logs` (NUEVO S50):**
 
-**Lógica conservadora (todas las capas):**
-- Sin señales → `false` (no descarta)
-- Cualquier fecha futura → `false` (no descarta)
-- Dentro del buffer 14 días → `false` (no descarta)
-- Solo descarta si TODAS las señales apuntan a pasado confirmado
+| Campo | Tipo | Descripción |
+|---|---|---|
+| `reason` | TEXT | `process / datetime_past / text_date_past / past_year_only / keyword_past` |
+| `raw_date_text` | TEXT | Primera cadena de fecha/señal detectada (para análisis falsos negativos) |
+| `used_fallback` | BOOL | `true` si se usó capa 2 o 3 (menos precisa que capa 1) |
+| `skip` | BOOL | `true` si se omitió Gemini |
+| `source_id` | TEXT | Host de la fuente (para métricas por fuente) |
 
-**Impacto esperado:** ↓ 50–65% llamadas Gemini vs v1. Validación mañana con BibloRed (baseline: 15% conversión → target: >40%).
+**Queries de validación (ejecutar tras primer run con `--save-db`):**
+```sql
+-- Skip rate + distribución (últimos 7 días)
+SELECT reason, COUNT(*) * 1.0 / SUM(COUNT(*)) OVER() AS pct
+FROM date_preflight_logs WHERE created_at >= now() - interval '7 days'
+GROUP BY reason ORDER BY pct DESC;
+
+-- Dataset falsos negativos (muestra manual)
+SELECT url, raw_date_text FROM date_preflight_logs
+WHERE skip = true ORDER BY random() LIMIT 30;
+```
+
+**Umbrales de validación:** skip rate > 40% ✅ | false negative rate < 5% ✅ | Migración pendiente: `npx tsx scripts/migrate-date-preflight-logs.ts`
 
 ## Archivos clave
 
 | Archivo | Responsabilidad |
 |---|---|
 | `pipeline.ts` | Orquesta la lógica e invoca al pipeline a través de resiliencia |
-| `utils/date-preflight.ts` | **(NUEVO S48)** Gate pre-NLP: detecta eventos pasados y omite llamada a Gemini |
+| `utils/date-preflight.ts` | Gate pre-NLP: detecta eventos pasados y omite Gemini. `evaluatePreflight()` devuelve `{ skip, reason, datesFound, matchedText }` |
+| `utils/preflight-db.ts` | **(NUEVO S50)** Persiste resultados en `date_preflight_logs` (fire-and-forget). Incluye queries de métricas embebidas. |
 | `data-pipeline.ts` | **(NUEVO v0.9.3)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
 | `resilience.ts` | **(NUEVO v0.11.0)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |

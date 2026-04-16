@@ -1,8 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import {
   isPastEventContent,
+  evaluatePreflight,
   extractDatesFromText,
   extractDatetimeAttributes,
+  getPreflightStats,
+  resetPreflightStats,
 } from '../utils/date-preflight';
 
 // Fecha de referencia fija para todos los tests
@@ -206,5 +209,92 @@ describe('isPastEventContent — Capa 3: keywords y años pasados', () => {
       'Exposición permanente en el museo.',
     ];
     texts.forEach((t) => expect(isPastEventContent(t, REF)).toBe(false));
+  });
+});
+
+describe('evaluatePreflight — resultado enriquecido', () => {
+  it('devuelve reason=datetime_past para atributo datetime pasado', () => {
+    const html = '<time datetime="2025-01-10">10 de enero</time>';
+    const result = evaluatePreflight(html, REF);
+    expect(result.skip).toBe(true);
+    expect(result.reason).toBe('datetime_past');
+    expect(result.datesFound).toBe(1);
+  });
+
+  it('devuelve reason=text_date_past para fecha en texto plano pasada', () => {
+    const html = '<p>Evento el 1 de marzo de 2026.</p>';
+    const result = evaluatePreflight(html, REF);
+    expect(result.skip).toBe(true);
+    expect(result.reason).toBe('text_date_past');
+    expect(result.datesFound).toBe(1);
+  });
+
+  it('devuelve reason=past_year_only para solo años pasados', () => {
+    const html = '<p>Actividades realizadas en 2024.</p>';
+    const result = evaluatePreflight(html, REF);
+    expect(result.skip).toBe(true);
+    expect(result.reason).toBe('past_year_only');
+    expect(result.datesFound).toBe(0);
+  });
+
+  it('devuelve reason=keyword_past para keyword sin año actual', () => {
+    const html = '<p>Este evento ha finalizado.</p>';
+    const result = evaluatePreflight(html, REF);
+    expect(result.skip).toBe(true);
+    expect(result.reason).toBe('keyword_past');
+  });
+
+  it('devuelve reason=process y skip=false para evento futuro', () => {
+    const html = '<time datetime="2026-06-20">20 de junio</time>';
+    const result = evaluatePreflight(html, REF);
+    expect(result.skip).toBe(false);
+    expect(result.reason).toBe('process');
+  });
+
+  it('devuelve reason=process y skip=false sin señales', () => {
+    const result = evaluatePreflight('Taller de arte para niños.', REF);
+    expect(result.skip).toBe(false);
+    expect(result.reason).toBe('process');
+    expect(result.datesFound).toBe(0);
+  });
+});
+
+describe('getPreflightStats / resetPreflightStats — contadores', () => {
+  beforeEach(() => resetPreflightStats());
+
+  it('inicia en cero tras reset', () => {
+    const s = getPreflightStats();
+    expect(s.total).toBe(0);
+    expect(s.sent_to_gemini).toBe(0);
+    expect(s.skipped_datetime).toBe(0);
+  });
+
+  it('acumula sent_to_gemini correctamente', () => {
+    evaluatePreflight('Taller de arte.', REF);
+    evaluatePreflight('Exposición permanente.', REF);
+    const s = getPreflightStats();
+    expect(s.total).toBe(2);
+    expect(s.sent_to_gemini).toBe(2);
+    expect(s.skipped_datetime).toBe(0);
+  });
+
+  it('acumula skipped_datetime correctamente', () => {
+    evaluatePreflight('<time datetime="2025-01-10">ene</time>', REF);
+    evaluatePreflight('<time datetime="2025-02-01">feb</time>', REF);
+    const s = getPreflightStats();
+    expect(s.skipped_datetime).toBe(2);
+    expect(s.sent_to_gemini).toBe(0);
+    expect(s.total).toBe(2);
+  });
+
+  it('acumula razones mixtas correctamente', () => {
+    evaluatePreflight('<time datetime="2025-01-10">ene</time>', REF); // datetime
+    evaluatePreflight('El evento fue el 1 de marzo de 2026.', REF);   // text_date
+    evaluatePreflight('Taller de arte para niños.', REF);              // process
+    const s = getPreflightStats();
+    expect(s.total).toBe(3);
+    expect(s.skipped_datetime).toBe(1);
+    expect(s.skipped_text_date).toBe(1);
+    expect(s.sent_to_gemini).toBe(1);
   });
 });

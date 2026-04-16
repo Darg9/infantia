@@ -7,7 +7,7 @@ import { ScrapingStorage } from './storage';
 import { ScrapingLogger } from './logger';
 import { createLogger } from '../../lib/logger';
 import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
-import { isPastEventContent } from './utils/date-preflight';
+import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './utils/date-preflight';
 
 const log = createLogger('scraping:pipeline');
 
@@ -61,17 +61,29 @@ export class ScrapingPipeline {
     log.info(`2. Extracción exitosa. Longitud de texto crudo: ${textLength} caracteres`);
 
     // ── Pre-filtro de fechas: evitar NLP en eventos claramente pasados ─────────
-    if (isPastEventContent(htmlContent)) {
-      log.info(`[DATE-PREFLIGHT] Evento claramente pasado — NLP omitido (cuota conservada).`);
+    const preflight = evaluatePreflight(htmlContent);
+    if (preflight.skip) {
+      log.info('[DATE-PREFLIGHT] Evento descartado — NLP omitido', {
+        url,
+        decision:    'skip',
+        reason:      preflight.reason,
+        dates_found: preflight.datesFound,
+      });
       return {
-        title:          'Sin título',
-        description:    '',
-        categories:     ['General'],
-        currency:       'COP',
-        audience:       'ALL',
+        title:           'Sin título',
+        description:     '',
+        categories:      ['General'],
+        currency:        'COP',
+        audience:        'ALL',
         confidenceScore: 0,
       } as ActivityNLPResult;
     }
+    log.info('[DATE-PREFLIGHT] Enviando a Gemini', {
+      url,
+      decision:    'process',
+      reason:      preflight.reason,
+      dates_found: preflight.datesFound,
+    });
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
     const finalData = await this.analyzer.analyze(htmlContent, url);
@@ -84,7 +96,8 @@ export class ScrapingPipeline {
 
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
     const { maxPages = 50, sitemapPatterns = [], concurrency = 1 } = opts;
-    
+    resetPreflightStats();
+
     const host = new URL(listingUrl).hostname.replace('www.', '');
     const { skip, reason } = await shouldSkipSource(host);
     if (skip) {
@@ -241,6 +254,22 @@ export class ScrapingPipeline {
     const errors = results.filter((r) => r.data === null);
     log.info(`========== FIN BATCH PIPELINE ==========`);
     log.info(`Exitosas: ${successful}/${results.length} (${skipped} omitidas por cache)`);
+
+    // ── Summary preflight — visibilidad de cuota consumida ────────────────────
+    const ps = getPreflightStats();
+    if (ps.total > 0) {
+      const pct = (n: number) => ps.total > 0 ? `${Math.round(n / ps.total * 100)}%` : '0%';
+      log.info('[DATE-PREFLIGHT:SUMMARY]', {
+        total:             ps.total,
+        sent_to_gemini:    ps.sent_to_gemini,
+        skipped_datetime:  ps.skipped_datetime,
+        skipped_text_date: ps.skipped_text_date,
+        skipped_past_year: ps.skipped_past_year,
+        skipped_keyword:   ps.skipped_keyword,
+        gemini_rate:       pct(ps.sent_to_gemini),
+        skip_rate:         pct(ps.total - ps.sent_to_gemini),
+      });
+    }
 
     const batchResult: BatchPipelineResult = {
       sourceUrl: listingUrl,

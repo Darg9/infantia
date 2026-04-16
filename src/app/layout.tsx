@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/providers/AuthProvider";
+import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { ToastProvider } from "@/components/ui/toast";
@@ -66,22 +67,43 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
+      {/* ── Script anti-flash: se ejecuta de forma síncrona antes del render ──
+          Prioridad: localStorage.theme > prefers-color-scheme del sistema.
+          El fallback hardened evita valores corruptos en localStorage. */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var saved = localStorage.getItem('theme');
+                var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = saved === 'dark' || saved === 'light'
+                  ? saved
+                  : (systemDark ? 'dark' : 'light');
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+              } catch(e) {}
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AnalyticsTracker />
-        <AuthProvider>
-          <ToastProvider>
-            <div className="flex flex-col min-h-screen">
-              <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-brand-500 text-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
-                Saltar al contenido
-              </a>
-              <Header />
-              <main id="main-content" className="flex-1">{children}</main>
-              <Footer />
-            </div>
-          </ToastProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <ToastProvider>
+              <div className="flex flex-col min-h-screen">
+                <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-brand-500 text-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                  Saltar al contenido
+                </a>
+                <Header />
+                <main id="main-content" className="flex-1">{children}</main>
+                <Footer />
+              </div>
+            </ToastProvider>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

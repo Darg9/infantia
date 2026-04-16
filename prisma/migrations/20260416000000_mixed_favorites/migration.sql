@@ -10,3 +10,11 @@ ALTER TABLE "favorites" ALTER COLUMN "activityId" DROP NOT NULL;
 CREATE UNIQUE INDEX IF NOT EXISTS "favorites_userId_activityId_key" ON "favorites"("userId", "activityId");
 CREATE UNIQUE INDEX IF NOT EXISTS "favorites_userId_locationId_key" ON "favorites"("userId", "locationId");
 ALTER TABLE "favorites" ADD CONSTRAINT "favorites_locationId_fkey" FOREIGN KEY ("locationId") REFERENCES "locations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- XOR constraint: exactamente uno de activityId o locationId debe estar presente
+ALTER TABLE "favorites"
+ADD CONSTRAINT "favorites_xor_check"
+CHECK (
+  ("activityId" IS NOT NULL AND "locationId" IS NULL) OR
+  ("activityId" IS NULL     AND "locationId" IS NOT NULL)
+);

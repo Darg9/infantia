@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-16 | Version: v0.11.0-S50
+Actualizado: 2026-04-16 | Version: v0.11.0-S51
 
-## Resumen Actual (v0.11.0-S50 / Date Preflight métricas DB)
-- **Archivos de Test:** 70 (+1 vs S49: `preflight-db.test.ts` nuevo)
-- **Tests Totales:** 1101 (+19 vs S49)
+## Resumen Actual (v0.11.0-S51 / Favorites XOR + Date Preflight métricas DB)
+- **Archivos de Test:** 70 (sin cambio — tests añadidos a suite existente)
+- **Tests Totales:** 1105 (+4 vs S50: XOR type inválido POST + DELETE)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
@@ -220,6 +220,7 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S48b** | **1070** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S49** | **1082** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S50** | **1101** | **70** | **>91%** | **>85%** |
+| **v0.11.0-S51** | **1105** | **70** | **>91%** | **>85%** |
 
 ## Cambios en S49 (v0.11.0-S49 / Favoritos Polimórficos)
 

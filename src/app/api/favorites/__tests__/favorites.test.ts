@@ -229,6 +229,14 @@ describe('POST /api/favorites', () => {
     expect(mockJson).toHaveBeenCalledWith({ error: 'Usuario no encontrado' }, { status: 404 })
   })
 
+  it('retorna 400 si el type es inválido (no activity ni place)', async () => {
+    const req = makeRequest({ targetId: TARGET_ID_1, type: 'unknown' })
+    await POST(req as any)
+
+    expect(mockPrisma.favorite.create).not.toHaveBeenCalled()
+    expect(mockJson).toHaveBeenCalledWith({ error: 'Tipo inválido' }, { status: 400 })
+  })
+
   it('retorna 401 si no hay sesión autenticada', async () => {
     mockGetSession.mockResolvedValue(null)
     const req = makeRequest({ targetId: TARGET_ID_1 })
@@ -338,6 +346,14 @@ describe('DELETE /api/favorites/[targetId]', () => {
         },
       })
     )
+  })
+
+  it('retorna 400 si el type es inválido (no activity ni place)', async () => {
+    const req = makeRequest({}, 'invalid_type')
+    await DELETE(req as any, { params: Promise.resolve({ targetId: TARGET_ID_1 }) })
+
+    expect(mockPrisma.favorite.deleteMany).not.toHaveBeenCalled()
+    expect(mockJson).toHaveBeenCalledWith({ error: 'Tipo inválido' }, { status: 400 })
   })
 
   it('no afecta favoritos de otros usuarios con el mismo targetId', async () => {

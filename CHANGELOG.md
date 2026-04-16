@@ -9,6 +9,26 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S51] — 2026-04-16 (Favorites XOR integrity — CHECK constraint + tests)
+
+### Fixes
+
+#### Integridad XOR en tabla `favorites` (defense-in-depth)
+- **`prisma/migrations/20260416000000_mixed_favorites/migration.sql`**: añadida línea `ADD CONSTRAINT favorites_xor_check CHECK (...)` — garantiza a nivel de BD que cada fila tenga EXACTAMENTE uno de `activityId` o `locationId`. Antes sólo había unique indexes (previenen duplicados) pero no bloqueaban ambos campos simultáneos o ambos null.
+- **`scripts/migrate-favorites-xor.ts`** — script de migración con pre-flight de violaciones: verifica 0 filas problemáticas antes de aplicar, maneja idempotencia (`already exists`).
+
+#### Tests de XOR en API (cobertura del flujo `type` inválido)
+- **`POST /api/favorites`**: nuevo test `retorna 400 si el type es inválido (no activity ni place)` — verifica que `type = 'unknown'` retorna 400 y no llama `favorite.create`.
+- **`DELETE /api/favorites/[targetId]`**: nuevo test `retorna 400 si el type es inválido` — verifica que type desconocido retorna 400 y no llama `deleteMany`.
+
+### Tests
+- **1105 tests** — 70 archivos — 0 fallos ✅ (+4 vs S50)
+
+### Pendiente operativo
+- Ejecutar en BD: `npx tsx scripts/migrate-favorites-xor.ts`
+
+---
+
 ## [v0.11.0-S50] — 2026-04-16 (Date Preflight — métricas DB + matchedText)
 
 ### Features

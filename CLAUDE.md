@@ -204,7 +204,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 
 ## Estado actual (v0.11.0-S50 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1101 tests** en 70 archivos — `npm test` pasa — 0 errores TypeScript
+- **1105 tests** en 70 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -229,6 +229,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Search Engine v1:** Motor de Relevancia que penaliza falta de metadatos críticos como edad (`*= 0.85`).
 - **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK) y renderer híbrido (`v0.11.0-S49`).
 - **Date Preflight métricas DB:** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget, `matchedText`, vocabulario de reason 5 valores). Migración pendiente: `npx tsx scripts/migrate-date-preflight-logs.ts` (`v0.11.0-S50`).
+- **Favorites XOR CHECK constraint:** `favorites_xor_check` garantiza exactamente uno de `activityId`/`locationId` a nivel BD. Script: `npx tsx scripts/migrate-favorites-xor.ts`. Tests de tipo inválido añadidos (`v0.11.0-S51`).
 
 ### Known Technical Debt
 

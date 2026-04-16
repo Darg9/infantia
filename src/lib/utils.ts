@@ -46,3 +46,19 @@ export function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)/g, '');
 }
+
+/**
+ * Account type mapping for Spanish localization
+ */
+export const ACCOUNT_TYPE_LABEL: Record<string, string> = {
+  parent: 'Madre o padre',
+  child: 'Niña o niño',
+  admin: 'Administrador',
+  provider: 'Proveedor',
+  user: 'Usuario',
+};
+
+export function getAccountTypeLabel(role: string): string {
+  if (!role) return 'Tipo de cuenta';
+  return ACCOUNT_TYPE_LABEL[role.toLowerCase()] ?? 'Tipo de cuenta';
+}

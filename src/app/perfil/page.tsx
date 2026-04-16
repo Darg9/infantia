@@ -15,14 +15,7 @@ export const metadata: Metadata = {
   description: 'Tu información de perfil en HabitaPlan',
 }
 
-// ── Traducciones de roles ────────────────────────────────────────────────────
-const ROLE_LABELS: Record<string, string> = {
-  parent: 'Padre / Madre',
-  user: 'Usuario',
-  provider: 'Proveedor',
-  admin: 'Administrador',
-  child: 'Hijo/a',
-}
+import { getAccountTypeLabel } from '@/lib/utils'
 
 // ── Empty states por KPI ─────────────────────────────────────────────────────
 const EMPTY_LABELS: Record<string, string> = {
@@ -60,8 +53,8 @@ export default async function PerfilPage() {
   const displayName = dbUserWithCity?.name ?? user.user_metadata?.name ?? ''
   const avatarUrl = dbUserWithCity?.avatarUrl ?? (user.user_metadata?.avatar_url as string | undefined)
   const cityName = dbUserWithCity?.city?.name ?? null
-  const currentRole = (user.app_metadata?.role || 'parent').toLowerCase()
-  const displayRole = ROLE_LABELS[currentRole] ?? currentRole
+  const currentRole = user.app_metadata?.role || 'parent'
+  const displayRole = getAccountTypeLabel(currentRole)
   const initial = (displayName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()
 
   return (

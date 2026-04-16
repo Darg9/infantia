@@ -10,6 +10,7 @@ import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resil
 import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './utils/date-preflight';
 import { savePreflightLog } from './utils/preflight-db';
 import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 
 const log = createLogger('scraping:pipeline');
 
@@ -106,7 +107,9 @@ export class ScrapingPipeline {
       status:      'SUCCESS',
     };
 
-    const parsed = await parseActivity(htmlContent, url, rawForFallback, this.analyzer);
+    const parsed = FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
+      ? await parseActivity(htmlContent, url, rawForFallback, this.analyzer)
+      : { result: await this.analyzer.analyze(htmlContent, url), source: 'gemini' as const };
 
     if (parsed.source === 'fallback') {
       log.warn(`[PARSER] Actividad extraída con fallback Cheerio (Gemini no disponible): ${url}`);
@@ -194,9 +197,11 @@ export class ScrapingPipeline {
       return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
     }
 
-    // Fase 2: Filtrar con Gemini cuáles son actividades (con fallback conservador)
-    log.info(`Fase 2: Filtrando links con IA...`);
-    const activityUrls = await discoverWithFallback(allLinks, listingUrl, this.analyzer);
+    // Fase 2: Filtrar con Gemini cuáles son actividades
+    log.info(`Fase 2: Filtrando links con IA... (fallback=${FEATURE_FLAGS.PARSER_FALLBACK_ENABLED})`);
+    const activityUrls = FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
+      ? await discoverWithFallback(allLinks, listingUrl, this.analyzer)
+      : await this.analyzer.discoverActivityLinks(allLinks, listingUrl);
     log.info(`Links identificados como actividades: ${activityUrls.length}`);
 
     if (activityUrls.length === 0) {

@@ -274,7 +274,7 @@ export default async function ActividadesPage({
         where: { userId: dbUser.id },
         select: { activityId: true },
       });
-      favoriteIds = new Set(favs.map((f) => f.activityId));
+      favoriteIds = new Set(favs.map((f) => f.activityId).filter((id): id is string => id !== null));
     }
   }
 

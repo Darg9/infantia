@@ -29,7 +29,7 @@ vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
 
 import { NextResponse } from 'next/server'
 import { GET, POST } from '../route'
-import { DELETE } from '../[activityId]/route'
+import { DELETE } from '../[targetId]/route'
 
 const mockJson = vi.mocked(NextResponse.json)
 
@@ -61,8 +61,8 @@ describe('GET /api/favorites', () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findMany.mockResolvedValue([
-      { activityId: ACTIVITY_ID_1 },
-      { activityId: ACTIVITY_ID_2 },
+      { targetId: ACTIVITY_ID_1 },
+      { targetId: ACTIVITY_ID_2 },
     ])
 
     await GET()
@@ -130,17 +130,17 @@ describe('POST /api/favorites', () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: ACTIVITY_ID_1 })
-    mockPrisma.favorite.upsert.mockResolvedValue({ userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 })
+    mockPrisma.favorite.upsert.mockResolvedValue({ userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 })
   })
 
   it('añade actividad a favoritos y retorna 201', async () => {
-    const req = makeRequest({ activityId: ACTIVITY_ID_1 })
+    const req = makeRequest({ targetId: ACTIVITY_ID_1 })
     await POST(req as any)
 
     expect(mockPrisma.favorite.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId_activityId: { userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 } },
-        create: { userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 },
+        where: { userId_targetId: { userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 } },
+        create: { userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 },
       })
     )
     expect(mockJson).toHaveBeenCalledWith({ success: true }, { status: 201 })
@@ -148,8 +148,8 @@ describe('POST /api/favorites', () => {
 
   it('es idempotente: si ya es favorito, retorna 201 sin error', async () => {
     // El upsert no lanza aunque ya exista el registro
-    mockPrisma.favorite.upsert.mockResolvedValue({ userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 })
-    const req = makeRequest({ activityId: ACTIVITY_ID_1 })
+    mockPrisma.favorite.upsert.mockResolvedValue({ userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 })
+    const req = makeRequest({ targetId: ACTIVITY_ID_1 })
 
     await POST(req as any)
 
@@ -166,7 +166,7 @@ describe('POST /api/favorites', () => {
   })
 
   it('retorna 400 si activityId es string vacío', async () => {
-    const req = makeRequest({ activityId: '' })
+    const req = makeRequest({ targetId: '' })
     await POST(req as any)
 
     expect(mockJson).toHaveBeenCalledWith({ error: 'activityId requerido' }, { status: 400 })
@@ -174,7 +174,7 @@ describe('POST /api/favorites', () => {
   })
 
   it('retorna 400 si activityId no es string (número)', async () => {
-    const req = makeRequest({ activityId: 12345 })
+    const req = makeRequest({ targetId: 12345 })
     await POST(req as any)
 
     expect(mockJson).toHaveBeenCalledWith({ error: 'activityId requerido' }, { status: 400 })
@@ -182,7 +182,7 @@ describe('POST /api/favorites', () => {
   })
 
   it('retorna 400 si activityId es null', async () => {
-    const req = makeRequest({ activityId: null })
+    const req = makeRequest({ targetId: null })
     await POST(req as any)
 
     expect(mockJson).toHaveBeenCalledWith({ error: 'activityId requerido' }, { status: 400 })
@@ -191,7 +191,7 @@ describe('POST /api/favorites', () => {
 
   it('retorna 404 si la actividad no existe en DB', async () => {
     mockPrisma.activity.findUnique.mockResolvedValue(null)
-    const req = makeRequest({ activityId: 'id-inexistente' })
+    const req = makeRequest({ targetId: 'id-inexistente' })
 
     await POST(req as any)
 
@@ -201,7 +201,7 @@ describe('POST /api/favorites', () => {
 
   it('retorna 404 si el usuario no existe en DB', async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null)
-    const req = makeRequest({ activityId: ACTIVITY_ID_1 })
+    const req = makeRequest({ targetId: ACTIVITY_ID_1 })
 
     await POST(req as any)
 
@@ -211,7 +211,7 @@ describe('POST /api/favorites', () => {
 
   it('retorna 401 si no hay sesión autenticada', async () => {
     mockGetSession.mockResolvedValue(null)
-    const req = makeRequest({ activityId: ACTIVITY_ID_1 })
+    const req = makeRequest({ targetId: ACTIVITY_ID_1 })
 
     await POST(req as any)
 
@@ -220,7 +220,7 @@ describe('POST /api/favorites', () => {
   })
 
   it('verifica que la actividad existe antes del upsert', async () => {
-    const req = makeRequest({ activityId: ACTIVITY_ID_1 })
+    const req = makeRequest({ targetId: ACTIVITY_ID_1 })
     await POST(req as any)
 
     expect(mockPrisma.activity.findUnique).toHaveBeenCalledWith({
@@ -235,7 +235,7 @@ describe('POST /api/favorites', () => {
 // =============================================================================
 
 describe('DELETE /api/favorites/[activityId]', () => {
-  const MOCK_FAVORITE = { userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 }
+  const MOCK_FAVORITE = { userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 }
 
   beforeEach(() => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
@@ -245,26 +245,26 @@ describe('DELETE /api/favorites/[activityId]', () => {
   })
 
   it('elimina el favorito y retorna 200 con success:true', async () => {
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.favorite.delete).toHaveBeenCalledWith({
-      where: { userId_activityId: { userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 } },
+      where: { userId_targetId: { userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 } },
     })
     expect(mockJson).toHaveBeenCalledWith({ success: true })
   })
 
   it('verifica que el favorito existe antes de eliminarlo', async () => {
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.favorite.findUnique).toHaveBeenCalledWith({
-      where: { userId_activityId: { userId: MOCK_DB_USER.id, activityId: ACTIVITY_ID_1 } },
+      where: { userId_targetId: { userId: MOCK_DB_USER.id, targetId: ACTIVITY_ID_1 } },
     })
   })
 
   it('retorna 404 si el favorito no existe', async () => {
     mockPrisma.favorite.findUnique.mockResolvedValue(null)
 
-    await DELETE({} as any, { params: Promise.resolve({ activityId: 'id-no-favorito' }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: 'id-no-favorito' }) })
 
     expect(mockPrisma.favorite.delete).not.toHaveBeenCalled()
     expect(mockJson).toHaveBeenCalledWith({ error: 'Favorito no encontrado' }, { status: 404 })
@@ -273,7 +273,7 @@ describe('DELETE /api/favorites/[activityId]', () => {
   it('retorna 404 si el usuario no existe en DB', async () => {
     mockPrisma.user.findUnique.mockResolvedValue(null)
 
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.favorite.delete).not.toHaveBeenCalled()
     expect(mockJson).toHaveBeenCalledWith({ error: 'Usuario no encontrado' }, { status: 404 })
@@ -282,14 +282,14 @@ describe('DELETE /api/favorites/[activityId]', () => {
   it('retorna 401 si no hay sesión autenticada', async () => {
     mockRequireAuth.mockRejectedValue(new Error('No auth'))
 
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.favorite.delete).not.toHaveBeenCalled()
     expect(mockJson).toHaveBeenCalledWith({ error: 'No autorizado' }, { status: 401 })
   })
 
   it('usa el userId interno (no supabaseAuthId) para buscar el favorito', async () => {
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
       where: { supabaseAuthId: MOCK_AUTH_USER.id },
@@ -299,9 +299,9 @@ describe('DELETE /api/favorites/[activityId]', () => {
     expect(mockPrisma.favorite.delete).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          userId_activityId: {
+          userId_targetId: {
             userId: MOCK_DB_USER.id, // ID interno
-            activityId: ACTIVITY_ID_1,
+            targetId: ACTIVITY_ID_1,
           },
         },
       })
@@ -310,7 +310,7 @@ describe('DELETE /api/favorites/[activityId]', () => {
 
   it('no afecta favoritos de otros usuarios con el mismo activityId', async () => {
     // Solo puede borrar el favorito del usuario autenticado gracias al userId en el where
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     const deleteCall = mockPrisma.favorite.delete.mock.calls[0][0]
     expect(deleteCall.where.userId_activityId.userId).toBe(MOCK_DB_USER.id)
@@ -325,7 +325,7 @@ describe('Seguridad: aislamiento entre usuarios', () => {
   it('GET solo devuelve favoritos del usuario autenticado, no de otros', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
     mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
-    mockPrisma.favorite.findMany.mockResolvedValue([{ activityId: ACTIVITY_ID_1 }])
+    mockPrisma.favorite.findMany.mockResolvedValue([{ targetId: ACTIVITY_ID_1 }])
 
     await GET()
 
@@ -344,7 +344,7 @@ describe('Seguridad: aislamiento entre usuarios', () => {
     // El favorito NO existe para este usuario
     mockPrisma.favorite.findUnique.mockResolvedValue(null)
 
-    await DELETE({} as any, { params: Promise.resolve({ activityId: ACTIVITY_ID_1 }) })
+    await DELETE({} as any, { params: Promise.resolve({ targetId: ACTIVITY_ID_1 }) })
 
     expect(mockPrisma.favorite.delete).not.toHaveBeenCalled()
     expect(mockJson).toHaveBeenCalledWith({ error: 'Favorito no encontrado' }, { status: 404 })

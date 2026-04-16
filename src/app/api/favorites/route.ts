@@ -49,28 +49,51 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { activityId } = body
+    const { targetId, type = 'activity' } = body
 
-    if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json({ error: 'activityId requerido' }, { status: 400 })
+    if (!targetId || typeof targetId !== 'string') {
+      return NextResponse.json({ error: 'targetId requerido' }, { status: 400 })
     }
 
-    // Verificar que la actividad existe
-    const activity = await prisma.activity.findUnique({
-      where: { id: activityId },
-      select: { id: true },
-    })
+    if (type === 'activity') {
+      const activity = await prisma.activity.findUnique({
+        where: { id: targetId },
+        select: { id: true },
+      })
+      if (!activity) {
+        return NextResponse.json({ error: 'Actividad no encontrada' }, { status: 404 })
+      }
+      
+      const existing = await prisma.favorite.findFirst({
+        where: { userId: dbUser.id, activityId: targetId }
+      })
+      if (!existing) {
+        await prisma.favorite.create({
+          data: { userId: dbUser.id, activityId: targetId }
+        })
+      }
+    } else if (type === 'place') {
+      const location = await prisma.location.findUnique({
+        where: { id: targetId },
+        select: { id: true },
+      })
+      if (!location) {
+        return NextResponse.json({ error: 'Lugar no encontrado' }, { status: 404 })
+      }
 
-    if (!activity) {
-      return NextResponse.json({ error: 'Actividad no encontrada' }, { status: 404 })
+      const existing = await prisma.favorite.findFirst({
+        where: { userId: dbUser.id, locationId: targetId }
+      })
+      if (!existing) {
+        await prisma.favorite.create({
+          data: { userId: dbUser.id, locationId: targetId }
+        })
+      }
+    } else {
+      return NextResponse.json({ error: 'Tipo inválido' }, { status: 400 })
     }
 
-    // Upsert: si ya existe, no lanza error
-    await prisma.favorite.upsert({
-      where: { userId_activityId: { userId: dbUser.id, activityId } },
-      create: { userId: dbUser.id, activityId },
-      update: {}, // nada que actualizar
-    })
+
 
     return NextResponse.json({ success: true }, { status: 201 })
   } catch {

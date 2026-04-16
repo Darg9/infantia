@@ -8,6 +8,7 @@ import { ScrapingLogger } from './logger';
 import { createLogger } from '../../lib/logger';
 import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
 import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './utils/date-preflight';
+import { savePreflightLog } from './utils/preflight-db';
 
 const log = createLogger('scraping:pipeline');
 
@@ -62,12 +63,17 @@ export class ScrapingPipeline {
 
     // ── Pre-filtro de fechas: evitar NLP en eventos claramente pasados ─────────
     const preflight = evaluatePreflight(htmlContent);
+
+    // Persistir resultado en date_preflight_logs (fire-and-forget)
+    void savePreflightLog({ sourceId: sourceHost ?? null, url, result: preflight });
+
     if (preflight.skip) {
       log.info('[DATE-PREFLIGHT] Evento descartado — NLP omitido', {
         url,
-        decision:    'skip',
-        reason:      preflight.reason,
-        dates_found: preflight.datesFound,
+        decision:     'skip',
+        reason:       preflight.reason,
+        dates_found:  preflight.datesFound,
+        matched_text: preflight.matchedText,
       });
       return {
         title:           'Sin título',
@@ -80,9 +86,10 @@ export class ScrapingPipeline {
     }
     log.info('[DATE-PREFLIGHT] Enviando a Gemini', {
       url,
-      decision:    'process',
-      reason:      preflight.reason,
-      dates_found: preflight.datesFound,
+      decision:     'process',
+      reason:       preflight.reason,
+      dates_found:  preflight.datesFound,
+      matched_text: preflight.matchedText,
     });
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);

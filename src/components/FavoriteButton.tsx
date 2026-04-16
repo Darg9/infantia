@@ -11,14 +11,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface FavoriteButtonProps {
-  activityId: string
+  targetId: string
+  targetType?: 'activity' | 'place'
   initialIsFavorited: boolean
   /** Tamaño visual del botón */
   size?: 'sm' | 'md'
 }
 
 export function FavoriteButton({
-  activityId,
+  targetId,
+  targetType = 'activity',
   initialIsFavorited,
   size = 'md',
 }: FavoriteButtonProps) {
@@ -44,20 +46,20 @@ export function FavoriteButton({
 
       if (wasLiked) {
         // Eliminar favorito
-        res = await fetch(`/api/favorites/${activityId}`, { method: 'DELETE' })
+        res = await fetch(`/api/favorites/${targetId}?type=${targetType}`, { method: 'DELETE' })
       } else {
         // Añadir favorito
         res = await fetch('/api/favorites', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ activityId }),
+          body: JSON.stringify({ targetId, type: targetType }),
         })
       }
 
       if (res.status === 401) {
         // No autenticado — revertir y redirigir a login
         setIsFavorited(wasLiked)
-        router.push('/login?next=' + encodeURIComponent(`/actividades/${activityId}`))
+        router.push('/login?next=' + encodeURIComponent(`/${targetType === 'activity' ? 'actividades' : 'lugares'}/${targetId}`))
         return
       }
 

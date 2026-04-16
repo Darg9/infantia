@@ -55,9 +55,10 @@ export type PreflightReason =
   ;
 
 export interface PreflightResult {
-  skip:       boolean;
-  reason:     PreflightReason;
-  datesFound: number;   // cuántas fechas se detectaron (0 = sin señal)
+  skip:        boolean;
+  reason:      PreflightReason;
+  datesFound:  number;        // cuántas fechas se detectaron (0 = sin señal)
+  matchedText: string | null; // primera cadena de fecha/señal detectada (para logs)
 }
 
 // =============================================================================
@@ -139,30 +140,31 @@ export function isPastEventContent(html: string, referenceDate = new Date()): bo
 
 function _evaluate(html: string, referenceDate: Date): PreflightResult {
   const staleCutoff = new Date(referenceDate.getTime() - STALE_THRESHOLD_DAYS * 86_400_000);
+  const matchedText = extractFirstRawDateText(html);
 
   // ── Capa 1: atributos datetime="" ─────────────────────────────────────────
   const datetimeDates = extractDatetimeAttributes(html);
   if (datetimeDates.length > 0) {
     if (datetimeDates.some((d) => d >= referenceDate)) {
-      return { skip: false, reason: 'process', datesFound: datetimeDates.length };
+      return { skip: false, reason: 'process', datesFound: datetimeDates.length, matchedText };
     }
     if (datetimeDates.every((d) => d < staleCutoff)) {
-      return { skip: true, reason: 'datetime_past', datesFound: datetimeDates.length };
+      return { skip: true, reason: 'datetime_past', datesFound: datetimeDates.length, matchedText };
     }
     // Dentro del buffer de 14d → conservador
-    return { skip: false, reason: 'process', datesFound: datetimeDates.length };
+    return { skip: false, reason: 'process', datesFound: datetimeDates.length, matchedText };
   }
 
   // ── Capa 2: fechas en texto plano ─────────────────────────────────────────
   const textDates = extractDatesFromText(html);
   if (textDates.length > 0) {
     if (textDates.some((d) => d >= referenceDate)) {
-      return { skip: false, reason: 'process', datesFound: textDates.length };
+      return { skip: false, reason: 'process', datesFound: textDates.length, matchedText };
     }
     if (textDates.every((d) => d < staleCutoff)) {
-      return { skip: true, reason: 'text_date_past', datesFound: textDates.length };
+      return { skip: true, reason: 'text_date_past', datesFound: textDates.length, matchedText };
     }
-    return { skip: false, reason: 'process', datesFound: textDates.length };
+    return { skip: false, reason: 'process', datesFound: textDates.length, matchedText };
   }
 
   // ── Capa 3: keywords y años pasados (sin fechas detectadas) ───────────────
@@ -175,7 +177,7 @@ function _evaluate(html: string, referenceDate: Date): PreflightResult {
     !lower.includes(String(currentYear + 1));
 
   if (onlyPastYears) {
-    return { skip: true, reason: 'past_year_only', datesFound: 0 };
+    return { skip: true, reason: 'past_year_only', datesFound: 0, matchedText };
   }
 
   const hasKeyword = PAST_EVENT_KEYWORDS.some((kw) => lower.includes(kw));
@@ -184,11 +186,11 @@ function _evaluate(html: string, referenceDate: Date): PreflightResult {
       !lower.includes(String(currentYear)) &&
       !lower.includes(String(currentYear + 1));
     if (noFutureSignal) {
-      return { skip: true, reason: 'keyword_past', datesFound: 0 };
+      return { skip: true, reason: 'keyword_past', datesFound: 0, matchedText };
     }
   }
 
-  return { skip: false, reason: 'process', datesFound: 0 };
+  return { skip: false, reason: 'process', datesFound: 0, matchedText: null };
 }
 
 // =============================================================================
@@ -249,6 +251,41 @@ export function extractDatesFromText(text: string): Date[] {
 // =============================================================================
 // Helpers internos
 // =============================================================================
+
+/**
+ * Extrae la primera cadena de texto que sirvió como señal de fecha/evento.
+ * Exportada para tests y para almacenar en date_preflight_logs.raw_date_text.
+ */
+export function extractFirstRawDateText(html: string): string | null {
+  // Capa 1 — atributo datetime
+  const m1 = /datetime="(\d{4}-\d{2}-\d{2})/.exec(html);
+  if (m1) return m1[1];
+
+  // Capa 2a — formato ES: "15 de abril de 2025"
+  const lower = html.toLowerCase();
+  const m2 = /\d{1,2}\s+de\s+(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\s+(?:de\s+)?\d{4}/.exec(lower);
+  if (m2) return m2[0];
+
+  // Capa 2b — formato ISO
+  const m3 = /\b(\d{4}-\d{2}-\d{2})\b/.exec(html);
+  if (m3) return m3[1];
+
+  // Capa 2c — formato DD/MM/YYYY
+  const m4 = /\b\d{1,2}\/\d{1,2}\/\d{4}\b/.exec(html);
+  if (m4) return m4[0];
+
+  // Capa 3a — año pasado
+  for (const yr of PAST_YEAR_SIGNALS) {
+    if (lower.includes(yr)) return yr;
+  }
+
+  // Capa 3b — keyword
+  for (const kw of PAST_EVENT_KEYWORDS) {
+    if (lower.includes(kw)) return kw;
+  }
+
+  return null;
+}
 
 function isValidYear(year: number): boolean {
   return year >= 2020 && year <= 2035;

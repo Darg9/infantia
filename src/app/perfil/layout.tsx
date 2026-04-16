@@ -17,7 +17,7 @@ export default async function PerfilLayout({ children }: { children: React.React
         userEmail={user.email ?? ''}
         avatarUrl={dbUser?.avatarUrl ?? null}
       />
-      <main className="flex-1 bg-gray-50">
+      <main className="flex-1 bg-[var(--hp-bg-page)] transition-colors">
         {children}
       </main>
     </div>

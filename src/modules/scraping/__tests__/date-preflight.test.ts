@@ -4,6 +4,7 @@ import {
   evaluatePreflight,
   extractDatesFromText,
   extractDatetimeAttributes,
+  extractFirstRawDateText,
   getPreflightStats,
   resetPreflightStats,
 } from '../utils/date-preflight';
@@ -256,6 +257,73 @@ describe('evaluatePreflight — resultado enriquecido', () => {
     expect(result.skip).toBe(false);
     expect(result.reason).toBe('process');
     expect(result.datesFound).toBe(0);
+  });
+});
+
+describe('extractFirstRawDateText', () => {
+  it('devuelve valor de atributo datetime (capa 1)', () => {
+    const html = '<time datetime="2026-06-20">20 de junio</time>';
+    expect(extractFirstRawDateText(html)).toBe('2026-06-20');
+  });
+
+  it('devuelve texto ES si no hay datetime (capa 2a)', () => {
+    const html = '<p>Evento el 15 de mayo de 2026 en Bogotá.</p>';
+    expect(extractFirstRawDateText(html)).toBe('15 de mayo de 2026');
+  });
+
+  it('devuelve ISO si no hay datetime ni texto ES (capa 2b)', () => {
+    expect(extractFirstRawDateText('startDate: 2026-06-20')).toBe('2026-06-20');
+  });
+
+  it('devuelve DD/MM/YYYY si es la única señal (capa 2c)', () => {
+    expect(extractFirstRawDateText('Fecha: 20/06/2026.')).toBe('20/06/2026');
+  });
+
+  it('devuelve año pasado cuando solo hay años pasados (capa 3a)', () => {
+    const result = extractFirstRawDateText('<p>Actividades de 2024.</p>');
+    expect(result).toBe('2024');
+  });
+
+  it('devuelve keyword cuando está presente (capa 3b)', () => {
+    const result = extractFirstRawDateText('<p>Este evento ha finalizado.</p>');
+    expect(result).toBe('finalizado');
+  });
+
+  it('retorna null cuando no hay ninguna señal', () => {
+    expect(extractFirstRawDateText('Taller de arte para niños.')).toBeNull();
+  });
+
+  it('datetime tiene precedencia sobre texto ES', () => {
+    const html = '<time datetime="2026-06-20">el 15 de mayo de 2026</time>';
+    expect(extractFirstRawDateText(html)).toBe('2026-06-20');
+  });
+});
+
+describe('evaluatePreflight — matchedText', () => {
+  it('incluye matchedText al descartar por datetime', () => {
+    const result = evaluatePreflight('<time datetime="2025-01-10">ene</time>', REF);
+    expect(result.matchedText).toBe('2025-01-10');
+  });
+
+  it('incluye matchedText al descartar por texto ES', () => {
+    const result = evaluatePreflight('<p>Evento el 1 de marzo de 2026.</p>', REF);
+    expect(result.matchedText).toBe('1 de marzo de 2026');
+  });
+
+  it('incluye matchedText al descartar por past_year_only', () => {
+    const result = evaluatePreflight('<p>Actividades de 2024.</p>', REF);
+    expect(result.matchedText).toBe('2024');
+  });
+
+  it('matchedText es null cuando no hay señal y se envía a Gemini', () => {
+    const result = evaluatePreflight('Taller de arte para niños.', REF);
+    expect(result.matchedText).toBeNull();
+  });
+
+  it('matchedText presente aunque evento sea futuro (proceso normal)', () => {
+    const result = evaluatePreflight('<time datetime="2026-06-20">jun</time>', REF);
+    expect(result.skip).toBe(false);
+    expect(result.matchedText).toBe('2026-06-20');
   });
 });
 

@@ -6,7 +6,7 @@ import { StarRating } from '@/components/StarRating'
 import { activityPath } from '@/lib/activity-url'
 
 export const metadata: Metadata = {
-  title: 'Mis calificaciones | HabitaPlan',
+  title: 'Calificaciones | HabitaPlan',
 }
 
 export default async function CalificacionesPage() {
@@ -27,7 +27,7 @@ export default async function CalificacionesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Mis calificaciones</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Calificaciones</h1>
         {ratings.length > 0 && (
           <span className="rounded-full bg-warning-100 px-2.5 py-0.5 text-xs font-semibold text-warning-700">
             {ratings.length}

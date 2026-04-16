@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import { requireAuth, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
+import { FavoriteButton } from '@/components/FavoriteButton';
 
 export const metadata: Metadata = {
   title: 'Favoritos | HabitaPlan',
@@ -20,7 +21,7 @@ export default async function FavoritosPage() {
 
   const favorites = await prisma.favorite.findMany({
     where: { userId: dbUser.id },
-    orderBy: [{ activity: { status: 'asc' } }, { createdAt: 'desc' }],
+    orderBy: { createdAt: 'desc' },
     include: {
       activity: {
         include: {
@@ -37,21 +38,31 @@ export default async function FavoritosPage() {
           },
         },
       },
+      location: {
+        include: {
+          city: { select: { name: true } }
+        }
+      }
     },
   });
 
-  const activities = favorites.map((f) => f.activity);
-  const activeCount = activities.filter((a) => a.status === 'ACTIVE').length;
-  const expiredCount = activities.filter((a) => a.status === 'EXPIRED').length;
+  const mixedFavorites = favorites.map((f) => {
+    if (f.activity) return { type: 'activity' as const, item: f.activity, favId: f.id };
+    if (f.location) return { type: 'place' as const, item: f.location, favId: f.id };
+    return null;
+  }).filter(Boolean);
+
+  const activeCount = mixedFavorites.filter((f) => f?.type === 'activity' && f.item.status === 'ACTIVE').length;
+  const expiredCount = mixedFavorites.filter((f) => f?.type === 'activity' && f.item.status === 'EXPIRED').length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
         <h1 className="text-2xl font-bold text-gray-900">Favoritos</h1>
-        {activities.length > 0 && (
+        {mixedFavorites.length > 0 && (
           <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
-            {activities.length}
+            {mixedFavorites.length}
           </span>
         )}
       </div>
@@ -66,7 +77,7 @@ export default async function FavoritosPage() {
       )}
 
       {/* Grid or empty state */}
-      {activities.length === 0 ? (
+      {mixedFavorites.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 gap-6 text-center px-4">
           <div className="space-y-1.5 max-w-[320px]">
             <p className="text-lg font-bold text-gray-900 dark:text-white leading-snug">
@@ -108,13 +119,47 @@ export default async function FavoritosPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {activities.map((activity) => (
-            <ActivityCard
-              key={activity.id}
-              activity={activity}
-              isFavorited={true}
-            />
-          ))}
+          {mixedFavorites.map((fav) => {
+            if (!fav) return null;
+            if (fav.type === 'activity') {
+              return (
+                <div key={fav.favId} className="relative group">
+                  <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-brand-600 text-white text-xs font-medium rounded-full shadow-sm border border-brand-500/50 pointer-events-none tracking-wide">
+                    Actividad
+                  </div>
+                  <ActivityCard activity={fav.item as any} isFavorited={true} />
+                </div>
+              );
+            } else {
+              // LocationCard minificada renderizada inline para evitar dependencias
+              const loc = fav.item;
+              return (
+                <div key={fav.favId} className="relative group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full min-h-[280px]">
+                  <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-emerald-600 text-white text-xs font-medium rounded-full shadow-sm border border-emerald-500/50 pointer-events-none tracking-wide">
+                    Lugar
+                  </div>
+                  <div className="h-24 bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center">
+                    <span className="text-4xl">🏛️</span>
+                  </div>
+                  <div className="flex flex-col p-4 flex-1">
+                    <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-snug">{loc.name}</h3>
+                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{loc.address}</p>
+                    <div className="flex items-center mt-auto pt-3 border-t border-gray-100 justify-between">
+                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                        <span>📍</span> {loc.neighborhood || loc.city?.name || 'Ciudad'}
+                      </span>
+                      <FavoriteButton
+                        targetId={loc.id}
+                        targetType="place"
+                        initialIsFavorited={true}
+                        size="sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+          })}
         </div>
       )}
     </div>

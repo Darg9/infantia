@@ -226,7 +226,8 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
                   </span>
                 )}
                 <FavoriteButton
-                  activityId={activity.id}
+                  targetId={activity.id}
+                  targetType="activity"
                   initialIsFavorited={isFavorited}
                   size="sm"
                 />
@@ -245,7 +246,8 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
                 <span />
               )}
               <FavoriteButton
-                activityId={activity.id}
+                targetId={activity.id}
+                targetType="activity"
                 initialIsFavorited={isFavorited}
                 size="sm"
               />

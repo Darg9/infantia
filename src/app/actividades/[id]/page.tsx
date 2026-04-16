@@ -603,7 +603,8 @@ export default async function ActividadDetallePage({
             <div className="flex gap-3">
               <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 flex-shrink-0">
                 <FavoriteButton
-                  activityId={id}
+                  targetId={id}
+                  targetType="activity"
                   initialIsFavorited={isFavorited}
                   size="md"
                 />

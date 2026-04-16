@@ -38,3 +38,21 @@ jobs:
           name: coverage-report
           path: coverage/
           retention-days: 7
+
+      - name: Validate Slack Webhook configured
+        if: always()
+        run: |
+          if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "⚠️  SLACK_WEBHOOK_URL no configurado — alertas silenciosas."
+          fi
+
+      - name: Notify Slack on failure
+        if: failure() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"🔴 *HabitaPlan Tests fallidos* (coverage o tests)\nBranch: ${{ github.ref_name }} | Commit: ${{ github.sha }}\nRun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }"

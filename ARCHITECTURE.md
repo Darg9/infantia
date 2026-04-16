@@ -132,6 +132,8 @@ habitaplan/
 │   │       │   └── send-welcome/   # Email de bienvenida post-registro
 │   │       ├── health/                    # Health check DB + Redis — GET (NUEVO v0.9.0)
 │   │       └── admin/                     # Protegidas por middleware.ts (ADMIN o CRON_SECRET)
+│   │           ├── cron/
+│   │           │   └── scrape/           # Scheduler automático de scraping (cron */6h) — CRON_SECRET
 │   │           ├── expire-activities/     # Marcar actividades vencidas (cron 5AM UTC)
 │   │           ├── send-notifications/    # Envío masivo de notificaciones (cron 9AM UTC)
 │   │           ├── sponsors/              # CRUD de sponsors newsletter
@@ -428,7 +430,7 @@ La búsqueda de actividades usa **PostgreSQL pg_trgm** (trigram similarity) para
 ### Implementación
 - **Extensión:** `pg_trgm` activa en Supabase
 - **Índices GIN:** en `activities.title` y `activities.description`
-- **Lógica:** `activities.service.ts` → `prisma.$queryRaw` con ILIKE + `similarity() > 0.2`
+- **Lógica:** `activities.service.ts` → `prisma.$queryRaw` con ILIKE + `similarity(title) > 0.25` / `word_similarity(title) > 0.30` / `similarity(description) > 0.15`; score ponderado `simTitle*0.7 + simDesc*0.3 + prefixBoost(0.10)`
 - **Flujo:** raw query obtiene IDs coincidentes → Prisma filtra por esos IDs con todos los demás filtros activos
 
 ### Ejemplo
@@ -546,6 +548,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `POST` | `/api/auth/send-welcome` | Pública | Email bienvenida post-registro |
+| `GET` | `/api/admin/cron/scrape` | CRON_SECRET | Scheduler: encola hasta 5 fuentes cada 6h (Vercel Cron) |
 | `POST` | `/api/admin/expire-activities` | CRON_SECRET | Expira actividades pasadas (5AM UTC) |
 | `POST` | `/api/admin/send-notifications` | CRON_SECRET | Digest email usuarios suscritos |
 | `GET` | `/api/admin/scraping/sources` | ADMIN | Lista fuentes de scraping |
@@ -701,7 +704,7 @@ La documentación técnica detallada está en `docs/modules/design-system.md`.
 
 Reglas fundamentales:
 1. **No colores nativos de Tailwind:** Prohibido `bg-orange-X`, `text-green-X`. Usar `brand`, `success`, `error`, `warning`.
-2. **Componentes Primitivos:** Importar desde `src/components/ui/` (`Button`, `Input`, `Card`, `useToast`, `Avatar`).
+2. **Componentes Primitivos:** Importar desde `src/components/ui/` (`Button`, `Input`, `Card`, `useToast`, `Avatar`, `Dropdown`, `Modal`).
 3. **Manejo de Estado:** Los primitivos manejan sus propios focus visibles (ACC: AA global con `ring-brand-500`), estados *disabled* y de *carga*.
 
 ## 14. Decisiones de Arquitectura

@@ -1,0 +1,91 @@
+name: Production Smoke
+
+on:
+  schedule:
+    # Cada 15 minutos — GitHub Actions resuelve a ~15min en práctica
+    - cron: '*/15 * * * *'
+  # Permite ejecutar manualmente desde la UI de Actions
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    name: Health check — habitaplan-prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Hit /api/health (con retry anti-jitter)
+        id: health
+        run: |
+          URL="https://habitaplan-prod.vercel.app/api/health"
+          ATTEMPTS=3
+          FAIL_COUNT=0
+          LAST_CODE=""
+          LAST_TIME=""
+          LAST_STATUS=""
+
+          for i in $(seq 1 $ATTEMPTS); do
+            echo "--- Intento $i/$ATTEMPTS ---"
+            RAW=$(curl -s -o /tmp/health.json \
+              -w "%{http_code} %{time_total}" \
+              --max-time 10 "$URL")
+
+            CODE=$(echo $RAW | awk '{print $1}')
+            TIME=$(echo $RAW | awk '{print $2}')
+            cat /tmp/health.json
+            echo ""
+
+            STATUS=$(python3 -c "import json; print(json.load(open('/tmp/health.json')).get('status','unknown'))" 2>/dev/null || echo "unknown")
+            OPERATIONAL=$(python3 -c "import json; d=json.load(open('/tmp/health.json')); print(d.get('business_signal',{}).get('operational','unknown'))" 2>/dev/null || echo "unknown")
+            STALE=$(python3 -c "import json; d=json.load(open('/tmp/health.json')); print(d.get('business_signal',{}).get('stale','unknown'))" 2>/dev/null || echo "unknown")
+            SLOW=$(python3 -c "print('yes' if float('$TIME') > 2.0 else 'no')" 2>/dev/null || echo "no")
+
+            LAST_CODE="$CODE"
+            LAST_TIME="$TIME"
+            LAST_STATUS="$STATUS"
+
+            OK=true
+            [ "$CODE" != "200" ]            && OK=false && echo "❌ HTTP $CODE"
+            [ "$STATUS" = "down" ]          && OK=false && echo "❌ status=down"
+            [ "$OPERATIONAL" = "False" ]    && OK=false && echo "❌ Sin actividades futuras (operational=false)"
+            [ "$SLOW" = "yes" ]             && OK=false && echo "⚠️ Latencia ${TIME}s > 2.0s"
+            # stale=True → aviso pero no falla el check (puede ser cuota Gemini)
+            [ "$STALE" = "True" ]           && echo "⚠️ Ingesta congelada > 48h (stale=true)"
+
+            if $OK; then
+              echo "✅ Intento $i OK — status=$STATUS, HTTP $CODE, ${TIME}s"
+              break
+            fi
+
+            FAIL_COUNT=$((FAIL_COUNT + 1))
+            [ $i -lt $ATTEMPTS ] && echo "Reintentando en 5s..." && sleep 5
+          done
+
+          echo "http_code=$LAST_CODE"   >> $GITHUB_OUTPUT
+          echo "time_total=$LAST_TIME"  >> $GITHUB_OUTPUT
+          echo "status=$LAST_STATUS"    >> $GITHUB_OUTPUT
+          echo "fail_count=$FAIL_COUNT" >> $GITHUB_OUTPUT
+
+          # Fallo real solo si los 3 intentos fallaron
+          if [ "$FAIL_COUNT" = "$ATTEMPTS" ]; then
+            echo "❌ $ATTEMPTS/$ATTEMPTS intentos fallaron — fallo real confirmado."
+            exit 1
+          fi
+
+      - name: Validate Slack Webhook configured
+        if: always()
+        run: |
+          if [ -z "${{ secrets.SLACK_WEBHOOK_URL }}" ]; then
+            echo "⚠️  SLACK_WEBHOOK_URL no configurado — alertas silenciosas. Agregar en Settings → Secrets → Actions."
+          fi
+
+      - name: Notify Slack on failure
+        if: failure() && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -s -X POST "$SLACK_WEBHOOK_URL" \
+            -H 'Content-type: application/json' \
+            --data "{
+              \"text\": \"🚨 *HabitaPlan Producción — Health check fallido (3/3 intentos)*\nHTTP: ${{ steps.health.outputs.http_code }} | Status: ${{ steps.health.outputs.status }} | Latencia: ${{ steps.health.outputs.time_total }}s\nRun: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}\"
+            }"

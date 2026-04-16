@@ -7,6 +7,7 @@ import { ScrapingStorage } from './storage';
 import { ScrapingLogger } from './logger';
 import { createLogger } from '../../lib/logger';
 import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
+import { isPastEventContent } from './utils/date-preflight';
 
 const log = createLogger('scraping:pipeline');
 
@@ -58,6 +59,19 @@ export class ScrapingPipeline {
 
     const textLength = htmlContent.length;
     log.info(`2. Extracción exitosa. Longitud de texto crudo: ${textLength} caracteres`);
+
+    // ── Pre-filtro de fechas: evitar NLP en eventos claramente pasados ─────────
+    if (isPastEventContent(htmlContent)) {
+      log.info(`[DATE-PREFLIGHT] Evento claramente pasado — NLP omitido (cuota conservada).`);
+      return {
+        title:          'Sin título',
+        description:    '',
+        categories:     ['General'],
+        currency:       'COP',
+        audience:       'ALL',
+        confidenceScore: 0,
+      } as ActivityNLPResult;
+    }
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
     const finalData = await this.analyzer.analyze(htmlContent, url);

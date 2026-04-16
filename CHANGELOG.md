@@ -9,6 +9,79 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S48] — 2026-04-15 (Observabilidad Confiable v2 · by_city · Date Preflight · Smoke CI)
+
+### Features
+
+#### Observabilidad Confiable v2 — módulo cerrado sin reservas
+- `src/app/api/health/route.ts` **[REWRITTEN]**: health check con timeouts explícitos (`DB_TIMEOUT_MS=2000`, `REDIS_TIMEOUT_MS=2000`), checks en paralelo (`Promise.all`), `latency_ms` global y por servicio. Semántica precisa: `ok | degraded | down`; DB timeout → `degraded`; DB error → `down` + 503.
+- Business signal: `key: 'activities'`, `count` (futuras), `operational` (count > 0), `stale` (sin ingesta en 48h). Regla de fallo: solo `global.operational = false` → alerta crítica.
+- **Segmentación geográfica `by_city`**: `$queryRaw` JOIN `activities → locations → cities`, filtrando `start_date >= now`, agrupado por ciudad. Slug derivado con `normalize('NFD')` + strip diacríticos ("Bogotá" → `"bogota"`). `by_city[x].operational = false` → solo observación, no falla pipeline.
+- `.github/workflows/production-smoke.yml` **[NEW]**: cron `*/15 * * * *` + `workflow_dispatch`. Retry anti-jitter: 3 intentos con 5s backoff, falla solo si 3/3 fallan. Checks: HTTP ≠ 200, `status=down`, `operational=false`, `latency > 2.0s`. `stale=True` → aviso, no falla (cuota Gemini).
+- `.github/workflows/ci.yml` + `tests.yml`: Slack alert step añadido (`if: failure() && SLACK_WEBHOOK_URL`).
+
+#### Date Preflight Filter — conserva cuota Gemini
+- `src/modules/scraping/utils/date-preflight.ts` **[NEW]**: `isPastEventContent(text, ref)` — devuelve `true` solo si TODAS las fechas detectadas son > 14 días en el pasado. Formatos: ES ("15 de abril de 2026"), ISO (2026-04-15), DD/MM/YYYY. Conservador: `false` si no hay fechas o hay cualquier fecha futura.
+- `src/modules/scraping/__tests__/date-preflight.test.ts` **[NEW]**: 17 tests con fecha fija `REF=2026-04-15`.
+- `src/modules/scraping/pipeline.ts`: integración pre-NLP — si `isPastEventContent()` → omite llamada Gemini, retorna resultado neutro, preserva quota.
+
+#### Monitoring SQL — ampliado
+- `scripts/monitor-production.sql`: Query 5 añadida (low-yield sources: `AVG(items_new) < 1 AND runs ≥ 3`). Queries 2+5: `HAVING COUNT(*) >= 3` (anti-jitter). Query 3: CTE `zero_pct` (evita subquery en HAVING). `COALESCE(AVG(...), 0)` contra NULL.
+
+### Estado de tests
+- **1056 tests** en 69 archivos — 0 fallos — 2 skipped ✅
+- TypeScript: 0 errores ✅
+
+---
+
+## [v0.11.0-S47] — 2026-04-14 (Sources CRUD · DS Admin Migration · Modal DS · pg_trgm · Scheduler Cron)
+**Documento Fundacional: V25** | Rama: master
+
+### Features
+
+#### Sources CRUD — UI de gestión de fuentes de scraping
+- `src/app/admin/sources/components/SourcesManager.tsx` **[NEW]**: componente cliente completo con alta, edición, eliminación y toggle de `ScrapingSource`.
+- `src/app/admin/sources/page.tsx`: server component que carga `City[]` + `Vertical[]` y los pasa a `SourcesManager`; mantiene `SourceStatsTable`.
+- `src/app/api/admin/sources/route.ts`: fix Prisma `city: { connect: { id } }` (no FK directo); `z.record(z.string(), z.unknown())` (Zod 2-args); `config as Prisma.InputJsonValue`.
+- Toast DS en todas las acciones (`toast.success()` / `toast.error()`), `variant="destructive"` en botón de eliminar.
+
+#### Design System — migración de /admin completa
+- Todos los colores `indigo-*` → `brand-*`, `emerald-*` → `success-*`, `blue-*` → `brand-*`/`warning-*` en:
+  - `sponsors/page.tsx`, `actividades/page.tsx`, `claims/page.tsx`, `analytics/page.tsx`
+  - `metricas/page.tsx`, `quality/client.tsx`, `scraping/logs/page.tsx`, `scraping/sources/page.tsx`
+  - `sources/components/SourceStatsTable.tsx`
+
+#### Modal — nuevo componente primitivo DS
+- `src/components/ui/modal.tsx` **[NEW]**: `Modal` + `Modal.Body` + `Modal.Footer` con focus-trap, scroll-lock, Escape key, `createPortal` al `document.body`.
+- `src/components/ui/index.ts`: exportaciones añadidas — `buttonVariants`, `Dropdown`, `Modal`, `ModalProps` (fix de errores TS pre-existentes).
+
+#### pg_trgm Search Engine v1 — umbrales y pesos calibrados
+- `scripts/migrate-trgm.ts` **[NEW]**: migración idempotente — `CREATE EXTENSION IF NOT EXISTS pg_trgm` + 3 índices GIN CONCURRENTLY en `activities.title`, `activities.description`, `activities.tags`. Ejecutado en Supabase producción.
+- `src/modules/activities/activities.service.ts`: umbrales finales `similarity(title) > 0.25` / `word_similarity(title) > 0.30` / `similarity(desc) > 0.15`; score ponderado `simTitle*0.7 + simDesc*0.3 + prefixBoost(0.10)`.
+- `src/app/api/activities/suggestions/route.ts`: reescrito con `$queryRaw` pg_trgm — forma `{ id, title, cat_name, score }`.
+- `src/app/api/activities/suggestions/__tests__/suggestions.test.ts`: mock actualizado de `findMany` → `$queryRaw`; fixtures alineados a nueva forma.
+
+#### Scheduler Autónomo — Vercel Cron → BullMQ
+- `src/app/api/admin/cron/scrape/route.ts` **[NEW]**: endpoint `GET` con auth `CRON_SECRET`. Selecciona hasta 5 fuentes activas (`lastRunAt` más antiguo), ejecuta `updateMany lastRunAt` **antes** de encolar (prevención de race condition), llama `Promise.allSettled` para resiliencia, devuelve `{ enqueued, failed, total }`.
+- `src/modules/scraping/queue/producer.ts`: nuevo `enqueueSourceJob(SourceJobInput)` — despacha job `instagram` o `batch` con `jobId: sourceId` (idempotencia BullMQ).
+- `vercel.json`: cron `0 */6 * * *` para `/api/admin/cron/scrape`.
+- `src/middleware.ts`: `/api/admin/cron/scrape` añadido a `CRON_PATHS`.
+
+#### Monitoring SQL
+- `scripts/monitor-production.sql` **[NEW]**: 4 queries para snapshot día 1 / día 3 — starvation detection (ROW_NUMBER CTE), fail_rate por fuente, zero-results rate, CTR ratio. Tabla de decisión con umbrales OK/Revisar.
+
+### Correcciones de documentación
+- `ARCHITECTURE.md`: umbrales pg_trgm actualizados (`0.2` → valores reales 0.25/0.30/0.15 + weights); `/api/admin/cron/scrape` añadido al árbol y tabla de rutas; `Modal` y `Dropdown` añadidos a primitivos DS.
+- `docs/modules/product.md`: descripción Search Engine V1 actualizada con umbrales reales.
+
+### Estado de tests
+- **1039 tests** en 68 archivos — 0 fallos — 2 skipped ✅
+- TypeScript: 0 errores ✅
+- Build: compilación exitosa (29.1s) ✅
+- ESLint: 0 errores nuevos (27 pre-existentes en archivos legacy — DEBT-05) ✅
+
+---
+
 ## [v0.11.0-S45] — 2026-04-14 (ESLint Freeze + Legal SSOT + Docs Exhaustivo + QA Cierre)
 **Documento Fundacional: V25** | Rama: master | Commits: `a7c8963`, `ba7fb32`, `4e16f7b`, `2506999`, `48721d7`, `0947b8b`, `86628fe`
 

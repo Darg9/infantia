@@ -27,7 +27,7 @@ SELECT * FROM ranked WHERE pos <= 3;
 
 
 -- ── 2. EFICACIA DEL SCRAPING — por fuente (últimas 72h) ──────────────────────
--- fail_rate > 0.50 → pausar fuente o bajar prioridad
+-- fail_rate > 0.50 con ≥ 3 runs → pausar fuente o bajar prioridad
 -- avg_new < 1 en TODAS las fuentes → problema upstream (Gemini quota o fuentes muertas)
 
 SELECT
@@ -35,11 +35,12 @@ SELECT
   COUNT(*) FILTER (WHERE sl.status = 'FAILED') * 1.0 / COUNT(*) AS fail_rate,
   COUNT(*)                                                        AS runs,
   SUM(sl.items_new)                                               AS total_new,
-  ROUND(AVG(sl.items_new), 1)                                     AS avg_new
+  ROUND(COALESCE(AVG(sl.items_new), 0), 1)                        AS avg_new
 FROM scraping_logs sl
 JOIN scraping_sources ss ON ss.id = sl.source_id
 WHERE sl.started_at > NOW() - INTERVAL '72 hours'
 GROUP BY sl.source_id, ss.name
+HAVING COUNT(*) >= 3
 ORDER BY total_new DESC;
 
 
@@ -58,16 +59,20 @@ ORDER BY veces DESC
 LIMIT 20;
 
 -- Tasa global de 0 resultados vs total de búsquedas
+WITH t AS (
+  SELECT
+    COUNT(*) FILTER (WHERE metadata->>'results' = '0') AS zeros,
+    COUNT(*)                                            AS total
+  FROM events
+  WHERE type = 'search_applied'
+    AND created_at > NOW() - INTERVAL '72 hours'
+    AND LENGTH(query) >= 3
+)
 SELECT
-  COUNT(*) FILTER (WHERE metadata->>'results' = '0' AND LENGTH(query) >= 3) AS zero_results,
-  COUNT(*) FILTER (WHERE LENGTH(query) >= 3)                                  AS total_searches,
-  ROUND(
-    COUNT(*) FILTER (WHERE metadata->>'results' = '0' AND LENGTH(query) >= 3) * 100.0
-    / NULLIF(COUNT(*) FILTER (WHERE LENGTH(query) >= 3), 0),
-  1) AS zero_pct
-FROM events
-WHERE type = 'search_applied'
-  AND created_at > NOW() - INTERVAL '72 hours';
+  zeros                                            AS zero_results,
+  total                                            AS total_searches,
+  ROUND(zeros::numeric / NULLIF(total, 0) * 100, 1) AS zero_pct
+FROM t;
 
 
 -- ── 4. CTR — señal de engagement ─────────────────────────────────────────────
@@ -92,6 +97,29 @@ SELECT
 FROM agg;
 
 
+-- ── 5. LOW-YIELD SOURCES — candidatas a pausa ────────────────────────────────
+-- Condición: avg_new < 1 con ≥ 3 runs → fuente sin retorno real de cuota Gemini.
+-- No pausar en día 1. Confirmar en día 3 antes de actuar.
+
+SELECT
+  ss.name,
+  ss.platform,
+  COUNT(*)                                                        AS runs,
+  SUM(sl.items_new)                                               AS total_new,
+  ROUND(COALESCE(AVG(sl.items_new), 0), 2)                        AS avg_new,
+  COUNT(*) FILTER (WHERE sl.status = 'FAILED') * 1.0 / COUNT(*) AS fail_rate
+FROM scraping_logs sl
+JOIN scraping_sources ss ON ss.id = sl.source_id
+WHERE sl.started_at > NOW() - INTERVAL '72 hours'
+  AND ss.is_active = true
+GROUP BY sl.source_id, ss.name, ss.platform
+HAVING COUNT(*) >= 3 AND AVG(sl.items_new) < 1
+ORDER BY avg_new ASC, fail_rate DESC;
+
+-- Si aparece una fuente aquí en día 1 Y día 3 → candidata a pausa.
+-- Acción: toggle is_active = false en /admin/sources (no borrar — puede reactivarse).
+
+
 -- ── TABLA DE DECISIÓN ─────────────────────────────────────────────────────────
 --
 -- Señal                  | OK       | Revisar
@@ -101,13 +129,20 @@ FROM agg;
 -- Fail rate por source   | < 30%    | > 50%
 -- Queries 0 resultados   | < 20%    | > 40%
 -- CTR (outbound/view)    | > 0.05   | < 0.01
+-- Low-yield (avg_new<1)  | 0 fuente | ≥ 1 sostenida día 1+3
 --
 -- Decisiones:
 --   starvation confirmado  → round-robin (cursor persistente, no random)
 --   fail_rate alto         → pausar fuente o bajar prioridad en SourceHealth
 --   avg_new bajo global    → revisar Gemini quota o fuentes muertas
+--   low-yield sostenida    → toggle is_active=false en /admin/sources
 --   muchos 0 resultados    → similarity threshold: 0.25 → 0.20
 --   CTR bajo con views     → problema UX, no de ranking
 --
 -- Metodología: día 1 = baseline (ruido esperado, no sobre-reaccionar)
 --              día 3 = tendencia clara → tomar decisiones
+--
+-- Guardrails operativos:
+--   1. No pausar en primer match — confirmar en día 1 Y día 3
+--   2. Aplicar cambios uno a uno — pausar 1-2 fuentes, esperar 24-48h, luego siguiente
+--   3. Registrar decisiones — comentario en scraping_sources.notes o log de admin

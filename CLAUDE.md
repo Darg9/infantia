@@ -187,8 +187,8 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Email auth (SPF+DKIM+DMARC):** `v=spf1 include:zoho.com include:resend.com -all` — Zoho=usuario, Resend=transaccional. DKIM firmado vía subdominio técnico `send.habitaplan.com` (rebotes + aislamiento de reputación). DMARC `p=reject` activo. FROM unificado: `notificaciones@habitaplan.com`. Validado Gmail PASS. Cualquier nuevo proveedor de correo debe añadirse al SPF antes de enviar.
 - **Privacy SSOT (S45):** `privacy.ts` cubre explícitamente datos de interacción + IP/UA + propósito + "no para identificación personal directa" — cubre el CTR Feedback Loop bajo Ley 1581.
 - **Logger:** `createLogger(ctx)` en `src/lib/logger.ts`. NO usar console.* en producción. `log.error(msg, { error })` — nunca `log.error(msg, errorObject)` directo (serializa como array de chars).
-- **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.
-- **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear.
+- **Middleware global:** `src/middleware.ts` protege automáticamente toda ruta `/api/admin/*`. Rutas cron (`cron/scrape`, `expire-activities`, `send-notifications`) usan CRON_SECRET y están en la lista de excepciones.
+- **Health check:** `GET /api/health` con `export const dynamic = 'force-dynamic'` — nunca cachear. Timeouts explícitos DB/Redis (2000ms). Semántica: `ok | degraded | down`. Business signal incluye `by_city` (JOIN SQL Activity → Location → City, slug normalizado sin tildes).
 - **Sentry:** condicional via `SENTRY_DSN`. `withSentryConfig` en `next.config.ts` solo si está definida. Sin la var = zero overhead. `instrumentation-client.ts` inicializa Sentry en browser (S28).
 - **ingest-sources.ts:** usar `--channel=banrep` o `--source=banrep` para ahorrar cuota Gemini. Banrep está primero en orden de ejecución. Pre-filtro de Gemini ya excluye .jpg/.png/.pdf/etc.
 - **CHUNK_SIZE = 100** en `gemini.analyzer.ts` (era 200 en S31, reducido en S35 por resiliencia ante cuota parcial). Banrep Bogotá: 1.083 URLs → ~11 lotes. No cambiar sin medir impacto.
@@ -196,15 +196,15 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Buscador mixto (S40):** `GET /api/activities/suggestions?q=` devuelve `SuggestionItem[]` max 5 (3 acts + 1 cat + 1 ciudad). Min 3 chars. Cache en memoria LRU (20 entries) en HeroSearch y Filters. AbortController cancela fetch previo. Historial en sessionStorage (`hp_recent_searches`, max 5). Pre-selección automática del primer ítem.
 - **Facets count (S40):** `getFacets()` en `page.tsx` usa `_count: { select: { activities: { where: { activity: buildWhere(filters, 'categoryId') } } } }` — el conteo refleja los filtros activos, no el total global.
 - **Telegram MTProto:** `telegram.extractor.ts` (gramjs) + `scripts/ingest-telegram.ts`. Requiere `TELEGRAM_API_ID`, `TELEGRAM_API_HASH`, `TELEGRAM_SESSION`. Pendiente auth por bloqueo ISP Colombia.
-- **Health check fix (S28):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'.
+- **Health check (S28+S48):** `/api/health` devuelve 200 cuando Redis falla pero DB está OK. Solo DB down → 503. Redis degradado → 200 con status 'degraded'. `by_city` vía `$queryRaw` JOIN — slug normalizado NFD. GitHub Actions smoke `*/15 * * * *` con retry 3/3 + Slack.
 - **Testing Edge Cases (S42):** Cuando utilices `countCache` en Node.js o el `lastEventMap` en `track.ts`, los tests concurrentes de Vitest retendrán la memoria Map(). Asegurar `mockCount.clear()` o exponer un método `clearCountCacheForTests` para tests de unidad.
 - **Resilient Pipeline (S42):** Si fallan métodos del Pipeline por undefined de dependencias (ej. `this.playwrightExtractor`), revisar si tus proxies mockeados pasaron bien por `fetchWithFallback`. Siempre usar `vi.hoisted` antes del wrap.
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.9.3 — Actualizado Hoy)
+## Estado actual (v0.11.0 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **916 tests** en 60 archivos — `npm test` pasa en ~12s — 0 errores TypeScript
+- **1056 tests** en 69 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://habitaplan-prod.vercel.app
@@ -217,6 +217,8 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅
 - **Sentry activo** en producción (SENTRY_DSN + NEXT_PUBLIC_SENTRY_DSN configurados en Vercel)
 - **UptimeRobot** monitoreando `/api/health`
+- **GitHub Actions smoke** `*/15 * * * *` — retry 3/3 + backoff 5s + Slack alert — `.github/workflows/production-smoke.yml`
+- **Date preflight filter** activo en pipeline.ts — `isPastEventContent()` omite Gemini para eventos pasados (conserva 20 RPD)
 - **URL classifier** activo en gemini.analyzer.ts — pre-filtra ~40% URLs antes de Gemini
 - **Auto-pause dashboard** en `/admin/sources` — score monitoring + toggle por fuente
 - **Adaptive Quality Filter** activo en storage.ts — `minDescriptionLength` dinámico por métricas + SourceHealth

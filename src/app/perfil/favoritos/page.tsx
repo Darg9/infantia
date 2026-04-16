@@ -77,12 +77,17 @@ export default async function FavoritosPage() {
             </p>
           </div>
 
-          <div
-            aria-hidden="true"
-            className="w-full max-w-[260px] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none"
-          >
-            <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 relative">
-              <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm rounded-full p-2 cursor-pointer hover:scale-110 transition-transform">
+          <div className="w-full max-w-[260px] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none">
+            <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 relative" aria-hidden="true">
+              <div 
+                role="button"
+                tabIndex={0}
+                aria-label="Guardar"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') e.preventDefault()
+                }}
+                className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm rounded-full p-2 cursor-pointer hover:scale-110 transition-transform duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2"
+              >
                 <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 fill-current transition-colors" viewBox="0 0 24 24">
                   <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
@@ -96,7 +101,7 @@ export default async function FavoritosPage() {
 
           <a
             href="/actividades"
-            className="mt-2 inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 active:bg-brand-700 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 w-full sm:w-auto"
+            className="mt-2 inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 active:bg-brand-700 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 w-full sm:w-auto"
           >
             Ver actividades
           </a>

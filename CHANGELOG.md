@@ -9,6 +9,37 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S52] — 2026-04-16 (Parser Resiliente — fallback Cheerio cuando Gemini no disponible)
+
+### Features
+
+#### Módulo `src/modules/scraping/parser/` (nuevo)
+- **`parser.types.ts`**: `ParseResult { result: ActivityNLPResult, source: 'gemini' | 'fallback' }`, `isRetryableError()` (429/503/quota/timeout), `ParserMetrics` con contadores de sesión (`geminiOk`, `fallbackUsed`, `geminiErrors`, `discoverOk`, `discoverFallback`), `getParserMetrics()`, `resetParserMetrics()`.
+- **`fallback-mapper.ts`**: `fallbackFromCheerio(raw: ScrapedRawData)` — mapeo explícito Cheerio→ActivityNLPResult: título desde og:title/<title>/h1, descripción primeros 300 chars de texto limpio, categorías por keywords (10 categorías), schedules vía `extractDatesFromText`, confidence 0.4, ogImage conservada.
+- **`parser.ts`**: Orchestrator. `parseActivity(html, url, raw, analyzer)` — Fase 3 con fallback; `discoverWithFallback(links, sourceUrl, analyzer)` — Fase 2 conservadora (pasa todos los URLs si retryable). Re-exports públicos de helpers.
+
+#### `pipeline.ts` — integración quirúrgica
+- Fase 2: `discoverActivityLinks` → `discoverWithFallback` (cero pérdida de actividades ante 429/503).
+- Fase 3: `analyzer.analyze()` → `parseActivity()` (fallback Cheerio ante 429/503, propaga si no retryable).
+- `rawForFallback.sourceText` usa `CheerioExtractor.textFromHtml()` — texto limpio sin tags HTML.
+- `[PARSER:SUMMARY]` al final de cada batch: `gemini_ok`, `fallback_analyze_count`, `fallback_discover_count`, `fallback_rate`.
+- `resetParserMetrics()` al inicio de cada batch (aislamiento por fuente).
+
+#### `CheerioExtractor.textFromHtml(html)` — helper estático nuevo
+- Extrae texto limpio sin HTTP, reutilizando la misma lógica que `extract()`.
+- Sin duplicación de código, sin costo adicional.
+
+### Tests
+- **1123 tests** — 71 archivos — 0 fallos ✅ (+18 vs S51)
+- `parser.test.ts` (nuevo, 18 tests): 4 escenarios Gemini OK, 429 Fase 2, 429 Fase 3, error no-retryable + cobertura de fallback-mapper (título, categorías, ogImage, schedules).
+- `pipeline.test.ts`: mock de `CheerioExtractor` actualizado con método estático `textFromHtml`.
+
+### Pendiente operativo
+- Ejecutar en BD: `npx tsx scripts/migrate-favorites-xor.ts` + `npx tsx scripts/migrate-date-preflight-logs.ts`
+- Run real post-cuota (19:00 COL): `npx tsx scripts/ingest-sources.ts --source=biblored --save-db` y validar `[PARSER:SUMMARY]` + `[DATE-PREFLIGHT:SUMMARY]`.
+
+---
+
 ## [v0.11.0-S51] — 2026-04-16 (Favorites XOR integrity — CHECK constraint + tests)
 
 ### Fixes

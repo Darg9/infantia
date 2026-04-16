@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-16 | Version: v0.11.0-S51
+Actualizado: 2026-04-16 | Version: v0.11.0-S52
 
-## Resumen Actual (v0.11.0-S51 / Favorites XOR + Date Preflight métricas DB)
-- **Archivos de Test:** 70 (sin cambio — tests añadidos a suite existente)
-- **Tests Totales:** 1105 (+4 vs S50: XOR type inválido POST + DELETE)
+## Resumen Actual (v0.11.0-S52 / Parser Resiliente — fallback Cheerio)
+- **Archivos de Test:** 71 (+1: parser.test.ts)
+- **Tests Totales:** 1123 (+18 vs S51: 18 tests parser — 4 escenarios Gemini/fallback/error/discover)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)

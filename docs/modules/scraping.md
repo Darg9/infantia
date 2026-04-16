@@ -1,27 +1,33 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S50
+**Versión actual:** v0.11.0-S52
 **Última actualización:** 16 de abril de 2026
 
 ## ¿Qué hace?
 
-Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal).
+Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal). Incluye parser resiliente con fallback a Cheerio cuando Gemini no está disponible (429/503).
 
 ## Flujos disponibles
 
-### Web scraping (Resilient Proxy)
+### Web scraping (Resilient Proxy + Parser Resiliente)
 
 ```
 URL semilla / sitemap XML
    → ScrapingPipeline / Resilient Proxy (Intenta Cheerio primero)
    → [Falló Cheerio por JS Dinámico/SPA?] → Auto-Fallback a Playwright
+   → Date Preflight: eventos claramente pasados → skip NLP (conserva cuota Gemini)
    → Filtrado por cache (URLs ya vistas)
-   → GeminiAnalyzer analiza en batches de 100
+   → Fase 2: discoverWithFallback() — Gemini filtra URLs de actividades
+       [Si 429/503] → pasa TODOS los URLs (cero pérdida de actividades)
+   → Fase 3: parseActivity() — Gemini analiza con GeminiAnalyzer
+       [Si 429/503] → fallbackFromCheerio() (confidence 0.4, sin NLP)
+       [Si error no-retryable] → propaga, actividad se descarta
    → Normalización Base (Spam/Reglas Cortas/Validation) Vía Data Pipeline Core v1
    → Validación Zod (activityNLPResultSchema) Enriquecido con `Environment` (INDOOR/OUTDOOR/MIXED)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
    → Cache actualizado
+   → [PARSER:SUMMARY] + [DATE-PREFLIGHT:SUMMARY] al final del batch
 ```
 
 ### Instagram scraping (Playwright)

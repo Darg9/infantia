@@ -202,9 +202,9 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.11.0-S50 — Actualizado Hoy)
+## Estado actual (v0.11.0-S52 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1105 tests** en 70 archivos — `npm test` pasa — 0 errores TypeScript
+- **1123 tests** en 71 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -230,6 +230,7 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK) y renderer híbrido (`v0.11.0-S49`).
 - **Date Preflight métricas DB:** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget, `matchedText`, vocabulario de reason 5 valores). Migración pendiente: `npx tsx scripts/migrate-date-preflight-logs.ts` (`v0.11.0-S50`).
 - **Favorites XOR CHECK constraint:** `favorites_xor_check` garantiza exactamente uno de `activityId`/`locationId` a nivel BD. Script: `npx tsx scripts/migrate-favorites-xor.ts`. Tests de tipo inválido añadidos (`v0.11.0-S51`).
+- **Parser Resiliente (S52):** `src/modules/scraping/parser/` — `parseActivity()` (Fase 3) + `discoverWithFallback()` (Fase 2). Si Gemini lanza 429/503: Fase 2 pasa todos los URLs (cero pérdida), Fase 3 usa fallbackFromCheerio (confidence 0.4). Errores no-retryable propagan. `[PARSER:SUMMARY]` al final de cada batch. `CheerioExtractor.textFromHtml()` helper estático para texto limpio sin fetch.
 
 ### Known Technical Debt
 

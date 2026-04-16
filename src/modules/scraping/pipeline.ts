@@ -1,4 +1,4 @@
-import { ActivityNLPResult, BatchPipelineResult, InstagramPipelineResult } from './types';
+import { ActivityNLPResult, BatchPipelineResult, InstagramPipelineResult, ScrapedRawData } from './types';
 import { CheerioExtractor } from './extractors/cheerio.extractor';
 import { PlaywrightExtractor, InstagramExtractOptions } from './extractors/playwright.extractor';
 import { GeminiAnalyzer } from './nlp/gemini.analyzer';
@@ -9,6 +9,7 @@ import { createLogger } from '../../lib/logger';
 import { fetchWithFallback, updateSourceHealth, shouldSkipSource } from './resilience';
 import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './utils/date-preflight';
 import { savePreflightLog } from './utils/preflight-db';
+import { parseActivity, discoverWithFallback } from './parser/parser';
 
 const log = createLogger('scraping:pipeline');
 
@@ -93,12 +94,24 @@ export class ScrapingPipeline {
     });
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
-    const finalData = await this.analyzer.analyze(htmlContent, url);
 
-    log.info(`4. Análisis IA completado con confianza: ${finalData.confidenceScore}`);
+    // Construimos ScrapedRawData mínimo para que el fallback mapper tenga contexto
+    const rawForFallback: ScrapedRawData = {
+      url,
+      html:        htmlContent,
+      sourceText:  htmlContent,
+      extractedAt: new Date(),
+      status:      'SUCCESS',
+    };
 
-    // og:image no extraída en resilience proxy (para simplificar scope), NLP fallback handlea nullish.
-    return finalData;
+    const parsed = await parseActivity(htmlContent, url, rawForFallback, this.analyzer);
+
+    if (parsed.source === 'fallback') {
+      log.warn(`[PARSER] Actividad extraída con fallback Cheerio (Gemini no disponible): ${url}`);
+    }
+    log.info(`4. Análisis completado (source=${parsed.source}) con confianza: ${parsed.result.confidenceScore}`);
+
+    return parsed.result;
   }
 
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
@@ -178,9 +191,9 @@ export class ScrapingPipeline {
       return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
     }
 
-    // Fase 2: Filtrar con Gemini cuáles son actividades
+    // Fase 2: Filtrar con Gemini cuáles son actividades (con fallback conservador)
     log.info(`Fase 2: Filtrando links con IA...`);
-    const activityUrls = await this.analyzer.discoverActivityLinks(allLinks, listingUrl);
+    const activityUrls = await discoverWithFallback(allLinks, listingUrl, this.analyzer);
     log.info(`Links identificados como actividades: ${activityUrls.length}`);
 
     if (activityUrls.length === 0) {

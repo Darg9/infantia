@@ -1,0 +1,111 @@
+// =============================================================================
+// fallback-mapper.ts — Mapeo Cheerio → ActivityNLPResult cuando Gemini no está
+//
+// Estrategia conservadora:
+//   - title:       og:title o <title> del HTML, o 'Sin título'
+//   - description: primeros 300 chars del sourceText limpio
+//   - categories:  inferidas por keywords del sourceText
+//   - schedules:   fechas detectadas por extractDatesFromText (ya existente)
+//   - confidenceScore: 0.4 (sin NLP) — no compite con datos de calidad
+//   - Todo lo demás: null / defaults del schema
+// =============================================================================
+
+import * as cheerio from 'cheerio';
+import type { ScrapedRawData, ActivityNLPResult } from '../types';
+import type { ParseResult } from './parser.types';
+import { extractDatesFromText } from '../utils/date-preflight';
+
+// ── Categorías inferibles por keywords ───────────────────────────────────────
+
+const KEYWORD_CATEGORIES: Array<{ keywords: string[]; category: string }> = [
+  { keywords: ['música', 'concierto', 'banda', 'coro', 'orquesta'], category: 'Música' },
+  { keywords: ['teatro', 'obra', 'dramaturg', 'escena', 'actuación'], category: 'Teatro' },
+  { keywords: ['danza', 'baile', 'ballet', 'coreografía'], category: 'Danza' },
+  { keywords: ['taller', 'workshop', 'curso', 'aprend', 'capacitación'], category: 'Talleres' },
+  { keywords: ['deporte', 'fútbol', 'natación', 'atletismo', 'torneo'], category: 'Deporte' },
+  { keywords: ['arte', 'pintura', 'dibujo', 'escultura', 'exposición', 'galería'], category: 'Arte' },
+  { keywords: ['cine', 'película', 'film', 'cinemateca'], category: 'Cine' },
+  { keywords: ['lectura', 'libro', 'biblioteca', 'literatur', 'cuento'], category: 'Literatura' },
+  { keywords: ['ciencia', 'tecnología', 'robótica', 'stem', 'astronomía'], category: 'Ciencia' },
+  { keywords: ['naturaleza', 'parque', 'jardín', 'ecología', 'ambiental'], category: 'Naturaleza' },
+];
+
+/** Infiere categorías del texto por keywords simples (sin NLP). */
+function inferCategories(text: string): string[] {
+  const lower = text.toLowerCase();
+  const found: string[] = [];
+  for (const { keywords, category } of KEYWORD_CATEGORIES) {
+    if (keywords.some((kw) => lower.includes(kw))) {
+      found.push(category);
+    }
+  }
+  return found.length > 0 ? found.slice(0, 3) : ['General'];
+}
+
+// ── Extracción de título desde HTML ──────────────────────────────────────────
+
+function extractTitle(html: string): string {
+  try {
+    const $ = cheerio.load(html);
+    const ogTitle = $('meta[property="og:title"]').attr('content')?.trim();
+    if (ogTitle) return ogTitle;
+    const metaTitle = $('title').first().text().trim();
+    if (metaTitle) return metaTitle;
+    const h1 = $('h1').first().text().trim();
+    if (h1) return h1;
+  } catch { /* html inválido */ }
+  return 'Sin título';
+}
+
+// ── schedules desde texto ─────────────────────────────────────────────────────
+
+function buildSchedules(
+  text: string,
+): ActivityNLPResult['schedules'] {
+  const dates = extractDatesFromText(text);
+  if (dates.length === 0) return undefined;
+
+  // Ordenar y tomar primeras 3 para no generar ruido
+  const sorted = [...dates].sort((a, b) => a.getTime() - b.getTime()).slice(0, 3);
+  return sorted.map((d) => ({
+    startDate: d.toISOString().substring(0, 10),
+    endDate:   undefined,
+    notes:     undefined,
+  }));
+}
+
+// ── API pública ───────────────────────────────────────────────────────────────
+
+/**
+ * Convierte datos brutos de CheerioExtractor en un ActivityNLPResult mínimo.
+ * Confidence baja (0.4) — indica origen fallback sin NLP.
+ */
+export function fallbackFromCheerio(raw: ScrapedRawData): ParseResult {
+  const html     = raw.html ?? '';
+  const text     = raw.sourceText ?? '';
+
+  const title       = extractTitle(html) || 'Sin título';
+  const description = text.slice(0, 300).trim();
+  const categories  = inferCategories(text);
+  const schedules   = buildSchedules(text);
+
+  const result: ActivityNLPResult = {
+    title,
+    description,
+    categories,
+    confidenceScore: 0.4,
+    schedules,
+    // Campos que requieren NLP — quedan como null/undefined
+    minAge:      undefined,
+    maxAge:      undefined,
+    price:       undefined,
+    pricePeriod: undefined,
+    currency:    'COP',
+    audience:    'ALL',
+    location:    undefined,
+    environment: undefined,
+    imageUrl:    raw.ogImage ?? undefined,
+  };
+
+  return { result, source: 'fallback' };
+}

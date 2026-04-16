@@ -3,6 +3,7 @@ import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
+import { ThemeToggle } from '@/components/ui/ThemeToggle'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -18,7 +19,7 @@ export async function Header() {
   }
 
   return (
-    <header aria-label="Sitio principal" className="bg-white border-b border-gray-100">
+    <header aria-label="Sitio principal" className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] transition-colors duration-[var(--hp-transition)]">
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
@@ -27,14 +28,17 @@ export async function Header() {
 
         {/* Nav */}
         <nav aria-label="Navegación principal" className="flex items-center gap-6 text-sm">
-          <Link href="/actividades" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <Link href="/actividades" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
             Actividades
           </Link>
-          <Link href="/mapa" className="text-gray-600 hover:text-gray-900 transition-colors">
+          <Link href="/mapa" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
             Mapa
           </Link>
 
-          <span className="w-px h-4 bg-gray-200" aria-hidden="true" />
+          {/* Toggle de tema — visible para todos los usuarios */}
+          <ThemeToggle />
+
+          <span className="w-px h-4 bg-[var(--hp-border)]" aria-hidden="true" />
 
           {session ? (
             <UserMenu

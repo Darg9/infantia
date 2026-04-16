@@ -1,18 +1,19 @@
 import { describe, it, expect } from 'vitest';
-import { isPastEventContent, extractDatesFromText } from '../utils/date-preflight';
+import {
+  isPastEventContent,
+  extractDatesFromText,
+  extractDatetimeAttributes,
+} from '../utils/date-preflight';
 
 // Fecha de referencia fija para todos los tests
 const REF = new Date('2026-04-15T12:00:00Z');
-
-// Helper para construir texto con una fecha relativa
-const textWith = (dateStr: string) => `Evento el ${dateStr} en el Teatro Principal.`;
 
 describe('extractDatesFromText', () => {
   it('detecta formato ES: "15 de abril de 2025"', () => {
     const dates = extractDatesFromText('Evento el 15 de abril de 2025 en Bogotá.');
     expect(dates).toHaveLength(1);
     expect(dates[0].getFullYear()).toBe(2025);
-    expect(dates[0].getMonth()).toBe(3); // abril = índice 3
+    expect(dates[0].getMonth()).toBe(3);
     expect(dates[0].getDate()).toBe(15);
   });
 
@@ -36,9 +37,7 @@ describe('extractDatesFromText', () => {
   });
 
   it('detecta múltiples fechas en el mismo texto', () => {
-    const dates = extractDatesFromText(
-      'Del 1 de enero de 2025 al 15 de marzo de 2025.',
-    );
+    const dates = extractDatesFromText('Del 1 de enero de 2025 al 15 de marzo de 2025.');
     expect(dates).toHaveLength(2);
   });
 
@@ -52,57 +51,155 @@ describe('extractDatesFromText', () => {
   });
 });
 
-describe('isPastEventContent', () => {
+describe('extractDatetimeAttributes', () => {
+  it('extrae datetime="YYYY-MM-DD" de atributo HTML', () => {
+    const html = '<time datetime="2025-03-15">15 de marzo de 2025</time>';
+    const dates = extractDatetimeAttributes(html);
+    expect(dates).toHaveLength(1);
+    expect(dates[0].getFullYear()).toBe(2025);
+    expect(dates[0].getMonth()).toBe(2); // marzo = índice 2
+    expect(dates[0].getDate()).toBe(15);
+  });
+
+  it('extrae datetime con hora: "2025-03-15T10:00:00"', () => {
+    const html = '<time datetime="2025-03-15T10:00:00">15 de marzo</time>';
+    const dates = extractDatetimeAttributes(html);
+    expect(dates).toHaveLength(1);
+    expect(dates[0].getFullYear()).toBe(2025);
+  });
+
+  it('extrae múltiples atributos datetime', () => {
+    const html = `
+      <time datetime="2025-04-01">Inicio</time>
+      <time datetime="2025-04-30">Fin</time>
+    `;
+    const dates = extractDatetimeAttributes(html);
+    expect(dates).toHaveLength(2);
+  });
+
+  it('retorna vacío si no hay atributos datetime', () => {
+    const html = '<p>Evento el 15 de abril de 2025</p>';
+    expect(extractDatetimeAttributes(html)).toHaveLength(0);
+  });
+
+  it('ignora datetime con años fuera de rango', () => {
+    const html = '<time datetime="2015-03-10">viejo</time>';
+    expect(extractDatetimeAttributes(html)).toHaveLength(0);
+  });
+});
+
+describe('isPastEventContent — Capa 1: datetime HTML', () => {
+  it('retorna true si datetime es claramente pasado (> 14d)', () => {
+    const html = '<time datetime="2025-01-10">10 de enero</time>';
+    expect(isPastEventContent(html, REF)).toBe(true);
+  });
+
+  it('retorna false si datetime es futuro', () => {
+    const html = '<time datetime="2026-06-20">20 de junio</time>';
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+
+  it('retorna false si datetime está dentro del buffer de 14 días', () => {
+    // 5 de abril de 2026 = 10 días antes de REF
+    const html = '<time datetime="2026-04-05">5 de abril</time>';
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+
+  it('retorna false si algún datetime es futuro (mix pasado/futuro)', () => {
+    const html = `
+      <time datetime="2025-10-01">inicio</time>
+      <time datetime="2026-06-30">fin</time>
+    `;
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+
+  it('caso BibloRed real: evento pasado detectado via datetime', () => {
+    const html = `
+      <article>
+        <h1>Taller de escritura creativa</h1>
+        <time datetime="2025-03-22">22 de marzo de 2025</time>
+        <p>Descripción del taller para adultos.</p>
+      </article>
+    `;
+    expect(isPastEventContent(html, REF)).toBe(true);
+  });
+
+  it('caso BibloRed real: evento futuro no se descarta', () => {
+    const html = `
+      <article>
+        <h1>Club de lectura infantil</h1>
+        <time datetime="2026-05-10">10 de mayo de 2026</time>
+        <p>Todos los sábados en la biblioteca.</p>
+      </article>
+    `;
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+});
+
+describe('isPastEventContent — Capa 2: texto plano', () => {
   it('retorna false si no hay fechas (incertidumbre → procesar)', () => {
     expect(isPastEventContent('Taller de arte para niños.', REF)).toBe(false);
   });
 
-  it('retorna false si hay alguna fecha futura', () => {
-    // Fecha futura: 20 de junio de 2026
+  it('retorna false si hay alguna fecha futura en texto', () => {
     const text = 'Evento el 20 de junio de 2026 en Corferias.';
     expect(isPastEventContent(text, REF)).toBe(false);
   });
 
-  it('retorna false si hay fechas pasadas recientes (< 14 días)', () => {
-    // 5 de abril de 2026 = 10 días antes de REF → dentro del buffer
+  it('retorna false si fechas pasadas recientes (< 14 días)', () => {
     const text = 'Evento el 5 de abril de 2026 en la Media Torta.';
     expect(isPastEventContent(text, REF)).toBe(false);
   });
 
-  it('retorna true si todas las fechas son claramente pasadas (> 14 días)', () => {
-    // 1 de marzo de 2026 = ~45 días antes de REF
+  it('retorna true si todas las fechas de texto son claramente pasadas', () => {
     const text = 'El evento fue el 1 de marzo de 2026. Entrada libre.';
     expect(isPastEventContent(text, REF)).toBe(true);
   });
 
-  it('retorna true para fechas del año anterior', () => {
+  it('retorna true para fechas del año anterior en texto', () => {
     const text = 'Concierto el 15 de octubre de 2025 en el Colón.';
     expect(isPastEventContent(text, REF)).toBe(true);
   });
 
-  it('retorna false si una fecha es pasada y otra es futura (mix)', () => {
-    const text =
-      'Temporada 2025-12-01 al 2026-06-30. Entrada libre.';
+  it('retorna false si mix de fechas pasada/futura en texto', () => {
+    const text = 'Temporada 2025-12-01 al 2026-06-30. Entrada libre.';
     expect(isPastEventContent(text, REF)).toBe(false);
   });
 
-  it('retorna false si las fechas pasadas están dentro del buffer de 14 días', () => {
-    // 3 de abril de 2026 = 12 días antes de REF → dentro del buffer
-    const text = 'Evento el 2026-04-03 en el Planetario.';
-    expect(isPastEventContent(text, REF)).toBe(false);
-  });
-
-  it('retorna true para texto con ISO format claramente pasado', () => {
+  it('retorna true para ISO claramente pasado en texto', () => {
     const text = 'Fecha del evento: 2025-01-10. Lugar: Biblioteca.';
     expect(isPastEventContent(text, REF)).toBe(true);
   });
 
-  it('retorna true para texto con DD/MM/YYYY claramente pasado', () => {
+  it('retorna true para DD/MM/YYYY claramente pasado en texto', () => {
     const text = 'Actividad: 10/01/2025. Entrada libre.';
     expect(isPastEventContent(text, REF)).toBe(true);
   });
+});
 
-  it('es conservador: texto sin fechas siempre pasa al NLP', () => {
+describe('isPastEventContent — Capa 3: keywords y años pasados', () => {
+  it('retorna true si el HTML solo menciona años pasados (sin año actual)', () => {
+    const html = '<p>Actividades realizadas en 2024. Programación cerrada.</p>';
+    expect(isPastEventContent(html, REF)).toBe(true);
+  });
+
+  it('retorna false si el HTML menciona año actual junto con año pasado', () => {
+    const html = '<p>Retrospectiva 2024–2026. Más eventos en 2026.</p>';
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+
+  it('keyword "finalizado" descarta si no hay año actual', () => {
+    const html = '<p>Este evento ha finalizado. Gracias por participar.</p>';
+    expect(isPastEventContent(html, REF)).toBe(true);
+  });
+
+  it('keyword "finalizado" NO descarta si hay año actual presente', () => {
+    // El año 2026 aparece → podría haber más ediciones
+    const html = '<p>Edición 2026 finalizada. Próxima edición en julio 2026.</p>';
+    expect(isPastEventContent(html, REF)).toBe(false);
+  });
+
+  it('es conservador: texto sin señales siempre pasa al NLP', () => {
     const texts = [
       'Actividad para niños y familias.',
       'Taller de pintura todos los sábados.',

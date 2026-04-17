@@ -19,8 +19,8 @@ export async function POST(
       data: { activityId: id },
     });
     return NextResponse.json({ ok: true });
-  } catch {
-    // No propagamos errores — tracking nunca debe romper la experiencia
-    return NextResponse.json({ ok: false }, { status: 500 });
+  } catch (err: any) {
+    console.error('VIEW TRACKER ERROR:', err)
+    return NextResponse.json({ ok: false, details: err?.message || String(err) }, { status: 500 });
   }
 }

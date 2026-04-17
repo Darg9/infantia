@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.11.0-S52
-**Última actualización:** 16 de abril de 2026
+**Versión:** ✅ v0.11.0-S53
+**Última actualización:** 17 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -25,18 +25,53 @@ El buscador está diseñado para proveer una sugerencia fluida de resultados.
 
 ## 📈 Lógica de Ranking Algorítmico y Health Source
 
-Todo el sistema de listing no exhibe los "elementos más nuevos", sino "Los Elementos de Más Alta Calidad":
+Todo el sistema de listing no exhibe los "elementos más nuevos", sino "Los Elementos de Más Alta Calidad".
 
-El resultado final evaluado localmente (vía map memory) por _Actividad_ resulta de una ponderación determinista `((textScore * 0.5) + (healthScore * 0.3) + (ctrBoost * 0.2))`:
-- `50% Relevancia (Text Score)`: Suma de proximidad `pg_trgm`, bonificando `+5.0` por el "Exact Match" y `+3.0` por el prefijo ilike.
-- `30% Health Trust Score`: Extraído de la evaluación del _SourceHealth_. Fuentes (DOMINIOS) con alto índice de fallos, falsos positivos o inestabilidad pierden posicionamiento global en la plataforma. Dominios con ratio < 0.3 terminan bloqueados.
-- `20% CTR Boost Impact`: **(NUEVO)** Señal de conversión real acumulada: `outbound_click / activity_view` por dominio. Boost se aplica como un impacto fundamental.
-- **Penalización por Edad Nula (-15%)**: Las actividades que el _Data Pipeline v1_ deja transitar aunque no haya parseado una edad mínima o máxima explícitamente (`null`), corren con una pérdida de posicionamiento masiva de `*= 0.85`, garantizando la máxima calidad algorítmica al tope del Search Engine.
+El score final por actividad (calculado en `src/modules/activities/ranking.ts`) sigue la fórmula:
+
+```
+rankingScore = (relevance × 0.5) + (recency × 0.2) + (trustScore × 0.3) + ctrBoost
+```
+
+- **50% Relevancia (`relevance`)**: Score base de afinidad con el contenido. Inicialmente 0.7 uniforme; en búsqueda textual se enriquece con `pg_trgm` (`+5.0` exact match, `+3.0` prefix ilike) ponderado 0.7/0.3 + prefix boost +0.10.
+- **20% Recencia (`recency`)**: Freshness de la actividad en BD. ≤3 días = 1.0 | ≤7 días = 0.8 | ≤30 días = 0.5 | >30 días = 0.2.
+- **30% Confianza de Fuente (`trustScore`)**: Extraído del `SourceHealth`. Fuentes inestables pierden posicionamiento global. Dominio con ratio < 0.3 → bloqueado. Score neutral 0.5 si el dominio aún no ha sido medido.
+- **CTR Boost (`ctrBoost`)**: Señal aditiva real de comportamiento de usuario — `outbound_click / activity_view` por dominio. Valor máx +0.15. **No reemplaza** las señales base, las complementa.
+
+  | CTR del dominio | Boost aplicado |
+  |---|---|
+  | > 30% | +0.15 |
+  | > 15% | +0.08 |
+  | > 5% | +0.03 |
+  | ≤ 5% | 0 |
+
+- **Penalización por Edad Nula (-15%)**: Actividades sin `ageMin`/`ageMax` parseados reciben `score *= 0.85`, garantizando calidad algorítmica en el tope del motor.
 
 ## 🧩 Eventos UX Trackeados (Vínculo al módulo Analytics)
 
 Desde la capa de producto el UI lanza los siguientes eventos vitales en el ciclo de conversión sin requerir librerías externas:
+- **`page_view`**: Carga de cualquier ruta Next.js (via `AnalyticsTracker`).
 - **`search_applied`**: Al pulsar _Enter_ en sub-query.
 - **`activity_click`**: Clics en cards de exploración.
 - **`activity_view`**: Clics desde listado al Single Detail Page.
 - **`outbound_click`**: Evento final del funnel. (Redirige tráfico pagado o gratis al organizador de la actividad infantil).
+
+## 🔐 Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S53
+
+Patrón global y reutilizable para preservar la intención del usuario ante cualquier acción protegida, sin acoplar la lógica de negocio al flujo de login.
+
+**Flujo:**
+```
+1. Click en acción protegida (ej: FavoriteButton)
+2. requireAuth(intent, router)  → verifica sesión async (Supabase)
+3. Sin sesión: IntentManager.save(intent) + router.push('/login')
+4. Login exitoso
+5. IntentResolver (global, layout) → consume intent una sola vez
+6. Ejecuta acción (toggleFavorite) + toast.success + router.replace(returnTo)
+```
+
+**Reglas:**
+- Todos los flujos protegidos usan `requireAuth` — nunca redirect manual a `/login`.
+- `IntentManager` usa `localStorage` con TTL 15 min — expire silencioso.
+- `IntentResolver` usa `useEffect([])` — ejecución única al montar, idempotente.
+- Errores se manejan silenciosamente para no romper el login flow.

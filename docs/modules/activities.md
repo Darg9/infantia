@@ -55,7 +55,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/api/health` | Pública | Health check DB + Redis con timeouts 2000ms — semántica ok/degraded/down. Incluye `business_signal` (operational, stale) + `by_city` (JOIN Activity→Location→City, slug NFD). 503 solo si DB falla. |
-| `GET` | `/api/admin/cron/scrape` | CRON_SECRET | Selecciona hasta 5 fuentes por lastRunAt y encola en BullMQ. Vercel Cron cada 6h. |
+| `GET` | `/api/admin/cron/scrape` | CRON_SECRET | Selecciona hasta 5 fuentes por lastRunAt y encola en BullMQ. Vercel Cron diario 6 AM UTC (`0 6 * * *` — Vercel Hobby limit). |
 | `POST` | `/api/admin/expire-activities` | CRON_SECRET | Expira actividades con fecha pasada (5AM UTC) |
 | `POST` | `/api/admin/send-notifications` | CRON_SECRET | Envía digest de email a usuarios suscritos |
 | `GET` | `/api/admin/scraping/sources` | Admin | Lista fuentes de scraping |

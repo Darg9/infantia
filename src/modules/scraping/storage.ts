@@ -8,6 +8,8 @@ import { createLogger } from '../../lib/logger';
 import { ambiguityScore } from './ambiguity';
 import { getAdaptiveRules, getSourceRules } from './adaptive-rules';
 import { runDataPipeline } from './data-pipeline';
+import { matchCity } from '../../modules/geo/city-matcher';
+import { queueCityReview } from '../../modules/geo/city-review';
 
 const log = createLogger('scraping:storage');
 
@@ -384,16 +386,50 @@ export class ScrapingStorage {
    */
   private async getOrCreateLocation(address: string, cityName: string): Promise<string | null> {
     try {
-      // Buscar la ciudad en BD
-      const city = await prisma.city.findFirst({
-        where: { name: { contains: cityName.split(',')[0].trim(), mode: 'insensitive' } },
-      });
-      if (!city) {
-        // Intentar con Bogotá como fallback
-        const bogota = await prisma.city.findFirst({ where: { name: { contains: 'Bogotá', mode: 'insensitive' } } });
-        if (!bogota) return null;
-        return this.getOrCreateLocation(address, 'Bogotá');
+      // Matching canónico de ciudad (normalización + Levenshtein)
+      const matchResult = await matchCity(cityName);
+
+      let cityId: string | null = null;
+
+      if (matchResult.status === 'MATCH') {
+        cityId = matchResult.cityId;
+      } else if (matchResult.status === 'REVIEW') {
+        // Match probable → usar la sugerencia + encolar para revisión humana
+        cityId = matchResult.suggestedCityId;
+        queueCityReview({
+          rawInput:        cityName,
+          normalizedInput: matchResult.normalizedInput,
+          suggestedCityId: matchResult.suggestedCityId,
+          similarityScore: matchResult.score,
+        });
+        log.warn('[city-matcher] Ciudad en review — usando sugerida', {
+          rawInput:  cityName,
+          suggested: matchResult.suggestedCityId,
+          score:     matchResult.score.toFixed(3),
+        });
+      } else {
+        // NEW o sin confianza → encolar + fallback a Bogotá
+        queueCityReview({
+          rawInput:        cityName,
+          normalizedInput: matchResult.normalizedInput,
+          suggestedCityId: null,
+          similarityScore: matchResult.score,
+        });
+        log.warn('[city-matcher] Ciudad desconocida — fallback Bogotá', {
+          rawInput: cityName,
+          score:    matchResult.score.toFixed(3),
+        });
+        const bogota = await prisma.city.findFirst({
+          where: { name: { contains: 'Bogotá', mode: 'insensitive' } },
+        });
+        cityId = bogota?.id ?? null;
       }
+
+      if (!cityId) return null;
+
+      // Obtener city completo para geocoding
+      const city = await prisma.city.findUnique({ where: { id: cityId } });
+      if (!city) return null;
 
       // Buscar location existente con la misma dirección + ciudad
       const existing = await prisma.location.findFirst({

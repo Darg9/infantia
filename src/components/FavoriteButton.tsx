@@ -8,8 +8,10 @@
 // =============================================================================
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
+import { requireAuth } from '@/lib/require-auth'
+import { toggleFavorite } from '@/modules/favorites/toggle-favorite'
 
 interface FavoriteButtonProps {
   targetId: string
@@ -29,6 +31,7 @@ export function FavoriteButton({
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
   const router = useRouter()
+  const pathname = usePathname()
 
   const iconSize = size === 'sm' ? 16 : 20
 
@@ -40,25 +43,20 @@ export function FavoriteButton({
     setIsFavorited(expectLike)
 
     try {
-      let res: Response
-      if (!expectLike) {
-        // Eliminar favorito
-        res = await fetch(`/api/favorites/${targetId}?type=${targetType}`, { method: 'DELETE' })
-      } else {
-        // Añadir favorito
-        res = await fetch('/api/favorites', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ targetId, type: targetType }),
-        })
-      }
+      const ok = await requireAuth({
+        type: 'TOGGLE_FAVORITE',
+        targetId,
+        targetType,
+        returnTo: pathname
+      }, router)
 
-      if (res.status === 401) {
-        // No autenticado — revertir y redirigir a login
+      if (!ok) {
         setIsFavorited(!expectLike)
-        router.push('/login?next=' + encodeURIComponent(`/${targetType === 'activity' ? 'actividades' : 'lugares'}/${targetId}`))
+        setIsLoading(false)
         return
       }
+
+      const res = await toggleFavorite({ targetId, type: targetType, expectLike })
 
       if (!res.ok) {
         // Error del servidor — revertir

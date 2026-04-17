@@ -59,6 +59,7 @@ export const metadata: Metadata = {
 };
 
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import IntentResolver from "@/components/IntentResolver";
 
 export default function RootLayout({
   children,
@@ -90,6 +91,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <AnalyticsTracker />
+        <IntentResolver />
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

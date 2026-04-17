@@ -145,9 +145,9 @@ export default async function ActividadDetallePage({
     });
     if (dbUser) {
       const [fav, existingRating] = await Promise.all([
-        prisma.favorite.findUnique({
-          where: { userId_activityId: { userId: dbUser.id, activityId: id } },
-          select: { activityId: true },
+        prisma.favorite.findFirst({
+          where: { userId: dbUser.id, activityId: id },
+          select: { id: true },
         }),
         prisma.rating.findUnique({
           where: { userId_activityId: { userId: dbUser.id, activityId: id } },

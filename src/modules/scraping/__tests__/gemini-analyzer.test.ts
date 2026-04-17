@@ -194,6 +194,34 @@ describe('GeminiAnalyzer', () => {
         expect(result).toEqual([]);
       });
 
+      it('re-lanza error 429 si TODOS los lotes fallan y no hay resultados (activa fallback en discoverWithFallback)', async () => {
+        const links = [
+          { url: 'https://x.com/taller', anchorText: 'Taller' },
+          { url: 'https://x.com/curso', anchorText: 'Curso' },
+        ];
+        const quotaError = new Error('[429 Too Many Requests] quota exceeded');
+        mockGenerateContent.mockRejectedValue(quotaError);
+        const analyzer = new GeminiAnalyzer();
+        await expect(analyzer.discoverActivityLinks(links, 'https://x.com')).rejects.toThrow('429');
+      }, 15000); // callWithRetry: 2s + 4s delays + enforceRateLimit
+
+      it('devuelve resultados parciales si algún lote fue exitoso (no re-lanza aunque otro lote falle con 429)', async () => {
+        // 200 links → 2 lotes. El primero ok (índice 1 → link-1), el segundo 429
+        const links = Array.from({ length: 200 }, (_, i) => ({
+          url: `https://x.com/link-${i + 1}`,
+          anchorText: `Link ${i + 1}`,
+        }));
+        const quotaError = new Error('[429 Too Many Requests] quota exceeded');
+        mockGenerateContent
+          .mockResolvedValueOnce(makeResponse(JSON.stringify({ indices: [1] }))) // lote 1 ok
+          .mockRejectedValueOnce(quotaError);                                     // lote 2 falla
+        const analyzer = new GeminiAnalyzer();
+        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        // Debería retornar el resultado parcial del lote 1, sin re-lanzar
+        expect(result).toContain('https://x.com/link-1');
+        expect(result).toHaveLength(1);
+      });
+
       it('procesa links en lotes de 100', async () => {
         const links = Array.from({ length: 450 }, (_, i) => ({
           url: `https://x.com/link-${i + 1}`,

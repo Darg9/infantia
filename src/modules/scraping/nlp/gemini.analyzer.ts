@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema, InstagramPost } from '../types';
 import { createLogger } from '../../../lib/logger';
 import { preFilterUrls, getProductivityTier } from '../../../lib/url-classifier';
+import { isRetryableError } from '../parser/parser.types';
 
 const log = createLogger('scraping:gemini');
 
@@ -307,6 +308,8 @@ export class GeminiAnalyzer {
     });
 
     const allActivityUrls: string[] = [];
+    // Trackea el último error retryable (429/503) para propagarlo si todos los lotes fallan
+    let lastRetryableError: unknown = null;
 
     for (let chunkIndex = 0; chunkIndex < chunks.length; chunkIndex++) {
       const chunk = chunks[chunkIndex];
@@ -362,9 +365,22 @@ ${linksText}`;
           .map((idx) => chunk[idx - 1].url);
         log.info(`Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
         allActivityUrls.push(...found);
-      } catch (error: any) {
-        log.error(`Lote ${chunkIndex + 1} Error: ${error.message}`, { error });
+      } catch (error: unknown) {
+        if (isRetryableError(error)) {
+          // Guardar para re-lanzar al final si no hay resultados (permite fallback en parser.ts)
+          lastRetryableError = error;
+          log.warn(`Lote ${chunkIndex + 1}: Gemini no disponible (retryable). Continuando con otros lotes...`);
+        } else {
+          log.error(`Lote ${chunkIndex + 1} Error: ${error instanceof Error ? error.message : String(error)}`, { error });
+        }
       }
+    }
+
+    // Si hubo errores retryables y no se obtuvieron resultados de ningún lote,
+    // re-lanzar para que discoverWithFallback active el fallback conservador.
+    // Si hay resultados parciales (algún lote exitoso), usarlos en vez del fallback.
+    if (allActivityUrls.length === 0 && lastRetryableError !== null) {
+      throw lastRetryableError;
     }
 
     log.info(`Total actividades identificadas: ${allActivityUrls.length}`);

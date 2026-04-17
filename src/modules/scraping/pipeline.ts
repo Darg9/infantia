@@ -220,6 +220,12 @@ export class ScrapingPipeline {
     // 1ª capa: cache en memoria/disco/BD (rápido, sin query extra)
     const afterCache = this.cache.filterNew(activityUrls);
 
+    // Normalización para comparación robusta — evita falsos "nuevos" por:
+    //   http vs https, trailing slash, mayúsculas en dominio
+    // Query params SE CONSERVAN: pueden ser identidad del recurso (ej: ?id=123)
+    const normalizeForDiff = (url: string): string =>
+      url.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+
     // 2ª capa: diff contra activities en BD (fuente de verdad absoluta)
     // Detecta URLs que pasaron el cache pero ya tienen actividad guardada
     // (ej: cache vacío por deploy, actividad existe en BD)
@@ -230,14 +236,17 @@ export class ScrapingPipeline {
           where: { sourceUrl: { in: afterCache } },
           select: { sourceUrl: true },
         });
-        const existingSet = new Set(existingInDb.map((a) => a.sourceUrl).filter(Boolean));
+        // Normalizar ambos lados para comparación resiliente
+        const existingNorm = new Set(
+          existingInDb.map((a) => normalizeForDiff(a.sourceUrl ?? '')).filter(Boolean),
+        );
         const beforeDbFilter = afterCache.length;
-        newUrls = afterCache.filter((url) => !existingSet.has(url));
+        newUrls = afterCache.filter((url) => !existingNorm.has(normalizeForDiff(url)));
         const dbSkipped = beforeDbFilter - newUrls.length;
         if (dbSkipped > 0) {
           log.info(`⏭️  DB diff: ${dbSkipped} URLs ya tienen actividad en BD (cache miss cubierto)`);
-          // Rehidratar cache para evitar la misma query en futuros runs
-          for (const url of afterCache.filter((u) => existingSet.has(u))) {
+          // Rehidratar cache (con URL original) para evitar la misma query en futuros runs
+          for (const url of afterCache.filter((u) => existingNorm.has(normalizeForDiff(u)))) {
             this.cache.add(url, '');
           }
         }

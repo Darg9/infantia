@@ -13,13 +13,16 @@ import { createLogger } from '../../lib/logger';
 const log = createLogger('geo:city-review');
 
 // Lazy singleton para no importar prisma en tests que no lo necesiten
-let _prisma: import('@prisma/client').PrismaClient | null = null;
+let _prisma: import('../../generated/prisma/client').PrismaClient | null = null;
 
 function getPrisma() {
   if (!_prisma) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { PrismaClient } = require('@prisma/client') as typeof import('@prisma/client');
-    _prisma = new PrismaClient();
+    const { PrismaPg } = require('@prisma/adapter-pg') as typeof import('@prisma/adapter-pg');
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { PrismaClient } = require('../../generated/prisma/client') as typeof import('../../generated/prisma/client');
+    const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+    _prisma = new PrismaClient({ adapter });
   }
   return _prisma;
 }

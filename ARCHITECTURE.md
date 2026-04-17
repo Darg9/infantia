@@ -733,6 +733,10 @@ Reglas fundamentales:
 1. **No colores nativos de Tailwind:** Prohibido `bg-orange-X`, `text-green-X`. Usar `brand`, `success`, `error`, `warning`.
 2. **Componentes Primitivos:** Importar desde `src/components/ui/` (`Button`, `Input`, `Card`, `useToast`, `Avatar`, `Dropdown`, `Modal`).
 3. **Manejo de Estado:** Los primitivos manejan sus propios focus visibles (ACC: AA global con `ring-brand-500`), estados *disabled* y de *carga*.
+4. **UI Rule (Strict) para Feedback:** All user-facing notifications, alerts, confirmations, and feedback MUST use the internal toast system (`useToast` from `src/components/ui/toast.tsx`).
+   - External libraries (`react-hot-toast`, `sonner`, `react-toastify`) are **strictly forbidden**.
+   - Native browser alerts (`window.alert`, `window.prompt`) are **forbidden**.
+   - `window.confirm` is **temporarily allowed** until a model system is standardized.
 
 ## 14. Decisiones de Arquitectura
 

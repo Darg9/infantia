@@ -48,6 +48,10 @@ src/
 - All dates stored in UTC, displayed in local timezone
 - Spanish for user-facing content, English for code (variable names, comments)
 - No hardcoded cities, countries, or currencies — always dynamic from database
+- **Design System Enforcement:**
+  - Only use `useToast` for feedback
+  - Never introduce new notification libraries
+  - Prefer non-blocking UX (toast) over blocking dialogs
 
 ## Commands
 - `npm run dev` — Start development server

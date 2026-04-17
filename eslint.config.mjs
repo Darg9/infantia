@@ -55,6 +55,36 @@ const eslintConfig = defineConfig([
           message: "❗ Nunca usar .toNumber() directamente. Usa normalizePrice()."
         }
       ],
+      "no-restricted-globals": [
+        "error",
+        {
+          name: "alert",
+          message: "Use useToast instead of alert()"
+        },
+        {
+          name: "prompt",
+          message: "Use a controlled UI component instead of prompt()"
+        }
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            {
+              name: "react-hot-toast",
+              message: "Use internal useToast system"
+            },
+            {
+              name: "sonner",
+              message: "Use internal useToast system"
+            },
+            {
+              name: "react-toastify",
+              message: "Use internal useToast system"
+            }
+          ]
+        }
+      ],
       // Block new `any` in all files not explicitly overridden below.
       "@typescript-eslint/no-explicit-any": "error",
     }

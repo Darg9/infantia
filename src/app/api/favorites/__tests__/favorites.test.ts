@@ -8,9 +8,10 @@ vi.mock('next/server', () => ({
   },
 }))
 
-const { mockRequireAuth, mockGetSession, mockPrisma } = vi.hoisted(() => {
+const { mockRequireAuth, mockGetSession, mockGetOrCreateDbUser, mockPrisma } = vi.hoisted(() => {
   const mockRequireAuth = vi.fn()
   const mockGetSession = vi.fn()
+  const mockGetOrCreateDbUser = vi.fn()
   const mockPrisma = {
     user: { findUnique: vi.fn() },
     activity: { findUnique: vi.fn() },
@@ -24,10 +25,14 @@ const { mockRequireAuth, mockGetSession, mockPrisma } = vi.hoisted(() => {
       delete: vi.fn(),
     },
   }
-  return { mockRequireAuth, mockGetSession, mockPrisma }
+  return { mockRequireAuth, mockGetSession, mockGetOrCreateDbUser, mockPrisma }
 })
 
-vi.mock('@/lib/auth', () => ({ requireAuth: mockRequireAuth, getSession: mockGetSession }))
+vi.mock('@/lib/auth', () => ({
+  requireAuth: mockRequireAuth,
+  getSession: mockGetSession,
+  getOrCreateDbUser: mockGetOrCreateDbUser,
+}))
 vi.mock('@/lib/db', () => ({ prisma: mockPrisma }))
 
 import { NextResponse } from 'next/server'
@@ -70,7 +75,7 @@ beforeEach(() => {
 describe('GET /api/favorites', () => {
   it('retorna lista de favoriteIds del usuario autenticado', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findMany.mockResolvedValue([
       { activityId: TARGET_ID_1 },
       { activityId: TARGET_ID_2 },
@@ -85,7 +90,7 @@ describe('GET /api/favorites', () => {
 
   it('retorna array vacío si el usuario no tiene favoritos', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findMany.mockResolvedValue([])
 
     await GET()
@@ -93,17 +98,17 @@ describe('GET /api/favorites', () => {
     expect(mockJson).toHaveBeenCalledWith({ favoriteIds: [] })
   })
 
-  it('retorna 404 si el usuario no existe en DB', async () => {
+  it('crea el usuario si no existía en DB (getOrCreateDbUser)', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(null)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
+    mockPrisma.favorite.findMany.mockResolvedValue([])
 
     await GET()
 
-    expect(mockJson).toHaveBeenCalledWith(
-      { error: 'Usuario no encontrado' },
-      { status: 404 }
+    expect(mockGetOrCreateDbUser).toHaveBeenCalledWith(MOCK_AUTH_USER)
+    expect(mockPrisma.favorite.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: MOCK_DB_USER.id } })
     )
-    expect(mockPrisma.favorite.findMany).not.toHaveBeenCalled()
   })
 
   it('retorna 401 si no hay sesión autenticada', async () => {
@@ -116,15 +121,12 @@ describe('GET /api/favorites', () => {
 
   it('busca los favoritos usando el userId interno (no el supabaseAuthId)', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findMany.mockResolvedValue([])
 
     await GET()
 
-    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-      where: { supabaseAuthId: MOCK_AUTH_USER.id },
-      select: { id: true },
-    })
+    expect(mockGetOrCreateDbUser).toHaveBeenCalledWith(MOCK_AUTH_USER)
     expect(mockPrisma.favorite.findMany).toHaveBeenCalledWith(
       expect.objectContaining({ where: { userId: MOCK_DB_USER.id } })
     )
@@ -139,7 +141,7 @@ describe('POST /api/favorites', () => {
   beforeEach(() => {
     mockGetSession.mockResolvedValue(MOCK_AUTH_USER)
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.activity.findUnique.mockResolvedValue({ id: TARGET_ID_1 })
     mockPrisma.location.findUnique.mockResolvedValue({ id: TARGET_ID_1 })
     // No existe en DB por defecto
@@ -220,13 +222,20 @@ describe('POST /api/favorites', () => {
     expect(mockJson).toHaveBeenCalledWith({ error: 'Lugar no encontrado' }, { status: 404 })
   })
 
-  it('retorna 404 si el usuario no existe en DB', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue(null)
-    const req = makeRequest({ targetId: TARGET_ID_1 })
+  it('crea usuario si no existía en BD (getOrCreateDbUser) y añade favorito', async () => {
+    // El usuario existe en Supabase Auth pero no en la tabla users → getOrCreateDbUser lo crea
+    const newDbUser = { id: 'new-db-user-789' }
+    mockGetOrCreateDbUser.mockResolvedValue(newDbUser)
+    mockPrisma.favorite.create.mockResolvedValue({ userId: newDbUser.id, activityId: TARGET_ID_1 })
+    const req = makeRequest({ targetId: TARGET_ID_1, type: 'activity' })
 
     await POST(req as any)
 
-    expect(mockJson).toHaveBeenCalledWith({ error: 'Usuario no encontrado' }, { status: 404 })
+    expect(mockGetOrCreateDbUser).toHaveBeenCalledWith(MOCK_AUTH_USER)
+    expect(mockPrisma.favorite.create).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { userId: newDbUser.id, activityId: TARGET_ID_1 } })
+    )
+    expect(mockJson).toHaveBeenCalledWith({ success: true }, { status: 201 })
   })
 
   it('retorna 400 si el type es inválido (no activity ni place)', async () => {
@@ -266,7 +275,7 @@ describe('DELETE /api/favorites/[targetId]', () => {
 
   beforeEach(() => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findFirst.mockResolvedValue(MOCK_FAVORITE)
     mockPrisma.favorite.deleteMany.mockResolvedValue({ count: 1 })
   })
@@ -310,14 +319,16 @@ describe('DELETE /api/favorites/[targetId]', () => {
     expect(mockJson).toHaveBeenCalledWith({ error: 'Favorito no encontrado' }, { status: 404 })
   })
 
-  it('retorna 404 si el usuario no existe en DB', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue(null)
+  it('retorna 404 si el favorito no existe (usuario nuevo sin favoritos)', async () => {
+    // Usuario recién creado por getOrCreateDbUser — no tiene favoritos
+    mockGetOrCreateDbUser.mockResolvedValue({ id: 'new-user-000' })
+    mockPrisma.favorite.findFirst.mockResolvedValue(null)
     const req = makeRequest({}, 'activity')
 
     await DELETE(req as any, { params: Promise.resolve({ targetId: TARGET_ID_1 }) })
 
     expect(mockPrisma.favorite.deleteMany).not.toHaveBeenCalled()
-    expect(mockJson).toHaveBeenCalledWith({ error: 'Usuario no encontrado' }, { status: 404 })
+    expect(mockJson).toHaveBeenCalledWith({ error: 'Favorito no encontrado' }, { status: 404 })
   })
 
   it('retorna 500 (auth wrapper) si no hay sesión autenticada', async () => {
@@ -330,18 +341,15 @@ describe('DELETE /api/favorites/[targetId]', () => {
     expect(mockJson).toHaveBeenCalledWith({ error: 'Error interno o no autorizado' }, { status: 500 })
   })
 
-  it('usa el userId interno (no supabaseAuthId) para buscar el favorito', async () => {
+  it('usa el userId interno (resuelto por getOrCreateDbUser) para buscar el favorito', async () => {
     const req = makeRequest({}, 'activity')
     await DELETE(req as any, { params: Promise.resolve({ targetId: TARGET_ID_1 }) })
 
-    expect(mockPrisma.user.findUnique).toHaveBeenCalledWith({
-      where: { supabaseAuthId: MOCK_AUTH_USER.id },
-      select: { id: true },
-    })
+    expect(mockGetOrCreateDbUser).toHaveBeenCalledWith(MOCK_AUTH_USER)
     expect(mockPrisma.favorite.deleteMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: {
-          userId: MOCK_DB_USER.id, 
+          userId: MOCK_DB_USER.id,
           activityId: TARGET_ID_1,
         },
       })
@@ -372,7 +380,7 @@ describe('DELETE /api/favorites/[targetId]', () => {
 describe('Seguridad: aislamiento entre usuarios', () => {
   it('GET solo devuelve favoritos del usuario autenticado, no de otros', async () => {
     mockRequireAuth.mockResolvedValue(MOCK_AUTH_USER)
-    mockPrisma.user.findUnique.mockResolvedValue(MOCK_DB_USER)
+    mockGetOrCreateDbUser.mockResolvedValue(MOCK_DB_USER)
     mockPrisma.favorite.findMany.mockResolvedValue([{ activityId: TARGET_ID_1 }])
 
     await GET()
@@ -386,9 +394,9 @@ describe('Seguridad: aislamiento entre usuarios', () => {
   it('DELETE no puede borrar favoritos de otro usuario', async () => {
     const OTRO_USER_DB = { id: 'otro-db-user-789' }
     mockRequireAuth.mockResolvedValue({ id: 'otro-auth-id' })
-    mockPrisma.user.findUnique.mockResolvedValue(OTRO_USER_DB)
+    mockGetOrCreateDbUser.mockResolvedValue(OTRO_USER_DB)
     mockPrisma.favorite.findFirst.mockResolvedValue(null)
-    
+
     const req = makeRequest({}, 'activity')
     await DELETE(req as any, { params: Promise.resolve({ targetId: TARGET_ID_1 }) })
 

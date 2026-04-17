@@ -12,7 +12,7 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { RatingForm } from '@/components/RatingForm';
 import { StarRating } from '@/components/StarRating';
 import { ActivityHistoryTracker } from '@/components/profile/ActivityHistoryTracker';
-import { getSession } from '@/lib/auth';
+import { getSession, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
@@ -139,24 +139,19 @@ export default async function ActividadDetallePage({
   let isFavorited = false;
   let userRating: { score: number; comment: string | null } | null = null;
   if (sessionUser) {
-    const dbUser = await prisma.user.findUnique({
-      where: { supabaseAuthId: sessionUser.id },
-      select: { id: true },
-    });
-    if (dbUser) {
-      const [fav, existingRating] = await Promise.all([
-        prisma.favorite.findFirst({
-          where: { userId: dbUser.id, activityId: id },
-          select: { id: true },
-        }),
-        prisma.rating.findUnique({
-          where: { userId_activityId: { userId: dbUser.id, activityId: id } },
-          select: { score: true, comment: true },
-        }),
-      ]);
-      isFavorited = fav !== null;
-      userRating = existingRating;
-    }
+    const dbUser = await getOrCreateDbUser(sessionUser);
+    const [fav, existingRating] = await Promise.all([
+      prisma.favorite.findFirst({
+        where: { userId: dbUser.id, activityId: id },
+        select: { id: true },
+      }),
+      prisma.rating.findUnique({
+        where: { userId_activityId: { userId: dbUser.id, activityId: id } },
+        select: { score: true, comment: true },
+      }),
+    ]);
+    isFavorited = fav !== null;
+    userRating = existingRating;
   }
 
   // Load public ratings summary

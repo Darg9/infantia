@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth'
+import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 export async function DELETE(
@@ -15,14 +15,7 @@ export async function DELETE(
     const { targetId } = await params
     const type = req.nextUrl.searchParams.get('type') || 'activity'
 
-    const dbUser = await prisma.user.findUnique({
-      where: { supabaseAuthId: user.id },
-      select: { id: true },
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
+    const dbUser = await getOrCreateDbUser(user)
 
     if (type === 'activity') {
       const existing = await prisma.favorite.findFirst({

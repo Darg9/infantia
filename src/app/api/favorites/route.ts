@@ -4,21 +4,14 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession, requireAuth } from '@/lib/auth'
+import { getSession, requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 
 export async function GET() {
   try {
     const user = await requireAuth()
 
-    const dbUser = await prisma.user.findUnique({
-      where: { supabaseAuthId: user.id },
-      select: { id: true },
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
+    const dbUser = await getOrCreateDbUser(user)
 
     const favorites = await prisma.favorite.findMany({
       where: { userId: dbUser.id },
@@ -39,14 +32,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
     }
 
-    const dbUser = await prisma.user.findUnique({
-      where: { supabaseAuthId: user.id },
-      select: { id: true },
-    })
-
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 })
-    }
+    const dbUser = await getOrCreateDbUser(user)
 
     const body = await req.json()
     const { targetId, type = 'activity' } = body

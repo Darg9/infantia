@@ -314,8 +314,13 @@ export class ScrapingPipeline {
 
     const batchResult: BatchPipelineResult = {
       sourceUrl: listingUrl,
+      sourceId: sourceId ?? null,
       discoveredLinks: allLinks.length,
       filteredLinks: activityUrls.length,
+      parserMetrics: {
+        geminiOk:      pm.geminiOk,
+        fallbackCount: pm.fallbackUsed,
+      },
       results,
     };
 

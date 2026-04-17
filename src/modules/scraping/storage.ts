@@ -250,6 +250,33 @@ export class ScrapingStorage {
       sourceUrl: batchResult.sourceUrl,
       timestamp: new Date().toISOString(),
     }));
+
+    // ── Trazabilidad: registrar funnel completo del run (fire-and-forget) ──────
+    if (batchResult.sourceId) {
+      void (async () => {
+        try {
+          await prisma.$executeRaw`
+            INSERT INTO source_run_metrics
+              (source_id, urls_scraped, urls_after_preflight,
+               gemini_ok, fallback_count, activities_saved)
+            VALUES
+              (${batchResult.sourceId},
+               ${batchResult.discoveredLinks},
+               ${batchResult.filteredLinks},
+               ${batchResult.parserMetrics?.geminiOk    ?? 0},
+               ${batchResult.parserMetrics?.fallbackCount ?? 0},
+               ${result.saved})
+          `;
+        } catch (err: unknown) {
+          // Non-fatal — nunca rompe el pipeline
+          log.warn('[storage] source_run_metrics insert fallido (non-fatal)', {
+            sourceId: batchResult.sourceId,
+            error: err instanceof Error ? err.message : String(err),
+          });
+        }
+      })();
+    }
+
     return result;
   }
 

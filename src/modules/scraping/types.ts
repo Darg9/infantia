@@ -59,8 +59,15 @@ export const discoveredActivityUrlsSchema = z.object({
 
 export type BatchPipelineResult = {
   sourceUrl: string;
+  /** ID de ScrapingSource en BD (TEXT). Presente cuando el pipeline tiene logger configurado. */
+  sourceId?: string | null;
   discoveredLinks: number;
   filteredLinks: number;
+  /** Métricas del parser (Gemini vs fallback) para este batch. */
+  parserMetrics?: {
+    geminiOk: number;
+    fallbackCount: number;
+  };
   results: Array<{
     url: string;
     data: ActivityNLPResult | null;

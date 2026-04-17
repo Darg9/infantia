@@ -82,8 +82,8 @@ export async function POST(req: NextRequest) {
 
 
     return NextResponse.json({ success: true }, { status: 201 })
-  } catch (err: any) {
-    console.error('FAVORITES POST ERROR:', err)
-    return NextResponse.json({ error: 'Error al guardar favorito', details: err?.message || String(err) }, { status: 500 })
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: 'Error al guardar favorito', details: msg }, { status: 500 })
   }
 }

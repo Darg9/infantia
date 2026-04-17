@@ -9,6 +9,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 
 interface FavoriteButtonProps {
   targetId: string
@@ -26,25 +27,21 @@ export function FavoriteButton({
 }: FavoriteButtonProps) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited)
   const [isLoading, setIsLoading] = useState(false)
+  const { toast } = useToast()
   const router = useRouter()
 
   const iconSize = size === 'sm' ? 16 : 20
 
-  async function handleClick(e: React.MouseEvent) {
-    e.preventDefault() // evita que el link del ActivityCard se active
-    e.stopPropagation()
-
+  const handleToggle = async (expectLike: boolean) => {
     if (isLoading) return
     setIsLoading(true)
 
     // Optimistic update
-    const wasLiked = isFavorited
-    setIsFavorited(!wasLiked)
+    setIsFavorited(expectLike)
 
     try {
       let res: Response
-
-      if (wasLiked) {
+      if (!expectLike) {
         // Eliminar favorito
         res = await fetch(`/api/favorites/${targetId}?type=${targetType}`, { method: 'DELETE' })
       } else {
@@ -58,21 +55,38 @@ export function FavoriteButton({
 
       if (res.status === 401) {
         // No autenticado — revertir y redirigir a login
-        setIsFavorited(wasLiked)
+        setIsFavorited(!expectLike)
         router.push('/login?next=' + encodeURIComponent(`/${targetType === 'activity' ? 'actividades' : 'lugares'}/${targetId}`))
         return
       }
 
       if (!res.ok) {
         // Error del servidor — revertir
-        setIsFavorited(wasLiked)
+        setIsFavorited(!expectLike)
+      } else {
+        // Toast notifications en SUCCESS
+        if (expectLike) {
+          toast.success('Guardado en favoritos', {
+            action: { label: 'Ver favoritos →', href: '/perfil/favoritos' }
+          })
+        } else {
+          toast.info('Eliminado de favoritos', {
+            action: { label: 'Deshacer', onClick: () => handleToggle(true) }
+          })
+        }
       }
     } catch {
       // Error de red — revertir
-      setIsFavorited(wasLiked)
+      setIsFavorited(!expectLike)
     } finally {
       setIsLoading(false)
     }
+  }
+
+  function handleClick(e: React.MouseEvent) {
+    e.preventDefault() // evita que el link del ActivityCard se active
+    e.stopPropagation()
+    handleToggle(!isFavorited)
   }
 
   return (

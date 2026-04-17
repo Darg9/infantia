@@ -29,7 +29,7 @@ async function main() {
       "id"               UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
       "raw_input"        VARCHAR(200) NOT NULL,
       "normalized_input" VARCHAR(200) NOT NULL,
-      "suggested_city_id" UUID   REFERENCES "cities"("id") ON DELETE SET NULL,
+      "suggested_city_id" TEXT   REFERENCES "cities"("id") ON DELETE SET NULL,
       "similarity_score" FLOAT  NOT NULL,
       "resolved"         BOOLEAN NOT NULL DEFAULT false,
       "created_at"       TIMESTAMPTZ NOT NULL DEFAULT now()

@@ -82,6 +82,24 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-gray-900">Content Quality</h2>
           <p className="text-sm text-gray-500 mt-1">Monitor de pipeline: ruido, longitud y alertas</p>
         </Link>
+
+        <Link
+          href="/admin/cities/review"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">🗺️</div>
+          <h2 className="font-semibold text-gray-900">Revisión de ciudades</h2>
+          <p className="text-sm text-gray-500 mt-1">Resuelve ambigüedades de ciudad con baja confianza</p>
+        </Link>
+
+        <Link
+          href="/admin/preflight"
+          className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+        >
+          <div className="text-2xl mb-2">🗓️</div>
+          <h2 className="font-semibold text-gray-900">Date Preflight</h2>
+          <p className="text-sm text-gray-500 mt-1">Análisis de filtrado previo a Gemini por rango de fechas</p>
+        </Link>
       </div>
     </div>
   )

@@ -52,7 +52,7 @@ export function queueCityReview(entry: CityReviewEntry): void {
         INSERT INTO "city_review_queue"
           ("raw_input", "normalized_input", "suggested_city_id", "similarity_score")
         VALUES
-          (${entry.rawInput}, ${entry.normalizedInput}, ${entry.suggestedCityId}::uuid, ${entry.similarityScore})
+          (${entry.rawInput}, ${entry.normalizedInput}, ${entry.suggestedCityId}, ${entry.similarityScore})
       `;
     } catch (err: unknown) {
       // Non-fatal — no rompe el pipeline

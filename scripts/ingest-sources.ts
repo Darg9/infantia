@@ -105,7 +105,8 @@ const ALL_SOURCES: Source[] = [
 
   // ── web: Bogotá — otras instituciones ────────────────────────────────────
   { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Idartes',                            channel: 'web', url: 'https://idartes.gov.co/es/agenda',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FUGA — Filarmónica de Bogotá',       channel: 'web', url: 'https://fuga.gov.co/agenda',                                      cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },

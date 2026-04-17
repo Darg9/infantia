@@ -1,4 +1,4 @@
-# HabitaPlan Design System (v1)
+# HabitaPlan Design System (v2 — v0.11.0-S53)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
 
@@ -140,4 +140,56 @@ Los root files inyectan y exponen el ecosistema de importación limpia:
 ```tsx
 // Correcto (Import limpio vía barrel)
 import { Button, Input, Card, useToast } from '@/components/ui'
+```
+
+---
+
+## 7. Notificaciones — Regla Estricta (NUEVO v0.11.0-S53)
+
+El sistema de notificaciones es un **monopolio arquitectónico**. Su propósito es garantizar UX no bloqueante y coherente en toda la plataforma.
+
+### Mandato
+
+| Método | Estado | Motivo |
+|---|---|---|
+| `useToast()` (interno) | ✅ **Único válido** | SSOT de feedback — cola FIFO, auto-dismiss 4s |
+| `window.alert()` | ❌ **Prohibido** | Bloqueante, no estándar, rompe UX |
+| `window.prompt()` | ❌ **Prohibido** | Bloqueante, sin control de diseño |
+| `window.confirm()` | ⚠️ **Temporal permitido** | Hasta que exista el componente `Modal` en DS |
+| `react-hot-toast` | ❌ **Prohibido** | Librería externa — rompe Design System |
+| `sonner` | ❌ **Prohibido** | Librería externa — rompe Design System |
+| `react-toastify` | ❌ **Prohibido** | Librería externa — rompe Design System |
+
+### Enforcement mecánico (ESLint)
+
+Las reglas están activas en `eslint.config.mjs` y **bloquean la compilación CI**:
+
+```js
+// no-restricted-globals: bloquea alert() y prompt()
+// no-restricted-imports: bloquea react-hot-toast, sonner, react-toastify
+```
+
+Si se intenta usar cualquiera de los métodos prohibidos, el IDE mostrará un error inmediato con el mensaje: _"Use useToast instead of alert()"_.
+
+### Configuración del Toast
+
+| Parámetro | Valor |
+|---|---|
+| Posición mobile | `bottom-center` |
+| Posición desktop | `bottom-right` |
+| Duración auto-dismiss | 4 segundos |
+| Cola máxima visible | 3 toasts simultáneos |
+| Acción inline | Permitida (no obligatoria) |
+
+### Uso correcto
+
+```tsx
+const { toast } = useToast()
+
+toast.success('Guardado en favoritos', {
+  action: { label: 'Ver favoritos →', href: '/perfil/favoritos' }
+})
+toast.error('Error al guardar')
+toast.info('Sesión iniciada')
+toast.warning('Acción irreversible')
 ```

@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-16 | Version: v0.11.0-S52
+Actualizado: 2026-04-17 | Version: v0.11.0-S53
 
-## Resumen Actual (v0.11.0-S52 / Parser Resiliente — fallback Cheerio)
-- **Archivos de Test:** 71 (+1: parser.test.ts)
-- **Tests Totales:** 1123 (+18 vs S51: 18 tests parser — 4 escenarios Gemini/fallback/error/discover)
+## Resumen Actual (v0.11.0-S53 / Intent Manager + Design System Enforcement)
+- **Archivos de Test:** 73 (+2 desde S52)
+- **Tests Totales:** 1155 (+32 vs S52)
 - **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
@@ -13,11 +13,11 @@ Actualizado: 2026-04-16 | Version: v0.11.0-S52
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 69 |
-| Tests totales | 1056 |
-| Pasados | 1054 (2 skipped) |
+| Archivos de test | 73 |
+| Tests totales | 1155 |
+| Pasados | 1153 (2 skipped) |
 | Fallidos | 0 |
-| Threshold configurado | 85% branches (cap desde día 16) |
+| Threshold configurado | 85% branches (cap desde día 33) |
 | Statements | >91% ✅ |
 | Branches | >85% ✅ |
 | Functions | >88% ✅ |

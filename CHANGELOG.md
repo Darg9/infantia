@@ -9,6 +9,36 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S53] — 2026-04-17 (Design System Enforcement + Global Intent Manager)
+
+### Features
+
+#### Design System Enforcement (ESLint mecánico)
+- **`eslint.config.mjs`**: reglas `no-restricted-globals` que bloquean `alert` y `prompt` con mensaje dirección a `useToast`. Regla `no-restricted-imports` que bloquea `react-hot-toast`, `sonner`, `react-toastify`.
+- **`ARCHITECTURE.md`** § Design System: nueva Regla 4 — UI Rule (Strict) para Feedback. `window.alert`/`window.prompt` prohibidos. Librerías externas de toast prohibidas. `window.confirm` permitido temporalmente hasta modal system.
+- **`CLAUDE.md`** § Conventions: sección `Design System Enforcement` — mandato operativo para agentes y desarrolladores futuros.
+- Verificación grep confirmada: 0 usos de `alert()`, `prompt()`, `react-hot-toast`, `sonner` en el codebase.
+
+#### Global Intent Manager (patrón auth cross-feature)
+- **`src/lib/intent-manager.ts`** [NUEVO]: `IntentManager.save()`, `.consume()`, `.clear()`. `localStorage` key `hp_intent`. TTL 15 min con timestamp. Idempotente (consume borra inmediatamente).
+- **`src/lib/require-auth.ts`** [NUEVO]: async guard — `supabase.auth.getSession()` pre-redirect. Guarda Intent y hace `router.push('/login')` si no hay sesión.
+- **`src/components/IntentResolver.tsx`** [NUEVO]: Client Component null-render montado globalmente en layout. `useEffect([])` — ejecuta UNA SOLA VEZ al montar. Micro-delay 50ms para cookies. Manejo silencioso de errores (no rompe login flow).
+- **`src/modules/favorites/toggle-favorite.ts`** [NUEVO]: servicio HTTP extraído para evitar duplicación entre `FavoriteButton` e `IntentResolver`.
+- **`src/app/layout.tsx`**: monta `<IntentResolver />` dentro de `<ToastProvider>` a nivel global.
+- **`src/components/FavoriteButton.tsx`**: usa `requireAuth` preemptivamente — elimina lógica 401 duplicada. Usa `toggleFavorite` service. Usa `usePathname` para `returnTo`.
+
+### Tests
+- **1155 tests** — 73 archivos — 0 fallos ✅ (+32 vs S52)
+- `FavoriteButton.test.tsx` actualizado: `renderWithProviders` wrapper (ToastProvider) + mocks de `requireAuth` y `toggleFavorite` — 11/11 passing.
+- `tsc --noEmit`: 0 errores.
+
+### Deploy
+- Push a `master` — 2026-04-17 10:09 COL
+- Commits: `f9a97bf` (design-system enforcement) + `7d25581` (intent manager)
+- **Vercel `habitaplan-prod`**: auto-deploy activo.
+
+---
+
 ## [v0.11.0-S52] — 2026-04-16 (Parser Resiliente — fallback Cheerio cuando Gemini no disponible)
 
 ### Features

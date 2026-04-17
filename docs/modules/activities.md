@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S48
-**Última actualización:** 15 de abril de 2026
+**Versión actual:** v0.11.0-S53
+**Última actualización:** 17 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -25,9 +25,9 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| GET | `/api/favorites` | Sí | Lista activityIds favoritos del usuario |
-| POST | `/api/favorites` | Sí | Añade favorito `{ activityId }` (upsert, idempotente) |
-| DELETE | `/api/favorites/:activityId` | Sí | Elimina favorito (404 si no existe) |
+| GET | `/api/favorites` | Sí | Lista favoritos del usuario (actividades y lugares) |
+| POST | `/api/favorites` | Sí | Añade favorito `{ targetId, type: 'activity'\|'place' }` (upsert, idempotente) |
+| DELETE | `/api/favorites/[targetId]?type=activity\|place` | Sí | Elimina favorito polimórfico (404 si no existe) |
 
 ## Endpoints de perfil / hijos / notificaciones
 
@@ -224,3 +224,26 @@ Para proteger al proyecto como "Agregador de Información", la página de detall
 1.  Enlaza de forma transparente la **fuente oficial original** con etiqueta de "(sitio oficial)".
 2.  Desmiente mediante disclaimers cualquier adjudicación sobre ser autor original del contenido.
 3.  Protege a la marca eliminando certificaciones de viabilidad como sellos estáticos de "Evento Verificado" o "100% Confianza".
+
+## Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S53
+
+Todo flujo protegido (favoritos, acciones futuras) usa `requireAuth` del `src/lib/require-auth.ts` como único punto de entrada de auth. No se hacen redirects manuales a `/login`.
+
+```
+Click protegido (ej: FavoriteButton sin sesión)
+  ↓
+requireAuth(intent, router) [async — verifica supabase.auth.getSession()]
+  ↓ (sin sesión)
+IntentManager.save(intent) → localStorage (TTL 15min, key: hp_intent)
+router.push('/login')
+  ↓ login exitoso
+IntentResolver.tsx (global en layout, useEffect[])
+  ↓ IntentManager.consume() → ejecuta acción + toast.success + router.replace(returnTo)
+```
+
+**Intent types:**
+- `NAVIGATE` — redirige a una ruta post-login
+- `TOGGLE_FAVORITE` — ejecuta `toggleFavorite()` y muestra toast de confirmación
+- `GENERIC_ACTION` — hook genérico para acciones futuras
+
+**toggleFavorite service:** `src/modules/favorites/toggle-favorite.ts` — servicio HTTP reutilizado por `FavoriteButton` e `IntentResolver`. Cero duplicación de lógica.

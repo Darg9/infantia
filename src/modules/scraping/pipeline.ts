@@ -11,6 +11,7 @@ import { evaluatePreflight, getPreflightStats, resetPreflightStats } from './uti
 import { savePreflightLog } from './utils/preflight-db';
 import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
+import { prisma } from '../../lib/db';
 
 const log = createLogger('scraping:pipeline');
 
@@ -162,7 +163,9 @@ export class ScrapingPipeline {
     }
 
     // Sincronizar cache desde BD antes de filtrar (evita re-scrapear en otra máquina)
-    await this.cache.syncFromDb(new URL(listingUrl).hostname.replace('www.', ''));
+    const cacheSource = new URL(listingUrl).hostname.replace('www.', '');
+    this.cache.setSource(cacheSource);  // fix: entries se guardan con el hostname correcto
+    await this.cache.syncFromDb(cacheSource);
 
     // Fase 1: Extraer links de TODAS las páginas del listado
     log.info(`Fase 1: Extrayendo links (con paginación automática)...`);
@@ -213,11 +216,42 @@ export class ScrapingPipeline {
       return { sourceUrl: listingUrl, discoveredLinks: allLinks.length, filteredLinks: 0, results: [] };
     }
 
-    // Fase 2.5: Filtrar URLs ya scrapeadas (incremental)
-    const newUrls = this.cache.filterNew(activityUrls);
+    // Fase 2.5: Filtrar URLs ya procesadas — doble fuente de verdad
+    // 1ª capa: cache en memoria/disco/BD (rápido, sin query extra)
+    const afterCache = this.cache.filterNew(activityUrls);
+
+    // 2ª capa: diff contra activities en BD (fuente de verdad absoluta)
+    // Detecta URLs que pasaron el cache pero ya tienen actividad guardada
+    // (ej: cache vacío por deploy, actividad existe en BD)
+    let newUrls = afterCache;
+    if (afterCache.length > 0 && this.storage) {
+      try {
+        const existingInDb = await prisma.activity.findMany({
+          where: { sourceUrl: { in: afterCache } },
+          select: { sourceUrl: true },
+        });
+        const existingSet = new Set(existingInDb.map((a) => a.sourceUrl).filter(Boolean));
+        const beforeDbFilter = afterCache.length;
+        newUrls = afterCache.filter((url) => !existingSet.has(url));
+        const dbSkipped = beforeDbFilter - newUrls.length;
+        if (dbSkipped > 0) {
+          log.info(`⏭️  DB diff: ${dbSkipped} URLs ya tienen actividad en BD (cache miss cubierto)`);
+          // Rehidratar cache para evitar la misma query en futuros runs
+          for (const url of afterCache.filter((u) => existingSet.has(u))) {
+            this.cache.add(url, '');
+          }
+        }
+      } catch (err: unknown) {
+        // Non-fatal — si falla el diff, continúa con el resultado del cache
+        log.warn('[pipeline] DB diff fallido, usando solo cache', {
+          error: err instanceof Error ? err.message : String(err),
+        });
+      }
+    }
+
     const skipped = activityUrls.length - newUrls.length;
     if (skipped > 0) {
-      log.info(`⏭️  Saltando ${skipped} URLs ya scrapeadas. Nuevas: ${newUrls.length}`);
+      log.info(`⏭️  Saltando ${skipped} URLs ya conocidas (cache + BD). Nuevas: ${newUrls.length}`);
     }
 
     if (newUrls.length === 0) {

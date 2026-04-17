@@ -80,6 +80,7 @@ vi.mock('../cache', () => ({
     this.filterNew = mockFilterNew;
     this.add = mockCacheAdd;
     this.save = mockCacheSave;
+    this.setSource = vi.fn();  // fix: pipeline.ts llama setSource antes de syncFromDb
     this.syncFromDb = vi.fn().mockResolvedValue(undefined);
     this.saveToDb = vi.fn().mockResolvedValue(undefined);
   }),
@@ -123,6 +124,15 @@ vi.mock('../resilience', () => ({
 
 vi.mock('@prisma/adapter-pg', () => ({
   PrismaPg: vi.fn().mockImplementation(function () { return {}; }),
+}));
+
+// Mock del prisma compartido — activity.findMany devuelve [] (ninguna URL conocida en BD)
+vi.mock('../../../lib/db', () => ({
+  prisma: {
+    activity: {
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+  },
 }));
 vi.mock('../../../generated/prisma/client', () => ({
   PrismaClient: vi.fn().mockImplementation(function () {

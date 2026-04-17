@@ -101,6 +101,11 @@ export class ScrapingCache {
     writeFileSync(CACHE_PATH, JSON.stringify(this.data, null, 2));
   }
 
+  /** Actualiza el nombre de fuente (se llama cuando se conoce la URL del listado). */
+  setSource(name: string): void {
+    this.sourceName = name;
+  }
+
   has(url: string): boolean {
     return url in this.data.entries;
   }

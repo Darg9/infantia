@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.11.0-S53
+**Versión:** ✅ v0.11.0-S54
 **Última actualización:** 17 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -56,7 +56,7 @@ Desde la capa de producto el UI lanza los siguientes eventos vitales en el ciclo
 - **`activity_view`**: Clics desde listado al Single Detail Page.
 - **`outbound_click`**: Evento final del funnel. (Redirige tráfico pagado o gratis al organizador de la actividad infantil).
 
-## 🔐 Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S53
+## 🔐 Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S54
 
 Patrón global y reutilizable para preservar la intención del usuario ante cualquier acción protegida, sin acoplar la lógica de negocio al flujo de login.
 

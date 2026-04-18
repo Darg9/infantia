@@ -1,4 +1,4 @@
-# HabitaPlan Design System (v2 — v0.11.0-S53)
+# HabitaPlan Design System (v2 — v0.11.0-S54)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
 
@@ -88,7 +88,9 @@ Todo reside exportado limpiamente en su Barrel `src/components/ui`.
 ### Toast (`useToast`)
 
 - **Propósito**: Notificaciones cruzadas FIFO (cap de 3 visibles).
-- **Regla**: Los toasts de \`error\` deben empatar con mensajes inline de inputs donde aplique, reforzando a11y. Los \`success\` van nativamente aislados en toast para no arruinar UI. Soporta \`deduplicación\` nativa.
+- **Semántica Exacta**: Soporta 4 estados: `success`, `error`, `warning`, `info`. (`toast.warning` maneja recuperables).
+- **Enforcement (Zero Debt)**: Uso obligatorio. ESLint (`no-restricted-globals`) bloquea el uso de `alert()`, `confirm()`, `prompt()` y rechaza librerías externas.
+- **Regla**: Los toasts de `error` deben empatar con mensajes inline de inputs donde aplique, reforzando a11y. Los `success` van nativamente aislados en toast para no arruinar UI. Soporta `deduplicación` nativa.
 - **Ejemplo**:
   ```tsx
   const { toast } = useToast()

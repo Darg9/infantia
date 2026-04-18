@@ -33,6 +33,8 @@
 import 'dotenv/config';
 import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
 import { enqueueBatchJob, closeScrapingQueue, closeRedisConnection } from '../src/modules/scraping/queue';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { PrismaClient } from '../src/generated/prisma/client';
 
 type Channel = 'web' | 'instagram' | 'tiktok' | 'facebook' | 'telegram';
 
@@ -229,10 +231,39 @@ function selectSources(channelArg: string | null, sourceArg: string | null): Sou
 
 // ── Runners ────────────────────────────────────────────────────────────────────
 
+async function saveMetrics(
+  prisma: PrismaClient,
+  source: Source,
+  postsDetected: number,
+  postsParsed: number,
+  postsFailed: number,
+  errorType: string | null,
+): Promise<void> {
+  try {
+    await prisma.$executeRawUnsafe(
+      `INSERT INTO "ingest_metrics" (source_id, source_name, channel, posts_detected, posts_parsed, posts_failed, error_type)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      new URL(source.url).hostname.replace('www.', ''),
+      source.name,
+      source.channel,
+      postsDetected,
+      postsParsed,
+      postsFailed,
+      errorType,
+    );
+  } catch {
+    // métricas son best-effort — no bloquear ingest
+  }
+}
+
 async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
   console.log(`\n🚀 INGESTA SECUENCIAL — ${sources.length} fuentes`);
   console.log(`   Modo: ${dryRun ? 'DRY RUN (sin guardar)' : 'GUARDAR EN BD'}`);
   console.log(`   Páginas máx por fuente: ${maxPages}\n`);
+
+  const connectionString = `${process.env.DATABASE_URL}`;
+  const adapter = new PrismaPg({ connectionString });
+  const metricsPrisma = new PrismaClient({ adapter });
 
   const summary: { name: string; saved: number; failed: number; skipped: number }[] = [];
 
@@ -246,26 +277,48 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
     const pipeline = new ScrapingPipeline({ saveToDb: !dryRun, cityName: source.cityName, verticalSlug: source.verticalSlug });
     try {
       let saved = 0, failed = 0, skipped = 0;
-      if (source.channel === 'instagram') {
-        const result = await pipeline.runInstagramPipeline(source.url, source.instagram ?? {});
-        saved   = result.results.filter((r) => r.data).length;
-        failed  = result.results.filter((r) => !r.data && r.error).length;
-        skipped = result.postsExtracted - result.results.length;
-      } else {
-        const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
-        saved   = result.results.filter((r) => r.data).length;
-        failed  = result.results.filter((r) => !r.data).length;
-        skipped = result.discoveredLinks - result.filteredLinks;
+
+      switch (source.channel) {
+        case 'instagram': {
+          const result = await pipeline.runInstagramPipeline(source.url, source.instagram ?? {});
+          saved   = result.results.filter((r) => r.data).length;
+          failed  = result.results.filter((r) => !r.data && r.error).length;
+          skipped = result.postsExtracted - result.results.length;
+          const errorType = result.results.some((r) => r.error?.includes('QUOTA_EXHAUSTED')) ? 'quota'
+            : failed > 0 ? 'parse' : null;
+          await saveMetrics(metricsPrisma, source, result.postsExtracted, saved, failed, errorType);
+          break;
+        }
+        case 'web':
+        case 'tiktok':
+        case 'facebook':
+        case 'telegram': {
+          const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
+          saved   = result.results.filter((r) => r.data).length;
+          failed  = result.results.filter((r) => !r.data).length;
+          skipped = result.discoveredLinks - result.filteredLinks;
+          const errorType = failed > 0 ? 'parse' : null;
+          await saveMetrics(metricsPrisma, source, result.filteredLinks, saved, failed, errorType);
+          break;
+        }
+        default:
+          throw new Error(`Canal desconocido: ${(source as Source).channel}`);
       }
+
       summary.push({ name: source.name, saved, failed, skipped });
       console.log(`\n✅ ${source.name}: ${saved} guardadas, ${failed} fallidas, ${skipped} omitidas`);
     } catch (err: any) {
+      const isQuota = err.message?.includes('QUOTA_EXHAUSTED');
+      const errorType = isQuota ? 'quota' : 'network';
+      await saveMetrics(metricsPrisma, source, 0, 0, 1, errorType);
       console.error(`\n❌ Error fatal en ${source.name}: ${err.message}`);
       summary.push({ name: source.name, saved: 0, failed: 1, skipped: 0 });
     } finally {
       await pipeline.disconnect();
     }
   }
+
+  await metricsPrisma.$disconnect();
 
   console.log(`\n${'='.repeat(60)}`);
   console.log('📊 RESUMEN FINAL');

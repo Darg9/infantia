@@ -3,6 +3,7 @@ import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredA
 import { createLogger } from '../../../lib/logger';
 import { preFilterUrls, getProductivityTier } from '../../../lib/url-classifier';
 import { isRetryableError } from '../parser/parser.types';
+import { quota } from '../../../lib/quota-tracker';
 
 const log = createLogger('scraping:gemini');
 
@@ -116,19 +117,24 @@ ESTRUCTURA JSON ESPERADA:
 const MAX_RETRIES = 3;
 const RETRY_BASE_MS = 2000;
 
-async function callWithRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+async function callWithRetry<T>(fn: () => Promise<T>, label: string, apiKey?: string): Promise<T> {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       return await fn();
     } catch (error: any) {
       const status = error?.status ?? error?.httpStatusCode ?? 0;
-      const isRetryable = status === 503 || status === 429 || error.message?.includes('503') || error.message?.includes('429');
+      const is429 = status === 429 || error.message?.includes('429');
+      const isRetryable = status === 503 || is429 || error.message?.includes('503');
 
       if (isRetryable && attempt < MAX_RETRIES) {
         const delay = RETRY_BASE_MS * Math.pow(2, attempt - 1);
         log.warn(`[${label}] Error ${status || 'retryable'} (intento ${attempt}/${MAX_RETRIES}). Reintentando en ${delay}ms...`);
         await new Promise((r) => setTimeout(r, delay));
         continue;
+      }
+      // Último intento fallido con 429 → marcar cuota agotada
+      if (is429 && apiKey) {
+        await quota.markExhausted(apiKey).catch(() => {});
       }
       throw error;
     }
@@ -166,6 +172,11 @@ export class GeminiAnalyzer {
       return this.mockAnalysis(url);
     }
 
+    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    if (!(await quota.isAvailable(apiKey))) {
+      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando análisis.');
+    }
+
     const truncatedText = sourceText.substring(0, 6000);
     const userMessage = `URL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
 
@@ -184,6 +195,7 @@ export class GeminiAnalyzer {
       const result = await callWithRetry(
         () => model.generateContent(userMessage),
         'GEMINI',
+        apiKey,
       );
       const rawText = result.response.text();
 
@@ -242,6 +254,11 @@ export class GeminiAnalyzer {
     if (!this.genAI) {
       log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Retornando todos los links.');
       return links.map((l) => l.url);
+    }
+
+    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    if (!(await quota.isAvailable(apiKey))) {
+      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando discover.');
     }
 
     // Extensiones de archivo que nunca son páginas de actividades
@@ -338,6 +355,7 @@ ${linksText}`;
         const result = await callWithRetry(
           () => model.generateContent(prompt),
           `GEMINI-DISCOVER-lote${chunkIndex + 1}`,
+          apiKey,
         );
         const rawText = result.response.text();
         const jsonStr = rawText
@@ -397,6 +415,11 @@ ${linksText}`;
       return this.mockAnalysis(post.url);
     }
 
+    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    if (!(await quota.isAvailable(apiKey))) {
+      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando análisis.');
+    }
+
     const userMessage = `POST DE INSTAGRAM:
 URL: ${post.url}
 Fecha: ${post.timestamp ?? 'No disponible'}
@@ -423,6 +446,7 @@ ${profileBio}`;
       const result = await callWithRetry(
         () => model.generateContent(userMessage),
         'GEMINI-IG',
+        apiKey,
       );
       const rawText = result.response.text();
 

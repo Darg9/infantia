@@ -5,6 +5,9 @@
 // Props: href → API route que retorna el PDF, label → texto del botón
 // =============================================================================
 
+import { useToast } from '@/components/ui/toast';
+import { createLogger } from '@/lib/logger';
+
 interface Props {
   href: string;
   label?: string;
@@ -12,14 +15,16 @@ interface Props {
   eventName?: string;
 }
 
+const log = createLogger('legal:pdf-download');
+
 export function DownloadPDFButton({ href, label = 'Descargar Documento', filename, eventName = 'download_document_pdf' }: Props) {
+  const { toast } = useToast();
+
   const handleDownload = async () => {
     try {
-      console.info(JSON.stringify({
-        event: eventName,
-        filename: filename || 'documento.pdf',
-        timestamp: new Date().toISOString()
-      }));
+      log.info(eventName, {
+        filename: filename || 'documento.pdf'
+      });
       const res = await fetch(href);
       if (!res.ok) throw new Error('No se pudo generar el documento.');
 
@@ -34,8 +39,8 @@ export function DownloadPDFButton({ href, label = 'Descargar Documento', filenam
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error('[PDF Download]', err);
-      alert('No se pudo descargar el documento. Intenta de nuevo más tarde.');
+      log.error('PDF Download failed', { error: err });
+      toast.error('No se pudo descargar el documento. Intenta de nuevo más tarde.');
     }
   };
 

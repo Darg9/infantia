@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/components/ui/toast';
 
 interface SourceToggleProps {
   sourceId: string;
@@ -13,6 +14,7 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
   const [active, setActive] = useState(isActive);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   async function toggle() {
     setLoading(true);
@@ -27,7 +29,7 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
       setActive(next);
       router.refresh();
     } catch {
-      alert(`No se pudo ${next ? 'activar' : 'desactivar'} ${sourceName}`);
+      toast.error(`No se pudo ${next ? 'activar' : 'desactivar'} ${sourceName}`);
     } finally {
       setLoading(false);
     }

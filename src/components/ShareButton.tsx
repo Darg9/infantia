@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { SITE_URL } from '@/config/site'
 import { activityPath } from '@/lib/activity-url'
 import { createLogger } from '@/lib/logger';
+import { useToast } from '@/components/ui/toast';
 
 const log = createLogger('share-button');
 
@@ -27,6 +28,7 @@ export function ShareButton({
   const [isOpen, setIsOpen] = useState(false)
   const [supportsWebShare, setSupportsWebShare] = useState(false)
   const [copied, setCopied] = useState(false)
+  const { toast } = useToast()
 
   useEffect(() => {
     setSupportsWebShare(!!navigator.share)
@@ -68,7 +70,7 @@ export function ShareButton({
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
-      alert('No se pudo copiar al portapapeles')
+      toast.error('No se pudo copiar al portapapeles')
       log.error(String(err), { error: err })
     }
   }

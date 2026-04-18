@@ -515,12 +515,12 @@ export class ScrapingPipeline {
 
         log.info(`→ "${data.title}" (confianza: ${data.confidenceScore})`);
       } catch (error: any) {
-        log.error(`Error analizando ${post.url}: ${error.message}`);
-        results.push({ postUrl: post.url, data: null, error: error.message });
         if (error.message?.includes('QUOTA_EXHAUSTED')) {
           log.warn(`Todas las keys agotadas — deteniendo loop de ${newPosts.length - i - 1} posts restantes.`);
-          break;
+          break; // no contar como failed — cuota no es un fallo de parsing
         }
+        log.error(`Error analizando ${post.url}: ${error.message}`);
+        results.push({ postUrl: post.url, data: null, error: error.message });
       }
     }
 

@@ -245,10 +245,18 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
 
     const pipeline = new ScrapingPipeline({ saveToDb: !dryRun, cityName: source.cityName, verticalSlug: source.verticalSlug });
     try {
-      const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
-      const saved   = result.results.filter((r) => r.data).length;
-      const failed  = result.results.filter((r) => !r.data).length;
-      const skipped = result.discoveredLinks - result.filteredLinks;
+      let saved = 0, failed = 0, skipped = 0;
+      if (source.channel === 'instagram') {
+        const result = await pipeline.runInstagramPipeline(source.url, source.instagram ?? {});
+        saved   = result.results.filter((r) => r.data).length;
+        failed  = result.results.filter((r) => !r.data && r.error).length;
+        skipped = result.postsExtracted - result.results.length;
+      } else {
+        const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
+        saved   = result.results.filter((r) => r.data).length;
+        failed  = result.results.filter((r) => !r.data).length;
+        skipped = result.discoveredLinks - result.filteredLinks;
+      }
       summary.push({ name: source.name, saved, failed, skipped });
       console.log(`\n✅ ${source.name}: ${saved} guardadas, ${failed} fallidas, ${skipped} omitidas`);
     } catch (err: any) {

@@ -24,8 +24,8 @@ export default async function PreflightPage() {
         >
           &larr; Panel admin
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Date Preflight</h1>
-        <p className="text-gray-500 text-sm mt-2">
+        <h1 className="text-3xl font-bold text-[var(--hp-text-primary)]">Date Preflight</h1>
+        <p className="text-[var(--hp-text-secondary)] text-sm mt-2">
           Análisis de filtrado previo a Gemini. Detecta over/under-filtering y fallos de parsing
           por rango de fechas.
         </p>
@@ -45,7 +45,7 @@ export default async function PreflightPage() {
             {label}
           </span>
         ))}
-        <span className="text-xs text-gray-400 self-center">
+        <span className="text-xs text-[var(--hp-text-muted)] self-center">
           · TTL recomendado: 14 días
         </span>
       </div>

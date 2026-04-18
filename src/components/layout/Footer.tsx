@@ -34,7 +34,7 @@ const NAV_COLUMNS = [
 
 export function Footer() {
   return (
-    <footer aria-label="Pie de página" className="bg-white border-t border-gray-100 mt-auto">
+    <footer aria-label="Pie de página" className="bg-[var(--hp-bg-surface)] border-t border-[var(--hp-border)] mt-auto">
       <div className="max-w-6xl mx-auto px-4 py-10">
 
         {/* ── Grid de columnas ─────────────────────────────────────── */}
@@ -43,7 +43,7 @@ export function Footer() {
           {/* Columna 1 — Brand */}
           <div className="col-span-2 sm:col-span-1">
             <span className="text-lg font-bold text-brand-500">HabitaPlan</span>
-            <p className="text-sm text-gray-500 mt-2 leading-relaxed max-w-xs">
+            <p className="text-sm text-[var(--hp-text-secondary)] mt-2 leading-relaxed max-w-xs">
               Encuentra actividades para disfrutar en familia
             </p>
           </div>
@@ -51,7 +51,7 @@ export function Footer() {
           {/* Columnas 2-4 — Navegación */}
           {NAV_COLUMNS.map((col) => (
             <div key={col.title}>
-              <h3 className="text-sm font-semibold text-gray-700 mb-4">
+              <h3 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">
                 {col.title}
               </h3>
               <ul className="space-y-3">
@@ -59,7 +59,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-gray-400 hover:text-indigo-600 transition-colors"
+                      className="text-sm text-[var(--hp-text-muted)] hover:text-indigo-600 transition-colors"
                     >
                       {link.label}
                     </Link>
@@ -71,7 +71,7 @@ export function Footer() {
         </div>
 
         {/* ── Barra inferior ───────────────────────────────────────── */}
-        <div className="border-t border-gray-100 mt-8 pt-4 text-xs text-gray-400 text-center">
+        <div className="border-t border-[var(--hp-border)] mt-8 pt-4 text-xs text-[var(--hp-text-muted)] text-center">
           Bogotá, Colombia · © {new Date().getFullYear()} HabitaPlan
         </div>
 

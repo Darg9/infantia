@@ -42,14 +42,14 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
       <button
         onClick={() => goTo(page - 1)}
         disabled={page === 1}
-        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         ← Anterior
       </button>
 
       {getPages().map((p, i) =>
         p === '…' ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm">…</span>
+          <span key={`ellipsis-${i}`} className="px-2 text-[var(--hp-text-muted)] text-sm">…</span>
         ) : (
           <button
             key={p}
@@ -57,7 +57,7 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
             className={
               p === page
                 ? 'rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white'
-                : 'rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 transition-colors'
+                : 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors'
             }
           >
             {p}
@@ -68,7 +68,7 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
       <button
         onClick={() => goTo(page + 1)}
         disabled={page >= totalPages}
-        className="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        className="rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       >
         Siguiente →
       </button>

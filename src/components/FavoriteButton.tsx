@@ -98,7 +98,7 @@ export function FavoriteButton({
         ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}
         ${isFavorited
           ? 'text-rose-500 hover:text-rose-400'
-          : 'text-gray-300 hover:text-rose-400'
+          : 'text-[var(--hp-text-muted)] hover:text-rose-400'
         }
       `}
     >

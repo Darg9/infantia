@@ -105,11 +105,11 @@ export default async function MapaPage() {
   return (
     <div className="flex flex-col" style={{ minHeight: 'calc(100vh - 64px)' }}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-4">
+      <div className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] px-4 py-4">
         <div className="mx-auto max-w-7xl flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Mapa de actividades</h1>
-            <p className="text-sm text-gray-500 mt-0.5">
+            <h1 className="text-xl font-bold text-[var(--hp-text-primary)]">Mapa de actividades</h1>
+            <p className="text-sm text-[var(--hp-text-secondary)] mt-0.5">
               {points.length} actividades en Bogotá · Haz clic en un pin para ver detalles
             </p>
           </div>
@@ -130,7 +130,7 @@ export default async function MapaPage() {
       </div>
 
       {/* Nota coordenadas */}
-      <p className="text-center text-xs text-gray-400 pb-3 px-4">
+      <p className="text-center text-xs text-[var(--hp-text-muted)] pb-3 px-4">
         Las posiciones son aproximadas. Las coordenadas exactas se añadirán con geocoding.
       </p>
     </div>

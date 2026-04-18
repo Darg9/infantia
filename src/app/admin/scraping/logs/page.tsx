@@ -37,41 +37,41 @@ export default async function ScrapingLogsPage() {
         <Link href="/admin" className="text-sm text-brand-600 hover:underline mb-2 inline-block">
           &larr; Panel admin
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Logs de ejecucion</h1>
-        <p className="text-gray-500 text-sm mt-1">Ultimas {logs.length} ejecuciones del pipeline</p>
+        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Logs de ejecucion</h1>
+        <p className="text-[var(--hp-text-secondary)] text-sm mt-1">Ultimas {logs.length} ejecuciones del pipeline</p>
       </div>
 
       {logs.length === 0 ? (
-        <div className="bg-white border border-gray-200 rounded-2xl p-12 text-center">
-          <p className="text-gray-400 text-lg">No hay logs todavia</p>
-          <p className="text-gray-400 text-sm mt-1">
+        <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-12 text-center">
+          <p className="text-[var(--hp-text-muted)] text-lg">No hay logs todavia</p>
+          <p className="text-[var(--hp-text-muted)] text-sm mt-1">
             Los logs se generan cuando el pipeline usa ScrapingLogger
           </p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+        <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 bg-gray-50">
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Estado</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Fuente</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Inicio</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">Encontradas</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">Nuevas</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-500">Duplicadas</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-500">Duracion</th>
+              <tr className="border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Estado</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Fuente</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Inicio</th>
+                <th className="text-right px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Encontradas</th>
+                <th className="text-right px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Nuevas</th>
+                <th className="text-right px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Duplicadas</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Duracion</th>
               </tr>
             </thead>
             <tbody>
               {logs.map((log) => {
-                const style = statusStyle[log.status] ?? { bg: 'bg-gray-100 text-gray-500', icon: '—' }
+                const style = statusStyle[log.status] ?? { bg: 'bg-gray-100 text-[var(--hp-text-secondary)]', icon: '—' }
                 const duration =
                   log.finishedAt && log.startedAt
                     ? Math.round((new Date(log.finishedAt).getTime() - new Date(log.startedAt).getTime()) / 1000)
                     : null
 
                 return (
-                  <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50/50">
+                  <tr key={log.id} className="border-b border-gray-50 hover:bg-[var(--hp-bg-page)]/50">
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full ${style.bg}`}>
                         {style.icon} {log.status}
@@ -80,10 +80,10 @@ export default async function ScrapingLogsPage() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-1.5">
                         <span>{platformEmoji[log.source.platform] ?? '🔗'}</span>
-                        <span className="font-medium text-gray-900">{log.source.name}</span>
+                        <span className="font-medium text-[var(--hp-text-primary)]">{log.source.name}</span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-[var(--hp-text-secondary)]">
                       {new Date(log.startedAt).toLocaleDateString('es-CO', {
                         day: 'numeric',
                         month: 'short',
@@ -91,14 +91,14 @@ export default async function ScrapingLogsPage() {
                         minute: '2-digit',
                       })}
                     </td>
-                    <td className="px-4 py-3 text-right text-gray-700">{log.itemsFound}</td>
-                    <td className="px-4 py-3 text-right text-gray-700">{log.itemsNew}</td>
-                    <td className="px-4 py-3 text-right text-gray-400">{log.itemsDuplicated}</td>
-                    <td className="px-4 py-3 text-gray-500">
+                    <td className="px-4 py-3 text-right text-[var(--hp-text-primary)]">{log.itemsFound}</td>
+                    <td className="px-4 py-3 text-right text-[var(--hp-text-primary)]">{log.itemsNew}</td>
+                    <td className="px-4 py-3 text-right text-[var(--hp-text-muted)]">{log.itemsDuplicated}</td>
+                    <td className="px-4 py-3 text-[var(--hp-text-secondary)]">
                       {duration != null ? (
                         duration >= 60 ? `${Math.floor(duration / 60)}m ${duration % 60}s` : `${duration}s`
                       ) : (
-                        <span className="text-gray-400">—</span>
+                        <span className="text-[var(--hp-text-muted)]">—</span>
                       )}
                     </td>
                   </tr>
@@ -111,7 +111,7 @@ export default async function ScrapingLogsPage() {
 
       {logs.some((l) => l.errorMessage) && (
         <div className="mt-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">Errores recientes</h2>
+          <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Errores recientes</h2>
           <div className="space-y-3">
             {logs
               .filter((l) => l.errorMessage)

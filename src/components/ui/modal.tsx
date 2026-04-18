@@ -147,8 +147,8 @@ export function Modal({
         aria-describedby={description ? descId : undefined}
         className={clsx(
           'relative z-10 w-full flex flex-col',
-          'bg-white dark:bg-gray-900',
-          'rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800',
+          'bg-[var(--hp-bg-surface)] dark:bg-gray-900',
+          'rounded-2xl shadow-xl border border-[var(--hp-border)] dark:border-gray-800',
           'max-h-[90vh]',
           SIZE_MAP[size],
           className,
@@ -159,16 +159,16 @@ export function Modal({
         }}
       >
         {/* Header (always rendered — needed for aria-labelledby) */}
-        <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-gray-100 dark:border-gray-800 flex-shrink-0">
+        <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-[var(--hp-border)] dark:border-gray-800 flex-shrink-0">
           <div className="flex-1 min-w-0">
             <h2
               id={titleId}
-              className="text-base font-semibold text-gray-900 dark:text-white leading-snug"
+              className="text-base font-semibold text-[var(--hp-text-primary)] dark:text-white leading-snug"
             >
               {title}
             </h2>
             {description && (
-              <p id={descId} className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              <p id={descId} className="text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] mt-1">
                 {description}
               </p>
             )}
@@ -179,9 +179,9 @@ export function Modal({
               aria-label="Cerrar"
               onClick={onClose}
               className={clsx(
-                'flex-shrink-0 p-1.5 rounded-lg text-gray-400',
+                'flex-shrink-0 p-1.5 rounded-lg text-[var(--hp-text-muted)]',
                 'hover:bg-gray-100 hover:text-gray-600',
-                'dark:hover:bg-gray-800 dark:hover:text-gray-300',
+                'dark:hover:bg-gray-800 dark:hover:text-[var(--hp-text-muted)]',
                 'transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
               )}
             >
@@ -226,7 +226,7 @@ function ModalFooter({ children, className }: ModalFooterProps) {
     <div
       className={clsx(
         'flex items-center justify-end gap-3 px-6 py-4 flex-shrink-0',
-        'border-t border-gray-100 dark:border-gray-800',
+        'border-t border-[var(--hp-border)] dark:border-gray-800',
         className,
       )}
     >

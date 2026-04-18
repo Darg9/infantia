@@ -126,13 +126,13 @@ export default async function MetricasPage() {
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-gray-500">
-        <Link href="/admin" className="hover:text-gray-700">Admin</Link>
+      <div className="flex items-center gap-2 text-sm text-[var(--hp-text-secondary)]">
+        <Link href="/admin" className="hover:text-[var(--hp-text-primary)]">Admin</Link>
         <span>›</span>
-        <span className="text-gray-900 font-medium">Métricas</span>
+        <span className="text-[var(--hp-text-primary)] font-medium">Métricas</span>
       </div>
 
-      <h1 className="text-2xl font-bold text-gray-900">📊 Panel de métricas</h1>
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">📊 Panel de métricas</h1>
 
       {/* ── STATS GENERALES ──────────────────────────────────────────────── */}
       <section>
@@ -162,23 +162,23 @@ export default async function MetricasPage() {
         {topActivities.length === 0 ? (
           <EmptyMsg>Aún no hay vistas registradas.</EmptyMsg>
         ) : (
-          <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white">
+          <div className="rounded-2xl border border-[var(--hp-border)] overflow-hidden bg-[var(--hp-bg-surface)]">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">#</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Actividad</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-500">Estado</th>
-                  <th className="px-4 py-3 text-right font-medium text-gray-500">Vistas</th>
+                  <th className="px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]">#</th>
+                  <th className="px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]">Actividad</th>
+                  <th className="px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]">Estado</th>
+                  <th className="px-4 py-3 text-right font-medium text-[var(--hp-text-secondary)]">Vistas</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {topActivities.map((row, i) => {
                   const act = nameMap[row.activityId];
                   return (
-                    <tr key={row.activityId} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 text-gray-400 font-mono">{i + 1}</td>
-                      <td className="px-4 py-3 font-medium text-gray-900 max-w-xs truncate">
+                    <tr key={row.activityId} className="hover:bg-[var(--hp-bg-page)] transition-colors">
+                      <td className="px-4 py-3 text-[var(--hp-text-muted)] font-mono">{i + 1}</td>
+                      <td className="px-4 py-3 font-medium text-[var(--hp-text-primary)] max-w-xs truncate">
                         {act ? (
                           <Link
                             href={`/admin/actividades/${act.id}/editar`}
@@ -187,7 +187,7 @@ export default async function MetricasPage() {
                             {act.title}
                           </Link>
                         ) : (
-                          <span className="text-gray-400 italic">Actividad eliminada</span>
+                          <span className="text-[var(--hp-text-muted)] italic">Actividad eliminada</span>
                         )}
                       </td>
                       <td className="px-4 py-3">
@@ -215,24 +215,24 @@ export default async function MetricasPage() {
           {topSearches.length === 0 ? (
             <EmptyMsg>Aún no hay búsquedas registradas.</EmptyMsg>
           ) : (
-            <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white">
+            <div className="rounded-2xl border border-[var(--hp-border)] overflow-hidden bg-[var(--hp-bg-surface)]">
               <ul className="divide-y divide-gray-100">
                 {topSearches.map((row, i) => (
                   <li
                     key={row.query}
-                    className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-50"
+                    className="flex items-center justify-between px-4 py-2.5 hover:bg-[var(--hp-bg-page)]"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>
+                      <span className="text-xs text-[var(--hp-text-muted)] font-mono w-5">{i + 1}</span>
                       <Link
                         href={`/actividades?search=${encodeURIComponent(row.query)}`}
-                        className="text-sm font-medium text-gray-800 hover:text-brand-600 transition-colors"
+                        className="text-sm font-medium text-[var(--hp-text-primary)] hover:text-brand-600 transition-colors"
                         target="_blank"
                       >
                         {row.query}
                       </Link>
                     </div>
-                    <span className="text-xs font-semibold text-gray-500 bg-gray-100 rounded-full px-2 py-0.5">
+                    <span className="text-xs font-semibold text-[var(--hp-text-secondary)] bg-gray-100 rounded-full px-2 py-0.5">
                       {row._count.query ?? 0}×
                     </span>
                   </li>
@@ -247,7 +247,7 @@ export default async function MetricasPage() {
           {zeroResultSearches.length === 0 ? (
             <EmptyMsg>¡Todas las búsquedas encontraron resultados!</EmptyMsg>
           ) : (
-            <div className="rounded-2xl border border-error-100 overflow-hidden bg-white">
+            <div className="rounded-2xl border border-error-100 overflow-hidden bg-[var(--hp-bg-surface)]">
               <ul className="divide-y divide-gray-100">
                 {zeroResultSearches.map((row, i) => (
                   <li
@@ -255,8 +255,8 @@ export default async function MetricasPage() {
                     className="flex items-center justify-between px-4 py-2.5 hover:bg-error-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>
-                      <span className="text-sm font-medium text-gray-800">{row.query}</span>
+                      <span className="text-xs text-[var(--hp-text-muted)] font-mono w-5">{i + 1}</span>
+                      <span className="text-sm font-medium text-[var(--hp-text-primary)]">{row.query}</span>
                     </div>
                     <span className="text-xs font-semibold text-error-500 bg-error-50 rounded-full px-2 py-0.5">
                       {row._count.query ?? 0}×
@@ -274,14 +274,14 @@ export default async function MetricasPage() {
 
         <section>
           <SectionTitle>Por tipo de actividad</SectionTitle>
-          <div className="rounded-2xl border border-gray-200 bg-white p-5 space-y-3">
+          <div className="rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-5 space-y-3">
             {activitiesByType.map((row) => (
               <div key={row.type}>
                 <div className="flex justify-between text-sm mb-1">
-                  <span className="font-medium text-gray-700">
+                  <span className="font-medium text-[var(--hp-text-primary)]">
                     {TYPE_LABELS[row.type] ?? row.type}
                   </span>
-                  <span className="text-gray-500">{row._count.type ?? 0}</span>
+                  <span className="text-[var(--hp-text-secondary)]">{row._count.type ?? 0}</span>
                 </div>
                 <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
                   <div
@@ -296,16 +296,16 @@ export default async function MetricasPage() {
 
         <section>
           <SectionTitle>Top proveedores</SectionTitle>
-          <div className="rounded-2xl border border-gray-200 overflow-hidden bg-white">
+          <div className="rounded-2xl border border-[var(--hp-border)] overflow-hidden bg-[var(--hp-bg-surface)]">
             <ul className="divide-y divide-gray-100">
               {activitiesByProvider.map((row, i) => (
                 <li
                   key={row.providerId}
-                  className="flex items-center justify-between px-4 py-3 hover:bg-gray-50"
+                  className="flex items-center justify-between px-4 py-3 hover:bg-[var(--hp-bg-page)]"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 font-mono w-5">{i + 1}</span>
-                    <span className="text-sm font-medium text-gray-800">
+                    <span className="text-xs text-[var(--hp-text-muted)] font-mono w-5">{i + 1}</span>
+                    <span className="text-sm font-medium text-[var(--hp-text-primary)]">
                       {providerMap[row.providerId] ?? 'Desconocido'}
                     </span>
                   </div>
@@ -327,21 +327,21 @@ export default async function MetricasPage() {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">
+    <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">
       {children}
     </h2>
   );
 }
 
 function StatCard({
-  label, value, color = 'text-gray-900',
+  label, value, color = 'text-[var(--hp-text-primary)]',
 }: { label: string; value: number; color?: string }) {
   return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+    <div className="rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-4 text-center">
       <p className={`text-2xl font-bold tabular-nums ${color}`}>
         {value.toLocaleString('es-CO')}
       </p>
-      <p className="text-xs text-gray-500 mt-0.5">{label}</p>
+      <p className="text-xs text-[var(--hp-text-secondary)] mt-0.5">{label}</p>
     </div>
   );
 }
@@ -362,7 +362,7 @@ function StatusBadge({ status }: { status: string }) {
 
 function EmptyMsg({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-gray-200 bg-white px-6 py-8 text-center text-sm text-gray-400">
+    <div className="rounded-2xl border border-dashed border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-6 py-8 text-center text-sm text-[var(--hp-text-muted)]">
       {children}
     </div>
   );

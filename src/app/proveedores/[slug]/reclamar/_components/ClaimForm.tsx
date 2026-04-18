@@ -66,10 +66,10 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
+    <form onSubmit={handleSubmit} className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 space-y-5">
       {/* Nombre */}
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Tu nombre</label>
+        <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Tu nombre</label>
         <input
           type="text"
           value={name}
@@ -82,19 +82,19 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
 
       {/* Email — solo lectura */}
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">Email de tu cuenta</label>
+        <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Email de tu cuenta</label>
         <input
           type="email"
           value={userEmail}
           readOnly
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm bg-gray-50 text-gray-400 cursor-not-allowed"
+          className="w-full border border-[var(--hp-border)] rounded-lg px-3 py-2 text-sm bg-[var(--hp-bg-page)] text-[var(--hp-text-muted)] cursor-not-allowed"
         />
       </div>
 
       {/* Mensaje */}
       <div>
-        <label className="block text-xs font-medium text-gray-700 mb-1">
-          ¿Por qué representas a {providerName}? <span className="text-gray-400">(opcional)</span>
+        <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">
+          ¿Por qué representas a {providerName}? <span className="text-[var(--hp-text-muted)]">(opcional)</span>
         </label>
         <textarea
           value={message}
@@ -104,7 +104,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
           className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
           placeholder="Ej: Soy el director de la academia, mi email corporativo es..."
         />
-        <p className="text-xs text-gray-400 mt-1 text-right">{message.length}/1000</p>
+        <p className="text-xs text-[var(--hp-text-muted)] mt-1 text-right">{message.length}/1000</p>
       </div>
 
       {error && (
@@ -121,7 +121,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
         {loading ? 'Enviando solicitud…' : 'Enviar solicitud'}
       </button>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-xs text-[var(--hp-text-muted)] text-center">
         Al enviar, confirmas que representas legítimamente a {providerName}.
       </p>
     </form>

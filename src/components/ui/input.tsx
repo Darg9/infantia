@@ -49,7 +49,7 @@ export function Input({
       <label
         htmlFor={id}
         className={clsx(
-          hideLabel ? 'sr-only' : 'block text-sm font-medium text-gray-700 dark:text-gray-300'
+          hideLabel ? 'sr-only' : 'block text-sm font-medium text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)]'
         )}
       >
         {label}
@@ -61,13 +61,13 @@ export function Input({
       </label>
 
       {hint && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 -mt-1">{hint}</p>
+        <p className="text-xs text-[var(--hp-text-muted)] dark:text-[var(--hp-text-secondary)] -mt-1">{hint}</p>
       )}
 
       {/* Input wrapper */}
       <div className="relative">
         {leftSlot && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)]">
             {leftSlot}
           </div>
         )}
@@ -81,9 +81,9 @@ export function Input({
           aria-invalid={error ? true : undefined}
           className={clsx(
             // Base
-            'w-full text-sm bg-white dark:bg-gray-800',
-            'text-gray-900 dark:text-white',
-            'placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'w-full text-sm bg-[var(--hp-bg-surface)] dark:bg-gray-800',
+            'text-[var(--hp-text-primary)] dark:text-white',
+            'placeholder:text-[var(--hp-text-muted)] dark:placeholder:text-[var(--hp-text-secondary)]',
             'border rounded-xl transition-colors',
             'focus:outline-none focus:ring-2 focus:ring-offset-0',
             // Padding con slots
@@ -93,9 +93,9 @@ export function Input({
             // Estado error vs default
             error
               ? 'border-error-400 dark:border-error-500 focus:ring-error-400/30 focus:border-error-400'
-              : 'border-gray-200 dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
+              : 'border-[var(--hp-border)] dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
             // Disabled
-            disabled && 'opacity-50 cursor-not-allowed bg-gray-50 dark:bg-gray-900',
+            disabled && 'opacity-50 cursor-not-allowed bg-[var(--hp-bg-page)] dark:bg-gray-900',
             className
           )}
           {...props}

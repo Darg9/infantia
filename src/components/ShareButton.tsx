@@ -143,14 +143,14 @@ export function ShareButton({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-48 rounded-lg border border-gray-200 bg-white shadow-lg z-50">
+        <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-lg z-50">
           {/* Copiar vínculo (siempre al inicio) */}
           <button
             onClick={() => {
               copyToClipboard()
               setIsOpen(false)
             }}
-            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-gray-50 transition-colors border-b border-gray-100 ${copied ? 'text-success-600' : 'text-gray-700'}`}
+            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-[var(--hp-bg-page)] transition-colors border-b border-[var(--hp-border)] ${copied ? 'text-success-600' : 'text-[var(--hp-text-primary)]'}`}
           >
             <span>{copied ? '✓' : '🔗'}</span>
             {copied ? 'Vínculo copiado' : 'Copiar vínculo'}
@@ -169,7 +169,7 @@ export function ShareButton({
                   }
                   setIsOpen(false)
                 }}
-                className="px-3 py-2.5 text-xs font-medium text-gray-600 hover:bg-gray-50 transition-colors border-r border-b border-gray-100 last:border-r-0 flex items-center gap-1.5 justify-center"
+                className="px-3 py-2.5 text-xs font-medium text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors border-r border-b border-[var(--hp-border)] last:border-r-0 flex items-center gap-1.5 justify-center"
               >
                 <span>{link.icon}</span>
                 <span className="hidden sm:inline">{link.name}</span>

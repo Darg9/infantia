@@ -27,22 +27,22 @@ export default async function SourcesStatsPage() {
         <Link href="/admin" className="text-sm text-brand-600 hover:underline mb-2 inline-block">
           &larr; Panel admin
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">Fuentes de scraping</h1>
-        <p className="text-gray-500 text-sm mt-2">
+        <h1 className="text-3xl font-bold text-[var(--hp-text-primary)]">Fuentes de scraping</h1>
+        <p className="text-[var(--hp-text-secondary)] text-sm mt-2">
           Gestión de fuentes activas y monitoreo de calidad de URLs
         </p>
       </div>
 
       {/* CRUD de fuentes */}
       <section>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Administrar fuentes</h2>
+        <h2 className="text-xl font-semibold text-[var(--hp-text-primary)] mb-4">Administrar fuentes</h2>
         <SourcesManager cities={cities} verticals={verticals} />
       </section>
 
       {/* URL Score Dashboard */}
       <section>
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">URL Score Dashboard</h2>
-        <p className="text-gray-500 text-sm mb-4">
+        <h2 className="text-xl font-semibold text-[var(--hp-text-primary)] mb-4">URL Score Dashboard</h2>
+        <p className="text-[var(--hp-text-secondary)] text-sm mb-4">
           Monitoreo automático de calidad de URLs y pausa de fuentes de bajo desempeño
         </p>
         <SourceStatsTable />

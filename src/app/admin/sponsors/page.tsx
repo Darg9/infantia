@@ -83,7 +83,7 @@ export default function SponsorsAdminPage() {
 
   const field = (k: keyof typeof form, label: string, type = 'text') => (
     <div>
-      <label className="block text-xs font-medium text-gray-700 mb-1">{label}</label>
+      <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">{label}</label>
       <input
         type={type}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -97,15 +97,15 @@ export default function SponsorsAdminPage() {
     <div className="max-w-4xl mx-auto px-4 py-10">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Patrocinadores</h1>
-          <p className="text-sm text-gray-500 mt-1">Gestiona sponsors para el newsletter</p>
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Patrocinadores</h1>
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">Gestiona sponsors para el newsletter</p>
         </div>
         <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
 
       {/* Formulario */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
-        <h2 className="font-semibold text-gray-800 mb-4">{editId ? 'Editar patrocinador' : 'Nuevo patrocinador'}</h2>
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 mb-8">
+        <h2 className="font-semibold text-[var(--hp-text-primary)] mb-4">{editId ? 'Editar patrocinador' : 'Nuevo patrocinador'}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {field('name', 'Nombre')}
           {field('url', 'URL del sitio (con https://)', 'url')}
@@ -121,7 +121,7 @@ export default function SponsorsAdminPage() {
               onChange={e => setForm(f => ({ ...f, isActive: e.target.checked }))}
               className="rounded accent-brand-500"
             />
-            <label htmlFor="isActive" className="text-sm text-gray-700">Activo (aparece en emails)</label>
+            <label htmlFor="isActive" className="text-sm text-[var(--hp-text-primary)]">Activo (aparece en emails)</label>
           </div>
         </div>
         <div className="flex items-center gap-3 mt-4">
@@ -145,24 +145,24 @@ export default function SponsorsAdminPage() {
 
       {/* Lista */}
       {sponsors.length === 0 ? (
-        <p className="text-center text-gray-400 py-12">No hay patrocinadores aún.</p>
+        <p className="text-center text-[var(--hp-text-muted)] py-12">No hay patrocinadores aún.</p>
       ) : (
         <div className="space-y-3">
           {sponsors.map(s => (
-            <div key={s.id} className="bg-white border border-gray-200 rounded-2xl p-5 flex items-start gap-4">
+            <div key={s.id} className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 flex items-start gap-4">
               {s.logoUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.logoUrl} alt={s.name} className="h-10 w-10 object-contain rounded-lg border border-gray-100 flex-shrink-0" />
+                <img src={s.logoUrl} alt={s.name} className="h-10 w-10 object-contain rounded-lg border border-[var(--hp-border)] flex-shrink-0" />
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-semibold text-gray-900">{s.name}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-success-100 text-success-700' : 'bg-gray-100 text-gray-500'}`}>
+                  <span className="font-semibold text-[var(--hp-text-primary)]">{s.name}</span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-success-100 text-success-700' : 'bg-gray-100 text-[var(--hp-text-secondary)]'}`}>
                     {s.isActive ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-0.5 truncate">{s.tagline}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-sm text-[var(--hp-text-secondary)] mt-0.5 truncate">{s.tagline}</p>
+                <p className="text-xs text-[var(--hp-text-muted)] mt-0.5">
                   {s.campaignStart?.slice(0, 10)} → {s.campaignEnd?.slice(0, 10) ?? 'Sin fin'}
                 </p>
               </div>

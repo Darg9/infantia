@@ -435,8 +435,8 @@ export default function Filters({
   function selectCls(active: boolean) {
     const base = 'rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
     return `${base} ${active
-      ? 'border-indigo-500 bg-indigo-50 text-indigo-700 font-medium focus:ring-indigo-100'
-      : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
+      ? 'border-indigo-500 bg-[var(--hp-bg-subtle)] text-indigo-700 font-medium focus:ring-indigo-100'
+      : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-gray-600 hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
     }`;
   }
 
@@ -444,7 +444,7 @@ export default function Filters({
     return `px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer whitespace-nowrap ${
       active
         ? 'bg-indigo-600 text-white border-indigo-600'
-        : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300 hover:text-indigo-600'
+        : 'bg-[var(--hp-bg-surface)] text-gray-600 border-[var(--hp-border)] hover:border-indigo-300 hover:text-indigo-600'
     }`;
   }
 
@@ -468,7 +468,7 @@ export default function Filters({
           type="button"
           onClick={handleSearchSubmit}
           aria-label="Buscar"
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-indigo-500 transition-colors z-10 p-0.5"
+          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)] hover:text-indigo-500 transition-colors z-10 p-0.5"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -497,12 +497,12 @@ export default function Filters({
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
           aria-haspopup="listbox"
-          className={`w-full rounded-2xl border bg-white py-3.5 pl-12 pr-12 text-base
-            placeholder:text-gray-400 text-gray-900 focus:outline-none focus:ring-2
+          className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base
+            placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2
             transition-all shadow-sm
             ${isPending
               ? 'border-indigo-300 opacity-80 focus:ring-indigo-100'
-              : 'border-gray-200 hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
+              : 'border-[var(--hp-border)] hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
             }`}
         />
 
@@ -520,13 +520,13 @@ export default function Filters({
             aria-label="Sugerencias de búsqueda"
             // onMouseDown preventDefault evita que el input pierda el foco al hacer clic en el dropdown
             onMouseDown={e => e.preventDefault()}
-            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-gray-100 bg-white shadow-xl overflow-hidden"
+            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-xl overflow-hidden"
           >
 
             {/* ── Historial de búsquedas ──────────────────────────── */}
             {showHistory && recentSearches.length > 0 && (
               <>
-                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide select-none">
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-[var(--hp-text-muted)] uppercase tracking-wide select-none">
                   Búsquedas recientes
                 </p>
                 <ul>
@@ -539,10 +539,10 @@ export default function Filters({
                       onMouseLeave={() => setActiveIndex(-1)}
                       onClick={() => selectHistory(term)}
                       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors ${
-                        i === activeIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-700 hover:bg-gray-50'
+                        i === activeIndex ? 'bg-[var(--hp-bg-subtle)] text-indigo-900' : 'text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)]'
                       }`}
                     >
-                      <svg className="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+                      <svg className="w-4 h-4 shrink-0 text-[var(--hp-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -571,11 +571,11 @@ export default function Filters({
             {/* ── Sin resultados ───────────────────────────────────── */}
             {!isFetchingSugg && showSugg && suggestions.length === 0 && (
               <div className="px-4 py-8 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--hp-text-secondary)]">
                   No encontramos resultados para{' '}
-                  <span className="font-medium text-gray-700">"{searchValue}"</span>
+                  <span className="font-medium text-[var(--hp-text-primary)]">"{searchValue}"</span>
                 </p>
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-[var(--hp-text-muted)] mt-1">
                   Intenta con otras palabras o explora los filtros
                 </p>
               </div>
@@ -593,7 +593,7 @@ export default function Filters({
                     onMouseLeave={() => setActiveIndex(-1)}
                     onClick={() => selectSuggestion(s)}
                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer text-sm transition-colors ${
-                      i === activeIndex ? 'bg-indigo-50' : 'hover:bg-gray-50'
+                      i === activeIndex ? 'bg-[var(--hp-bg-subtle)]' : 'hover:bg-[var(--hp-bg-page)]'
                     }`}
                   >
                     {/* Ícono por tipo */}
@@ -604,12 +604,12 @@ export default function Filters({
                     {/* Texto principal + sublabel */}
                     <span className="flex-1 min-w-0">
                       <span className={`block truncate font-medium ${
-                        i === activeIndex ? 'text-indigo-900' : 'text-gray-800'
+                        i === activeIndex ? 'text-indigo-900' : 'text-[var(--hp-text-primary)]'
                       }`}>
                         {highlightMatch(s.label, searchValue)}
                       </span>
                       {s.sublabel && (
-                        <span className="text-xs text-gray-400 truncate block mt-0.5">
+                        <span className="text-xs text-[var(--hp-text-muted)] truncate block mt-0.5">
                           {s.sublabel}
                         </span>
                       )}
@@ -628,7 +628,7 @@ export default function Filters({
 
                     {/* Flecha */}
                     <span className={`shrink-0 text-xs ${
-                      i === activeIndex ? 'text-indigo-400' : 'text-gray-300'
+                      i === activeIndex ? 'text-indigo-400' : 'text-[var(--hp-text-muted)]'
                     }`}>→</span>
                   </li>
                 ))}
@@ -637,7 +637,7 @@ export default function Filters({
 
             {/* ── Footer teclado — solo desktop, bajo contraste ────── */}
             {(showSugg && suggestions.length > 0) && (
-              <div className="hidden sm:block px-4 py-2 text-xs text-gray-300 border-t border-gray-50 select-none">
+              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-gray-50 select-none">
                 ↑↓ navegar · Enter seleccionar · Esc cerrar
               </div>
             )}
@@ -671,7 +671,7 @@ export default function Filters({
         </select>
 
         {/* Precio — pills independientes */}
-        <div className="flex rounded-xl border border-gray-200 bg-white p-1 gap-1" role="group" aria-label="Precio">
+        <div className="flex rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-1 gap-1" role="group" aria-label="Precio">
           <button type="button" onClick={() => handlePriceToggle('free')} className={pillCls(price === 'free')}>
             Gratis
             {facets.priceCounts.free > 0 && price !== 'free' && (
@@ -733,7 +733,7 @@ export default function Filters({
             <button
               type="button"
               onClick={handleReset}
-              className="text-sm text-gray-400 hover:text-gray-700 underline underline-offset-2 whitespace-nowrap transition-colors"
+              className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline underline-offset-2 whitespace-nowrap transition-colors"
             >
               Limpiar filtros
             </button>
@@ -750,8 +750,8 @@ export default function Filters({
           onClick={openMobile}
           className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
             hasFilters
-              ? 'border-indigo-400 bg-indigo-50 text-indigo-700'
-              : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+              ? 'border-indigo-400 bg-[var(--hp-bg-subtle)] text-indigo-700'
+              : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-gray-600 hover:border-gray-300'
           }`}
         >
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -768,7 +768,7 @@ export default function Filters({
           <button
             type="button"
             onClick={handleReset}
-            className="text-sm text-gray-400 hover:text-gray-700 underline underline-offset-2 transition-colors self-center"
+            className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline underline-offset-2 transition-colors self-center"
           >
             Limpiar
           </button>
@@ -783,7 +783,7 @@ export default function Filters({
           {chips.map(chip => (
             <span
               key={chip.key}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700"
+              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-[var(--hp-bg-subtle)] px-3 py-1 text-sm font-medium text-indigo-700"
             >
               {chip.label}
               <button
@@ -804,12 +804,12 @@ export default function Filters({
       {/* ════════════════════════════════════════════════════════════════ */}
       <p className={`text-sm transition-opacity ${isPending ? 'opacity-40' : 'opacity-100'}`}>
         {isPending ? (
-          <span className="text-gray-400 flex items-center gap-1.5">
+          <span className="text-[var(--hp-text-muted)] flex items-center gap-1.5">
             <Spinner className="inline text-indigo-400" />
             Buscando…
           </span>
         ) : total === 0 ? (
-          <span className="text-gray-500">
+          <span className="text-[var(--hp-text-secondary)]">
             No hay actividades con estos filtros.{' '}
             {hasFilters && (
               <button type="button" onClick={handleReset}
@@ -819,8 +819,8 @@ export default function Filters({
             )}
           </span>
         ) : (
-          <span className="text-gray-500">
-            <span className="font-semibold text-gray-700">{total.toLocaleString('es-CO')}</span>
+          <span className="text-[var(--hp-text-secondary)]">
+            <span className="font-semibold text-[var(--hp-text-primary)]">{total.toLocaleString('es-CO')}</span>
             {' '}actividad{total !== 1 ? 'es' : ''} encontrada{total !== 1 ? 's' : ''}
           </span>
         )}
@@ -830,13 +830,13 @@ export default function Filters({
       {/* MODAL MOBILE                                                     */}
       {/* ════════════════════════════════════════════════════════════════ */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-white sm:hidden" role="dialog" aria-modal aria-label="Filtros">
+        <div className="fixed inset-0 z-50 flex flex-col bg-[var(--hp-bg-surface)] sm:hidden" role="dialog" aria-modal aria-label="Filtros">
 
           {/* Header */}
-          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-            <h2 className="text-base font-bold text-gray-900">Filtros</h2>
+          <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hp-border)]">
+            <h2 className="text-base font-bold text-[var(--hp-text-primary)]">Filtros</h2>
             <button type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
-              className="text-gray-400 hover:text-gray-700 transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center">
+              className="text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center">
               ✕
             </button>
           </div>
@@ -845,9 +845,9 @@ export default function Filters({
           <div className="flex-1 overflow-y-auto px-5 py-6 space-y-7">
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Categoría</label>
+              <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Categoría</label>
               <select value={mobileCatId} onChange={e => setMobileCatId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none">
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
                 <option value="">Todas las categorías</option>
                 {facets.validCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
@@ -856,14 +856,14 @@ export default function Filters({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Precio</label>
+              <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Precio</label>
               <div className="grid grid-cols-2 gap-2">
                 {(['free', 'paid'] as const).map(v => (
                   <button key={v} type="button" onClick={() => setMobilePrice(p => p === v ? '' : v)}
                     className={`rounded-xl border py-3 text-sm font-medium transition-colors ${
                       mobilePrice === v
                         ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-indigo-300'
                     }`}>
                     {v === 'free' ? 'Gratis' : 'De pago'}
                   </button>
@@ -873,9 +873,9 @@ export default function Filters({
 
             {facets.availableCities.length > 1 && (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Ubicación</label>
+                <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ubicación</label>
                 <select value={mobileCityId} onChange={e => setMobileCityId(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 bg-white px-3 py-3 text-sm text-gray-700 focus:border-indigo-400 focus:outline-none">
+                  className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
                   <option value="">Todas las ciudades</option>
                   {facets.availableCities.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -885,14 +885,14 @@ export default function Filters({
             )}
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Edad</label>
+              <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
               <div className="grid grid-cols-2 gap-2">
                 {AGE_OPTIONS.map((o, i) => (
                   <button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
                     className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                       mobileAgeIdx === i
                         ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-indigo-300'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-indigo-300'
                     }`}>
                     {o.label}
                   </button>
@@ -901,14 +901,14 @@ export default function Filters({
             </div>
 
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Ordenar por</label>
+              <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ordenar por</label>
               <div className="flex flex-col gap-2">
                 {SORT_OPTIONS.map(o => (
                   <button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
                       mobileSort === o.value
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        ? 'border-indigo-500 bg-[var(--hp-bg-subtle)] text-indigo-700'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-gray-300'
                     }`}>
                     {o.label}
                     {mobileSort === o.value && <span className="float-right text-indigo-500">✓</span>}
@@ -919,9 +919,9 @@ export default function Filters({
           </div>
 
           {/* Footer */}
-          <div className="border-t border-gray-100 px-5 py-4 flex gap-3 bg-white">
+          <div className="border-t border-[var(--hp-border)] px-5 py-4 flex gap-3 bg-[var(--hp-bg-surface)]">
             <button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
-              className="flex-1 rounded-xl border border-gray-200 py-3 text-sm font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="flex-1 rounded-xl border border-[var(--hp-border)] py-3 text-sm font-medium text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Limpiar
             </button>
             <button type="button" onClick={applyMobile}

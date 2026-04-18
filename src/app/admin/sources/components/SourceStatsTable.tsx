@@ -58,7 +58,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
     fetchStats();
   }, [cityId]);
 
-  if (loading) return <div className="text-center py-8 text-gray-500">Cargando estadísticas...</div>;
+  if (loading) return <div className="text-center py-8 text-[var(--hp-text-secondary)]">Cargando estadísticas...</div>;
 
   if (error)
     return (
@@ -93,9 +93,9 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
       )}
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
             <tr>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Fuente</th>
               <th className="px-4 py-3 text-left font-medium text-gray-600">Plataforma</th>
@@ -109,7 +109,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
             {stats.map((source) => {
               const scoreColor =
                 source.urlScore === null
-                  ? 'text-gray-400'
+                  ? 'text-[var(--hp-text-muted)]'
                   : source.urlScore >= 60
                     ? 'text-success-600'
                     : source.urlScore >= 45
@@ -119,11 +119,11 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
               const isLowQuality = source.urlScore !== null && source.urlScore < 45;
 
               return (
-                <tr key={`${source.id}-${source.cityId}`} className="hover:bg-gray-50">
+                <tr key={`${source.id}-${source.cityId}`} className="hover:bg-[var(--hp-bg-page)]">
                   <td className="px-4 py-3">
                     <div>
-                      <p className="font-medium text-gray-900">{source.name}</p>
-                      {source.cityName && <p className="text-xs text-gray-500">{source.cityName}</p>}
+                      <p className="font-medium text-[var(--hp-text-primary)]">{source.name}</p>
+                      {source.cityName && <p className="text-xs text-[var(--hp-text-secondary)]">{source.cityName}</p>}
                     </div>
                   </td>
 
@@ -136,7 +136,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                         {isLowQuality && <p className="text-xs text-error-500">⚠️ Baja calidad</p>}
                       </div>
                     ) : (
-                      <p className="text-gray-400 text-xs">Sin datos</p>
+                      <p className="text-[var(--hp-text-muted)] text-xs">Sin datos</p>
                     )}
                   </td>
 
@@ -175,7 +175,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
       </div>
 
       {stats.length === 0 && (
-        <div className="text-center py-8 text-gray-400">No hay fuentes disponibles</div>
+        <div className="text-center py-8 text-[var(--hp-text-muted)]">No hay fuentes disponibles</div>
       )}
     </div>
   );

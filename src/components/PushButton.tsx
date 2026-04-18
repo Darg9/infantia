@@ -100,7 +100,7 @@ export function PushButton() {
 
   if (state === 'unsupported') {
     return (
-      <span className="text-xs text-gray-400 italic">No compatible con este navegador</span>
+      <span className="text-xs text-[var(--hp-text-muted)] italic">No compatible con este navegador</span>
     )
   }
 
@@ -129,7 +129,7 @@ export function PushButton() {
       }`}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform ${
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />

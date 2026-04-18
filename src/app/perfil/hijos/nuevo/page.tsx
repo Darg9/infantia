@@ -57,15 +57,15 @@ export default function NuevoHijoPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Agregar una niña o niño</h1>
-      <p className="text-sm text-gray-500 mb-8">
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-1">Agregar una niña o niño</h1>
+      <p className="text-sm text-[var(--hp-text-secondary)] mb-8">
         Esto nos ayuda a recomendarte actividades adecuadas para su edad.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Nombre */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre <span className="text-error-500">*</span>
           </label>
           <input
@@ -81,7 +81,7 @@ export default function NuevoHijoPage() {
 
         {/* Fecha de nacimiento */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Fecha de nacimiento <span className="text-error-500">*</span>
           </label>
           <input
@@ -93,13 +93,13 @@ export default function NuevoHijoPage() {
             max={maxDate}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           />
-          <p className="text-xs text-gray-400 mt-1">Solo perfiles de menores de 18 años</p>
+          <p className="text-xs text-[var(--hp-text-muted)] mt-1">Solo perfiles de menores de 18 años</p>
         </div>
 
         {/* Género (opcional) */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Género <span className="text-gray-400 font-normal">(opcional)</span>
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
+            Género <span className="text-[var(--hp-text-muted)] font-normal">(opcional)</span>
           </label>
           <select
             value={gender}
@@ -119,7 +119,7 @@ export default function NuevoHijoPage() {
             Autorización de tratamiento de datos personales
           </h2>
           <p className="text-xs text-gray-600 leading-relaxed mb-3">{CONSENT_TEXT}</p>
-          <p className="text-xs text-gray-500 mb-3">
+          <p className="text-xs text-[var(--hp-text-secondary)] mb-3">
             Conforme a la{' '}
             <Link
               href="/tratamiento-datos"
@@ -138,7 +138,7 @@ export default function NuevoHijoPage() {
               onChange={(e) => setConsentAccepted(e.target.checked)}
               className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
             />
-            <label htmlFor="consent" className="text-xs text-gray-700 font-medium leading-relaxed">
+            <label htmlFor="consent" className="text-xs text-[var(--hp-text-primary)] font-medium leading-relaxed">
               Confirmo que soy el padre, madre o tutor legal de este menor y acepto la autorización
               de tratamiento de sus datos personales. <span className="text-error-500">*</span>
             </label>
@@ -154,7 +154,7 @@ export default function NuevoHijoPage() {
         <div className="flex gap-3">
           <Link
             href="/perfil/hijos"
-            className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-colors"
+            className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors"
           >
             Cancelar
           </Link>

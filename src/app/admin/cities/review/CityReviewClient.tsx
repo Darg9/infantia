@@ -149,7 +149,7 @@ export function CityReviewClient({ cities }: Props) {
 
   if (pageLoading) {
     return (
-      <div className="text-center py-12 text-gray-400 text-sm">
+      <div className="text-center py-12 text-[var(--hp-text-muted)] text-sm">
         Cargando cola de revisión…
       </div>
     );
@@ -184,15 +184,15 @@ export function CityReviewClient({ cities }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-[var(--hp-text-secondary)]">
         {entries.length} entrada{entries.length !== 1 ? 's' : ''} pendiente
         {entries.length !== 1 ? 's' : ''} · ordenadas por score ASC (más
         dudosas arriba) · límite 50
       </p>
 
-      <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200 text-xs text-gray-600">
+          <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)] text-xs text-gray-600">
             <tr>
               <th className="px-4 py-3 text-left font-medium">Input original</th>
               <th className="px-4 py-3 text-left font-medium">Normalizado</th>
@@ -211,18 +211,18 @@ export function CityReviewClient({ cities }: Props) {
               return (
                 <tr
                   key={entry.id}
-                  className={`transition-opacity ${busy ? 'opacity-40 pointer-events-none' : 'hover:bg-gray-50'}`}
+                  className={`transition-opacity ${busy ? 'opacity-40 pointer-events-none' : 'hover:bg-[var(--hp-bg-page)]'}`}
                 >
                   {/* Raw input */}
                   <td className="px-4 py-3 max-w-[180px]">
-                    <span className="font-mono text-gray-900 break-words">
+                    <span className="font-mono text-[var(--hp-text-primary)] break-words">
                       {entry.raw_input}
                     </span>
                   </td>
 
                   {/* Normalized */}
                   <td className="px-4 py-3 max-w-[160px]">
-                    <span className="font-mono text-xs text-gray-500 break-words">
+                    <span className="font-mono text-xs text-[var(--hp-text-secondary)] break-words">
                       {entry.normalized_input}
                     </span>
                   </td>
@@ -230,11 +230,11 @@ export function CityReviewClient({ cities }: Props) {
                   {/* Suggested city */}
                   <td className="px-4 py-3">
                     {entry.suggested_city_name ? (
-                      <span className="text-gray-800">
+                      <span className="text-[var(--hp-text-primary)]">
                         {entry.suggested_city_name}
                       </span>
                     ) : (
-                      <span className="text-gray-400 italic text-xs">
+                      <span className="text-[var(--hp-text-muted)] italic text-xs">
                         Sin sugerencia
                       </span>
                     )}
@@ -283,7 +283,7 @@ export function CityReviewClient({ cities }: Props) {
                           <button
                             onClick={() => handleIgnore(entry.id)}
                             disabled={busy}
-                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             × Ignorar
                           </button>
@@ -327,7 +327,7 @@ export function CityReviewClient({ cities }: Props) {
                               setRowMsg(entry.id, '');
                             }}
                             disabled={busy}
-                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-gray-500 hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             Cancelar
                           </button>
@@ -337,7 +337,7 @@ export function CityReviewClient({ cities }: Props) {
                       {/* Inline feedback */}
                       {feedback && (
                         <p
-                          className={`text-xs ${feedbackIsError ? 'text-error-600' : 'text-gray-500'}`}
+                          className={`text-xs ${feedbackIsError ? 'text-error-600' : 'text-[var(--hp-text-secondary)]'}`}
                         >
                           {feedback}
                         </p>

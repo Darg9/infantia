@@ -5,7 +5,7 @@
 
 function CardSkeleton() {
   return (
-    <div className="flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden animate-pulse">
+    <div className="flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] overflow-hidden animate-pulse">
       {/* Strip imagen */}
       <div className="h-20 bg-gray-200" />
       {/* Contenido */}
@@ -19,7 +19,7 @@ function CardSkeleton() {
         <div className="h-3 w-full rounded bg-gray-100 mt-1" />
         <div className="h-3 w-5/6 rounded bg-gray-100" />
         {/* Footer */}
-        <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100">
+        <div className="flex gap-2 mt-2 pt-2 border-t border-[var(--hp-border)]">
           <div className="h-3 w-16 rounded bg-gray-100" />
           <div className="h-3 w-12 rounded bg-gray-100" />
         </div>
@@ -30,7 +30,7 @@ function CardSkeleton() {
 
 export default function ActividadesLoading() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--hp-bg-page)]">
       <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
 
         {/* Título */}

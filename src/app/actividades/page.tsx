@@ -288,20 +288,20 @@ export default async function ActividadesPage({
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CABECERA — fondo blanco, título + buscador + filtros           */}
       {/* ════════════════════════════════════════════════════════════════ */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)]">
         <div className="mx-auto max-w-7xl px-4 pt-8 pb-5">
 
           {/* Título + subtítulo */}
           <div className="mb-5">
-            <h1 className="text-2xl font-bold text-gray-900 leading-tight">
+            <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] leading-tight">
               Actividades para niños
             </h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-[var(--hp-text-secondary)] mt-1">
               Encuentra talleres, cursos y eventos según edad, ubicación y presupuesto
             </p>
           </div>
@@ -322,7 +322,7 @@ export default async function ActividadesPage({
               total={total}
             />
           </Suspense>
-          <p className="text-xs text-gray-400 mt-2 pb-1">{ACTIVITY_DISCLAIMER_SHORT}</p>
+          <p className="text-xs text-[var(--hp-text-muted)] mt-2 pb-1">{ACTIVITY_DISCLAIMER_SHORT}</p>
         </div>
       </div>
 
@@ -390,7 +390,7 @@ export default async function ActividadesPage({
             </Suspense>
 
             {activities.length > 0 && (
-              <p className="text-center text-xs text-gray-400 pb-4">
+              <p className="text-center text-xs text-[var(--hp-text-muted)] pb-4">
                 Mostrando {skip + 1}–{Math.min(skip + PAGE_SIZE, total)} de {total} actividades
               </p>
             )}

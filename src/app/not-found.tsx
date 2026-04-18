@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function NotFound() {
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-[calc(100vh-3.5rem)] bg-[var(--hp-bg-page)] flex items-center justify-center px-4">
       <div className="flex flex-col items-center text-center gap-6 max-w-md">
 
         {/* Ilustración */}
@@ -24,10 +24,10 @@ export default function NotFound() {
 
         {/* Texto */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">
             Esta página no existe
           </h1>
-          <p className="text-gray-500 text-sm leading-relaxed">
+          <p className="text-[var(--hp-text-secondary)] text-sm leading-relaxed">
             La dirección que buscas no existe o fue movida.
             Puede que la actividad haya sido removida o el enlace esté desactualizado.
           </p>
@@ -43,7 +43,7 @@ export default function NotFound() {
           </a>
           <a
             href="/"
-            className="rounded-xl border border-gray-200 bg-white px-6 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-center"
+            className="rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-6 py-2.5 text-sm font-semibold text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)] transition-colors text-center"
           >
             Ir al inicio
           </a>

@@ -33,7 +33,7 @@ export default function SourceHealthClient() {
       case 'healthy': return 'bg-success-100 text-success-800 border-success-200';
       case 'degraded': return 'bg-warning-100 text-warning-800 border-warning-200';
       case 'critical': return 'bg-error-100 text-error-800 border-error-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      default: return 'bg-gray-100 text-[var(--hp-text-primary)] border-[var(--hp-border)]';
     }
   };
 
@@ -62,8 +62,8 @@ export default function SourceHealthClient() {
       )}
 
       {/* Gráfica de Score Normalizado */}
-      <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Panorama de Scores de Origen</h2>
+      <div className="bg-[var(--hp-bg-surface)] p-6 rounded-xl border border-[var(--hp-border)] shadow-sm">
+        <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Panorama de Scores de Origen</h2>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
@@ -80,32 +80,32 @@ export default function SourceHealthClient() {
       </div>
 
       {/* Tabla detallada */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] shadow-sm overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+          <thead className="bg-[var(--hp-bg-page)]">
             <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Source</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Score</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Success Rate</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Avg Latency</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Last Success</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Source</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Status</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Score</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Success Rate</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Avg Latency</th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Last Success</th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-[var(--hp-bg-surface)] divide-y divide-gray-200">
             {data.map((row) => {
               const total = row.successCount + row.errorCount;
               const sRate = total > 0 ? Math.round((row.successCount / total) * 100) : 0;
               return (
-                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{row.source}</td>
+                <tr key={row.id} className="hover:bg-[var(--hp-bg-page)] transition-colors">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[var(--hp-text-primary)]">{row.source}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full border ${getStatusColor(row.status)}`}>
                       {row.status.toUpperCase()}
                     </span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 font-mono">{(row.score * 10).toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--hp-text-secondary)] font-mono">{(row.score * 10).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--hp-text-secondary)]">
                     <div className="flex items-center">
                       <span className="mr-2">{sRate}%</span>
                       <div className="relative w-full overflow-hidden bg-gray-200 rounded-full h-2">
@@ -113,8 +113,8 @@ export default function SourceHealthClient() {
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{row.avgResponseMs}ms</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--hp-text-secondary)]">{row.avgResponseMs}ms</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--hp-text-secondary)]">
                     {row.lastSuccessAt ? new Date(row.lastSuccessAt).toLocaleString() : 'N/A'}
                   </td>
                 </tr>
@@ -122,7 +122,7 @@ export default function SourceHealthClient() {
             })}
             {data.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-gray-500">
+                <td colSpan={6} className="px-6 py-12 text-center text-sm text-[var(--hp-text-secondary)]">
                   Sin registros de orígenes procesados todavía. Inicia una extracción.
                 </td>
               </tr>

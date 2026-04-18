@@ -19,7 +19,7 @@ export async function SimilarActivities({ activityId }: Props) {
 
   return (
     <section className="col-span-full mt-2">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Actividades similares</h2>
+      <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Actividades similares</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {similar.map((act) => {
           const catSlug = act.categories[0]?.category.slug ?? '';
@@ -37,7 +37,7 @@ export async function SimilarActivities({ activityId }: Props) {
             <Link
               key={act.id}
               href={activityPath(act.id, act.title)}
-              className="group flex flex-col rounded-2xl border border-gray-200 bg-white hover:border-brand-300 hover:shadow-sm transition-all overflow-hidden"
+              className="group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] hover:border-brand-300 hover:shadow-sm transition-all overflow-hidden"
             >
               {/* Imagen o gradiente */}
               <div
@@ -68,16 +68,16 @@ export async function SimilarActivities({ activityId }: Props) {
 
               {/* Info */}
               <div className="p-3 flex flex-col gap-1 flex-1">
-                <p className="text-sm font-semibold text-gray-900 line-clamp-2 group-hover:text-brand-600 transition-colors leading-tight">
+                <p className="text-sm font-semibold text-[var(--hp-text-primary)] line-clamp-2 group-hover:text-brand-600 transition-colors leading-tight">
                   {act.title}
                 </p>
                 {act.location && (
-                  <p className="text-xs text-gray-400 truncate">
+                  <p className="text-xs text-[var(--hp-text-muted)] truncate">
                     {act.location.neighborhood ?? act.location.city.name}
                   </p>
                 )}
                 {act.categories[0] && (
-                  <span className="mt-auto inline-block text-xs text-indigo-600 bg-indigo-50 rounded-full px-2 py-0.5 w-fit">
+                  <span className="mt-auto inline-block text-xs text-indigo-600 bg-[var(--hp-bg-subtle)] rounded-full px-2 py-0.5 w-fit">
                     {act.categories[0].category.name}
                   </span>
                 )}

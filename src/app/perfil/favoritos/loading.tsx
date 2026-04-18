@@ -2,7 +2,7 @@
 
 function CardSkeleton() {
   return (
-    <div className="flex flex-col rounded-2xl border border-gray-200 bg-white overflow-hidden animate-pulse">
+    <div className="flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] overflow-hidden animate-pulse">
       <div className="h-20 bg-gray-200" />
       <div className="flex flex-col gap-2.5 p-4">
         <div className="h-4 w-20 rounded-full bg-gray-200" />
@@ -10,7 +10,7 @@ function CardSkeleton() {
         <div className="h-4 w-3/4 rounded bg-gray-200" />
         <div className="h-3 w-full rounded bg-gray-100 mt-1" />
         <div className="h-3 w-5/6 rounded bg-gray-100" />
-        <div className="flex gap-2 mt-2 pt-2 border-t border-gray-100">
+        <div className="flex gap-2 mt-2 pt-2 border-t border-[var(--hp-border)]">
           <div className="h-3 w-16 rounded bg-gray-100" />
           <div className="h-3 w-12 rounded bg-gray-100" />
         </div>

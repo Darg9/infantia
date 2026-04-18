@@ -159,7 +159,7 @@ export function PreflightClient() {
   return (
     <div className="space-y-8">
       {/* ── Filtros ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-end gap-4 bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4">
+      <div className="flex flex-wrap items-end gap-4 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl px-5 py-4">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-600">Desde</label>
           <input
@@ -215,7 +215,7 @@ export function PreflightClient() {
 
       {/* ── KPIs ────────────────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-3">Resumen</h2>
+        <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Resumen</h2>
 
         {loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -230,8 +230,8 @@ export function PreflightClient() {
                 label: 'Total URLs',
                 value: data.stats.total.toLocaleString('es-CO'),
                 sub: 'en el rango seleccionado',
-                color: 'text-gray-900',
-                bg: 'bg-white',
+                color: 'text-[var(--hp-text-primary)]',
+                bg: 'bg-[var(--hp-bg-surface)]',
               },
               {
                 label: 'Procesadas',
@@ -249,13 +249,13 @@ export function PreflightClient() {
                     ? 'text-error-700'
                     : data.stats.skipRate < 5
                       ? 'text-warning-700'
-                      : 'text-gray-800',
+                      : 'text-[var(--hp-text-primary)]',
                 bg:
                   data.stats.skipRate > 70
                     ? 'bg-error-50'
                     : data.stats.skipRate < 5
                       ? 'bg-warning-50'
-                      : 'bg-white',
+                      : 'bg-[var(--hp-bg-surface)]',
               },
               {
                 // "Fallback" aquí = capa 2/3 del preflight de fechas (texto/año/keyword),
@@ -264,16 +264,16 @@ export function PreflightClient() {
                 value: `${data.stats.fallbackRate}%`,
                 sub: `Texto/año/keyword en ${data.stats.fallbackCount.toLocaleString('es-CO')} URLs (menos preciso)`,
                 color: data.stats.fallbackRate > 50 ? 'text-warning-700' : 'text-gray-600',
-                bg: data.stats.fallbackRate > 50 ? 'bg-warning-50' : 'bg-white',
+                bg: data.stats.fallbackRate > 50 ? 'bg-warning-50' : 'bg-[var(--hp-bg-surface)]',
               },
             ].map(({ label, value, sub, color, bg }) => (
               <div
                 key={label}
-                className={`border border-gray-200 rounded-2xl p-4 ${bg}`}
+                className={`border border-[var(--hp-border)] rounded-2xl p-4 ${bg}`}
               >
                 <p className={`text-2xl font-bold ${color}`}>{value}</p>
-                <p className="text-xs font-medium text-gray-700 mt-0.5">{label}</p>
-                <p className="text-xs text-gray-400 mt-1">{sub}</p>
+                <p className="text-xs font-medium text-[var(--hp-text-primary)] mt-0.5">{label}</p>
+                <p className="text-xs text-[var(--hp-text-muted)] mt-1">{sub}</p>
               </div>
             ))}
           </div>
@@ -306,16 +306,16 @@ export function PreflightClient() {
 
       {/* ── Breakdown por reason ────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-3">Breakdown por razón</h2>
+        <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Breakdown por razón</h2>
 
         {loading ? (
           <div className="space-y-2">
             {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-8" />)}
           </div>
         ) : data && data.stats.total > 0 ? (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 border-b border-gray-200">
+              <thead className="bg-[var(--hp-bg-page)] text-xs text-[var(--hp-text-secondary)] border-b border-[var(--hp-border)]">
                 <tr>
                   <th className="px-4 py-2 text-left font-medium">Razón</th>
                   <th className="px-4 py-2 text-right font-medium w-16">N</th>
@@ -330,16 +330,16 @@ export function PreflightClient() {
                     ? Math.round((count / data.stats.total) * 100)
                     : 0;
                   return (
-                    <tr key={key} className="hover:bg-gray-50">
+                    <tr key={key} className="hover:bg-[var(--hp-bg-page)]">
                       <td className="px-4 py-2.5">
                         <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${reasonBadgeClass(key)}`}>
                           {reasonLabel(key)}
                         </span>
                       </td>
-                      <td className="px-4 py-2.5 text-right font-medium text-gray-700">
+                      <td className="px-4 py-2.5 text-right font-medium text-[var(--hp-text-primary)]">
                         {count.toLocaleString('es-CO')}
                       </td>
-                      <td className="px-4 py-2.5 text-right text-gray-500 text-xs">
+                      <td className="px-4 py-2.5 text-right text-[var(--hp-text-secondary)] text-xs">
                         {pct}%
                       </td>
                       <td className="px-4 py-2.5">
@@ -357,24 +357,24 @@ export function PreflightClient() {
             </table>
           </div>
         ) : !loading ? (
-          <p className="text-gray-400 text-sm">No hay datos en este rango.</p>
+          <p className="text-[var(--hp-text-muted)] text-sm">No hay datos en este rango.</p>
         ) : null}
       </section>
 
       {/* ── Breakdown por fuente ────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-3">Por fuente (top 15)</h2>
+        <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Por fuente (top 15)</h2>
 
         {loading ? (
           <div className="space-y-2">
             {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-8" />)}
           </div>
         ) : !data || data.bySource.length === 0 ? (
-          <p className="text-gray-400 text-sm">No hay datos en este rango.</p>
+          <p className="text-[var(--hp-text-muted)] text-sm">No hay datos en este rango.</p>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+          <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-500 border-b border-gray-200">
+              <thead className="bg-[var(--hp-bg-page)] text-xs text-[var(--hp-text-secondary)] border-b border-[var(--hp-border)]">
                 <tr>
                   <th className="px-4 py-2 text-left font-medium">Fuente</th>
                   <th className="px-4 py-2 text-right font-medium w-16">Total</th>
@@ -388,9 +388,9 @@ export function PreflightClient() {
                   const isHigh = src.skipRate > 70;
                   const isLow  = src.skipRate < 5 && src.total >= 10;
                   return (
-                    <tr key={src.sourceId ?? '__none__'} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 font-mono text-xs text-gray-700">
-                        {src.sourceId ?? <span className="italic text-gray-400">(sin fuente)</span>}
+                    <tr key={src.sourceId ?? '__none__'} className="hover:bg-[var(--hp-bg-page)]">
+                      <td className="px-4 py-2 font-mono text-xs text-[var(--hp-text-primary)]">
+                        {src.sourceId ?? <span className="italic text-[var(--hp-text-muted)]">(sin fuente)</span>}
                       </td>
                       <td className="px-4 py-2 text-right text-gray-600">
                         {src.total.toLocaleString('es-CO')}
@@ -426,9 +426,9 @@ export function PreflightClient() {
 
       {/* ── Tabla de filas ──────────────────────────────────────────────── */}
       <section>
-        <h2 className="text-base font-semibold text-gray-800 mb-3">
+        <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">
           Registros
-          {data && <span className="text-gray-400 font-normal text-sm ml-2">(últimas {data.limit})</span>}
+          {data && <span className="text-[var(--hp-text-muted)] font-normal text-sm ml-2">(últimas {data.limit})</span>}
         </h2>
 
         {loading ? (
@@ -436,13 +436,13 @@ export function PreflightClient() {
             {[...Array(8)].map((_, i) => <Skeleton key={i} className="h-10" />)}
           </div>
         ) : !data || data.rows.length === 0 ? (
-          <div className="text-center py-12 bg-gray-50 border border-gray-200 rounded-2xl">
-            <p className="text-gray-400 text-sm">No hay datos en este rango.</p>
+          <div className="text-center py-12 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl">
+            <p className="text-[var(--hp-text-muted)] text-sm">No hay datos en este rango.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+          <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
             <table className="w-full text-xs">
-              <thead className="bg-gray-50 border-b border-gray-200 text-gray-500">
+              <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)] text-[var(--hp-text-secondary)]">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium">URL</th>
                   <th className="px-4 py-3 text-left font-medium">Texto fecha</th>
@@ -455,7 +455,7 @@ export function PreflightClient() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {data.rows.map((row) => (
-                  <tr key={row.id} className="hover:bg-gray-50">
+                  <tr key={row.id} className="hover:bg-[var(--hp-bg-page)]">
                     {/* URL */}
                     <td className="px-4 py-2.5 max-w-[200px]">
                       <a
@@ -474,23 +474,23 @@ export function PreflightClient() {
                     <td className="px-4 py-2.5 max-w-[160px]">
                       {row.raw_date_text ? (
                         <span
-                          className="font-mono text-gray-700 truncate block"
+                          className="font-mono text-[var(--hp-text-primary)] truncate block"
                           title={row.raw_date_text}
                         >
                           {row.raw_date_text.slice(0, 30)}
                           {row.raw_date_text.length > 30 ? '…' : ''}
                         </span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-[var(--hp-text-muted)]">—</span>
                       )}
                     </td>
 
                     {/* Parsed date */}
                     <td className="px-4 py-2.5 whitespace-nowrap">
                       {row.parsed_date ? (
-                        <span className="font-mono text-gray-700">{row.parsed_date}</span>
+                        <span className="font-mono text-[var(--hp-text-primary)]">{row.parsed_date}</span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-[var(--hp-text-muted)]">—</span>
                       )}
                     </td>
 
@@ -511,17 +511,17 @@ export function PreflightClient() {
                     {/* Source */}
                     <td className="px-4 py-2.5 max-w-[100px]">
                       {row.source_id ? (
-                        <span className="text-gray-500 truncate block" title={row.source_id}>
+                        <span className="text-[var(--hp-text-secondary)] truncate block" title={row.source_id}>
                           {row.source_id.slice(0, 20)}
                           {row.source_id.length > 20 ? '…' : ''}
                         </span>
                       ) : (
-                        <span className="text-gray-300">—</span>
+                        <span className="text-[var(--hp-text-muted)]">—</span>
                       )}
                     </td>
 
                     {/* created_at */}
-                    <td className="px-4 py-2.5 whitespace-nowrap text-gray-400">
+                    <td className="px-4 py-2.5 whitespace-nowrap text-[var(--hp-text-muted)]">
                       {new Date(row.created_at).toLocaleString('es-CO', {
                         month: 'short',
                         day: 'numeric',

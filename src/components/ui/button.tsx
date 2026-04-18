@@ -42,20 +42,20 @@ const VARIANTS: Record<ButtonVariant, string> = {
     'dark:disabled:bg-brand-900/40 dark:disabled:text-brand-600',
 
   secondary:
-    'border-2 border-gray-800 text-gray-800 bg-transparent ' +
+    'border-2 border-gray-800 text-[var(--hp-text-primary)] bg-transparent ' +
     'hover:bg-gray-800 hover:text-white active:bg-gray-900 ' +
-    'disabled:border-gray-300 disabled:text-gray-400 disabled:bg-transparent ' +
+    'disabled:border-gray-300 disabled:text-[var(--hp-text-muted)] disabled:bg-transparent ' +
     'focus-visible:ring-gray-800 ' +
-    'dark:border-gray-400 dark:text-gray-300 ' +
+    'dark:border-gray-400 dark:text-[var(--hp-text-muted)] ' +
     'dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:hover:text-white ' +
     'dark:focus-visible:ring-gray-400 ' +
     'dark:disabled:border-gray-700 dark:disabled:text-gray-600',
 
   ghost:
-    'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-gray-900 active:bg-gray-200 ' +
-    'disabled:text-gray-400 disabled:bg-transparent ' +
+    'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[var(--hp-text-primary)] active:bg-gray-200 ' +
+    'disabled:text-[var(--hp-text-muted)] disabled:bg-transparent ' +
     'focus-visible:ring-gray-500 ' +
-    'dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white ' +
+    'dark:text-[var(--hp-text-muted)] dark:hover:bg-gray-800 dark:hover:text-white ' +
     'dark:focus-visible:ring-gray-500',
 
   destructive:

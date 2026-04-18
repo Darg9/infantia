@@ -94,7 +94,7 @@ export default function EditarActividadPage() {
 
   if (!activity) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-8 text-center text-gray-500">
+      <div className="max-w-2xl mx-auto px-4 py-8 text-center text-[var(--hp-text-secondary)]">
         Actividad no encontrada.{' '}
         <Link href="/admin/actividades" className="text-brand-500 underline">Volver</Link>
       </div>
@@ -104,17 +104,17 @@ export default function EditarActividadPage() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <nav className="text-sm text-gray-500 mb-4 space-x-1">
-        <Link href="/admin" className="hover:text-gray-700">Admin</Link>
+      <nav className="text-sm text-[var(--hp-text-secondary)] mb-4 space-x-1">
+        <Link href="/admin" className="hover:text-[var(--hp-text-primary)]">Admin</Link>
         <span>›</span>
-        <Link href="/admin/actividades" className="hover:text-gray-700">Actividades</Link>
+        <Link href="/admin/actividades" className="hover:text-[var(--hp-text-primary)]">Actividades</Link>
         <span>›</span>
-        <span className="text-gray-900 font-medium">Editar</span>
+        <span className="text-[var(--hp-text-primary)] font-medium">Editar</span>
       </nav>
 
-      <h1 className="text-2xl font-bold text-gray-900 mb-1">Editar actividad</h1>
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-1">Editar actividad</h1>
       {activity.provider && (
-        <p className="text-sm text-gray-400 mb-6">Proveedor: {activity.provider.name}</p>
+        <p className="text-sm text-[var(--hp-text-muted)] mb-6">Proveedor: {activity.provider.name}</p>
       )}
 
       {msg && (
@@ -135,38 +135,38 @@ export default function EditarActividadPage() {
         </div>
       )}
 
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 space-y-5">
 
         {/* Título */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Título</label>
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Título</label>
           <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+            className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
           />
         </div>
 
         {/* Descripción */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Descripción</label>
           <textarea
             rows={5}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400 resize-none"
+            className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400 resize-none"
           />
         </div>
 
         {/* Estado y Audiencia */}
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Estado</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as Status)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+              className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             >
               <option value="ACTIVE">Activa</option>
               <option value="PAUSED">Oculta (pausada)</option>
@@ -175,11 +175,11 @@ export default function EditarActividadPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Audiencia</label>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Audiencia</label>
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value as Audience)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+              className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             >
               <option value="ALL">Todos</option>
               <option value="KIDS">Niños</option>
@@ -192,50 +192,50 @@ export default function EditarActividadPage() {
         {/* Precio y edades */}
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Precio (COP)</label>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Precio (COP)</label>
             <input
               type="number"
               min="0"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
               placeholder="0 = Gratis"
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+              className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Edad mín.</label>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad mín.</label>
             <input
               type="number"
               min="0"
               max="120"
               value={ageMin}
               onChange={(e) => setAgeMin(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+              className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Edad máx.</label>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad máx.</label>
             <input
               type="number"
               min="0"
               max="120"
               value={ageMax}
               onChange={(e) => setAgeMax(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+              className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
             />
           </div>
         </div>
 
         {/* Info de solo lectura */}
-        <div className="pt-4 border-t border-gray-100 grid grid-cols-2 gap-3 text-xs text-gray-400">
-          <div><span className="font-medium text-gray-500">Tipo:</span> {activity.type}</div>
+        <div className="pt-4 border-t border-[var(--hp-border)] grid grid-cols-2 gap-3 text-xs text-[var(--hp-text-muted)]">
+          <div><span className="font-medium text-[var(--hp-text-secondary)]">Tipo:</span> {activity.type}</div>
           <div>
-            <span className="font-medium text-gray-500">Categorías:</span>{' '}
+            <span className="font-medium text-[var(--hp-text-secondary)]">Categorías:</span>{' '}
             {activity.categories.map((c) => c.category.name).join(', ') || '—'}
           </div>
           {activity.sourceUrl && (
             <div className="col-span-2">
-              <span className="font-medium text-gray-500">Fuente:</span>{' '}
+              <span className="font-medium text-[var(--hp-text-secondary)]">Fuente:</span>{' '}
               <a href={activity.sourceUrl} target="_blank" className="text-brand-500 underline truncate" rel="noreferrer">
                 {activity.sourceUrl}
               </a>
@@ -255,14 +255,14 @@ export default function EditarActividadPage() {
         </button>
         <Link
           href="/admin/actividades"
-          className="px-6 py-2.5 border border-gray-200 text-gray-600 rounded-xl text-sm hover:border-gray-300 transition-colors"
+          className="px-6 py-2.5 border border-[var(--hp-border)] text-gray-600 rounded-xl text-sm hover:border-gray-300 transition-colors"
         >
           Cancelar
         </Link>
         <Link
           href={`/actividades/${id}`}
           target="_blank"
-          className="ml-auto text-sm text-gray-400 hover:text-gray-600 underline"
+          className="ml-auto text-sm text-[var(--hp-text-muted)] hover:text-gray-600 underline"
         >
           Ver pública →
         </Link>

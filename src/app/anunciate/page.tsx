@@ -52,7 +52,7 @@ const OPTIONS = [
 
 export default function AnunciatePage() {
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[var(--hp-bg-page)]">
       {/* Hero */}
       <section className="bg-gradient-to-br from-indigo-700 to-indigo-500 text-white py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
@@ -70,12 +70,12 @@ export default function AnunciatePage() {
       </section>
 
       {/* Stats */}
-      <section className="bg-white border-b border-gray-200 py-10 px-4">
+      <section className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] py-10 px-4">
         <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
           {STATS.map((s) => (
             <div key={s.label}>
               <p className="text-3xl font-bold text-indigo-700">{s.value}</p>
-              <p className="text-sm text-gray-500 mt-1">{s.label}</p>
+              <p className="text-sm text-[var(--hp-text-secondary)] mt-1">{s.label}</p>
             </div>
           ))}
         </div>
@@ -83,24 +83,24 @@ export default function AnunciatePage() {
 
       {/* Opciones */}
       <section className="max-w-5xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-gray-900 text-center mb-10">
+        <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] text-center mb-10">
           Elige cómo aparecer en HabitaPlan
         </h2>
         <div className="grid md:grid-cols-2 gap-8">
           {OPTIONS.map((opt) => (
             <div
               key={opt.id}
-              className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 flex flex-col"
+              className="bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] shadow-sm p-8 flex flex-col"
             >
               <span className="inline-block rounded-full bg-warning-100 text-warning-800 text-xs font-semibold px-3 py-1 mb-4 w-fit">
                 {opt.badge}
               </span>
-              <h3 className="text-xl font-bold text-gray-900 mb-1">{opt.title}</h3>
+              <h3 className="text-xl font-bold text-[var(--hp-text-primary)] mb-1">{opt.title}</h3>
               <p className="text-indigo-700 font-semibold text-sm mb-4">{opt.price}</p>
               <p className="text-gray-600 text-sm leading-relaxed mb-6">{opt.description}</p>
               <ul className="space-y-2 mb-8 flex-1">
                 {opt.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
+                  <li key={item} className="flex items-start gap-2 text-sm text-[var(--hp-text-primary)]">
                     <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
                     {item}
                   </li>
@@ -118,8 +118,8 @@ export default function AnunciatePage() {
       </section>
 
       {/* Contacto directo */}
-      <section className="bg-indigo-50 border-t border-indigo-100 py-14 px-4 text-center">
-        <h2 className="text-xl font-bold text-gray-900 mb-2">¿Tienes preguntas?</h2>
+      <section className="bg-[var(--hp-bg-subtle)] border-t border-indigo-100 py-14 px-4 text-center">
+        <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">¿Tienes preguntas?</h2>
         <p className="text-gray-600 mb-6 max-w-md mx-auto">
           Escríbenos directamente. Respondemos en menos de 24 horas.
         </p>

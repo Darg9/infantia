@@ -59,7 +59,7 @@ export default async function FavoritosPage() {
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Favoritos</h1>
+        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Favoritos</h1>
         {mixedFavorites.length > 0 && (
           <span className="rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-semibold text-rose-700">
             {mixedFavorites.length}
@@ -80,15 +80,15 @@ export default async function FavoritosPage() {
       {mixedFavorites.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 gap-6 text-center px-4">
           <div className="space-y-1.5 max-w-[320px]">
-            <p className="text-lg font-bold text-gray-900 dark:text-white leading-snug">
+            <p className="text-lg font-bold text-[var(--hp-text-primary)] dark:text-white leading-snug">
               Guarda lo que te guste <br/> y encuéntralo fácilmente después
             </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)]">
               Toca el corazón para guardar lo que te guste
             </p>
           </div>
 
-          <div className="w-full max-w-[260px] rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm overflow-hidden select-none">
+          <div className="w-full max-w-[260px] rounded-2xl border border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 shadow-sm overflow-hidden select-none">
             <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 relative" aria-hidden="true">
               <div 
                 role="button"
@@ -134,7 +134,7 @@ export default async function FavoritosPage() {
               // LocationCard minificada renderizada inline para evitar dependencias
               const loc = fav.item;
               return (
-                <div key={fav.favId} className="relative group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full min-h-[280px]">
+                <div key={fav.favId} className="relative group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full min-h-[280px]">
                   <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-emerald-600 text-white text-xs font-medium rounded-full shadow-sm border border-emerald-500/50 pointer-events-none tracking-wide">
                     Lugar
                   </div>
@@ -142,10 +142,10 @@ export default async function FavoritosPage() {
                     <span className="text-4xl">🏛️</span>
                   </div>
                   <div className="flex flex-col p-4 flex-1">
-                    <h3 className="text-base font-bold text-gray-900 line-clamp-2 leading-snug">{loc.name}</h3>
-                    <p className="text-xs text-gray-500 mt-2 line-clamp-2">{loc.address}</p>
-                    <div className="flex items-center mt-auto pt-3 border-t border-gray-100 justify-between">
-                      <span className="flex items-center gap-1 text-xs text-gray-500">
+                    <h3 className="text-base font-bold text-[var(--hp-text-primary)] line-clamp-2 leading-snug">{loc.name}</h3>
+                    <p className="text-xs text-[var(--hp-text-secondary)] mt-2 line-clamp-2">{loc.address}</p>
+                    <div className="flex items-center mt-auto pt-3 border-t border-[var(--hp-border)] justify-between">
+                      <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                         <span>📍</span> {loc.neighborhood || loc.city?.name || 'Ciudad'}
                       </span>
                       <FavoriteButton

@@ -76,12 +76,12 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
       />
 
       {/* Panel */}
-      <div className="relative w-full max-w-sm bg-white rounded-2xl shadow-xl p-6 flex flex-col gap-4">
+      <div className="relative w-full max-w-sm bg-[var(--hp-bg-surface)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
 
         {/* Cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-gray-600 transition-colors"
           aria-label="Cerrar"
         >
           ✕
@@ -91,8 +91,8 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
           /* Estado: registro exitoso, confirmar correo */
           <div className="text-center py-2">
             <span className="text-3xl mb-3 block">📬</span>
-            <h2 className="font-bold text-gray-900 text-lg mb-1">Revisa tu correo</h2>
-            <p className="text-sm text-gray-500">
+            <h2 className="font-bold text-[var(--hp-text-primary)] text-lg mb-1">Revisa tu correo</h2>
+            <p className="text-sm text-[var(--hp-text-secondary)]">
               Te enviamos un enlace de confirmación a <strong>{email}</strong>.
               Una vez confirmado, vuelve aquí para enviar tu calificación.
             </p>
@@ -107,10 +107,10 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
           <>
             {/* Encabezado */}
             <div>
-              <h2 className="font-bold text-gray-900 text-lg leading-tight">
+              <h2 className="font-bold text-[var(--hp-text-primary)] text-lg leading-tight">
                 {mode === 'login' ? 'Guarda tu opinión iniciando sesión' : 'Crea tu cuenta gratis'}
               </h2>
-              <p className="text-xs text-gray-400 mt-0.5">
+              <p className="text-xs text-[var(--hp-text-muted)] mt-0.5">
                 {mode === 'login'
                   ? 'Tu calificación se enviará automáticamente al ingresar.'
                   : 'Confirma tu correo y luego envía tu calificación.'}
@@ -157,7 +157,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
             </form>
 
             {/* Toggle login/registro */}
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-xs text-[var(--hp-text-secondary)]">
               {mode === 'login' ? (
                 <>¿No tienes cuenta?{' '}
                   <button
@@ -255,13 +255,13 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
 
         {/* Paso 1 — Estrellas */}
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">
+          <p className="text-sm font-medium text-[var(--hp-text-primary)] mb-2">
             {isExisting ? 'Tu calificación actual' : '¿Cómo calificarías esta actividad?'}
           </p>
           <div className="flex items-center gap-3">
             <StarRating value={score} onChange={(v) => { setScore(v); setMsg(null) }} size="lg" />
             {score > 0 && (
-              <span className="text-sm text-gray-400">{score}/5</span>
+              <span className="text-sm text-[var(--hp-text-muted)]">{score}/5</span>
             )}
           </div>
         </div>
@@ -272,8 +272,8 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
             step === 2 ? 'max-h-40 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
           }`}
         >
-          <label className="block text-sm font-medium text-gray-700 mb-1.5">
-            ¿Qué te gustó o qué mejorarías? <span className="text-gray-400 font-normal">(opcional)</span>
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1.5">
+            ¿Qué te gustó o qué mejorarías? <span className="text-[var(--hp-text-muted)] font-normal">(opcional)</span>
           </label>
           <textarea
             value={comment}
@@ -300,7 +300,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         <button
           type="submit"
           disabled={loading || score === 0}
-          className="self-start bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
+          className="self-start bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-[var(--hp-text-muted)] disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
         >
           {loading
             ? 'Enviando...'
@@ -311,12 +311,12 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
 
         {/* Microcopy para usuarios no autenticados */}
         {!isAuthenticated && score === 0 && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[var(--hp-text-muted)]">
             Selecciona una estrella para calificar
           </p>
         )}
         {!isAuthenticated && score > 0 && (
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-[var(--hp-text-muted)]">
             Al enviar te pediremos que inicies sesión para guardar tu opinión
           </p>
         )}

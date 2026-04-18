@@ -150,7 +150,7 @@ export function SourcesManager({ cities, verticals }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[var(--hp-text-secondary)]">
           {sources.length} fuentes totales · {activeCount} activas
         </p>
         <Button
@@ -166,9 +166,9 @@ export function SourcesManager({ cities, verticals }: Props) {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="bg-gray-50 border border-gray-200 rounded-2xl p-6 space-y-4"
+          className="bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl p-6 space-y-4"
         >
-          <h3 className="font-semibold text-gray-800 mb-2">Nueva fuente de scraping</h3>
+          <h3 className="font-semibold text-[var(--hp-text-primary)] mb-2">Nueva fuente de scraping</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Name */}
@@ -287,7 +287,7 @@ export function SourcesManager({ cities, verticals }: Props) {
           </div>
 
           <div className="flex items-center gap-4 pt-2">
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-[var(--hp-text-primary)] cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -311,15 +311,15 @@ export function SourcesManager({ cities, verticals }: Props) {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center py-8 text-gray-400 text-sm">Cargando fuentes…</div>
+        <div className="text-center py-8 text-[var(--hp-text-muted)] text-sm">Cargando fuentes…</div>
       ) : sources.length === 0 ? (
-        <div className="text-center py-12 text-gray-400 text-sm">
+        <div className="text-center py-12 text-[var(--hp-text-muted)] text-sm">
           No hay fuentes registradas. Crea la primera con el botón de arriba.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white">
+        <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
               <tr>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Fuente / URL</th>
                 <th className="px-4 py-3 text-left font-medium text-gray-600">Plataforma</th>
@@ -331,10 +331,10 @@ export function SourcesManager({ cities, verticals }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {sources.map((source) => (
-                <tr key={source.id} className="hover:bg-gray-50">
+                <tr key={source.id} className="hover:bg-[var(--hp-bg-page)]">
                   {/* Name + URL */}
                   <td className="px-4 py-3 max-w-xs">
-                    <p className="font-medium text-gray-900 truncate">{source.name}</p>
+                    <p className="font-medium text-[var(--hp-text-primary)] truncate">{source.name}</p>
                     <a
                       href={source.url}
                       target="_blank"
@@ -356,16 +356,16 @@ export function SourcesManager({ cities, verticals }: Props) {
                   </td>
 
                   {/* Last run */}
-                  <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
+                  <td className="px-4 py-3 text-[var(--hp-text-secondary)] whitespace-nowrap">
                     {source.lastRunAt ? (
                       <div>
                         <p>{new Date(source.lastRunAt).toLocaleDateString('es-CO')}</p>
                         {source.lastRunItems != null && (
-                          <p className="text-xs text-gray-400">{source.lastRunItems} items</p>
+                          <p className="text-xs text-[var(--hp-text-muted)]">{source.lastRunItems} items</p>
                         )}
                       </div>
                     ) : (
-                      <span className="text-gray-300">Sin datos</span>
+                      <span className="text-[var(--hp-text-muted)]">Sin datos</span>
                     )}
                   </td>
 

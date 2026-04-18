@@ -12,10 +12,10 @@ const MapInner = dynamic(() => import('./MapInner'), {
   ssr: false,
   loading: () => (
     <div
-      className="flex items-center justify-center rounded-2xl bg-gray-100 animate-pulse border border-gray-200"
+      className="flex items-center justify-center rounded-2xl bg-gray-100 animate-pulse border border-[var(--hp-border)]"
       style={{ height: '520px' }}
     >
-      <p className="text-sm text-gray-400">Cargando mapa...</p>
+      <p className="text-sm text-[var(--hp-text-muted)]">Cargando mapa...</p>
     </div>
   ),
 });

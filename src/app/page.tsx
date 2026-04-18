@@ -132,24 +132,24 @@ export default async function HomePage() {
   const activityHref      = hasRecent ? '/actividades?sort=newest' : '/actividades';
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
       {/* ================================================================ */}
       {/* HERO                                                              */}
       {/* ================================================================ */}
-      <section className="bg-white border-b border-gray-100">
+      <section className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)]">
         <div className="mx-auto max-w-5xl px-4 py-14 sm:py-20 text-center">
 
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 leading-tight mb-3">
+          <h1 className="text-4xl sm:text-5xl font-bold text-[var(--hp-text-primary)] leading-tight mb-3">
             ¿Qué hacemos{' '}
-            <span className="text-indigo-600">hoy?</span>
+            <span className="text-brand-600">hoy?</span>
           </h1>
 
           <div className="max-w-xl mx-auto mb-8">
-            <p className="text-lg text-gray-500">
+            <p className="text-lg text-[var(--hp-text-secondary)]">
               Descubre planes en familia cerca de ti
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-[var(--hp-text-muted)] mt-1">
               Actividades para niños y familias en Bogotá
             </p>
           </div>
@@ -180,7 +180,7 @@ export default async function HomePage() {
               <Link
                 key={cat.id}
                 href={`/actividades?categoryId=${cat.id}`}
-                className="group flex flex-col items-center gap-2.5 rounded-2xl bg-white border border-gray-100 p-5 text-center hover:border-indigo-200 hover:shadow-md transition-all"
+                className="group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-md transition-all"
               >
                 {/* Ícono con gradiente de la categoría */}
                 <div
@@ -189,10 +189,10 @@ export default async function HomePage() {
                 >
                   {getCategoryEmoji(cat.name)}
                 </div>
-                <span className="text-sm font-semibold text-gray-800 group-hover:text-indigo-700 transition-colors leading-tight">
+                <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-brand-600 transition-colors leading-tight">
                   {cat.name}
                 </span>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-[var(--hp-text-muted)]">
                   {cat._count.activities} {cat._count.activities === 1 ? 'actividad' : 'actividades'}
                 </span>
               </Link>
@@ -204,7 +204,7 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
-      <section className="bg-white border-t border-b border-gray-100 py-12">
+      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] py-12">
         <div className="mx-auto max-w-5xl px-4">
           {(hasRecent || hasPopular) ? (
             <>
@@ -221,7 +221,7 @@ export default async function HomePage() {
               <div className="mt-8 text-center">
                 <Link
                   href={activityHref}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-indigo-600 px-8 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-brand-600 px-8 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
                 >
                   Ver más actividades →
                 </Link>
@@ -230,15 +230,15 @@ export default async function HomePage() {
           ) : (
             /* Empty state: no hay ninguna actividad disponible */
             <div className="text-center py-8">
-              <p className="text-lg font-semibold text-gray-700 mb-1">
+              <p className="text-lg font-semibold text-[var(--hp-text-primary)] mb-1">
                 No hay actividades nuevas por ahora
               </p>
-              <p className="text-sm text-gray-400 mb-6">
+              <p className="text-sm text-[var(--hp-text-muted)] mb-6">
                 Explora todas las actividades disponibles
               </p>
               <Link
                 href="/actividades"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-indigo-600 px-8 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-600 hover:text-white transition-all"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-brand-600 px-8 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
               >
                 Ver más actividades →
               </Link>
@@ -251,16 +251,16 @@ export default async function HomePage() {
       {/* CTA FINAL                                                        */}
       {/* ================================================================ */}
       <section className="mx-auto max-w-5xl px-4 py-12 text-center">
-        <div className="rounded-3xl bg-indigo-600 px-8 py-10">
+        <div className="rounded-3xl bg-brand-600 px-8 py-10">
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
             ¿No encontraste algo que te guste?
           </h2>
-          <p className="text-indigo-200 mb-7 max-w-md mx-auto text-sm">
+          <p className="text-brand-100 mb-7 max-w-md mx-auto text-sm">
             Descubre más actividades filtrando por edad, precio o ubicación
           </p>
           <Link
             href="/actividades"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 transition-colors shadow"
+            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition-colors shadow"
           >
             Ver más actividades →
           </Link>
@@ -278,10 +278,10 @@ export default async function HomePage() {
 function StatBox({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col items-center gap-0.5">
-      <span className="text-3xl font-bold text-gray-900 tabular-nums">
+      <span className="text-3xl font-bold text-[var(--hp-text-primary)] tabular-nums">
         {value.toLocaleString('es-CO')}
       </span>
-      <span className="text-sm text-gray-500">{label}</span>
+      <span className="text-sm text-[var(--hp-text-secondary)]">{label}</span>
     </div>
   );
 }
@@ -300,16 +300,17 @@ function SectionHeader({
   return (
     <div className="flex items-start justify-between mb-6">
       <div>
-        <h2 className="text-lg font-bold text-gray-900 leading-snug">{title}</h2>
+        <h2 className="text-lg font-bold text-[var(--hp-text-primary)] leading-snug">{title}</h2>
         {subtitle && (
-          <p className="text-sm text-gray-400 mt-0.5">{subtitle}</p>
+          <p className="text-sm text-[var(--hp-text-muted)] mt-0.5">{subtitle}</p>
         )}
       </div>
       {href && linkText && (
-        <Link href={href} className="text-sm text-indigo-600 hover:underline font-medium shrink-0 mt-0.5">
+        <Link href={href} className="text-sm text-brand-600 hover:underline font-medium shrink-0 mt-0.5">
           {linkText}
         </Link>
       )}
     </div>
   );
 }
+

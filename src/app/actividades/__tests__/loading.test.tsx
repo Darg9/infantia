@@ -16,9 +16,9 @@ describe('ActividadesLoading (skeleton)', () => {
     expect(skeletons.length).toBeGreaterThanOrEqual(12);
   });
 
-  it('tiene fondo bg-gray-50 (mismo que la página real)', () => {
+  it('tiene fondo bg-[var(--hp-bg-page)] (mismo que la página real)', () => {
     const { container } = render(<ActividadesLoading />);
-    expect(container.firstChild).toHaveClass('bg-gray-50');
+    expect(container.firstChild).toHaveClass('bg-[var(--hp-bg-page)]');
   });
 
   it('contiene un div de grid responsivo', () => {

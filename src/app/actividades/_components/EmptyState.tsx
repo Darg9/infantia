@@ -88,15 +88,15 @@ export function EmptyState({
       {/* Ilustración */}
       <div className="flex flex-col items-center gap-2">
         <span className="text-6xl select-none">🔍</span>
-        <h2 className="text-xl font-semibold text-gray-800 max-w-sm">{headline}</h2>
-        <p className="text-sm text-gray-400 max-w-xs">
+        <h2 className="text-xl font-semibold text-[var(--hp-text-primary)] max-w-sm">{headline}</h2>
+        <p className="text-sm text-[var(--hp-text-muted)] max-w-xs">
           {tips[0]}
         </p>
       </div>
 
       {/* Lista de sugerencias (cuando hay más de una) */}
       {tips.length > 1 && (
-        <ul className="text-sm text-gray-500 flex flex-col gap-1.5 text-left max-w-xs">
+        <ul className="text-sm text-[var(--hp-text-secondary)] flex flex-col gap-1.5 text-left max-w-xs">
           {tips.map((tip, i) => (
             <li key={i} className="flex items-start gap-2">
               <span className="text-indigo-400 mt-0.5">→</span>
@@ -119,7 +119,7 @@ export function EmptyState({
       {/* Categorías populares como sugerencias rápidas */}
       {popularCategories.length > 0 && (
         <div className="flex flex-col items-center gap-3 mt-2">
-          <p className="text-xs font-semibold text-gray-400 tracking-wide">
+          <p className="text-xs font-semibold text-[var(--hp-text-muted)] tracking-wide">
             O explora estas categorías
           </p>
           <div className="flex flex-wrap justify-center gap-2 max-w-sm">
@@ -127,7 +127,7 @@ export function EmptyState({
               <a
                 key={cat.id}
                 href={`/actividades?categoryId=${cat.id}`}
-                className="flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-3 py-1.5 text-sm text-gray-700 hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+                className="flex items-center gap-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-[var(--hp-text-primary)] hover:border-indigo-300 hover:text-indigo-700 transition-colors"
               >
                 <span>{getCategoryEmoji(cat.name)}</span>
                 {cat.name}
@@ -139,8 +139,8 @@ export function EmptyState({
 
       {/* UX Fallback: Actividades de recomendación en caso nulo */}
       {fallbackActivities.length > 0 && (
-        <div className="mt-12 text-left w-full border-t border-gray-100 pt-10">
-          <h3 className="text-xl font-bold text-gray-900 mb-6 tracking-tight">
+        <div className="mt-12 text-left w-full border-t border-[var(--hp-border)] pt-10">
+          <h3 className="text-xl font-bold text-[var(--hp-text-primary)] mb-6 tracking-tight">
             No encontramos resultados. Estas actividades podrían gustarte:
           </h3>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

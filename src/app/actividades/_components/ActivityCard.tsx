@@ -93,7 +93,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
     && Date.now() - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
 
   const cardContent = (
-    <div className="group flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
+    <div className="group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
       {/* ── Strip visual ─────────────────────────────────────────────── */}
       <div
@@ -118,7 +118,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Badge tipo — oculto en compact */}
         {!compact && (
-          <span className="absolute top-1.5 left-2 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-gray-700 shadow-sm">
+          <span className="absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-sm">
             {TYPE_LABELS[activity.type] ?? activity.type}
           </span>
         )}
@@ -127,7 +127,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         {priceLabel !== 'No disponible' && (
           <span className={clsx(
             'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
-            priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-white/90 text-gray-700'
+            priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
           )}>
             {priceLabel}
           </span>
@@ -164,7 +164,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             {activity.categories.slice(0, 2).map(({ category }) => (
               <span
                 key={category.id}
-                className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700"
+                className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600"
               >
                 {category.name}
               </span>
@@ -174,24 +174,24 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Título — más prominente en compact */}
         <h3 className={clsx(
-          'leading-snug line-clamp-2 group-hover:text-indigo-700 transition-colors',
+          'leading-snug line-clamp-2 group-hover:text-brand-600 transition-colors',
           compact
-            ? 'text-base font-bold text-gray-900'
-            : 'text-sm font-semibold text-gray-900'
+            ? 'text-base font-bold text-[var(--hp-text-primary)]'
+            : 'text-sm font-semibold text-[var(--hp-text-primary)]'
         )}>
           {activity.title}
         </h3>
 
         {/* Descripción — oculta en compact */}
         {!compact && (
-          <p className="text-xs text-gray-500 line-clamp-2 leading-relaxed flex-1">
+          <p className="text-xs text-[var(--hp-text-secondary)] line-clamp-2 leading-relaxed flex-1">
             {activity.description}
           </p>
         )}
 
         {/* ── Footer ──────────────────────────────────────────────────── */}
         <div className={clsx(
-          'flex items-center mt-auto pt-2 border-t border-gray-100',
+          'flex items-center mt-auto pt-2 border-t border-[var(--hp-border)]',
           compact ? 'justify-between' : 'flex-wrap gap-x-3 gap-y-1'
         )}>
 
@@ -209,20 +209,20 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
                 </span>
               )}
               {ageLabel && (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
+                <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                   <span>👧</span> {ageLabel}
                 </span>
               )}
               {locationLabel && (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
+                <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                   <span>📍</span> {locationLabel}
                 </span>
               )}
               <span className="ml-auto flex items-center gap-2">
                 {activity.provider && (
-                  <span className="flex items-center gap-1 text-xs text-gray-400">
+                  <span className="flex items-center gap-1 text-xs text-[var(--hp-text-muted)]">
                     {activity.provider.name}
-                    {activity.provider.isVerified && <span className="text-indigo-500">✓</span>}
+                    {activity.provider.isVerified && <span className="text-brand-500">✓</span>}
                   </span>
                 )}
                 <FavoriteButton
@@ -239,7 +239,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           {compact && (
             <>
               {locationLabel ? (
-                <span className="flex items-center gap-1 text-xs text-gray-500">
+                <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                   <span>📍</span> {locationLabel}
                 </span>
               ) : (
@@ -274,3 +274,4 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
     </a>
   );
 }
+

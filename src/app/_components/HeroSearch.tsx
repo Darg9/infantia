@@ -35,7 +35,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-indigo-100 text-indigo-800 rounded px-0.5 not-italic">
+      <mark className="bg-brand-100 text-[var(--hp-text-primary)] rounded px-0.5 not-italic">
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -267,7 +267,7 @@ export default function HeroSearch() {
           disabled={isSubmitting}
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
-          className="rounded-2xl shadow-md py-4 text-base bg-white focus:ring-brand-100 focus:border-brand-400"
+          className="rounded-2xl shadow-md py-4 text-base bg-[var(--hp-bg-surface)] focus:ring-brand-100 focus:border-brand-400"
           leftSlot={
             <button
               type="button"
@@ -275,7 +275,7 @@ export default function HeroSearch() {
               onClick={() => submitSearch(query)}
               aria-label="Ejecutar búsqueda"
               aria-busy={isSubmitting}
-              className="text-gray-400 hover:text-brand-500 disabled:opacity-50 transition-colors p-0.5 ml-1"
+              className="text-[var(--hp-text-muted)] hover:text-brand-500 disabled:opacity-50 transition-colors p-0.5 ml-1"
             >
               {isSubmitting ? (
                 <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
@@ -296,13 +296,13 @@ export default function HeroSearch() {
           <div
             role="listbox"
             onMouseDown={e => e.preventDefault()}
-            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-gray-100 bg-white shadow-xl overflow-hidden"
+            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-xl overflow-hidden"
           >
 
             {/* Historial */}
             {showHistory && recentSearches.length > 0 && (
               <>
-                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wide select-none">
+                <p className="px-4 pt-3 pb-1 text-xs font-semibold text-[var(--hp-text-muted)] uppercase tracking-wide select-none">
                   Búsquedas recientes
                 </p>
                 <ul>
@@ -313,10 +313,10 @@ export default function HeroSearch() {
                       onMouseLeave={() => setActiveIndex(-1)}
                       onClick={() => selectHistory(term)}
                       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors ${
-                        i === activeIndex ? 'bg-indigo-50 text-indigo-900' : 'text-gray-700 hover:bg-gray-50'
+                        i === activeIndex ? 'bg-brand-50 text-[var(--hp-text-primary)]' : 'text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)]'
                       }`}
                     >
-                      <svg className="w-4 h-4 shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 shrink-0 text-[var(--hp-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
@@ -345,9 +345,9 @@ export default function HeroSearch() {
             {/* Sin resultados */}
             {!isFetching && showSugg && suggestions.length === 0 && (
               <div className="px-4 py-8 text-center">
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--hp-text-secondary)]">
                   No encontramos resultados para{' '}
-                  <span className="font-medium text-gray-700">&quot;{query}&quot;</span>
+                  <span className="font-medium text-[var(--hp-text-primary)]">&quot;{query}&quot;</span>
                 </p>
               </div>
             )}
@@ -364,7 +364,7 @@ export default function HeroSearch() {
                     onMouseLeave={() => setActiveIndex(-1)}
                     onClick={() => selectSuggestion(s)}
                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer text-sm transition-colors ${
-                      i === activeIndex ? 'bg-indigo-50' : 'hover:bg-gray-50'
+                      i === activeIndex ? 'bg-brand-50' : 'hover:bg-[var(--hp-bg-page)]'
                     }`}
                   >
                     <span className="text-base w-5 text-center shrink-0 select-none">
@@ -372,12 +372,12 @@ export default function HeroSearch() {
                     </span>
                     <span className="flex-1 min-w-0">
                       <span className={`block truncate font-medium ${
-                        i === activeIndex ? 'text-indigo-900' : 'text-gray-800'
+                        i === activeIndex ? 'text-[var(--hp-text-primary)]' : 'text-[var(--hp-text-primary)]'
                       }`}>
                         {highlightMatch(s.label, query)}
                       </span>
                       {s.sublabel && (
-                        <span className="text-xs text-gray-400 truncate block mt-0.5">{s.sublabel}</span>
+                        <span className="text-xs text-[var(--hp-text-muted)] truncate block mt-0.5">{s.sublabel}</span>
                       )}
                     </span>
                     {s.type !== 'activity' && (
@@ -390,7 +390,7 @@ export default function HeroSearch() {
                       </span>
                     )}
                     <span className={`shrink-0 text-xs ${
-                      i === activeIndex ? 'text-indigo-400' : 'text-gray-300'
+                      i === activeIndex ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'
                     }`}>→</span>
                   </li>
                 ))}
@@ -399,7 +399,7 @@ export default function HeroSearch() {
 
             {/* Footer teclado — solo desktop */}
             {showSugg && suggestions.length > 0 && (
-              <div className="hidden sm:block px-4 py-2 text-xs text-gray-300 border-t border-gray-50 select-none">
+              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-[var(--hp-border)] select-none">
                 ↑↓ navegar · Enter seleccionar · Esc cerrar
               </div>
             )}
@@ -416,7 +416,7 @@ export default function HeroSearch() {
             size="sm"
             disabled={isSubmitting}
             onClick={() => router.push(chip.href)}
-            className="rounded-full border border-gray-200 bg-white/80 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 font-normal"
+            className="rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]/80 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 font-normal"
           >
             {chip.label}
           </Button>
@@ -425,3 +425,4 @@ export default function HeroSearch() {
     </div>
   );
 }
+

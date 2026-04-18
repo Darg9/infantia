@@ -85,9 +85,9 @@ export default function AdminActividadesPage() {
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <Link href="/admin" className="text-sm text-gray-500 hover:text-gray-700">← Admin</Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">Gestión de actividades</h1>
-          <p className="text-sm text-gray-500">{total} actividades en total</p>
+          <Link href="/admin" className="text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]">← Admin</Link>
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mt-1">Gestión de actividades</h1>
+          <p className="text-sm text-[var(--hp-text-secondary)]">{total} actividades en total</p>
         </div>
       </div>
 
@@ -98,12 +98,12 @@ export default function AdminActividadesPage() {
           placeholder="Buscar por título..."
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="border border-gray-200 rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-brand-400"
+          className="border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:border-brand-400"
         />
         <select
           value={statusFilter}
           onChange={(e) => { setStatusFilter(e.target.value as Status | ''); setPage(1) }}
-          className="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+          className="border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
         >
           <option value="">Todos los estados</option>
           <option value="ACTIVE">Activas</option>
@@ -114,14 +114,14 @@ export default function AdminActividadesPage() {
       </div>
 
       {/* Tabla */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-400 text-sm">Cargando...</div>
+          <div className="p-8 text-center text-[var(--hp-text-muted)] text-sm">Cargando...</div>
         ) : activities.length === 0 ? (
-          <div className="p-8 text-center text-gray-400 text-sm">No hay actividades</div>
+          <div className="p-8 text-center text-[var(--hp-text-muted)] text-sm">No hay actividades</div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
               <tr>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Título</th>
                 <th className="text-left px-4 py-3 font-medium text-gray-600">Proveedor</th>
@@ -133,14 +133,14 @@ export default function AdminActividadesPage() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {activities.map((act) => (
-                <tr key={act.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={act.id} className="hover:bg-[var(--hp-bg-page)] transition-colors">
                   <td className="px-4 py-3 max-w-xs">
-                    <span className="font-medium text-gray-900 line-clamp-1">{act.title}</span>
+                    <span className="font-medium text-[var(--hp-text-primary)] line-clamp-1">{act.title}</span>
                     {act.categories[0] && (
-                      <span className="text-xs text-gray-400">{act.categories[0].category.name}</span>
+                      <span className="text-xs text-[var(--hp-text-muted)]">{act.categories[0].category.name}</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-gray-500 max-w-[140px] truncate">
+                  <td className="px-4 py-3 text-[var(--hp-text-secondary)] max-w-[140px] truncate">
                     {act.provider?.name ?? '—'}
                   </td>
                   <td className="px-4 py-3">
@@ -148,15 +148,15 @@ export default function AdminActividadesPage() {
                       {STATUS_LABELS[act.status]}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500 text-xs">{act.type}</td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--hp-text-secondary)] text-xs">{act.type}</td>
+                  <td className="px-4 py-3 text-[var(--hp-text-secondary)]">
                     {act.price === null ? '—' : act.price === 0 ? 'Gratis' : `$${Number(act.price).toLocaleString('es-CO')}`}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/admin/actividades/${act.id}/editar`}
-                        className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors"
+                        className="text-xs px-3 py-1 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors"
                       >
                         Editar
                       </Link>
@@ -173,7 +173,7 @@ export default function AdminActividadesPage() {
                       <Link
                         href={`/actividades/${act.id}`}
                         target="_blank"
-                        className="text-xs px-3 py-1 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 transition-colors"
+                        className="text-xs px-3 py-1 rounded-lg border border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors"
                       >
                         Ver
                       </Link>
@@ -197,7 +197,7 @@ export default function AdminActividadesPage() {
           >
             ← Anterior
           </Button>
-          <span className="text-sm text-gray-500">
+          <span className="text-sm text-[var(--hp-text-secondary)]">
             Página {page} de {totalPages}
           </span>
           <Button

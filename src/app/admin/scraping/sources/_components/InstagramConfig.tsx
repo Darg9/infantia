@@ -45,13 +45,13 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
   };
 
   return (
-    <div className="mt-4 pt-4 border-t border-gray-100">
-      <p className="text-xs font-medium text-gray-500 tracking-wide mb-3">Configuración Instagram</p>
+    <div className="mt-4 pt-4 border-t border-[var(--hp-border)]">
+      <p className="text-xs font-medium text-[var(--hp-text-secondary)] tracking-wide mb-3">Configuración Instagram</p>
 
       <div className="flex flex-wrap items-end gap-6">
         {/* Content mode */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Contenido a extraer</label>
+          <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Contenido a extraer</label>
           <div className="flex gap-2">
             {(Object.keys(modeLabels) as ContentMode[]).map((mode) => (
               <button
@@ -60,21 +60,21 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                   contentMode === mode
                     ? 'bg-brand-500 text-white border-brand-500'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-brand-300'
+                    : 'bg-[var(--hp-bg-surface)] text-gray-600 border-[var(--hp-border)] hover:border-brand-300'
                 }`}
               >
                 {modeLabels[mode].label}
               </button>
             ))}
           </div>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-xs text-[var(--hp-text-muted)] mt-1">
             {modeLabels[contentMode].desc} · <span className="font-medium">{modeLabels[contentMode].cost}</span>
           </p>
         </div>
 
         {/* Max posts */}
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Posts por corrida</label>
+          <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Posts por corrida</label>
           <div className="flex items-center gap-2">
             <input
               type="range"
@@ -84,7 +84,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
               onChange={(e) => setMaxPosts(Number(e.target.value))}
               className="w-28 accent-orange-500"
             />
-            <span className="text-sm font-semibold text-gray-700 w-6 text-center">{maxPosts}</span>
+            <span className="text-sm font-semibold text-[var(--hp-text-primary)] w-6 text-center">{maxPosts}</span>
           </div>
         </div>
 

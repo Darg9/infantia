@@ -81,6 +81,6 @@ export const TIER_LABEL: Record<string, string> = {
 export const TIER_COLOR: Record<string, string> = {
   A: 'bg-yellow-50 text-yellow-800 border-yellow-200',
   B: 'bg-blue-50 text-blue-800 border-blue-200',
-  C: 'bg-gray-50 text-gray-700 border-gray-200',
+  C: 'bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)] border-[var(--hp-border)]',
   D: 'bg-red-50 text-red-700 border-red-200',
 };

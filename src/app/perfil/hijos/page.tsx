@@ -30,8 +30,8 @@ export default async function HijosPage() {
     <div className="max-w-2xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Tu familia</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Tu familia</h1>
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">
             Los perfiles ayudan a filtrar actividades por edad e intereses.
           </p>
         </div>
@@ -44,10 +44,10 @@ export default async function HijosPage() {
       </div>
 
       {children.length === 0 ? (
-        <div className="text-center py-16 border border-dashed border-gray-200 rounded-2xl">
+        <div className="text-center py-16 border border-dashed border-[var(--hp-border)] rounded-2xl">
           <p className="text-4xl mb-3">👶</p>
-          <p className="text-gray-500 text-sm mb-1">Aún no has agregado niñas o niños.</p>
-          <p className="text-gray-400 text-xs mb-4">Agrega una niña o niño para recibir mejores recomendaciones.</p>
+          <p className="text-[var(--hp-text-secondary)] text-sm mb-1">Aún no has agregado niñas o niños.</p>
+          <p className="text-[var(--hp-text-muted)] text-xs mb-4">Agrega una niña o niño para recibir mejores recomendaciones.</p>
           <Link
             href="/perfil/hijos/nuevo"
             className="text-brand-600 text-sm font-medium hover:underline"
@@ -62,15 +62,15 @@ export default async function HijosPage() {
             return (
               <li
                 key={child.id}
-                className="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-4"
+                className="flex items-center justify-between bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl px-5 py-4"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-600 font-bold text-sm">
                     {child.name[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900">{child.name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="font-medium text-[var(--hp-text-primary)]">{child.name}</p>
+                    <p className="text-xs text-[var(--hp-text-muted)]">
                       {age} {age === 1 ? 'ano' : 'anos'} ·{' '}
                       {new Date(child.birthDate).toLocaleDateString('es-CO', {
                         day: 'numeric',
@@ -87,7 +87,7 @@ export default async function HijosPage() {
         </ul>
       )}
 
-      <p className="text-xs text-gray-400 mt-6 leading-relaxed">
+      <p className="text-xs text-[var(--hp-text-muted)] mt-6 leading-relaxed">
         Los datos de tus hijos se tratan conforme a nuestra{' '}
         <Link href="/tratamiento-datos" className="underline hover:text-gray-600">
           Politica de Tratamiento de Datos

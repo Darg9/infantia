@@ -52,8 +52,8 @@ function LoginForm() {
 
   return (
     <Card className="w-full max-w-md p-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Inicia sesión</h1>
-      <p className="text-gray-500 text-sm mb-6">Bienvenido de vuelta a HabitaPlan</p>
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Inicia sesión</h1>
+      <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Bienvenido de vuelta a HabitaPlan</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -96,7 +96,7 @@ function LoginForm() {
         </Button>
       </form>
 
-      <p className="mt-6 text-center text-sm text-gray-500">
+      <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
         ¿No tienes cuenta?{' '}
         <Link href="/registro" className="text-brand-600 font-medium hover:underline">
           Regístrate
@@ -108,7 +108,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)]">
       <Suspense>
         <LoginForm />
       </Suspense>

@@ -26,7 +26,7 @@ export default function HistorialPage() {
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-bold text-gray-900">Historial</h1>
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Historial</h1>
           {history.length > 0 && (
             <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
               {history.length}
@@ -36,7 +36,7 @@ export default function HistorialPage() {
         {history.length > 0 && (
           <button
             onClick={clearHistory}
-            className="text-xs text-gray-400 hover:text-error-500 transition-colors"
+            className="text-xs text-[var(--hp-text-muted)] hover:text-error-500 transition-colors"
           >
             Borrar historial
           </button>
@@ -47,7 +47,7 @@ export default function HistorialPage() {
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">🕐</span>
           <p className="text-gray-600 font-medium text-lg">No has visto actividades recientemente</p>
-          <p className="text-sm text-gray-400 max-w-sm">
+          <p className="text-sm text-[var(--hp-text-muted)] max-w-sm">
             Cuando visites una actividad, aparecera aqui para que puedas volver a encontrarla.
           </p>
           <Link
@@ -63,7 +63,7 @@ export default function HistorialPage() {
             <Link
               key={entry.activityId}
               href={activityPath(entry.activityId, entry.title)}
-              className="flex items-center gap-4 bg-white border border-gray-200 rounded-2xl p-3 hover:border-brand-300 transition-colors group"
+              className="flex items-center gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-3 hover:border-brand-300 transition-colors group"
             >
               {entry.imageUrl ? (
                 <img
@@ -72,15 +72,15 @@ export default function HistorialPage() {
                   className="w-12 h-12 rounded-xl object-cover shrink-0"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center text-xl shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-[var(--hp-bg-page)] flex items-center justify-center text-xl shrink-0">
                   🎨
                 </div>
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 group-hover:text-brand-600 transition-colors truncate">
+                <p className="text-sm font-medium text-[var(--hp-text-primary)] group-hover:text-brand-600 transition-colors truncate">
                   {entry.title}
                 </p>
-                <p className="text-xs text-gray-400">{timeAgo(entry.viewedAt)}</p>
+                <p className="text-xs text-[var(--hp-text-muted)]">{timeAgo(entry.viewedAt)}</p>
               </div>
             </Link>
           ))}

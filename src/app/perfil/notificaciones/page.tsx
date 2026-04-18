@@ -50,7 +50,7 @@ function Toggle({
       }`}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow transition-transform ${
+        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform ${
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />
@@ -101,7 +101,7 @@ export default function NotificacionesPage() {
   if (loading) {
     return (
       <div className="max-w-lg mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Notificaciones</h1>
+        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-6">Notificaciones</h1>
         <div className="animate-pulse space-y-4">
           <div className="h-16 bg-gray-100 rounded-2xl" />
           <div className="h-16 bg-gray-100 rounded-2xl" />
@@ -112,8 +112,8 @@ export default function NotificacionesPage() {
 
   return (
     <div className="max-w-lg mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Notificaciones</h1>
-      <p className="text-sm text-gray-500 mb-6">
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Notificaciones</h1>
+      <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Configura como y cuando quieres recibir notificaciones.
       </p>
 
@@ -128,14 +128,14 @@ export default function NotificacionesPage() {
       )}
 
       {/* Canales */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Canales</h2>
+      <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 mb-4">
+        <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Canales</h2>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">Email</p>
-              <p className="text-xs text-gray-400">Recibir notificaciones por correo electronico</p>
+              <p className="text-sm font-medium text-[var(--hp-text-primary)]">Email</p>
+              <p className="text-xs text-[var(--hp-text-muted)]">Recibir notificaciones por correo electronico</p>
             </div>
             <Toggle
               checked={prefs.email}
@@ -145,8 +145,8 @@ export default function NotificacionesPage() {
 
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">Push</p>
-              <p className="text-xs text-gray-400">Notificaciones en el navegador</p>
+              <p className="text-sm font-medium text-[var(--hp-text-primary)]">Push</p>
+              <p className="text-xs text-[var(--hp-text-muted)]">Notificaciones en el navegador</p>
             </div>
             <PushButton />
           </div>
@@ -154,8 +154,8 @@ export default function NotificacionesPage() {
       </section>
 
       {/* Frecuencia */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-5 mb-4">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Frecuencia</h2>
+      <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 mb-4">
+        <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Frecuencia</h2>
         <div className="space-y-2">
           {[
             { value: 'daily' as const, label: 'Diaria', desc: 'Un resumen cada dia' },
@@ -167,7 +167,7 @@ export default function NotificacionesPage() {
               className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors ${
                 prefs.frequency === opt.value
                   ? 'bg-brand-50 border border-brand-200'
-                  : 'border border-transparent hover:bg-gray-50'
+                  : 'border border-transparent hover:bg-[var(--hp-bg-page)]'
               }`}
             >
               <input
@@ -179,8 +179,8 @@ export default function NotificacionesPage() {
                 className="h-4 w-4 text-brand-500 focus:ring-brand-500"
               />
               <div>
-                <p className="text-sm font-medium text-gray-700">{opt.label}</p>
-                <p className="text-xs text-gray-400">{opt.desc}</p>
+                <p className="text-sm font-medium text-[var(--hp-text-primary)]">{opt.label}</p>
+                <p className="text-xs text-[var(--hp-text-muted)]">{opt.desc}</p>
               </div>
             </label>
           ))}
@@ -188,13 +188,13 @@ export default function NotificacionesPage() {
       </section>
 
       {/* Categorias */}
-      <section className="bg-white border border-gray-200 rounded-2xl p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">Categorías</h2>
+      <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5">
+        <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Categorías</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-700">Nuevas actividades</p>
-              <p className="text-xs text-gray-500">Resumen de actividades agregadas recientemente</p>
+              <p className="text-sm font-medium text-[var(--hp-text-primary)]">Nuevas actividades</p>
+              <p className="text-xs text-[var(--hp-text-secondary)]">Resumen de actividades agregadas recientemente</p>
             </div>
             <Toggle
               checked={prefs.categories.newActivities}
@@ -208,15 +208,15 @@ export default function NotificacionesPage() {
           </div>
           <div className="flex items-center justify-between opacity-50">
             <div>
-              <p className="text-sm font-medium text-gray-400">Actualizaciones de favoritos</p>
-              <p className="text-xs text-gray-300">Cambios en tus actividades guardadas</p>
+              <p className="text-sm font-medium text-[var(--hp-text-muted)]">Actualizaciones de favoritos</p>
+              <p className="text-xs text-[var(--hp-text-muted)]">Cambios en tus actividades guardadas</p>
             </div>
             <Toggle checked={false} onChange={() => {}} disabled />
           </div>
           <div className="flex items-center justify-between opacity-50">
             <div>
-              <p className="text-sm font-medium text-gray-400">Anuncios de proveedores</p>
-              <p className="text-xs text-gray-300">Noticias de organizadores</p>
+              <p className="text-sm font-medium text-[var(--hp-text-muted)]">Anuncios de proveedores</p>
+              <p className="text-xs text-[var(--hp-text-muted)]">Noticias de organizadores</p>
             </div>
             <Toggle checked={false} onChange={() => {}} disabled />
           </div>
@@ -224,7 +224,7 @@ export default function NotificacionesPage() {
       </section>
 
       {saving && (
-        <p className="text-xs text-gray-400 mt-3 text-center">Guardando...</p>
+        <p className="text-xs text-[var(--hp-text-muted)] mt-3 text-center">Guardando...</p>
       )}
     </div>
   )

@@ -48,11 +48,11 @@ export function FilterLandingLayout({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
         {/* Breadcrumb */}
         <div className="mx-auto max-w-5xl px-4 pt-4">
-          <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-gray-400 flex-wrap">
+          <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-[var(--hp-text-muted)] flex-wrap">
             {breadcrumbs.map((crumb, i) => (
               <span key={crumb.href} className="flex items-center gap-1.5">
                 {i > 0 && <span>/</span>}
@@ -70,10 +70,10 @@ export function FilterLandingLayout({
 
         {/* Header */}
         <div className="mx-auto max-w-5xl px-4 pt-6 pb-4">
-          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight mb-2">
+          <h1 className="text-3xl sm:text-4xl font-bold text-[var(--hp-text-primary)] leading-tight mb-2">
             {title}
           </h1>
-          <p className="text-gray-500 text-base max-w-2xl">{description}</p>
+          <p className="text-[var(--hp-text-secondary)] text-base max-w-2xl">{description}</p>
         </div>
 
         {/* Grid de actividades */}
@@ -100,7 +100,7 @@ export function FilterLandingLayout({
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <span className="text-5xl mb-4">🔍</span>
-              <p className="text-gray-500 text-base">No encontramos actividades en esta categoría todavía.</p>
+              <p className="text-[var(--hp-text-secondary)] text-base">No encontramos actividades en esta categoría todavía.</p>
               <Link href="/actividades" className="mt-4 text-sm text-indigo-600 hover:underline">
                 Ver todas las actividades
               </Link>

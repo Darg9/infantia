@@ -10,7 +10,7 @@ const MapWidget = dynamic(() => import('./ActivityDetailMapInner'), {
   ssr: false,
   loading: () => (
     <div
-      className="w-full rounded-xl bg-gray-100 animate-pulse border border-gray-200"
+      className="w-full rounded-xl bg-gray-100 animate-pulse border border-[var(--hp-border)]"
       style={{ height: '180px' }}
     />
   ),

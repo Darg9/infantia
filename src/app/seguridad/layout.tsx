@@ -37,17 +37,17 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
       </Link>
 
       {/* ── Label superior ─────────────────────────────────────────── */}
-      <p className="text-sm font-medium text-gray-400 uppercase tracking-widest mb-2">
+      <p className="text-sm font-medium text-[var(--hp-text-muted)] uppercase tracking-widest mb-2">
         Legal
       </p>
 
       {/* ── Título ─────────────────────────────────────────────────── */}
-      <h1 className="text-3xl font-semibold text-gray-900 mb-6 flex items-center gap-2">
+      <h1 className="text-3xl font-semibold text-[var(--hp-text-primary)] mb-6 flex items-center gap-2">
         🛡️ Centro de Seguridad
       </h1>
 
       {/* ── Navegación interna con tab activo ──────────────────────── */}
-      <nav className="flex gap-1 mb-10 border-b border-gray-200">
+      <nav className="flex gap-1 mb-10 border-b border-[var(--hp-border)]">
         {NAV_LINKS.map(({ href, label }) => {
           const isActive = pathname === href;
           return (
@@ -58,7 +58,7 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
                 'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
                 isActive
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-800 hover:border-gray-300',
+                  : 'border-transparent text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:border-gray-300',
               ].join(' ')}
             >
               {label}

@@ -54,11 +54,11 @@ export default function RegistroPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)]">
         <Card className="w-full max-w-md text-center">
           <div className="text-4xl mb-4">📧</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Revisa tu correo</h1>
-          <p className="text-gray-500 text-sm">
+          <h1 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Revisa tu correo</h1>
+          <p className="text-[var(--hp-text-secondary)] text-sm">
             Te enviamos un enlace de confirmación a <strong>{email}</strong>.
             Haz clic en el enlace para activar tu cuenta.
           </p>
@@ -74,10 +74,10 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)] py-12 px-4 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Crea tu cuenta</h1>
-        <p className="text-gray-500 text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
+        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Crea tu cuenta</h1>
+        <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
@@ -126,7 +126,7 @@ export default function RegistroPage() {
               required
               className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
             />
-            <label htmlFor="acepta-terminos" className="text-xs text-gray-500 leading-relaxed">
+            <label htmlFor="acepta-terminos" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed">
               Acepto la{' '}
               <Link href="/tratamiento-datos" target="_blank" className="text-brand-600 hover:underline">
                 Política de Tratamiento de Datos Personales
@@ -154,7 +154,7 @@ export default function RegistroPage() {
           </Button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-gray-500">
+        <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
           ¿Ya tienes cuenta?{' '}
           <Link href="/login" className="text-brand-600 font-medium hover:underline">
             Inicia sesión

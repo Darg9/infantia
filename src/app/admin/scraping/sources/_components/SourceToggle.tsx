@@ -48,7 +48,7 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
     >
       <span
         className={`
-          inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform
+          inline-block h-4 w-4 transform rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform
           ${active ? 'translate-x-6' : 'translate-x-1'}
         `}
       />

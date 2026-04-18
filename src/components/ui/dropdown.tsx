@@ -180,7 +180,7 @@ export function DropdownMenu({ children, className }: { children: ReactNode; cla
       aria-orientation="vertical"
       aria-labelledby={ctx.triggerId}
       className={clsx(
-        'absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
+        'absolute right-0 mt-2 w-48 rounded-xl bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
         className
       )}
       onKeyDown={(e) => {
@@ -257,8 +257,8 @@ export function DropdownItem({
       className={clsx(
         'block px-4 py-2 text-sm font-medium cursor-pointer transition-colors outline-none',
         danger
-          ? 'text-gray-600 dark:text-gray-400 hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30'
-          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 focus:bg-gray-50 dark:hover:bg-gray-800 dark:focus:bg-gray-800',
+          ? 'text-gray-600 dark:text-[var(--hp-text-muted)] hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30'
+          : 'text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] focus:bg-[var(--hp-bg-page)] dark:hover:bg-gray-800 dark:focus:bg-gray-800',
         className
       )}
     >
@@ -269,7 +269,7 @@ export function DropdownItem({
 
 // --- Divider ---
 export function DropdownDivider() {
-  return <div className="my-1 border-t border-gray-100 dark:border-gray-800" role="separator" />
+  return <div className="my-1 border-t border-[var(--hp-border)] dark:border-gray-800" role="separator" />
 }
 
 Dropdown.Trigger = DropdownTrigger

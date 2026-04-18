@@ -52,8 +52,8 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
       {/* Cabecera */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{provider.name}</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">{provider.name}</h1>
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">
             Dashboard interno · slug: <code className="bg-gray-100 px-1 rounded">{provider.slug}</code>
           </p>
         </div>
@@ -64,18 +64,18 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           >
             Ver perfil público →
           </Link>
-          <span className="text-gray-300">|</span>
-          <Link href="/admin" className="text-sm text-gray-500 hover:underline">
+          <span className="text-[var(--hp-text-muted)]">|</span>
+          <Link href="/admin" className="text-sm text-[var(--hp-text-secondary)] hover:underline">
             ← Admin
           </Link>
         </div>
       </div>
 
       {/* Estado premium */}
-      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-warning-200' : 'bg-gray-50 border-gray-200'}`}>
+      <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-warning-200' : 'bg-[var(--hp-bg-page)] border-[var(--hp-border)]'}`}>
         <span className="text-2xl">{provider.isPremium ? '⭐' : '🏷️'}</span>
         <div>
-          <p className="font-semibold text-gray-800">
+          <p className="font-semibold text-[var(--hp-text-primary)]">
             {provider.isPremium ? 'Proveedor Destacado (Premium)' : 'Proveedor Estándar'}
           </p>
           {provider.isPremium && provider.premiumSince && (
@@ -84,7 +84,7 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
             </p>
           )}
           {!provider.isPremium && (
-            <p className="text-xs text-gray-500">Las actividades Destacadas aparecen primero en búsquedas por relevancia.</p>
+            <p className="text-xs text-[var(--hp-text-secondary)]">Las actividades Destacadas aparecen primero en búsquedas por relevancia.</p>
           )}
         </div>
       </div>
@@ -97,23 +97,23 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           { label: 'Expiradas', value: expiredCount, color: 'gray' },
           { label: 'Borradores', value: draftCount, color: 'orange' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white border border-gray-200 rounded-2xl p-4 text-center">
+          <div key={label} className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-4 text-center">
             <p className={`text-2xl font-bold text-${color}-600`}>{value}</p>
-            <p className="text-xs text-gray-500 mt-1">{label}</p>
+            <p className="text-xs text-[var(--hp-text-secondary)] mt-1">{label}</p>
           </div>
         ))}
       </div>
 
       {/* Lista de actividades */}
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
-          <h2 className="font-semibold text-gray-800">Actividades ({provider.activities.length})</h2>
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--hp-border)]">
+          <h2 className="font-semibold text-[var(--hp-text-primary)]">Actividades ({provider.activities.length})</h2>
         </div>
         {provider.activities.length === 0 ? (
-          <p className="text-center text-gray-400 py-10 text-sm">No hay actividades para este proveedor.</p>
+          <p className="text-center text-[var(--hp-text-muted)] py-10 text-sm">No hay actividades para este proveedor.</p>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 text-xs text-gray-500">
+            <thead className="bg-[var(--hp-bg-page)] text-xs text-[var(--hp-text-secondary)]">
               <tr>
                 <th className="px-6 py-3 text-left">Actividad</th>
                 <th className="px-4 py-3 text-left">Estado</th>
@@ -123,11 +123,11 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {provider.activities.map((a) => (
-                <tr key={a.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={a.id} className="hover:bg-[var(--hp-bg-page)] transition-colors">
                   <td className="px-6 py-3">
                     <Link
                       href={`/actividades/${a.id}`}
-                      className="text-gray-900 font-medium hover:text-indigo-600 line-clamp-1"
+                      className="text-[var(--hp-text-primary)] font-medium hover:text-indigo-600 line-clamp-1"
                     >
                       {a.title}
                     </Link>
@@ -137,15 +137,15 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
                       a.status === 'ACTIVE'  ? 'bg-emerald-100 text-emerald-700' :
                       a.status === 'DRAFT'   ? 'bg-brand-100 text-brand-700' :
                       a.status === 'PAUSED'  ? 'bg-warning-100 text-warning-700' :
-                                               'bg-gray-100 text-gray-500'
+                                               'bg-gray-100 text-[var(--hp-text-secondary)]'
                     }`}>
                       {a.status === 'ACTIVE' ? 'Activa' : a.status === 'DRAFT' ? 'Borrador' : a.status === 'PAUSED' ? 'Pausada' : 'Expirada'}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-gray-500">
+                  <td className="px-4 py-3 text-[var(--hp-text-secondary)]">
                     {a.location?.city?.name ?? '—'}
                   </td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-700">
+                  <td className="px-4 py-3 text-right font-medium text-[var(--hp-text-primary)]">
                     {a._count.views.toLocaleString('es-CO')}
                   </td>
                 </tr>

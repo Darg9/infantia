@@ -78,14 +78,14 @@ export default async function ProveedorPage({ params }: PageProps) {
   return (
     <main className="max-w-5xl mx-auto px-4 py-8">
       {/* Breadcrumb */}
-      <nav className="text-sm text-gray-400 mb-6">
+      <nav className="text-sm text-[var(--hp-text-muted)] mb-6">
         <Link href="/actividades" className="hover:text-gray-600">Actividades</Link>
         <span className="mx-2">›</span>
-        <span className="text-gray-700">{provider.name}</span>
+        <span className="text-[var(--hp-text-primary)]">{provider.name}</span>
       </nav>
 
       {/* Header del proveedor */}
-      <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-6 flex gap-5 items-start">
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 mb-6 flex gap-5 items-start">
         {/* Logo */}
         {provider.logoUrl ? (
           <div className="shrink-0">
@@ -106,13 +106,13 @@ export default async function ProveedorPage({ params }: PageProps) {
         {/* Info */}
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2 mb-1">
-            <h1 className="text-xl font-bold text-gray-900">{provider.name}</h1>
+            <h1 className="text-xl font-bold text-[var(--hp-text-primary)]">{provider.name}</h1>
             {provider.isVerified && (
               <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
                 ✓ Verificado
               </span>
             )}
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+            <span className="text-xs text-[var(--hp-text-muted)] bg-gray-100 px-2 py-0.5 rounded-full">
               {TYPE_LABELS[provider.type] ?? provider.type}
             </span>
           </div>
@@ -124,14 +124,14 @@ export default async function ProveedorPage({ params }: PageProps) {
           )}
 
           {/* Estadísticas */}
-          <div className="flex flex-wrap gap-4 mt-3 text-sm text-gray-500">
+          <div className="flex flex-wrap gap-4 mt-3 text-sm text-[var(--hp-text-secondary)]">
             <span>
-              <strong className="text-gray-800">{activeActivities.length}</strong> actividades activas
+              <strong className="text-[var(--hp-text-primary)]">{activeActivities.length}</strong> actividades activas
             </span>
             {(provider.ratingAvg ?? 0) > 0 && (
               <span>
-                ⭐ <strong className="text-gray-800">{provider.ratingAvg!.toFixed(1)}</strong>
-                <span className="text-gray-400 ml-1">({provider.ratingCount})</span>
+                ⭐ <strong className="text-[var(--hp-text-primary)]">{provider.ratingAvg!.toFixed(1)}</strong>
+                <span className="text-[var(--hp-text-muted)] ml-1">({provider.ratingCount})</span>
               </span>
             )}
           </div>
@@ -143,31 +143,31 @@ export default async function ProveedorPage({ params }: PageProps) {
             )}
             {provider.website && (
               <a href={provider.website} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 🌐 Sitio web
               </a>
             )}
             {provider.instagram && (
               <a href={`https://instagram.com/${provider.instagram.replace('@', '')}`} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 📷 Instagram
               </a>
             )}
             {provider.facebook && (
               <a href={provider.facebook} target="_blank" rel="noreferrer noopener"
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 👥 Facebook
               </a>
             )}
             {provider.email && (
               <a href={`mailto:${provider.email}`}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 ✉️ {provider.email}
               </a>
             )}
             {provider.phone && (
               <a href={`tel:${provider.phone}`}
-                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
+                className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors">
                 📞 {provider.phone}
               </a>
             )}
@@ -178,7 +178,7 @@ export default async function ProveedorPage({ params }: PageProps) {
       {/* Actividades activas */}
       {activeActivities.length > 0 && (
         <section className="mb-8">
-          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">
             Actividades ({activeActivities.length})
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -200,7 +200,7 @@ export default async function ProveedorPage({ params }: PageProps) {
       {/* Actividades anteriores */}
       {expiredActivities.length > 0 && (
         <section>
-          <h2 className="text-lg font-semibold text-gray-400 mb-4">
+          <h2 className="text-lg font-semibold text-[var(--hp-text-muted)] mb-4">
             Anteriores ({expiredActivities.length})
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 opacity-60">
@@ -221,7 +221,7 @@ export default async function ProveedorPage({ params }: PageProps) {
 
       {/* Estado vacío */}
       {provider.activities.length === 0 && (
-        <div className="text-center py-16 text-gray-400">
+        <div className="text-center py-16 text-[var(--hp-text-muted)]">
           <div className="text-4xl mb-3">📭</div>
           <p className="text-sm">Este proveedor no tiene actividades publicadas aún.</p>
           <Link href="/actividades" className="mt-4 inline-block text-sm text-brand-500 underline">

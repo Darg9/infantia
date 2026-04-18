@@ -125,7 +125,7 @@ function InputField({
 }: InputFieldProps) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={id} className="block text-sm font-medium text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)]">
         {label}
         {required && (
           <span className="text-error-500 ml-0.5" aria-hidden="true">
@@ -147,13 +147,13 @@ function InputField({
           aria-describedby={error ? `${id}-error` : undefined}
           aria-invalid={error ? true : undefined}
           className={[
-            'w-full px-3.5 py-2.5 text-sm rounded-xl border bg-white dark:bg-gray-800',
-            'text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500',
+            'w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[var(--hp-bg-surface)] dark:bg-gray-800',
+            'text-[var(--hp-text-primary)] dark:text-white placeholder:text-[var(--hp-text-muted)] dark:placeholder:text-[var(--hp-text-secondary)]',
             'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0',
             rightSlot ? 'pr-10' : '',
             error
               ? 'border-error-400 dark:border-red-500 focus:ring-error-400/30 focus:border-error-400'
-              : 'border-gray-200 dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
+              : 'border-[var(--hp-border)] dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
           ]
             .filter(Boolean)
             .join(' ')}
@@ -440,10 +440,10 @@ export default function EditarPerfilPage() {
 
       {/* ── Page header ── */}
       <div>
-        <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-gray-900 dark:text-white">
+        <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[var(--hp-text-primary)] dark:text-white">
           Editar información
         </h1>
-        <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1.5 text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)]">
           Actualizá tu información personal y contraseña
         </p>
       </div>
@@ -453,16 +453,16 @@ export default function EditarPerfilPage() {
       ══════════════════════════════════════════════════════════════ */}
       <section
         aria-labelledby="basic-info-heading"
-        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+        className="bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 rounded-2xl p-6 sm:p-8"
       >
         <div className="mb-6">
           <h2
             id="basic-info-heading"
-            className="text-base font-semibold text-gray-900 dark:text-white"
+            className="text-base font-semibold text-[var(--hp-text-primary)] dark:text-white"
           >
             Información básica
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] mt-1">
             Tu nombre y foto visibles en la plataforma
           </p>
         </div>
@@ -527,14 +527,14 @@ export default function EditarPerfilPage() {
 
             {/* File info */}
             <div className="min-w-0" aria-live="polite">
-              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              <p className="text-sm font-medium text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)]">
                 Foto de perfil
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+              <p className="text-xs text-[var(--hp-text-muted)] dark:text-[var(--hp-text-secondary)] mt-1">
                 JPG, PNG, WebP o GIF · Máx. 2 MB
               </p>
               {uploadingAvatar && (
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] mt-1.5 flex items-center gap-1">
                   <SpinnerIcon className="w-3 h-3 animate-spin shrink-0" />
                   Subiendo foto…
                 </p>
@@ -591,7 +591,7 @@ export default function EditarPerfilPage() {
           />
 
           {/* CTA único */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] dark:border-gray-800">
             {basicSaved && !isDirty && (
               <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
                 <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
@@ -626,16 +626,16 @@ export default function EditarPerfilPage() {
       ══════════════════════════════════════════════════════════════ */}
       <section
         aria-labelledby="security-heading"
-        className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+        className="bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 rounded-2xl p-6 sm:p-8"
       >
         <div className="mb-6">
           <h2
             id="security-heading"
-            className="text-base font-semibold text-gray-900 dark:text-white"
+            className="text-base font-semibold text-[var(--hp-text-primary)] dark:text-white"
           >
             Seguridad
           </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          <p className="text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] mt-1">
             Cambiá tu contraseña para mantener tu cuenta protegida
           </p>
         </div>
@@ -661,7 +661,7 @@ export default function EditarPerfilPage() {
                 <button
                   type="button"
                   onClick={() => setShowNew((v) => !v)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
+                  className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label={showNew ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
                 >
@@ -708,7 +708,7 @@ export default function EditarPerfilPage() {
                       className={`flex items-center gap-1.5 text-xs transition-colors ${
                         ok
                           ? 'text-emerald-600 dark:text-emerald-400'
-                          : 'text-gray-400 dark:text-gray-500'
+                          : 'text-[var(--hp-text-muted)] dark:text-[var(--hp-text-secondary)]'
                       }`}
                     >
                       <CheckIcon
@@ -741,7 +741,7 @@ export default function EditarPerfilPage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors
+                  className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
                   aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
                 >
@@ -773,7 +773,7 @@ export default function EditarPerfilPage() {
           </div>
 
           {/* CTA seguridad */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] dark:border-gray-800">
             {passSaved && (
               <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
                 <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
@@ -786,7 +786,7 @@ export default function EditarPerfilPage() {
               aria-busy={passLoading}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
                          border-2 border-gray-800 dark:border-gray-500
-                         text-gray-800 dark:text-gray-300
+                         text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)]
                          hover:bg-gray-800 hover:text-white
                          dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-700
                          disabled:opacity-40 disabled:cursor-not-allowed

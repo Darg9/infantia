@@ -55,8 +55,8 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
   return (
     <div>
       <div className="text-4xl mb-4">📍</div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">¿En qué ciudad vives?</h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-1">¿En qué ciudad vives?</h2>
+      <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Te mostraremos actividades cerca a ti.
       </p>
 
@@ -68,7 +68,7 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
             className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
               cityId === c.id
                 ? 'border-brand-400 bg-brand-50 text-brand-700'
-                : 'border-gray-200 text-gray-700 hover:border-gray-300'
+                : 'border-[var(--hp-border)] text-[var(--hp-text-primary)] hover:border-gray-300'
             }`}
           >
             {c.name}
@@ -118,8 +118,8 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
     return (
       <div>
         <div className="text-4xl mb-4">🎉</div>
-        <h2 className="text-xl font-bold text-gray-900 mb-1">¡Perfil guardado!</h2>
-        <p className="text-sm text-gray-500 mb-8">
+        <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-1">¡Perfil guardado!</h2>
+        <p className="text-sm text-[var(--hp-text-secondary)] mb-8">
           Usaremos la edad de <strong>{name}</strong> para recomendarte actividades ideales.
         </p>
         <button
@@ -135,14 +135,14 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
   return (
     <div>
       <div className="text-4xl mb-4">👨‍👩‍👧</div>
-      <h2 className="text-xl font-bold text-gray-900 mb-1">¿Tienes hijos?</h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-1">¿Tienes hijos?</h2>
+      <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Agrega su perfil para ver actividades según su edad. Puedes agregar más después.
       </p>
 
       <div className="space-y-4 mb-5">
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Nombre del niño o niña</label>
+          <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Nombre del niño o niña</label>
           <input
             type="text"
             value={name}
@@ -153,7 +153,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-gray-700 mb-1">Fecha de nacimiento</label>
+          <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Fecha de nacimiento</label>
           <input
             type="date"
             value={birthDate}
@@ -171,7 +171,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
             onChange={(e) => setConsent(e.target.checked)}
             className="mt-0.5 rounded"
           />
-          <label htmlFor="consent" className="text-xs text-gray-500 leading-relaxed cursor-pointer">
+          <label htmlFor="consent" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed cursor-pointer">
             {CONSENT_TEXT}
           </label>
         </div>
@@ -191,7 +191,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         </button>
         <button
           onClick={onSkip}
-          className="w-full text-sm text-gray-400 hover:text-gray-600 py-2 transition-colors"
+          className="w-full text-sm text-[var(--hp-text-muted)] hover:text-gray-600 py-2 transition-colors"
         >
           Saltar — lo agrego después
         </button>
@@ -205,8 +205,8 @@ function StepListo({ onFinish }: { onFinish: () => void }) {
   return (
     <div className="text-center">
       <div className="text-5xl mb-5">🎊</div>
-      <h2 className="text-2xl font-bold text-gray-900 mb-2">¡Todo listo!</h2>
-      <p className="text-sm text-gray-500 mb-8 leading-relaxed">
+      <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">¡Todo listo!</h2>
+      <p className="text-sm text-[var(--hp-text-secondary)] mb-8 leading-relaxed">
         Ya puedes explorar actividades personalizadas para tu familia.<br />
         Puedes completar tu perfil en cualquier momento.
       </p>
@@ -235,10 +235,10 @@ export default function OnboardingPage() {
         {/* Logo / marca */}
         <div className="text-center mb-8">
           <span className="text-2xl font-bold text-brand-500">habitaplan</span>
-          <p className="text-xs text-gray-400 mt-1">Configura tu cuenta en 2 minutos</p>
+          <p className="text-xs text-[var(--hp-text-muted)] mt-1">Configura tu cuenta en 2 minutos</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 p-7 shadow-sm">
+        <div className="bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] p-7 shadow-sm">
           <StepDots step={step} />
 
           {step === 1 && (

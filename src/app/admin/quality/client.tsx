@@ -74,37 +74,37 @@ export default function QualityDashboardClient() {
     <div className="max-w-5xl mx-auto py-12 px-6">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h1 className="text-3xl font-semibold text-gray-900">Content Quality Dashboard</h1>
-          <p className="text-gray-500 mt-1">Observabilidad del pipeline de contenido</p>
+          <h1 className="text-3xl font-semibold text-[var(--hp-text-primary)]">Content Quality Dashboard</h1>
+          <p className="text-[var(--hp-text-secondary)] mt-1">Observabilidad del pipeline de contenido</p>
         </div>
         <Link href="/admin" className="text-sm font-medium text-brand-600 hover:text-brand-500 px-4 py-2 border border-brand-100 rounded-lg bg-brand-50 hover:bg-brand-100 transition">
           ← Volver a Admin
         </Link>
       </div>
 
-      <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-8 flex flex-wrap gap-4 items-end">
+      <div className="bg-[var(--hp-bg-surface)] p-4 rounded-xl border border-[var(--hp-border)] shadow-sm mb-8 flex flex-wrap gap-4 items-end">
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Desde</label>
+          <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Desde</label>
           <input 
             type="date" 
-            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.from}
             onChange={(e) => setFilters(f => ({ ...f, from: e.target.value }))}
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Hasta</label>
+          <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Hasta</label>
           <input 
             type="date" 
-            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.to}
             onChange={(e) => setFilters(f => ({ ...f, to: e.target.value }))}
           />
         </div>
         <div>
-          <label className="block text-xs text-gray-500 mb-1">Fuente / Etapa</label>
+          <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Fuente / Etapa</label>
           <select 
-            className="border border-gray-200 rounded px-3 py-1.5 text-sm"
+            className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.source}
             onChange={(e) => setFilters(f => ({ ...f, source: e.target.value }))}
           >
@@ -115,7 +115,7 @@ export default function QualityDashboardClient() {
         </div>
         <button 
           onClick={() => setFilters({ from: "", to: "", source: "" })}
-          className="text-sm text-gray-500 hover:text-gray-900 px-2 py-1.5"
+          className="text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] px-2 py-1.5"
         >
           Reset
         </button>
@@ -159,12 +159,12 @@ export default function QualityDashboardClient() {
 
       {latest && (
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
-            <h3 className="text-sm font-medium text-gray-500">Discard Rate (Actual)</h3>
+          <div className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm flex flex-col justify-center">
+            <h3 className="text-sm font-medium text-[var(--hp-text-secondary)]">Discard Rate (Actual)</h3>
             <p className="text-3xl font-bold text-brand-500 mt-2">{percentFormatter(latest.discardRate)}</p>
           </div>
-          <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm flex flex-col justify-center">
-            <h3 className="text-sm font-medium text-gray-500">Avg Length (Actual)</h3>
+          <div className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm flex flex-col justify-center">
+            <h3 className="text-sm font-medium text-[var(--hp-text-secondary)]">Avg Length (Actual)</h3>
             <p className="text-3xl font-bold text-brand-500 mt-2">{latest.avgLength}</p>
           </div>
         </div>
@@ -178,16 +178,16 @@ export default function QualityDashboardClient() {
           </div>
         </div>
       ) : data.length === 0 ? (
-        <div className="bg-gray-50 text-center py-16 rounded-2xl border border-gray-200 shadow-sm text-gray-500">
+        <div className="bg-[var(--hp-bg-page)] text-center py-16 rounded-2xl border border-[var(--hp-border)] shadow-sm text-[var(--hp-text-secondary)]">
            No hay métricas recopiladas todavía. Corre el script de backfill primero.
         </div>
       ) : (
         <div className="space-y-8">
           
-          <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Discard Rate Timeline</h2>
-              <p className="text-sm text-gray-500 text-pretty">Presión del filtro y volumen denegado a BD.</p>
+              <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Discard Rate Timeline</h2>
+              <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Presión del filtro y volumen denegado a BD.</p>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -205,10 +205,10 @@ export default function QualityDashboardClient() {
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Average Min-Length Timeline</h2>
-              <p className="text-sm text-gray-500 text-pretty">Longitud de string dinámicamente aprobada.</p>
+              <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Average Min-Length Timeline</h2>
+              <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Longitud de string dinámicamente aprobada.</p>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
@@ -226,10 +226,10 @@ export default function QualityDashboardClient() {
             </div>
           </section>
 
-          <section className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
             <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900">Quality Metrics Raw</h2>
-              <p className="text-sm text-gray-500 text-pretty">Señales históricas consolidadas.</p>
+              <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Quality Metrics Raw</h2>
+              <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Señales históricas consolidadas.</p>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">

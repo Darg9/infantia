@@ -85,7 +85,7 @@ export default function ActivityDetailMapInner({ lat, lng, locationName, address
   return (
     <div
       ref={containerRef}
-      className="w-full rounded-xl overflow-hidden border border-gray-200"
+      className="w-full rounded-xl overflow-hidden border border-[var(--hp-border)]"
       style={{ height: '180px' }}
     />
   );

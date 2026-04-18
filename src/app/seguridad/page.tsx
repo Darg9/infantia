@@ -80,7 +80,7 @@ export default function SeguridadPage() {
       <nav className="relative z-10 mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
         <Link
           href="/"
-          className="text-sm text-gray-500 hover:text-white transition-colors flex items-center gap-1.5"
+          className="text-sm text-[var(--hp-text-secondary)] hover:text-white transition-colors flex items-center gap-1.5"
         >
           ← Volver a HabitaPlan
         </Link>
@@ -102,11 +102,11 @@ export default function SeguridadPage() {
             🛡️ Centro de Seguridad
           </h1>
 
-          <p className="text-gray-400 max-w-2xl leading-relaxed">
+          <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed">
             Nuestra prioridad es ofrecer una experiencia confiable, transparente y segura
             para todos los usuarios.
           </p>
-          <p className="text-gray-400 max-w-2xl leading-relaxed mt-3">
+          <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed mt-3">
             HabitaPlan implementa medidas de protección de datos alineadas con la normativa
             colombiana y buenas prácticas internacionales, incluyendo mecanismos de
             autorización parental para el registro de menores.
@@ -129,10 +129,10 @@ export default function SeguridadPage() {
               </div>
 
               {/* Subtítulo */}
-              <p className="text-sm text-gray-500 ml-9 mb-5">{subtitle}</p>
+              <p className="text-sm text-[var(--hp-text-secondary)] ml-9 mb-5">{subtitle}</p>
 
               {/* Lista */}
-              <ul className="space-y-2.5 text-sm text-gray-300">
+              <ul className="space-y-2.5 text-sm text-[var(--hp-text-muted)]">
                 {items.map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="text-brand-500/70 shrink-0 mt-0.5">•</span>
@@ -157,7 +157,7 @@ export default function SeguridadPage() {
               <Link
                 key={href}
                 href={href}
-                className="text-gray-400 hover:text-brand-400 transition-colors"
+                className="text-[var(--hp-text-muted)] hover:text-brand-400 transition-colors"
               >
                 {label} →
               </Link>
@@ -167,10 +167,10 @@ export default function SeguridadPage() {
 
         {/* ── Footer interno ───────────────────────────────────────── */}
         <div className="mt-16 pt-6 border-t border-gray-800/50 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
-          <p className="text-xs text-gray-700">
+          <p className="text-xs text-[var(--hp-text-primary)]">
             © {new Date().getFullYear()} HabitaPlan · Bogotá, Colombia
           </p>
-          <p className="text-xs text-gray-700">
+          <p className="text-xs text-[var(--hp-text-primary)]">
             Normativa aplicable: Ley 1581 de 2012 · Decreto 1377 de 2013
           </p>
         </div>

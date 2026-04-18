@@ -32,17 +32,17 @@ export default async function CityReviewPage() {
         >
           &larr; Panel admin
         </Link>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-[var(--hp-text-primary)]">
           Revisión de ciudades
         </h1>
-        <p className="text-gray-500 text-sm mt-2">
+        <p className="text-[var(--hp-text-secondary)] text-sm mt-2">
           Entradas con baja confianza de matching canónico (score &lt; 0.9).
           Aprueba la sugerencia, reasigna a otra ciudad, o ignora la entrada.
         </p>
       </div>
 
       {/* Leyenda de scores */}
-      <div className="flex items-center gap-4 mb-6 text-xs text-gray-500">
+      <div className="flex items-center gap-4 mb-6 text-xs text-[var(--hp-text-secondary)]">
         <span className="flex items-center gap-1">
           <span className="inline-block w-2 h-2 rounded-full bg-success-400" />
           ≥ 90% — Alta confianza

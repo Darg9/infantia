@@ -154,35 +154,35 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
 
   return (
     <div
-      className="relative rounded-2xl overflow-hidden border border-gray-200 shadow-sm"
+      className="relative rounded-2xl overflow-hidden border border-[var(--hp-border)] shadow-sm"
       style={{ height }}
     >
       {/* Overlay: loading */}
       {loading && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gray-50 gap-2">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[var(--hp-bg-page)] gap-2">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
-          <p className="text-sm text-gray-500">Cargando mapa...</p>
+          <p className="text-sm text-[var(--hp-text-secondary)]">Cargando mapa...</p>
         </div>
       )}
 
       {/* Overlay: error */}
       {error && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-gray-50">
+        <div className="absolute inset-0 z-20 flex items-center justify-center bg-[var(--hp-bg-page)]">
           <p className="text-sm text-error-500">{error}</p>
         </div>
       )}
 
       {/* Overlay: sin resultados */}
       {isEmpty && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-gray-50 gap-2">
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[var(--hp-bg-page)] gap-2">
           <span className="text-4xl">🗺</span>
-          <p className="text-sm text-gray-500">No hay actividades con ubicación para estos filtros</p>
+          <p className="text-sm text-[var(--hp-text-secondary)]">No hay actividades con ubicación para estos filtros</p>
         </div>
       )}
 
       {/* Contador flotante */}
       {!loading && !error && markers.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-gray-700 shadow-md backdrop-blur-sm">
+        <div className="absolute bottom-4 left-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-md backdrop-blur-sm">
           {markers.length} {markers.length === 1 ? 'actividad' : 'actividades'} en el mapa
         </div>
       )}

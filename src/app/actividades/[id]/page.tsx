@@ -242,11 +242,11 @@ export default async function ActividadDetallePage({
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
       {/* Breadcrumb visual */}
       <div className="mx-auto max-w-4xl px-4 pt-4">
-        <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-gray-400 flex-wrap">
+        <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-[var(--hp-text-muted)] flex-wrap">
           <Link href="/" className="hover:text-gray-600 transition-colors">Inicio</Link>
           <span>/</span>
           <Link href="/actividades" className="hover:text-gray-600 transition-colors">Actividades</Link>
@@ -270,7 +270,7 @@ export default async function ActividadDetallePage({
         {activity.imageUrl ? (
 
           /* CASO 1: con imagen → layout 2 columnas, imagen secundaria a la derecha */
-          <div className="rounded-2xl bg-white border border-gray-100 overflow-hidden">
+          <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] overflow-hidden">
             <div className="flex flex-col sm:flex-row">
 
               {/* Imagen: compacta en mobile (arriba), thumbnail en desktop (derecha) */}
@@ -299,27 +299,27 @@ export default async function ActividadDetallePage({
                     </span>
                   )}
                   {activity.categories.map(({ category }) => (
-                    <span key={category.id} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                    <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-indigo-700">
                       {category.name}
                     </span>
                   ))}
                 </div>
 
                 {/* H1 */}
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 leading-snug">
+                <h1 className="text-2xl sm:text-3xl font-bold text-[var(--hp-text-primary)] leading-snug">
                   {activity.title}
                 </h1>
 
                 {/* Proveedor */}
                 {activity.provider && (
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-[var(--hp-text-secondary)]">
                     por{' '}
                     {activity.provider.slug ? (
-                      <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-brand-600 transition-colors">
+                      <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-[var(--hp-text-primary)] hover:text-brand-600 transition-colors">
                         {activity.provider.name}
                       </Link>
                     ) : (
-                      <span className="font-medium text-gray-700">{activity.provider.name}</span>
+                      <span className="font-medium text-[var(--hp-text-primary)]">{activity.provider.name}</span>
                     )}
                   </p>
                 )}
@@ -330,11 +330,11 @@ export default async function ActividadDetallePage({
         ) : (
 
           /* CASO 2: sin imagen → título protagonista, acento de color por categoría */
-          <div className="rounded-2xl overflow-hidden border border-gray-100">
+          <div className="rounded-2xl overflow-hidden border border-[var(--hp-border)]">
             {/* Barra de color de categoría */}
             <div className="h-1.5 w-full" style={{ background: gradient }} />
 
-            <div className="bg-white rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
+            <div className="bg-[var(--hp-bg-surface)] rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
               {/* Chips de contexto */}
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
@@ -349,14 +349,14 @@ export default async function ActividadDetallePage({
                   </span>
                 )}
                 {activity.categories.map(({ category }) => (
-                  <span key={category.id} className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                  <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-indigo-700">
                     {category.name}
                   </span>
                 ))}
               </div>
 
               {/* H1 — protagonista */}
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+              <h1 className="text-3xl sm:text-4xl font-bold text-[var(--hp-text-primary)] leading-tight">
                 {activity.title}
               </h1>
 
@@ -364,20 +364,20 @@ export default async function ActividadDetallePage({
               <div className="flex items-center gap-2">
                 <span className="text-2xl select-none">{categoryEmoji}</span>
                 {mainCategory && (
-                  <span className="text-sm text-gray-500">{mainCategory.name}</span>
+                  <span className="text-sm text-[var(--hp-text-secondary)]">{mainCategory.name}</span>
                 )}
               </div>
 
               {/* Proveedor */}
               {activity.provider && (
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-[var(--hp-text-secondary)]">
                   por{' '}
                   {activity.provider.slug ? (
-                    <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-700 hover:text-brand-600 transition-colors">
+                    <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-[var(--hp-text-primary)] hover:text-brand-600 transition-colors">
                       {activity.provider.name}
                     </Link>
                   ) : (
-                    <span className="font-medium text-gray-700">{activity.provider.name}</span>
+                    <span className="font-medium text-[var(--hp-text-primary)]">{activity.provider.name}</span>
                   )}
                 </p>
               )}
@@ -391,18 +391,18 @@ export default async function ActividadDetallePage({
           <div className="lg:col-span-2 flex flex-col gap-6">
 
             {/* Descripción */}
-            <div className="rounded-2xl bg-white border border-gray-100 p-5">
-              <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Descripción</h2>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">{activity.description}</p>
+            <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
+              <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Descripción</h2>
+              <p className="text-[var(--hp-text-primary)] leading-relaxed whitespace-pre-line">{activity.description}</p>
             </div>
 
             {/* Fechas y horarios */}
             {(activity.startDate || scheduleItems.length > 0) && (
-              <div className="rounded-2xl bg-white border border-gray-100 p-5">
-                <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Fechas y horarios</h2>
+              <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
+                <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Fechas y horarios</h2>
                 <div className="flex flex-col gap-2">
                   {activity.startDate && (
-                    <div className="flex items-start gap-2 text-sm text-gray-700">
+                    <div className="flex items-start gap-2 text-sm text-[var(--hp-text-primary)]">
                       <span className="mt-0.5">📅</span>
                       <span>
                         {formatDate(activity.startDate)}
@@ -413,11 +413,11 @@ export default async function ActividadDetallePage({
                     </div>
                   )}
                   {scheduleItems.map((item, i) => (
-                    <div key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                    <div key={i} className="flex items-start gap-2 text-sm text-[var(--hp-text-primary)]">
                       <span className="mt-0.5">🕐</span>
                       <span>
                         {item.startDate && formatDate(item.startDate)}
-                        {item.notes && <span className="text-gray-500"> · {item.notes}</span>}
+                        {item.notes && <span className="text-[var(--hp-text-secondary)]"> · {item.notes}</span>}
                       </span>
                     </div>
                   ))}
@@ -427,26 +427,26 @@ export default async function ActividadDetallePage({
 
             {/* Proveedor */}
             {activity.provider && (
-              <div className="rounded-2xl bg-white border border-gray-100 p-5">
-                <h2 className="text-sm font-semibold text-gray-500 tracking-wide mb-3">Organiza</h2>
+              <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
+                <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Organiza</h2>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-50 text-lg font-bold text-indigo-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hp-bg-subtle)] text-lg font-bold text-indigo-700">
                     {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-1">
                       {activity.provider.slug ? (
-                        <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-gray-900 hover:text-brand-600 transition-colors">
+                        <Link href={`/proveedores/${activity.provider.slug}`} className="font-medium text-[var(--hp-text-primary)] hover:text-brand-600 transition-colors">
                           {activity.provider.name}
                         </Link>
                       ) : (
-                        <span className="font-medium text-gray-900">{activity.provider.name}</span>
+                        <span className="font-medium text-[var(--hp-text-primary)]">{activity.provider.name}</span>
                       )}
                       {activity.provider.isVerified && (
                         <span className="text-xs text-indigo-500 font-medium">✓ Verificado</span>
                       )}
                     </div>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-[var(--hp-text-muted)]">
                       {({ ACADEMY: 'Academia', INDEPENDENT: 'Independiente', INSTITUTION: 'Institución', GOVERNMENT: 'Entidad pública' } as Record<string,string>)[activity.provider.type] ?? activity.provider.type}
                     </span>
                   </div>
@@ -460,16 +460,16 @@ export default async function ActividadDetallePage({
             )}
 
             {/* Calificaciones */}
-            <div className="rounded-2xl bg-white border border-gray-100 p-5">
+            <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-semibold text-gray-500 tracking-wide">Calificaciones</h2>
+                <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide">Calificaciones</h2>
                 {ratingsAvg._count.score > 0 && (
                   <div className="flex items-center gap-2">
                     <StarRating value={Math.round(ratingsAvg._avg.score ?? 0)} readonly size="sm" />
                     <span className="text-sm text-gray-600 font-medium">
                       {(ratingsAvg._avg.score ?? 0).toFixed(1)}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-[var(--hp-text-muted)]">
                       ({ratingsAvg._count.score})
                     </span>
                   </div>
@@ -486,23 +486,23 @@ export default async function ActividadDetallePage({
 
               {/* Recent ratings */}
               {ratingsData.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+                <div className="mt-4 pt-4 border-t border-[var(--hp-border)] space-y-3">
                   {ratingsData.map((r) => (
                     <div key={r.id} className="flex items-start gap-3">
                       {r.user.avatarUrl ? (
                         <img src={r.user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-100 text-gray-500 rounded-full flex items-center justify-center text-xs font-semibold">
+                        <div className="w-8 h-8 bg-gray-100 text-[var(--hp-text-secondary)] rounded-full flex items-center justify-center text-xs font-semibold">
                           {r.user.name[0]?.toUpperCase() ?? '?'}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium text-gray-700">{r.user.name}</span>
+                          <span className="text-xs font-medium text-[var(--hp-text-primary)]">{r.user.name}</span>
                           <StarRating value={r.score} readonly size="sm" />
                         </div>
                         {r.comment && (
-                          <p className="text-xs text-gray-500 mt-0.5">{r.comment}</p>
+                          <p className="text-xs text-[var(--hp-text-secondary)] mt-0.5">{r.comment}</p>
                         )}
                       </div>
                     </div>
@@ -516,27 +516,27 @@ export default async function ActividadDetallePage({
           <div className="flex flex-col gap-4">
 
             {/* Datos rápidos */}
-            <div className="rounded-2xl bg-white border border-gray-100 p-5 flex flex-col gap-3">
-              <h2 className="text-sm font-semibold text-gray-500 tracking-wide">Detalles</h2>
+            <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide">Detalles</h2>
 
               {/* Precio */}
               <div className="flex items-center justify-between text-sm">
-                <span className="text-gray-500">Precio</span>
+                <span className="text-[var(--hp-text-secondary)]">Precio</span>
                 <span className={clsx(
                   'font-semibold',
                   priceLabel === 'Gratis'
                     ? 'text-emerald-600'
                     : priceLabel === 'No disponible'
-                    ? 'text-gray-400'
-                    : 'text-gray-900'
+                    ? 'text-[var(--hp-text-muted)]'
+                    : 'text-[var(--hp-text-primary)]'
                 )}>{priceLabel}</span>
               </div>
 
               {/* Edad */}
               {(activity.ageMin !== null || activity.ageMax !== null) && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Edad</span>
-                  <span className="text-gray-900">
+                  <span className="text-[var(--hp-text-secondary)]">Edad</span>
+                  <span className="text-[var(--hp-text-primary)]">
                     {activity.ageMin !== null && activity.ageMax !== null
                       ? `${activity.ageMin}–${activity.ageMax} años`
                       : activity.ageMin !== null
@@ -549,24 +549,24 @@ export default async function ActividadDetallePage({
               {/* Capacidad */}
               {activity.capacity && (
                 <div className="flex items-center justify-between text-sm">
-                  <span className="text-gray-500">Capacidad</span>
-                  <span className="text-gray-900">{activity.capacity} personas</span>
+                  <span className="text-[var(--hp-text-secondary)]">Capacidad</span>
+                  <span className="text-[var(--hp-text-primary)]">{activity.capacity} personas</span>
                 </div>
               )}
 
               {/* Ubicación */}
               {activity.location && (
-                <div className="flex flex-col gap-0.5 text-sm border-t border-gray-100 pt-3 mt-1">
-                  <span className="text-gray-500">Ubicación</span>
-                  <span className="text-gray-900 font-medium">{activity.location.name}</span>
+                <div className="flex flex-col gap-0.5 text-sm border-t border-[var(--hp-border)] pt-3 mt-1">
+                  <span className="text-[var(--hp-text-secondary)]">Ubicación</span>
+                  <span className="text-[var(--hp-text-primary)] font-medium">{activity.location.name}</span>
                   {activity.location.address && (
-                    <span className="text-gray-500 text-xs">{activity.location.address}</span>
+                    <span className="text-[var(--hp-text-secondary)] text-xs">{activity.location.address}</span>
                   )}
                   {activity.location.neighborhood && (
-                    <span className="text-gray-400 text-xs">{activity.location.neighborhood}</span>
+                    <span className="text-[var(--hp-text-muted)] text-xs">{activity.location.neighborhood}</span>
                   )}
                   {activity.location.city && (
-                    <span className="text-gray-400 text-xs">{activity.location.city.name}</span>
+                    <span className="text-[var(--hp-text-muted)] text-xs">{activity.location.city.name}</span>
                   )}
                   {activity.location.latitude != null && activity.location.longitude != null && (
                     <div className="mt-3">
@@ -596,7 +596,7 @@ export default async function ActividadDetallePage({
 
             {/* Favorito + Compartir */}
             <div className="flex gap-3">
-              <div className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white px-4 py-3 flex-shrink-0">
+              <div className="flex items-center justify-center rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-4 py-3 flex-shrink-0">
                 <FavoriteButton
                   targetId={id}
                   targetType="activity"
@@ -617,7 +617,7 @@ export default async function ActividadDetallePage({
             </div>
 
             {/* Fuente y última actualización */}
-            <div className="rounded-2xl border border-gray-100 bg-white p-4 flex flex-col gap-1.5 text-xs text-gray-400">
+            <div className="rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-4 flex flex-col gap-1.5 text-xs text-[var(--hp-text-muted)]">
               <div className="flex items-center justify-between">
                 <span>Fuente</span>
                 <span className="text-gray-600">
@@ -639,7 +639,7 @@ export default async function ActividadDetallePage({
         </div>
 
         {/* Disclaimer legal */}
-        <div className="col-span-full rounded-xl bg-gray-50 border border-gray-100 p-4 text-xs text-gray-400 leading-relaxed">
+        <div className="col-span-full rounded-xl bg-[var(--hp-bg-page)] border border-[var(--hp-border)] p-4 text-xs text-[var(--hp-text-muted)] leading-relaxed">
           {ACTIVITY_DISCLAIMER_FULL}{' '}
           <a
             href={`/contacto?motivo=reportar&url=${encodeURIComponent(canonicalPath)}`}
@@ -649,14 +649,14 @@ export default async function ActividadDetallePage({
           </a>
           {/* Atribución de fuente — transparencia para usuarios, auditores e inversores */}
           {(activity.sourceUrl || activity.sourceCapturedAt) && (
-            <p className="mt-2 pt-2 border-t border-gray-200 text-gray-300 flex flex-wrap gap-x-3">
+            <p className="mt-2 pt-2 border-t border-[var(--hp-border)] text-[var(--hp-text-muted)] flex flex-wrap gap-x-3">
               {activity.sourceUrl && (
                 <span>
                   Fuente:{' '}
                   <OutboundLink
                     activityId={id}
                     href={activity.sourceUrl}
-                    className="text-gray-400 hover:text-brand-500 hover:underline transition-colors"
+                    className="text-[var(--hp-text-muted)] hover:text-brand-500 hover:underline transition-colors"
                   >
                     {(() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'fuente externa'; } })()}
                   </OutboundLink>{' '}(sitio oficial)

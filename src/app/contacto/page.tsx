@@ -77,12 +77,12 @@ export default function ContactoPage() {
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8">
           <span className="text-4xl block mb-4">✓</span>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Mensaje enviado</h1>
+          <h1 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Mensaje enviado</h1>
           <p className="text-gray-600">
             Recibimos tu solicitud y te enviamos una confirmación a <strong>{email}</strong>.
             Si no llega en unos minutos, revisa la carpeta de spam.
           </p>
-          <p className="text-sm text-gray-500 mt-4">
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-4">
             {isTakedown
               ? 'Responderemos a solicitudes de remoción en un máximo de 5 días hábiles.'
               : isDerechos
@@ -102,8 +102,8 @@ export default function ContactoPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
-      <h1 className="text-2xl font-bold text-gray-900 mb-2">Contacto</h1>
-      <p className="text-gray-500 text-sm mb-8">
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Contacto</h1>
+      <p className="text-[var(--hp-text-secondary)] text-sm mb-8">
         Escríbenos para consultas, reportar errores, solicitar remoción de contenido o ejercer tus derechos
         sobre datos personales.
       </p>
@@ -121,7 +121,7 @@ export default function ContactoPage() {
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Motivo */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Motivo de contacto <span className="text-error-500">*</span>
           </label>
           <select
@@ -139,7 +139,7 @@ export default function ContactoPage() {
 
         {/* Nombre */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre completo <span className="text-error-500">*</span>
           </label>
           <input
@@ -154,7 +154,7 @@ export default function ContactoPage() {
 
         {/* Email */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Correo electrónico <span className="text-error-500">*</span>
           </label>
           <input
@@ -170,7 +170,7 @@ export default function ContactoPage() {
         {/* URL de actividad - conditional */}
         {(isReporte || isTakedown) && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
               URL de la actividad en HabitaPlan {isTakedown && <span className="text-error-500">*</span>}
             </label>
             <input
@@ -181,14 +181,14 @@ export default function ContactoPage() {
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="https://habitaplan.com/actividades/..."
             />
-            <p className="text-xs text-gray-400 mt-1">Copie la URL de la actividad desde la barra de su navegador</p>
+            <p className="text-xs text-[var(--hp-text-muted)] mt-1">Copie la URL de la actividad desde la barra de su navegador</p>
           </div>
         )}
 
         {/* Info adicional for takedown */}
         {isTakedown && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-            <p className="font-medium text-gray-700 mb-1">Para procesar su solicitud necesitamos:</p>
+          <div className="bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-gray-600">
+            <p className="font-medium text-[var(--hp-text-primary)] mb-1">Para procesar su solicitud necesitamos:</p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Nombre de la organización que representa</li>
               <li>Relación con el contenido (titular, representante autorizado)</li>
@@ -200,8 +200,8 @@ export default function ContactoPage() {
 
         {/* Info adicional for derechos */}
         {isDerechos && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-3 text-sm text-gray-600">
-            <p className="font-medium text-gray-700 mb-1">Para ejercer sus derechos (Ley 1581 de 2012):</p>
+          <div className="bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-gray-600">
+            <p className="font-medium text-[var(--hp-text-primary)] mb-1">Para ejercer sus derechos (Ley 1581 de 2012):</p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Indique qué derecho desea ejercer (acceso, rectificación, cancelación, oposición)</li>
               <li>Correo electrónico con el que se registró en HabitaPlan</li>
@@ -213,7 +213,7 @@ export default function ContactoPage() {
 
         {/* Mensaje */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Mensaje <span className="text-error-500">*</span>
           </label>
           <textarea
@@ -242,8 +242,8 @@ export default function ContactoPage() {
       </form>
 
       {/* Plazos legales */}
-      <div className="mt-8 rounded-xl border border-gray-100 p-4 text-xs text-gray-400 space-y-1">
-        <p><strong className="text-gray-500">Plazos de respuesta:</strong></p>
+      <div className="mt-8 rounded-xl border border-[var(--hp-border)] p-4 text-xs text-[var(--hp-text-muted)] space-y-1">
+        <p><strong className="text-[var(--hp-text-secondary)]">Plazos de respuesta:</strong></p>
         <p>Consultas generales: a la brevedad posible</p>
         <p>Remoción de contenido: máximo 5 días hábiles</p>
         <p>Derechos de datos personales (consulta): máximo 10 días hábiles</p>

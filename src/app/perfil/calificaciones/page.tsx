@@ -27,7 +27,7 @@ export default async function CalificacionesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Calificaciones</h1>
+        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Calificaciones</h1>
         {ratings.length > 0 && (
           <span className="rounded-full bg-warning-100 px-2.5 py-0.5 text-xs font-semibold text-warning-700">
             {ratings.length}
@@ -39,7 +39,7 @@ export default async function CalificacionesPage() {
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">⭐</span>
           <p className="text-gray-600 font-medium text-lg">Aun no has calificado actividades</p>
-          <p className="text-sm text-gray-400 max-w-sm">
+          <p className="text-sm text-[var(--hp-text-muted)] max-w-sm">
             Visita una actividad y dejale una calificacion para ayudar a otros padres.
           </p>
           <Link
@@ -55,7 +55,7 @@ export default async function CalificacionesPage() {
             <Link
               key={rating.id}
               href={activityPath(rating.activity.id, rating.activity.title)}
-              className="flex items-start gap-4 bg-white border border-gray-200 rounded-2xl p-4 hover:border-brand-300 transition-colors group"
+              className="flex items-start gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-4 hover:border-brand-300 transition-colors group"
             >
               {/* Image or placeholder */}
               {rating.activity.imageUrl ? (
@@ -71,16 +71,16 @@ export default async function CalificacionesPage() {
               )}
 
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-gray-900 group-hover:text-brand-600 transition-colors truncate">
+                <p className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-brand-600 transition-colors truncate">
                   {rating.activity.title}
                 </p>
                 <div className="mt-1">
                   <StarRating value={rating.score} readonly size="sm" />
                 </div>
                 {rating.comment && (
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">{rating.comment}</p>
+                  <p className="text-xs text-[var(--hp-text-secondary)] mt-1 line-clamp-2">{rating.comment}</p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-[var(--hp-text-muted)] mt-1">
                   {new Date(rating.createdAt).toLocaleDateString('es-CO', {
                     day: 'numeric',
                     month: 'long',

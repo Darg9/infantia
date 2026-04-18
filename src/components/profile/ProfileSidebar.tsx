@@ -29,10 +29,10 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
   return (
     <>
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 min-h-[calc(100vh-3.5rem)]">
+      <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 min-h-[calc(100vh-3.5rem)]">
 
         {/* User card */}
-        <div className="p-5 border-b border-gray-100 dark:border-gray-800">
+        <div className="p-5 border-b border-[var(--hp-border)] dark:border-gray-800">
           <div className="flex items-center gap-3">
             {avatarUrl ? (
               <img
@@ -46,10 +46,10 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
               </div>
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+              <p className="text-sm font-semibold text-[var(--hp-text-primary)] dark:text-white truncate">
                 {userName || '—'}
               </p>
-              <p className="text-xs text-gray-400 dark:text-gray-500 truncate">{userEmail}</p>
+              <p className="text-xs text-[var(--hp-text-muted)] dark:text-[var(--hp-text-secondary)] truncate">{userEmail}</p>
             </div>
           </div>
         </div>
@@ -67,7 +67,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                   'relative flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-sm transition-colors overflow-hidden',
                   active
                     ? 'bg-brand-50 dark:bg-orange-900/20 text-brand-700 dark:text-orange-400 font-semibold'
-                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white',
+                    : 'text-gray-600 dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] dark:hover:bg-gray-800 hover:text-[var(--hp-text-primary)] dark:hover:text-white',
                 ].join(' ')}
               >
                 {/* Active indicator bar — requiere relative en el Link padre */}
@@ -87,7 +87,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
       </aside>
 
       {/* ── Mobile horizontal nav ── */}
-      <div className="lg:hidden border-b border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 overflow-x-auto">
+      <div className="lg:hidden border-b border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 overflow-x-auto">
         <nav className="flex gap-1 px-4 py-2 min-w-max" aria-label="Menú de perfil">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href)
@@ -100,7 +100,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors',
                   active
                     ? 'bg-brand-100 dark:bg-orange-900/30 text-brand-700 dark:text-orange-400 font-semibold'
-                    : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-200',
+                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[var(--hp-text-primary)] dark:hover:text-gray-200',
                 ].join(' ')}
               >
                 <span>{item.icon}</span>

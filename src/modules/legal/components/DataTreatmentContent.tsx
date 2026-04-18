@@ -20,7 +20,7 @@ export function DataTreatmentContent() {
           </span>
         </div>
 
-        <ul className="space-y-4 text-sm text-gray-300 leading-relaxed">
+        <ul className="space-y-4 text-sm text-[var(--hp-text-muted)] leading-relaxed">
           {DATA_TREATMENT_SUMMARY.map((description, i) => {
             const [title, rest] = description.split(': ');
             return (
@@ -35,7 +35,7 @@ export function DataTreatmentContent() {
           })}
         </ul>
 
-        <div className="mt-6 pt-5 border-t border-gray-700 flex flex-col sm:flex-row gap-2 justify-between text-xs text-gray-500">
+        <div className="mt-6 pt-5 border-t border-gray-700 flex flex-col sm:flex-row gap-2 justify-between text-xs text-[var(--hp-text-secondary)]">
           <span>Última actualización: {DATA_TREATMENT_META.lastUpdated}.</span>
           <span>Versión completa: Este resumen es informativo. El documento legal completo aplica en caso de duda o interpretación.</span>
         </div>
@@ -43,11 +43,11 @@ export function DataTreatmentContent() {
 
       {/* ── Fecha y Versión ──────────────────────────────────── */}
       <div className="flex items-center justify-between">
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-[var(--hp-text-secondary)]">
           Fecha de última actualización:{' '}
-          <span className="font-medium text-gray-700">{DATA_TREATMENT_META.lastUpdated}</span>
+          <span className="font-medium text-[var(--hp-text-primary)]">{DATA_TREATMENT_META.lastUpdated}</span>
         </p>
-        <span className="text-xs font-medium text-gray-400 bg-gray-100 px-2 py-1 rounded">
+        <span className="text-xs font-medium text-[var(--hp-text-muted)] bg-gray-100 px-2 py-1 rounded">
           Versión: {DATA_TREATMENT_META.version}
         </span>
       </div>
@@ -56,7 +56,7 @@ export function DataTreatmentContent() {
       <div className="space-y-8">
         {DATA_TREATMENT_SECTIONS.map(({ num, title, content }) => (
           <section key={num}>
-            <h2 className="text-base font-semibold text-gray-900 mb-3">
+            <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">
               <span className="text-orange-500 mr-1.5">{num}.</span>
               {title}
             </h2>
@@ -78,10 +78,10 @@ export function DataTreatmentContent() {
       </div>
 
       {/* ── Bloque final + descarga ───────────────────────────── */}
-      <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+      <div className="rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-page)] p-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div>
-          <p className="text-sm font-medium text-gray-800 mb-1">Versión completa ({DATA_TREATMENT_META.version})</p>
-          <p className="text-sm text-gray-500 leading-relaxed max-w-md">
+          <p className="text-sm font-medium text-[var(--hp-text-primary)] mb-1">Versión completa ({DATA_TREATMENT_META.version})</p>
+          <p className="text-sm text-[var(--hp-text-secondary)] leading-relaxed max-w-md">
             Este documento constituye la versión legal aplicable. Se recomienda su lectura
             antes de utilizar la plataforma.
           </p>
@@ -95,16 +95,16 @@ export function DataTreatmentContent() {
       </div>
 
       {/* ── Navegación inferior ──────────────────────────────── */}
-      <div className="flex flex-wrap gap-6 text-sm pt-4 border-t border-gray-100">
+      <div className="flex flex-wrap gap-6 text-sm pt-4 border-t border-[var(--hp-border)]">
         <Link
           href="/seguridad/privacidad"
-          className="text-gray-500 hover:text-orange-600 transition-colors"
+          className="text-[var(--hp-text-secondary)] hover:text-orange-600 transition-colors"
         >
           Privacidad →
         </Link>
         <Link
           href="/seguridad/terminos"
-          className="text-gray-500 hover:text-orange-600 transition-colors"
+          className="text-[var(--hp-text-secondary)] hover:text-orange-600 transition-colors"
         >
           Términos →
         </Link>

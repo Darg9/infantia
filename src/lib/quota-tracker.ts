@@ -39,6 +39,26 @@ function getRedis(): IORedis | null {
   return _redis;
 }
 
+/**
+ * Devuelve la primera API key disponible del pool GEMINI_KEYS (o GOOGLE_AI_STUDIO_KEY como fallback).
+ * Retorna null si todas están agotadas.
+ */
+export async function getAvailableKey(): Promise<string | null> {
+  const raw = process.env.GEMINI_KEYS ?? process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+  const keys = raw.split(',').map((k) => k.trim()).filter(Boolean);
+
+  for (const key of keys) {
+    if (await quota.isAvailable(key)) return key;
+  }
+
+  if (keys.length === 0) {
+    log.warn('No hay API keys de Gemini configuradas (GEMINI_KEYS o GOOGLE_AI_STUDIO_KEY).');
+  } else {
+    log.warn(`Todas las ${keys.length} keys de Gemini están agotadas.`);
+  }
+  return null;
+}
+
 export const quota = {
   async isAvailable(apiKey: string): Promise<boolean> {
     const redis = getRedis();

@@ -491,9 +491,20 @@ export class ScrapingPipeline {
     // Phase 3: Analyze each post with Gemini (sequential to avoid rate limits)
     log.info(`Fase 2: Analizando ${newPosts.length} posts con Gemini...`);
     const results: InstagramPipelineResult['results'] = [];
+    let preflightSkipped = 0;
 
     for (let i = 0; i < newPosts.length; i++) {
       const post = newPosts[i];
+
+      // Date Preflight sobre el caption — evita llamadas a Gemini para posts claramente pasados
+      const preflight = evaluatePreflight(post.caption ?? '');
+      if (preflight.skip) {
+        log.info(`⏭️  Post ${i + 1}/${newPosts.length} saltado por Date Preflight (${preflight.reason}): ${post.url}`);
+        this.cache.add(post.url, '[preflight-skip]');
+        preflightSkipped++;
+        continue;
+      }
+
       try {
         log.info(`Analizando post ${i + 1}/${newPosts.length}: ${post.url}`);
         const data = await this.analyzer.analyzeInstagramPost(post, profile.bio);
@@ -507,6 +518,10 @@ export class ScrapingPipeline {
         log.error(`Error analizando ${post.url}: ${error.message}`);
         results.push({ postUrl: post.url, data: null, error: error.message });
       }
+    }
+
+    if (preflightSkipped > 0) {
+      log.info(`[IG-PREFLIGHT] ${preflightSkipped}/${newPosts.length} posts saltados por Date Preflight (cuota ahorrada).`);
     }
 
     // Persist cache

@@ -3,7 +3,7 @@ import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredA
 import { createLogger } from '../../../lib/logger';
 import { preFilterUrls, getProductivityTier } from '../../../lib/url-classifier';
 import { isRetryableError } from '../parser/parser.types';
-import { quota } from '../../../lib/quota-tracker';
+import { quota, getAvailableKey } from '../../../lib/quota-tracker';
 
 const log = createLogger('scraping:gemini');
 
@@ -143,14 +143,36 @@ async function callWithRetry<T>(fn: () => Promise<T>, label: string, apiKey?: st
 }
 
 export class GeminiAnalyzer {
-  private genAI: GoogleGenerativeAI | null;
   private static lastRequestTime: number = 0;
   private static readonly MIN_REQUEST_INTERVAL_MS = 12000; // 5 RPM = 1 request per 12 seconds
   private static rateLimitEnabled = process.env.NODE_ENV !== 'test';
 
-  constructor() {
-    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY || '';
-    this.genAI = apiKey ? new GoogleGenerativeAI(apiKey) : null;
+  // Selecciona la primera key disponible del pool y devuelve el modelo listo.
+  // Retorna null si no hay keys configuradas (usar mockAnalysis).
+  // Lanza [QUOTA_EXHAUSTED] si hay keys pero todas están agotadas.
+  private async getModel(config: {
+    systemInstruction?: string;
+    maxOutputTokens: number;
+  }): Promise<{ model: ReturnType<GoogleGenerativeAI['getGenerativeModel']>; apiKey: string } | null> {
+    const raw = process.env.GEMINI_KEYS ?? process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    const configured = raw.split(',').filter((k) => k.trim().length > 0);
+    if (configured.length === 0) return null; // sin keys → mockAnalysis
+
+    const apiKey = await getAvailableKey();
+    if (!apiKey) {
+      throw new Error('[QUOTA_EXHAUSTED] Todas las keys de Gemini están agotadas.');
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-2.5-flash',
+      ...(config.systemInstruction ? { systemInstruction: config.systemInstruction } : {}),
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.1,
+        maxOutputTokens: config.maxOutputTokens,
+      },
+    });
+    return { model, apiKey };
   }
 
   private async enforceRateLimit(): Promise<void> {
@@ -167,29 +189,17 @@ export class GeminiAnalyzer {
   }
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
-    if (!this.genAI) {
+    const modelResult = await this.getModel({ systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 8192 });
+    if (!modelResult) {
       log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
       return this.mockAnalysis(url);
-    }
-
-    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
-    if (!(await quota.isAvailable(apiKey))) {
-      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando análisis.');
     }
 
     const truncatedText = sourceText.substring(0, 6000);
     const userMessage = `URL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
 
     try {
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
-        systemInstruction: SYSTEM_PROMPT,
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.1,
-          maxOutputTokens: 8192,
-        },
-      });
+      const { model, apiKey } = modelResult;
 
       await this.enforceRateLimit();
       const result = await callWithRetry(
@@ -251,16 +261,6 @@ export class GeminiAnalyzer {
   }
 
   async discoverActivityLinks(links: DiscoveredLink[], sourceUrl: string): Promise<string[]> {
-    if (!this.genAI) {
-      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Retornando todos los links.');
-      return links.map((l) => l.url);
-    }
-
-    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
-    if (!(await quota.isAvailable(apiKey))) {
-      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando discover.');
-    }
-
     // Extensiones de archivo que nunca son páginas de actividades
     const IMAGE_OR_BINARY_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|pdf|mp4|mp3|zip|doc[x]?|xls[x]?|ppt[x]?)$/i;
 
@@ -315,14 +315,12 @@ export class GeminiAnalyzer {
 
     log.info(`Procesando ${filtered.length} links en ${chunks.length} lotes de ${CHUNK_SIZE}`);
 
-    const model = this.genAI.getGenerativeModel({
-      model: 'gemini-2.5-flash',
-      generationConfig: {
-        responseMimeType: 'application/json',
-        temperature: 0.1,
-        maxOutputTokens: 8192,
-      },
-    });
+    const modelResult = await this.getModel({ maxOutputTokens: 8192 });
+    if (!modelResult) {
+      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Retornando todos los links.');
+      return links.map((l) => l.url);
+    }
+    const { model, apiKey } = modelResult;
 
     const allActivityUrls: string[] = [];
     // Trackea el último error retryable (429/503) para propagarlo si todos los lotes fallan
@@ -410,14 +408,10 @@ ${linksText}`;
    * Uses a prompt adapted for short captions, hashtags, and emojis.
    */
   async analyzeInstagramPost(post: InstagramPost, profileBio: string): Promise<ActivityNLPResult> {
-    if (!this.genAI) {
+    const modelResult = await this.getModel({ systemInstruction: INSTAGRAM_SYSTEM_PROMPT, maxOutputTokens: 4096 });
+    if (!modelResult) {
       log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
       return this.mockAnalysis(post.url);
-    }
-
-    const apiKey = process.env.GOOGLE_AI_STUDIO_KEY ?? '';
-    if (!(await quota.isAvailable(apiKey))) {
-      throw new Error('[QUOTA_EXHAUSTED] Cuota Gemini agotada. Saltando análisis.');
     }
 
     const userMessage = `POST DE INSTAGRAM:
@@ -432,15 +426,7 @@ BIO DEL PERFIL:
 ${profileBio}`;
 
     try {
-      const model = this.genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash',
-        systemInstruction: INSTAGRAM_SYSTEM_PROMPT,
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.1,
-          maxOutputTokens: 4096,
-        },
-      });
+      const { model, apiKey } = modelResult;
 
       await this.enforceRateLimit();
       const result = await callWithRetry(

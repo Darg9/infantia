@@ -62,10 +62,14 @@ export class ScrapingPipeline {
     }
 
     const textLength = htmlContent.length;
-    log.info(`2. Extracción exitosa. Longitud de texto crudo: ${textLength} caracteres`);
+    log.info(`2. Extracción exitosa. Longitud de contenido extraído: ${textLength} caracteres`);
+
+    // sourceText: texto limpio sin HTML tags (para Gemini y preflight de fechas)
+    // htmlContent puede ser HTML completo (Cheerio) o texto (Playwright)
+    const sourceText = CheerioExtractor.textFromHtml(htmlContent);
 
     // ── Pre-filtro de fechas: evitar NLP en eventos claramente pasados ─────────
-    const preflight = evaluatePreflight(htmlContent);
+    const preflight = evaluatePreflight(sourceText);
 
     // Persistir resultado en date_preflight_logs (fire-and-forget)
     void savePreflightLog({ sourceId: sourceHost ?? null, url, result: preflight });
@@ -98,19 +102,19 @@ export class ScrapingPipeline {
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
 
     // Construimos ScrapedRawData para que el fallback mapper tenga contexto.
-    // sourceText = texto limpio (sin tags HTML) para que la descripción fallback
-    // no incluya markup en casos donde Gemini no está disponible.
+    // html: contenido completo (con tags) para que fallback-mapper encuentre <title>/<h1>
+    // sourceText: texto limpio (sin tags) para Gemini (menos tokens) y descripción fallback
     const rawForFallback: ScrapedRawData = {
       url,
-      html:        htmlContent,
-      sourceText:  CheerioExtractor.textFromHtml(htmlContent),
+      html:        htmlContent,   // HTML completo → extractTitle() encuentra <title>/<h1>
+      sourceText,                  // texto limpio → descripción fallback legible
       extractedAt: new Date(),
       status:      'SUCCESS',
     };
 
     const parsed = FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
-      ? await parseActivity(htmlContent, url, rawForFallback, this.analyzer)
-      : { result: await this.analyzer.analyze(htmlContent, url), source: 'gemini' as const };
+      ? await parseActivity(sourceText, url, rawForFallback, this.analyzer)
+      : { result: await this.analyzer.analyze(sourceText, url), source: 'gemini' as const };
 
     if (parsed.source === 'fallback') {
       log.warn(`[PARSER] Actividad extraída con fallback Cheerio (Gemini no disponible): ${url}`);

@@ -95,7 +95,9 @@ export function getSourceStrategies(sourceType: string, extractors: any, url: st
     return [
       () => extractors.cheerio().extract(url).then((res: any) => {
         if (res.status === 'FAILED' || (res.sourceText?.length ?? 0) < 50) throw new Error('Cheerio insuficient logic');
-        return res.sourceText;
+        // Devolvemos el HTML completo (no sólo sourceText) para que rawForFallback.html
+        // tenga tags reales (<title>, <h1>, og:title) y fallback-mapper pueda extraer título.
+        return res.html ?? res.sourceText;
       }),
       () => extractors.playwright().extractWebText(url).then((res: any) => {
          if (res.status === 'FAILED') throw new Error(res.error || 'Playwright failed');

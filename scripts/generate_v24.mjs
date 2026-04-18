@@ -30,8 +30,12 @@ const GREEN      = "1E8449";
 const AMBER      = "D4AC0D";
 const RED        = "922B21";
 
+// ── Markdown Builder ────────────────────────────────────────────────────────
+let mdStr = "";
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function sectionHeading(text) {
+  mdStr += `\n# ${text}\n\n`;
   return new Paragraph({
     children: [new TextRun({ text, bold: true, color: DARK_BLUE, size: 26, font: "Arial" })],
     spacing: { before: 320, after: 120 },
@@ -40,6 +44,7 @@ function sectionHeading(text) {
 }
 
 function subHeading(text) {
+  mdStr += `\n## ${text}\n\n`;
   return new Paragraph({
     children: [new TextRun({ text, bold: true, color: ORANGE, size: 22, font: "Arial" })],
     spacing: { before: 180, after: 80 },
@@ -47,6 +52,7 @@ function subHeading(text) {
 }
 
 function bodyParagraph(text, opts = {}) {
+  mdStr += opts.bullet ? `- ${text}\n` : `${text}\n\n`;
   return new Paragraph({
     children: [new TextRun({ text, size: 20, font: "Arial", bold: opts.bold || false, color: opts.color || "000000" })],
     spacing: { before: 60, after: 60 },
@@ -55,6 +61,7 @@ function bodyParagraph(text, opts = {}) {
 }
 
 function labelValue(label, value) {
+  mdStr += `**${label}**: ${value}\n\n`;
   return new Paragraph({
     children: [
       new TextRun({ text: label + ": ", bold: true, size: 20, font: "Arial", color: DARK_BLUE }),
@@ -93,6 +100,10 @@ function dataCell(text, isAlt, opts = {}) {
 }
 
 function twoColTable(headers, rows) {
+  mdStr += `| ${headers.join(" | ")} |\n`;
+  mdStr += `| ${headers.map(() => "---").join(" | ")} |\n`;
+  rows.forEach(r => mdStr += `| ${r.join(" | ")} |\n`);
+  mdStr += "\n";
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: [
@@ -103,6 +114,10 @@ function twoColTable(headers, rows) {
 }
 
 function threeColTable(headers, rows, widths = [35, 45, 20]) {
+  mdStr += `| ${headers.join(" | ")} |\n`;
+  mdStr += `| ${headers.map(() => "---").join(" | ")} |\n`;
+  rows.forEach(r => mdStr += `| ${r.join(" | ")} |\n`);
+  mdStr += "\n";
   return new Table({
     width: { size: 100, type: WidthType.PERCENTAGE },
     rows: [
@@ -754,8 +769,14 @@ const doc = new Document({
 });
 
 const OUTPUT_PATH = "C:\\Users\\denys\\OneDrive\\Documents\\DayJul\\Denys\\Infantia\\Infantia_Claude\\HabitaPlan_Documento_Fundacional_V24.docx";
+const MD_OUTPUT_PATH = "FUNDACIONAL.md";
 
 Packer.toBuffer(doc).then((buffer) => {
   writeFileSync(OUTPUT_PATH, buffer);
-  console.log(`✅ Documento generado: ${OUTPUT_PATH}`);
+  console.log(`✅ Documento generado DOCX: ${OUTPUT_PATH}`);
+  
+  // Escribimos también el Markdown en el repositorio local
+  mdStr = `# HABITAPLAN — DOCUMENTO FUNDACIONAL V24\n> Generado estáticamente por el script V24.\n\n` + mdStr;
+  writeFileSync(MD_OUTPUT_PATH, mdStr, "utf8");
+  console.log(`✅ Documento generado MD: ${MD_OUTPUT_PATH}`);
 });

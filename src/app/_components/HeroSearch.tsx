@@ -2,8 +2,7 @@
 
 // =============================================================================
 // HeroSearch — Buscador principal del hero de la home
-// Sugerencias mixtas (actividades, categorías, ciudades) a partir del 3er carácter.
-// Cache en memoria · historial en sessionStorage · AbortController · 300ms debounce
+// Fases 1 & 2: Motor de búsqueda estructural
 // =============================================================================
 
 import { useRouter } from 'next/navigation';
@@ -21,6 +20,44 @@ const QUICK_CHIPS = [
   { label: 'Gratis',      href: '/actividades?price=free' },
   { label: 'Cerca de ti', href: '/mapa'                   },
 ] as const;
+
+// ── Hints Estructurales (Fase 2) ──────────────────────────────────────────────
+type SearchHint = { text: string; href: string };
+const HINTS: SearchHint[] = [
+  { text: 'Gratis hoy en Bogotá',   href: '/actividades?price=free&sort=date&search=Bogot%C3%A1' },
+  { text: 'Niños 5 años, ciencia',  href: '/actividades?ageMin=5&ageMax=5&search=ciencia' },
+  { text: 'Talleres fin de semana', href: '/actividades?type=WORKSHOP&search=fin%20de%20semana' },
+];
+
+function useTypewriterHints() {
+  const [index, setIndex] = useState(0);
+  const [displayText, setDisplayText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    const current = HINTS[index].text;
+    
+    if (isDeleting) {
+      if (displayText === '') {
+        setIsDeleting(false);
+        setIndex((prev) => (prev + 1) % HINTS.length);
+        timer = setTimeout(() => {}, 500);
+      } else {
+        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length - 1)), 25); // 25ms delete
+      }
+    } else {
+      if (displayText === current) {
+        timer = setTimeout(() => setIsDeleting(true), 2500); // 2.5s pause
+      } else {
+        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length + 1)), 50); // 50ms type
+      }
+    }
+    return () => clearTimeout(timer);
+  }, [displayText, isDeleting, index]);
+
+  return { hintText: displayText, currentHref: HINTS[index].href };
+}
 
 const HISTORY_KEY = 'hp_recent_searches';
 const HISTORY_MAX = 5;
@@ -54,6 +91,7 @@ function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
 export default function HeroSearch() {
   const router = useRouter();
   const { toast } = useToast();
+  const { hintText, currentHref } = useTypewriterHints();
 
   const [query, setQuery]             = useState('');
   const [suggestions, setSugg]        = useState<SuggestionItem[]>([]);
@@ -186,7 +224,11 @@ export default function HeroSearch() {
 
     const trimmed = q.trim();
     if (!trimmed) {
-      toast.warning('Ingresa un término de búsqueda');
+      // 🚀 Fase 2: Ejecuta la query subyacente del Hint Rotativo
+      setIsSubmitting(true);
+      closeDropdown();
+      router.push(currentHref);
+      setTimeout(() => setIsSubmitting(false), 800);
       return;
     }
 
@@ -202,7 +244,6 @@ export default function HeroSearch() {
 
     router.push(`/actividades?search=${encodeURIComponent(trimmed)}`);
     
-    // Release lock softly to allow subsequent consecutive searches safely
     setTimeout(() => setIsSubmitting(false), 800);
   }
 
@@ -239,8 +280,31 @@ export default function HeroSearch() {
 
   const dropdownVisible = showSugg || showHistory || isFetching;
 
+  // 🚀 Iconografía dinámica
+  let searchIcon;
+  if (isFetching || isSubmitting) {
+    searchIcon = (
+      <svg className="w-5 h-5 animate-spin text-[var(--hp-text-muted)]" fill="none" viewBox="0 0 24 24" aria-hidden>
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+      </svg>
+    );
+  } else if (query.length > 0) {
+    searchIcon = (
+      <svg className="w-5 h-5 text-[var(--hp-text-muted)] cursor-pointer hover:text-brand-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-label="Limpiar" onClick={(e) => { e.stopPropagation(); setQuery(''); closeDropdown(); fetchSuggestions(''); }}>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    );
+  } else {
+    searchIcon = (
+      <svg className="w-5 h-5 text-[var(--hp-text-muted)] hover:text-brand-500 transition-colors cursor-pointer" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden onClick={() => submitSearch('')}>
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+      </svg>
+    );
+  }
+
   return (
-    <div className="w-full max-w-xl mx-auto">
+    <div className="w-full max-w-2xl mx-auto">
 
       {/* ── Input + dropdown ───────────────────────────────────────────── */}
       <div className="relative" ref={containerRef}>
@@ -261,33 +325,17 @@ export default function HeroSearch() {
             }
           }}
           onKeyDown={handleKeyDown}
-          placeholder="Ej: hoy, gratis, niños 5 años, talleres…"
+          placeholder={query ? "" : hintText}
           autoComplete="off"
           spellCheck={false}
           disabled={isSubmitting}
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
-          className="rounded-2xl shadow-md py-4 text-base bg-[var(--hp-bg-surface)] focus:ring-brand-100 focus:border-brand-400"
-          leftSlot={
-            <button
-              type="button"
-              disabled={isSubmitting}
-              onClick={() => submitSearch(query)}
-              aria-label="Ejecutar búsqueda"
-              aria-busy={isSubmitting}
-              className="text-[var(--hp-text-muted)] hover:text-brand-500 disabled:opacity-50 transition-colors p-0.5 ml-1"
-            >
-              {isSubmitting ? (
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden>
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-              ) : (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-                </svg>
-              )}
-            </button>
+          className="rounded-2xl shadow-lg py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text"
+          rightSlot={
+            <div className="p-1 pr-1 mr-1">
+               {searchIcon}
+            </div>
           }
         />
 
@@ -296,7 +344,7 @@ export default function HeroSearch() {
           <div
             role="listbox"
             onMouseDown={e => e.preventDefault()}
-            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-xl overflow-hidden"
+            className="absolute left-0 right-0 top-full mt-2 z-50 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-xl overflow-hidden"
           >
 
             {/* Historial */}
@@ -329,13 +377,13 @@ export default function HeroSearch() {
 
             {/* Skeleton */}
             {isFetching && (
-              <ul className="animate-pulse divide-y divide-gray-50">
+              <ul className="animate-pulse divide-y divide-gray-50 dark:divide-gray-800">
                 {[1, 2, 3].map(i => (
                   <li key={i} className="flex items-center gap-3 px-4 py-3">
-                    <div className="w-5 h-5 rounded-full bg-gray-100 shrink-0" />
+                    <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 bg-gray-100 rounded-full" style={{ width: `${50 + i * 15}%` }} />
-                      <div className="h-2.5 bg-gray-100 rounded-full w-1/4" />
+                      <div className="h-3.5 bg-gray-100 dark:bg-gray-700 rounded-full" style={{ width: `${50 + i * 15}%` }} />
+                      <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-1/4" />
                     </div>
                   </li>
                 ))}
@@ -364,7 +412,7 @@ export default function HeroSearch() {
                     onMouseLeave={() => setActiveIndex(-1)}
                     onClick={() => selectSuggestion(s)}
                     className={`flex items-center gap-3 px-4 py-3 cursor-pointer text-sm transition-colors ${
-                      i === activeIndex ? 'bg-brand-50' : 'hover:bg-[var(--hp-bg-page)]'
+                      i === activeIndex ? 'bg-[var(--hp-bg-subtle)]' : 'hover:bg-[var(--hp-bg-page)]'
                     }`}
                   >
                     <span className="text-base w-5 text-center shrink-0 select-none">
@@ -383,8 +431,8 @@ export default function HeroSearch() {
                     {s.type !== 'activity' && (
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
-                          ? 'bg-violet-50 text-violet-600'
-                          : 'bg-emerald-50 text-emerald-600'
+                          ? 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200'
+                          : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-200'
                       }`}>
                         {s.type === 'category' ? 'Categoría' : 'Ciudad'}
                       </span>
@@ -399,7 +447,7 @@ export default function HeroSearch() {
 
             {/* Footer teclado — solo desktop */}
             {showSugg && suggestions.length > 0 && (
-              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-[var(--hp-border)] select-none">
+              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-[var(--hp-border-subtle)] select-none">
                 ↑↓ navegar · Enter seleccionar · Esc cerrar
               </div>
             )}
@@ -408,7 +456,7 @@ export default function HeroSearch() {
       </div>
 
       {/* ── Chips rápidos ─────────────────────────────────────────────── */}
-      <div className="flex gap-2 justify-center mt-3 flex-wrap">
+      <div className="flex gap-2.5 justify-center mt-4 flex-wrap">
         {QUICK_CHIPS.map(chip => (
           <Button
             key={chip.label}
@@ -416,7 +464,7 @@ export default function HeroSearch() {
             size="sm"
             disabled={isSubmitting}
             onClick={() => router.push(chip.href)}
-            className="rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]/80 hover:bg-brand-50 hover:border-brand-300 hover:text-brand-700 font-normal"
+            className="rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all"
           >
             {chip.label}
           </Button>
@@ -425,4 +473,3 @@ export default function HeroSearch() {
     </div>
   );
 }
-

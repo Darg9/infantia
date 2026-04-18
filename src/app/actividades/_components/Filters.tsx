@@ -435,16 +435,16 @@ export default function Filters({
   function selectCls(active: boolean) {
     const base = 'rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
     return `${base} ${active
-      ? 'border-indigo-500 bg-[var(--hp-bg-subtle)] text-indigo-700 font-medium focus:ring-indigo-100'
-      : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-gray-600 hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
+      ? 'border-brand-500 bg-[var(--hp-bg-subtle)] text-brand-700 font-medium focus:ring-brand-100'
+      : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] hover:border-[var(--hp-border-subtle)] focus:border-brand-400 focus:ring-brand-100'
     }`;
   }
 
   function pillCls(active: boolean) {
     return `px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer whitespace-nowrap ${
       active
-        ? 'bg-indigo-600 text-white border-indigo-600'
-        : 'bg-[var(--hp-bg-surface)] text-gray-600 border-[var(--hp-border)] hover:border-indigo-300 hover:text-indigo-600'
+        ? 'bg-brand-600 text-[var(--hp-bg-surface)] border-brand-600'
+        : 'bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] border-[var(--hp-border)] hover:border-brand-300 hover:text-brand-600'
     }`;
   }
 
@@ -726,14 +726,17 @@ export default function Filters({
           ))}
         </select>
 
-        {/* Limpiar filtros */}
+        {/* Limpiar filtros y Conteo */}
         {hasFilters && (
           <>
-            <span className="w-px h-5 bg-gray-200 mx-1" aria-hidden />
+            <span className="w-px h-5 bg-[var(--hp-border)] mx-1" aria-hidden />
+            <span className="text-xs font-bold text-brand-700 bg-[var(--hp-bg-subtle)] px-2.5 py-1 rounded-full">
+               {chips.length} activo{chips.length !== 1 ? 's' : ''}
+            </span>
             <button
               type="button"
               onClick={handleReset}
-              className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline underline-offset-2 whitespace-nowrap transition-colors"
+              className="text-sm text-[var(--hp-text-muted)] hover:text-brand-500 underline underline-offset-2 whitespace-nowrap transition-colors"
             >
               Limpiar filtros
             </button>

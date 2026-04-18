@@ -25,7 +25,8 @@ Todas nuestras definiciones base yacen configuradas en el motor `@theme` de *Tai
 
 ### Superficies & Backgrounds
 
-- Variables unificadas: `--hp-bg-page`, `--hp-bg-surface`, `--hp-bg-subtle`.
+- Variables unificadas: `--hp-bg-page`, `--hp-bg-surface`, `--hp-bg-subtle`, `--hp-bg-elevated`.
+- **Estratificación Elevada (Dark Mode):** Para evitar el aplanamiento de interfaces en temas oscuros, las cards flotantes, el input buscador y los modales deben combinarse siempre con `bg-[var(--hp-bg-elevated)] border-[var(--hp-border-subtle)] shadow-md`. No se debe confiar solo en la sombra, ya que `shadow` pierde efectividad geométrica sobre fondos oscuros.
 - Texto Nativo: `--hp-text-primary`, `--hp-text-secondary`, `--hp-text-muted`.
 
 ### Dark Mode
@@ -112,8 +113,11 @@ Todo reside exportado limpiamente en su Barrel `src/components/ui`.
 - Atar `error` responses del API a mensajes visibles in-DOM de error sobre los Inputs alterados.
 
 ### Búsqueda Semántica
-- Todos los inputs que emitan queries complejos (ej. `HeroSearch`) portan \`hideLabel\` para que convivan en Single Lines, mientras su Screen Reader lee correctamente su propósito.
-- Abort controllers para Debounces, liberando calls de network desactualizadas.
+- Todos los inputs que emitan queries complejos (ej. `HeroSearch`) portan `hideLabel` para que convivan en Single Lines.
+- **Sistema de Buscador Estructurado:** El buscador central opera bajo tres fases de interfaz:
+  - **Quick Intents:** Modificadores contextuales (`Hoy`, `Gratis`) anclados muy cerca de la caja de búsqueda. En resoluciones `< md` hacen wrap por debajo; en `>= md` pueden integrarse o flotar contiguos.
+  - **Tokens Persistibles:** Las propiedades de búsqueda se sincronizan 1 a 1 en la URL via *Search Params*.
+  - **Aborts Controller:** Limpian renders erráticos liberando de memoria los requests obsoletos vía `AbortController`.
 
 ### Navegación y Observabilidad
 - Los menús y Layout components (Nav, Header, footer) declaran sus Roles Landmark semánticos (`aria-label`).

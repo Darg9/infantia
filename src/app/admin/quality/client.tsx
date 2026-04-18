@@ -1,6 +1,9 @@
 'use client'
 
+import { createLogger } from '@/lib/logger'
 import { useEffect, useState } from "react"
+
+const log = createLogger('admin:quality')
 import {
   LineChart,
   Line,
@@ -51,7 +54,7 @@ export default function QualityDashboardClient() {
       }))
       setData(formattedData)
     } catch (err) {
-      console.error("Error loading metrics:", err);
+      log.error('Error loading metrics', { error: err });
     } finally {
       setLoading(false)
     }

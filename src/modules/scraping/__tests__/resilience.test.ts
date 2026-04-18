@@ -161,7 +161,7 @@ describe('getSourceStrategies', () => {
     const mockExtract = vi.fn().mockResolvedValue({ status: 'OK', sourceText: 'texto largo suficiente para pasar el umbral de 50 chars' });
     const extractors = {
       cheerio: () => ({ extract: mockExtract }),
-      playwright: () => ({ extractWebText: vi.fn() }),
+      playwright: () => ({ extractWebText: vi.fn(), extractProfile: vi.fn() }),
     };
     const strategies = getSourceStrategies('WEBSITE', extractors, url);
     const result = await strategies[0]();
@@ -172,7 +172,7 @@ describe('getSourceStrategies', () => {
   it('estrategia WEBSITE cheerio lanza si status FAILED', async () => {
     const extractors = {
       cheerio: () => ({ extract: vi.fn().mockResolvedValue({ status: 'FAILED', sourceText: '' }) }),
-      playwright: () => ({ extractWebText: vi.fn() }),
+      playwright: () => ({ extractWebText: vi.fn(), extractProfile: vi.fn() }),
     };
     const strategies = getSourceStrategies('WEBSITE', extractors, url);
     await expect(strategies[0]()).rejects.toThrow();
@@ -181,7 +181,7 @@ describe('getSourceStrategies', () => {
   it('estrategia WEBSITE cheerio lanza si sourceText muy corto', async () => {
     const extractors = {
       cheerio: () => ({ extract: vi.fn().mockResolvedValue({ status: 'OK', sourceText: 'corto' }) }),
-      playwright: () => ({ extractWebText: vi.fn() }),
+      playwright: () => ({ extractWebText: vi.fn(), extractProfile: vi.fn() }),
     };
     const strategies = getSourceStrategies('WEBSITE', extractors, url);
     await expect(strategies[0]()).rejects.toThrow();
@@ -191,7 +191,7 @@ describe('getSourceStrategies', () => {
     const mockExtractWebText = vi.fn().mockResolvedValue({ status: 'OK', sourceText: 'texto desde playwright' });
     const extractors = {
       cheerio: () => ({ extract: vi.fn() }),
-      playwright: () => ({ extractWebText: mockExtractWebText }),
+      playwright: () => ({ extractWebText: mockExtractWebText, extractProfile: vi.fn() }),
     };
     const strategies = getSourceStrategies('WEBSITE', extractors, url);
     const result = await strategies[1]();
@@ -202,7 +202,7 @@ describe('getSourceStrategies', () => {
   it('estrategia WEBSITE playwright lanza si status FAILED', async () => {
     const extractors = {
       cheerio: () => ({ extract: vi.fn() }),
-      playwright: () => ({ extractWebText: vi.fn().mockResolvedValue({ status: 'FAILED', error: 'Navigation failed' }) }),
+      playwright: () => ({ extractWebText: vi.fn().mockResolvedValue({ status: 'FAILED', error: 'Navigation failed' }), extractProfile: vi.fn() }),
     };
     const strategies = getSourceStrategies('WEBSITE', extractors, url);
     await expect(strategies[1]()).rejects.toThrow('Navigation failed');
@@ -212,7 +212,7 @@ describe('getSourceStrategies', () => {
     const mockExtractProfile = vi.fn().mockResolvedValue({ posts: [{ text: 'post 1' }] });
     const extractors = {
       cheerio: () => ({ extract: vi.fn() }),
-      playwright: () => ({ extractProfile: mockExtractProfile }),
+      playwright: () => ({ extractWebText: vi.fn(), extractProfile: mockExtractProfile }),
     };
     const strategies = getSourceStrategies('INSTAGRAM', extractors, url);
     const result = await strategies[0]();
@@ -234,6 +234,7 @@ describe('fetchWithFallback', () => {
       }),
       playwright: () => ({
         extractWebText: vi.fn(),
+        extractProfile: vi.fn(),
       }),
     };
     const result = await fetchWithFallback(url, 'WEBSITE', extractors);
@@ -248,6 +249,7 @@ describe('fetchWithFallback', () => {
       }),
       playwright: () => ({
         extractWebText: vi.fn().mockResolvedValue({ status: 'OK', sourceText: 'playwright ok' }),
+        extractProfile: vi.fn(),
       }),
     };
     const result = await fetchWithFallback(url, 'WEBSITE', extractors);
@@ -262,13 +264,15 @@ describe('fetchWithFallback', () => {
       }),
       playwright: () => ({
         extractWebText: vi.fn().mockResolvedValue({ status: 'FAILED', error: 'all failed' }),
+        extractProfile: vi.fn(),
       }),
     };
     await expect(fetchWithFallback(url, 'WEBSITE', extractors)).rejects.toThrow();
   }, 15000);
 
   it('lanza inmediatamente si no hay estrategias (tipo desconocido)', async () => {
-    await expect(fetchWithFallback(url, 'TELEGRAM', {})).rejects.toThrow('Sin estrategias validables');
+    const empty = { cheerio: () => ({ extract: vi.fn() }), playwright: () => ({ extractWebText: vi.fn(), extractProfile: vi.fn() }) };
+    await expect(fetchWithFallback(url, 'TELEGRAM', empty)).rejects.toThrow('Sin estrategias validables');
   });
 });
 

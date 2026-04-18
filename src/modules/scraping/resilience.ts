@@ -1,6 +1,27 @@
 import { createLogger } from '../../lib/logger';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/client';
+import { InstagramExtractOptions } from './extractors/playwright.extractor';
+import { ScrapedRawData, InstagramProfileData } from './types';
+
+/**
+ * Interfaces mínimas: solo los métodos que getSourceStrategies realmente invoca.
+ * Los mocks de tests y las clases reales satisfacen esta interfaz por structural typing.
+ */
+interface CheerioLike {
+  extract(url: string): Promise<ScrapedRawData>;
+}
+
+interface PlaywrightLike {
+  extractWebText(url: string): Promise<ScrapedRawData>;
+  extractProfile(url: string, opts: InstagramExtractOptions): Promise<InstagramProfileData>;
+}
+
+/** Factories que el pipeline inyecta para obtener extractores bajo demanda. */
+export interface ExtractorFactory {
+  cheerio: () => CheerioLike;
+  playwright: () => PlaywrightLike;
+}
 
 const log = createLogger('scraping:resilience');
 
@@ -89,26 +110,26 @@ export async function fetchWithRetry(
  * ============================================================================ */
 export type ScraperStrategyBuilder = () => Promise<string>;
 
-export function getSourceStrategies(sourceType: string, extractors: any, url: string): ScraperStrategyBuilder[] {
+export function getSourceStrategies(sourceType: string, extractors: ExtractorFactory, url: string): ScraperStrategyBuilder[] {
   // Configurable based on known platform capabilities
   if (sourceType === 'WEBSITE') {
     return [
-      () => extractors.cheerio().extract(url).then((res: any) => {
+      () => extractors.cheerio().extract(url).then((res: ScrapedRawData) => {
         if (res.status === 'FAILED' || (res.sourceText?.length ?? 0) < 50) throw new Error('Cheerio insuficient logic');
         // Devolvemos el HTML completo (no sólo sourceText) para que rawForFallback.html
         // tenga tags reales (<title>, <h1>, og:title) y fallback-mapper pueda extraer título.
         return res.html ?? res.sourceText;
       }),
-      () => extractors.playwright().extractWebText(url).then((res: any) => {
-         if (res.status === 'FAILED') throw new Error(res.error || 'Playwright failed');
+      () => extractors.playwright().extractWebText(url).then((res: ScrapedRawData) => {
+         if (res.status === 'FAILED') throw new Error(res.error ?? 'Playwright failed');
          return res.sourceText;
       })
     ];
   }
-  
+
   if (sourceType === 'INSTAGRAM') {
     return [
-      () => extractors.playwright().extractProfile(url, { maxPosts: 1 }).then((res: any) => JSON.stringify(res))
+      () => extractors.playwright().extractProfile(url, { maxPosts: 1 }).then((res: InstagramProfileData) => JSON.stringify(res))
     ];
   }
 
@@ -116,9 +137,9 @@ export function getSourceStrategies(sourceType: string, extractors: any, url: st
 }
 
 export async function fetchWithFallback(
-  sourceUrl: string, 
-  sourceType: string, 
-  extractorsConfig: any
+  sourceUrl: string,
+  sourceType: string,
+  extractorsConfig: ExtractorFactory
 ): Promise<FetchRetryResult> {
   const strategies = getSourceStrategies(sourceType, extractorsConfig, sourceUrl);
 

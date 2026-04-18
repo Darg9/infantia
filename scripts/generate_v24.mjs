@@ -142,7 +142,7 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 0, after: 1200 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Documento generado automaticamente por Claude Code — HabitaPlan v0.11.0-S54 (commit 15ceec2)", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
+  children: [new TextRun({ text: "Documento generado automaticamente por IA — HabitaPlan v0.11.0-S54 (commit 2542178)", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
   alignment: AlignmentType.CENTER,
 }));
 children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -611,7 +611,7 @@ children.push(threeColTable(
     ["S51", "V24", "Favorites XOR CHECK constraint BD. migrate-favorites-xor.ts. 1105 tests."],
     ["S52", "V24", "Parser Resiliente: fallback Cheerio 429/503. parser.ts + fallback-mapper.ts. 1123 tests."],
     ["S53 — 043aa3e", "V24", "Design System ESLint. Intent Manager. toggle-favorite.ts. requireAuth. 1155 tests."],
-    ["S54 — 15ceec2", "V24", "Fix fallback-mapper HTML completo. FUGA + IG Medellin sources. 1157 tests."],
+    ["S54 — 2542178", "V24", "Fix fallback-mapper HTML completo. Design System Zero Debt (erradicación alert). FUGA + IG Medellin. 1157 tests."],
   ],
   [22, 8, 70]
 ));
@@ -707,7 +707,7 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 400, after: 80 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Generado por Claude Code el 2026-04-17 | Software: v0.11.0-S54 (commit 15ceec2) | 1157 tests | 73 archivos | habitaplan.com activo", size: 16, font: "Arial", color: "BBBBBB" })],
+  children: [new TextRun({ text: "Generado por IA el 2026-04-17 | Software: v0.11.0-S54 (commit 2542178) | 1157 tests | 73 archivos | habitaplan.com activo", size: 16, font: "Arial", color: "BBBBBB" })],
   alignment: AlignmentType.CENTER,
 }));
 

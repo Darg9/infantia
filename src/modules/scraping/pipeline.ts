@@ -15,6 +15,34 @@ import { prisma } from '../../lib/db';
 
 const log = createLogger('scraping:pipeline');
 
+// ── Heurísticas pre-fetch ─────────────────────────────────────────────────────
+// Descartan URLs obsoletas antes de hacer peticiones de red y consumir cuota Gemini.
+
+const MAX_LASTMOD_AGE_DAYS = 60;
+
+/**
+ * Descarta URLs cuyo path contiene un año ya transcurrido: /2023/, /2024/, etc.
+ * Dinámico — se actualiza solo cada 1 de enero sin cambios de código.
+ */
+export function isOldByUrl(url: string): boolean {
+  const match = url.match(/\/(\d{4})\//);
+  if (!match) return false;
+  const year = parseInt(match[1], 10);
+  return year < new Date().getFullYear();
+}
+
+/**
+ * Descarta URLs cuyo <lastmod> del sitemap supera MAX_LASTMOD_AGE_DAYS días.
+ * Solo aplica a fuentes XML con lastmod; sin lastmod → no descarta (conservador).
+ */
+export function isOldByLastmod(lastmod?: string): boolean {
+  if (!lastmod) return false;
+  const ms = new Date(lastmod).getTime();
+  if (isNaN(ms)) return false;
+  const ageDays = (Date.now() - ms) / (1000 * 60 * 60 * 24);
+  return ageDays > MAX_LASTMOD_AGE_DAYS;
+}
+
 export class ScrapingPipeline {
   private extractor: CheerioExtractor;
   private playwrightExtractor: PlaywrightExtractor | null = null;
@@ -179,7 +207,21 @@ export class ScrapingPipeline {
     let allLinks = isSitemap
       ? await this.extractor.extractSitemapLinks(listingUrl, sitemapPatterns)
       : await this.extractor.extractLinksAllPages(listingUrl, maxPages);
-    log.info(`Links totales encontrados: ${allLinks.length}`);
+
+    const discoveredCount = allLinks.length;
+    log.info(`Links totales encontrados: ${discoveredCount}`);
+
+    // ── Heurísticas pre-fetch (antes de Gemini) ───────────────────────────────
+    // Recortan volumen sin red ni cuota: URLs de años pasados y páginas no actualizadas
+    if (allLinks.length > 0) {
+      const urlOld     = allLinks.filter((l) => isOldByUrl(l.url)).length;
+      const lastmodOld = allLinks.filter((l) => !isOldByUrl(l.url) && isOldByLastmod(l.lastmod)).length;
+      allLinks = allLinks.filter((l) => !isOldByUrl(l.url) && !isOldByLastmod(l.lastmod));
+      if (urlOld + lastmodOld > 0) {
+        log.info(`[HEURISTICS] ↓${urlOld} por año en URL + ↓${lastmodOld} por lastmod > ${MAX_LASTMOD_AGE_DAYS}d. Restantes: ${allLinks.length}`);
+      }
+    }
+    const afterHeuristicsCount = allLinks.length;
 
     // SPI — Sitemap Pre-Index: índice url→lastmod para filtrar ANTES del fetch
     // Solo disponible en fuentes XML (las únicas que incluyen <lastmod>)
@@ -440,6 +482,17 @@ export class ScrapingPipeline {
         log.warn(`Logger complete error (non-fatal): ${err.message}`);
       }
     }
+
+    // ── FUNNEL:SUMMARY — embudo completo por fuente ───────────────────────────
+    log.info('[FUNNEL:SUMMARY]', {
+      discovered:      discoveredCount,
+      afterHeuristics: afterHeuristicsCount,
+      afterGemini:     activityUrls.length,
+      afterCache:      afterCache.length,
+      fetched:         newUrls.length,
+      parsed:          results.filter((r) => r.data !== null).length,
+      saved:           savedCount,
+    });
 
     return batchResult;
   }

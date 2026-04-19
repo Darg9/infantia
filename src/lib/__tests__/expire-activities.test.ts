@@ -54,8 +54,8 @@ describe('expireActivities', () => {
 
   // ── Constante ────────────────────────────────────────────────────────────
 
-  it('DEFAULT_EXPIRATION_HOURS es 3', () => {
-    expect(DEFAULT_EXPIRATION_HOURS).toBe(3)
+  it('DEFAULT_EXPIRATION_HOURS es 48 (grace period)', () => {
+    expect(DEFAULT_EXPIRATION_HOURS).toBe(48)
   })
 
   // ── Sin candidatas ───────────────────────────────────────────────────────
@@ -93,12 +93,12 @@ describe('expireActivities', () => {
     })
   })
 
-  // ── Expiración por startDate + default 3h ────────────────────────────────
+  // ── Expiración por startDate + default 48h (grace period) ───────────────────
 
-  it('expira actividades con startDate hace más de 3 horas y sin endDate (default)', async () => {
-    // FIXED_NOW = 10:00. startDate = 06:00 → 4 horas atrás → debe expirar
-    const fourHoursAgo = new Date('2026-06-15T06:00:00.000Z')
-    const act = makeActivity('act-3', { startDate: fourHoursAgo, endDate: null })
+  it('expira actividades con startDate hace más de 48 horas y sin endDate (default)', async () => {
+    // FIXED_NOW = 2026-06-15T10:00Z. 49h atrás = 2026-06-13T09:00Z → debe expirar
+    const fortyNineHoursAgo = new Date('2026-06-13T09:00:00.000Z')
+    const act = makeActivity('act-3', { startDate: fortyNineHoursAgo, endDate: null })
     mockPrisma.activity.findMany.mockResolvedValue([act])
 
     const result = await expireActivities()
@@ -107,10 +107,10 @@ describe('expireActivities', () => {
     expect(result.ids).toContain('act-3')
   })
 
-  it('NO expira actividades con startDate hace menos de 3 horas sin endDate', async () => {
-    // FIXED_NOW = 10:00. startDate = 08:00 → 2 horas atrás → NO debe expirar
-    const twoHoursAgo = new Date('2026-06-15T08:00:00.000Z')
-    const act = makeActivity('act-4', { startDate: twoHoursAgo, endDate: null })
+  it('NO expira actividades con startDate hace menos de 48 horas sin endDate', async () => {
+    // FIXED_NOW = 2026-06-15T10:00Z. 24h atrás = 2026-06-14T10:00Z → dentro del grace period
+    const twentyFourHoursAgo = new Date('2026-06-14T10:00:00.000Z')
+    const act = makeActivity('act-4', { startDate: twentyFourHoursAgo, endDate: null })
     mockPrisma.activity.findMany.mockResolvedValue([act])
 
     const result = await expireActivities()
@@ -198,7 +198,8 @@ describe('expireActivities', () => {
     const acts = [
       makeActivity('act-a', { endDate: new Date('2026-06-01T00:00:00.000Z') }),
       makeActivity('act-b', { endDate: new Date('2026-05-20T00:00:00.000Z') }),
-      makeActivity('act-c', { startDate: new Date('2026-06-15T06:00:00.000Z'), endDate: null }), // 4h atrás
+      // 49h atrás → supera grace period de 48h → debe expirar
+      makeActivity('act-c', { startDate: new Date('2026-06-13T09:00:00.000Z'), endDate: null }),
     ]
     mockPrisma.activity.findMany.mockResolvedValue(acts)
 

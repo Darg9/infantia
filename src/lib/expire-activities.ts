@@ -7,7 +7,7 @@
 //     tras N horas, donde N se resuelve por prioridad:
 //       1. Location.expirationHoursAfterStart  (más específico — por lugar)
 //       2. ScrapingSource.config.expirationHoursAfterStart  (por fuente)
-//       3. DEFAULT_EXPIRATION_HOURS (3 horas)
+//       3. DEFAULT_EXPIRATION_HOURS (48 horas — grace period para no expirar prematuramente)
 //   RECURRING → no expiran automáticamente
 //   Sin ninguna fecha → no expiran automáticamente
 // =============================================================================
@@ -15,7 +15,7 @@
 import { prisma } from '@/lib/db'
 import type { Prisma } from '@/generated/prisma/client'
 
-export const DEFAULT_EXPIRATION_HOURS = 3
+export const DEFAULT_EXPIRATION_HOURS = 48
 
 export interface ExpireResult {
   expired: number

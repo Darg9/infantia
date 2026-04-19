@@ -15,6 +15,28 @@ import type { ScrapedRawData, ActivityNLPResult } from '../types';
 import type { ParseResult } from './parser.types';
 import { extractDatesFromText } from '../utils/date-preflight';
 
+// ── Blacklist anti-no-eventos (solo aplica en fallback Cheerio) ──────────────
+// Páginas institucionales que no son eventos — se descartan poniendo confidence=0
+const NON_EVENT_KEYWORDS = [
+  'tratamiento de datos',
+  'cómo llegar',
+  'trabaja con nosotros',
+  'sala de prensa',
+  'política',
+  'términos',
+  'preguntas frecuentes',
+  'pqrs',
+  'quiénes somos',
+  'contáctenos',
+  'compra tu entrada',
+  'nuestros servicios',
+] as const;
+
+function isNonEvent(title: string): boolean {
+  const t = title.toLowerCase();
+  return NON_EVENT_KEYWORDS.some((k) => t.includes(k));
+}
+
 // ── Categorías inferibles por keywords ───────────────────────────────────────
 
 const KEYWORD_CATEGORIES: Array<{ keywords: string[]; category: string }> = [
@@ -89,11 +111,14 @@ export function fallbackFromCheerio(raw: ScrapedRawData): ParseResult {
   const categories  = inferCategories(text);
   const schedules   = buildSchedules(text);
 
+  // Blacklist: páginas institucionales no-evento → confidence 0 (serán descartadas por el pipeline)
+  const confidenceScore = isNonEvent(title) ? 0 : 0.4;
+
   const result: ActivityNLPResult = {
     title,
     description,
     categories,
-    confidenceScore: 0.4,
+    confidenceScore,
     schedules,
     // Campos que requieren NLP — quedan como null/undefined
     minAge:      undefined,

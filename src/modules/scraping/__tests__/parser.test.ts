@@ -25,6 +25,7 @@ vi.mock('../extractors/cheerio.extractor', () => ({
 // ── Imports después de mocks ──────────────────────────────────────────────────
 
 import { parseActivity, discoverWithFallback, resetParserMetrics, getParserMetrics } from '../parser/parser'
+import { fallbackFromCheerio } from '../parser/fallback-mapper'
 import type { ScrapedRawData, DiscoveredLink, ActivityNLPResult } from '../types'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -286,5 +287,54 @@ describe('getParserMetrics / resetParserMetrics', () => {
     const m = getParserMetrics()
     expect(m.geminiOk).toBe(1)
     expect(m.fallbackUsed).toBe(1)
+  })
+})
+
+// =============================================================================
+// Blacklist anti-no-eventos (fallbackFromCheerio)
+// =============================================================================
+
+describe('fallbackFromCheerio — blacklist NON_EVENT_KEYWORDS', () => {
+  function makeRawWithTitle(ogTitle: string): ScrapedRawData {
+    return {
+      url:         'https://example.com/pagina',
+      html:        `<html><head><meta property="og:title" content="${ogTitle}" /></head><body>Contenido de la página con información general sobre el lugar y sus servicios disponibles.</body></html>`,
+      sourceText:  'Contenido de la página con información general sobre el lugar y sus servicios disponibles.',
+      extractedAt: new Date(),
+      status:      'SUCCESS',
+    }
+  }
+
+  it.each([
+    ['Tratamiento de datos personales'],
+    ['Cómo llegar a Maloka'],
+    ['Trabaja con nosotros'],
+    ['Sala de prensa — Noticias'],
+    ['Política de privacidad'],
+    ['Términos y condiciones'],
+    ['Preguntas frecuentes'],
+    ['PQRS y sugerencias'],
+    ['Quiénes somos'],
+    ['Contáctenos'],
+    ['Compra tu entrada aquí'],
+    ['Nuestros servicios educativos'],
+  ])('"%s" produce confidenceScore=0', (title) => {
+    const raw = makeRawWithTitle(title)
+    const result = fallbackFromCheerio(raw)
+    expect(result.result.confidenceScore).toBe(0)
+    expect(result.source).toBe('fallback')
+  })
+
+  it('título de evento real no es bloqueado por el blacklist', () => {
+    const raw = makeRawWithTitle('Taller de robótica para niños — Sábado 18 de mayo')
+    const result = fallbackFromCheerio(raw)
+    expect(result.result.confidenceScore).toBe(0.4)
+  })
+
+  it('título vacío / Sin título no es bloqueado por blacklist (otro filtro lo descarta)', () => {
+    const raw = makeRawWithTitle('')
+    const result = fallbackFromCheerio(raw)
+    // Sin título → data-pipeline lo rechazará por 'title_invalid_or_missing', no blacklist
+    expect(result.result.confidenceScore).toBe(0.4)
   })
 })

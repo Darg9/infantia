@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { isOldByUrl, isOldByLastmod } from '../pipeline';
 
 // vi.hoisted() asegura que estas funciones mock estén disponibles cuando vi.mock() se ejecuta
 const {
@@ -767,6 +768,56 @@ describe('Pipeline — branches no cubiertos', () => {
 
     expect(result.discoveredLinks).toBe(0);
     expect(result.results).toHaveLength(0);
+  });
+
+  // ── Heurísticas pre-fetch ────────────────────────────────────────────────────
+
+  describe('isOldByUrl()', () => {
+    const CURRENT_YEAR = new Date().getFullYear();
+
+    it('retorna true para URL con año anterior al actual', () => {
+      expect(isOldByUrl(`https://example.com/${CURRENT_YEAR - 1}/evento`)).toBe(true);
+      expect(isOldByUrl(`https://example.com/${CURRENT_YEAR - 2}/agenda`)).toBe(true);
+    });
+
+    it('retorna false para URL con el año actual', () => {
+      expect(isOldByUrl(`https://example.com/${CURRENT_YEAR}/evento`)).toBe(false);
+    });
+
+    it('retorna false para URL con año futuro', () => {
+      expect(isOldByUrl(`https://example.com/${CURRENT_YEAR + 1}/evento`)).toBe(false);
+    });
+
+    it('retorna false para URL sin año en el path', () => {
+      expect(isOldByUrl('https://example.com/eventos/taller-arte')).toBe(false);
+      expect(isOldByUrl('https://example.com/programacion')).toBe(false);
+    });
+  });
+
+  describe('isOldByLastmod()', () => {
+    it('retorna true si lastmod tiene más de 60 días', () => {
+      const old = new Date(Date.now() - 61 * 24 * 60 * 60 * 1000).toISOString();
+      expect(isOldByLastmod(old)).toBe(true);
+    });
+
+    it('retorna false si lastmod tiene menos de 60 días', () => {
+      const recent = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      expect(isOldByLastmod(recent)).toBe(false);
+    });
+
+    it('retorna false si no hay lastmod (conservador — no descartar por ausencia)', () => {
+      expect(isOldByLastmod(undefined)).toBe(false);
+      expect(isOldByLastmod('')).toBe(false);
+    });
+
+    it('retorna false si lastmod es inválido (conservador)', () => {
+      expect(isOldByLastmod('fecha-invalida')).toBe(false);
+    });
+
+    it('retorna false exactamente en el límite de 60 días (no estrictamente mayor)', () => {
+      const exactly60 = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
+      expect(isOldByLastmod(exactly60)).toBe(false);
+    });
   });
 
   // Línea 250: Logger Instagram deshabilitado cuando verticalId no encontrado

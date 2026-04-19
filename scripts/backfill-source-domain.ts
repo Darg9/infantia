@@ -28,6 +28,7 @@ async function main() {
 
   for (const act of nullDomain) {
     try {
+      if (!act.sourceUrl) { skipped.push(act.id); continue; }
       const domain = new URL(act.sourceUrl).hostname.replace(/^www\./, '');
       updates.push({ id: act.id, domain });
     } catch {

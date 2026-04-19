@@ -419,6 +419,7 @@ export class ScrapingPipeline {
       log.info(`Fase 4: Guardando en base de datos...`);
       const saveResult = await this.storage.saveBatchResults(batchResult);
       savedCount = saveResult.saved;
+      batchResult.savedCount = savedCount;
       log.info(`BD: ${saveResult.saved} guardadas, ${saveResult.skipped} omitidas, ${saveResult.errors.length} errores`);
     }
 
@@ -623,6 +624,7 @@ export class ScrapingPipeline {
       profileUrl,
       username: profile.username,
       postsExtracted: profile.posts.length,
+      savedCount,
       results,
     };
   }

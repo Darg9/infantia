@@ -287,7 +287,8 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
       switch (source.channel) {
         case 'instagram': {
           const result = await pipeline.runInstagramPipeline(source.url, source.instagram ?? {});
-          saved   = result.results.filter((r) => r.data).length;
+          // savedCount = realmente persistidas en BD (excluye baja confianza, rechazos de calidad, duplicados)
+          saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
           failed  = result.results.filter((r) => !r.data && r.error).length;
           skipped = result.postsExtracted - result.results.length;
           const errorType = result.results.some((r) => r.error?.includes('QUOTA_EXHAUSTED')) ? 'quota'
@@ -300,7 +301,8 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
         case 'facebook':
         case 'telegram': {
           const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
-          saved   = result.results.filter((r) => r.data).length;
+          // savedCount = realmente persistidas en BD (excluye Date Preflight descarts, baja confianza, rechazos)
+          saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
           failed  = result.results.filter((r) => !r.data).length;
           skipped = result.discoveredLinks - result.filteredLinks;
           const errorType = failed > 0 ? 'parse' : null;

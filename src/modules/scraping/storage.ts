@@ -131,6 +131,10 @@ export class ScrapingStorage {
         where: { sourceUrl },
       });
 
+      // Derivar sourceDomain desde la URL (necesario para health score + diversificación en portal)
+      let sourceDomain: string | null = null;
+      try { sourceDomain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { /* url inválida */ }
+
       const activityData = {
         title: data.title.substring(0, 255),
         description: data.description || '',
@@ -150,6 +154,7 @@ export class ScrapingStorage {
         verticalId: vertical.id,
         sourceType: 'SCRAPING' as const,
         sourceUrl,
+        sourceDomain,
         sourcePlatform: sourceOptions?.platform ?? 'WEBSITE',
         sourceConfidence: data.confidenceScore,
         sourceCapturedAt: new Date(),

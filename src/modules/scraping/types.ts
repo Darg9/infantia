@@ -65,6 +65,8 @@ export type BatchPipelineResult = {
   sourceId?: string | null;
   discoveredLinks: number;
   filteredLinks: number;
+  /** Número real de actividades persistidas en BD (excluye baja confianza, rechazos de calidad y errores). */
+  savedCount?: number;
   /** Métricas del parser (Gemini vs fallback) para este batch. */
   parserMetrics?: {
     geminiOk: number;
@@ -99,6 +101,8 @@ export type InstagramPipelineResult = {
   profileUrl: string;
   username: string;
   postsExtracted: number;
+  /** Número real de actividades persistidas en BD. */
+  savedCount?: number;
   results: Array<{
     postUrl: string;
     data: ActivityNLPResult | null;

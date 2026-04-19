@@ -37,36 +37,12 @@ export default async function HomePage() {
   // Home resiliente: una query rota no debe tumbar todo el portal.
   const [
     totalActivitiesResult,
-    totalCitiesResult,
-    totalProvidersResult,
-    totalCategoriesResult,
     topCategoriesResult,
     recentActivitiesResult,
     popularActivitiesResult,
   ] = await Promise.allSettled([
     // Total de actividades activas (visible en la plataforma)
     listActivities({ skip: 0, pageSize: 1, status: 'ACTIVE' }),
-
-    // Ciudades con al menos 1 actividad visible
-    prisma.city.count({
-      where: {
-        locations: {
-          some: {
-            activities: { some: { status: 'ACTIVE' } },
-          },
-        },
-      },
-    }),
-
-    // Proveedores registrados
-    prisma.provider.count(),
-
-    // Categorías con al menos 1 actividad activa
-    prisma.category.count({
-      where: {
-        activities: { some: { activity: { status: 'ACTIVE' } } },
-      },
-    }),
 
     // Top 8 categorías por número de actividades activas
     prisma.category.findMany({
@@ -90,15 +66,6 @@ export default async function HomePage() {
   if (totalActivitiesResult.status === 'rejected') {
     logHomeQueryFailure('totalActivities', totalActivitiesResult.reason);
   }
-  if (totalCitiesResult.status === 'rejected') {
-    logHomeQueryFailure('totalCities', totalCitiesResult.reason);
-  }
-  if (totalProvidersResult.status === 'rejected') {
-    logHomeQueryFailure('totalProviders', totalProvidersResult.reason);
-  }
-  if (totalCategoriesResult.status === 'rejected') {
-    logHomeQueryFailure('totalCategories', totalCategoriesResult.reason);
-  }
   if (topCategoriesResult.status === 'rejected') {
     logHomeQueryFailure('topCategories', topCategoriesResult.reason);
   }
@@ -111,12 +78,6 @@ export default async function HomePage() {
 
   const totalActivities =
     totalActivitiesResult.status === 'fulfilled' ? totalActivitiesResult.value.total : 0;
-  const totalCities =
-    totalCitiesResult.status === 'fulfilled' ? totalCitiesResult.value : 0;
-  const totalProviders =
-    totalProvidersResult.status === 'fulfilled' ? totalProvidersResult.value : 0;
-  const totalCategories =
-    totalCategoriesResult.status === 'fulfilled' ? totalCategoriesResult.value : 0;
   const topCategories =
     topCategoriesResult.status === 'fulfilled' ? topCategoriesResult.value : [];
   const recentActivities =
@@ -150,21 +111,18 @@ export default async function HomePage() {
               Descubre planes en familia cerca de ti
             </p>
             <p className="text-sm text-[var(--hp-text-muted)] mt-1">
-              Actividades para niños y familias en Bogotá
+              <span className="text-brand-500 font-semibold">
+                {totalActivities.toLocaleString('es-CO')}
+              </span>{" "}
+              {totalActivities === 1
+                ? 'actividad para niños y familias'
+                : 'actividades para niños y familias'}
             </p>
           </div>
 
           {/* Buscador principal */}
-          <div className="mb-12">
+          <div className="mb-4">
             <HeroSearch />
-          </div>
-
-          {/* Stats reales */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl mx-auto">
-            <StatBox value={totalActivities} label="actividades" />
-            <StatBox value={totalCities} label={totalCities === 1 ? 'ciudad' : 'ciudades'} />
-            <StatBox value={totalCategories} label="categorías" />
-            <StatBox value={totalProviders} label={totalProviders === 1 ? 'fuente' : 'fuentes'} />
           </div>
         </div>
       </section>
@@ -274,17 +232,6 @@ export default async function HomePage() {
 // =============================================================================
 // Componentes auxiliares (sólo usados en esta página)
 // =============================================================================
-
-function StatBox({ value, label }: { value: number; label: string }) {
-  return (
-    <div className="flex flex-col items-center gap-0.5">
-      <span className="text-3xl font-bold text-[var(--hp-text-primary)] tabular-nums">
-        {value.toLocaleString('es-CO')}
-      </span>
-      <span className="text-sm text-[var(--hp-text-secondary)]">{label}</span>
-    </div>
-  );
-}
 
 function SectionHeader({
   title,

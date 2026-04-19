@@ -333,13 +333,18 @@ export class ScrapingPipeline {
           existingInDb.map((a) => normalizeForDiff(a.sourceUrl ?? '')).filter(Boolean),
         );
         const beforeDbFilter = afterCache.length;
-        newUrls = afterCache.filter((url) => !existingNorm.has(normalizeForDiff(url)));
+        newUrls = afterCache.filter((url) =>
+          // Siempre incluir URLs marcadas para re-proceso (pueden mejorar calidad con Gemini)
+          reparseUrls.has(url) ||
+          !existingNorm.has(normalizeForDiff(url))
+        );
         const dbSkipped = beforeDbFilter - newUrls.length;
         if (dbSkipped > 0) {
           log.info(`⏭️  DB diff: ${dbSkipped} URLs ya tienen actividad en BD (cache miss cubierto)`);
-          // Rehidratar cache (con URL original) para evitar la misma query en futuros runs
-          for (const url of afterCache.filter((u) => existingNorm.has(normalizeForDiff(u)))) {
-            this.cache.add(url, '');
+          // Rehidratar caché solo para URLs que no tengan ya una entrada con datos
+          // (no sobreescribir parserSource/needsReparse con add vacío)
+          for (const url of afterCache.filter((u) => existingNorm.has(normalizeForDiff(u)) && !reparseUrls.has(u))) {
+            if (!this.cache.has(url)) this.cache.add(url, '');
           }
         }
       } catch (err: unknown) {

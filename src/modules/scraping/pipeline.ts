@@ -316,6 +316,15 @@ export class ScrapingPipeline {
         try {
           const data = await this.runPipeline(actUrl, host);
           this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
+          // ── Streaming save: visible en portal inmediatamente tras parsear ──
+          if (this.storage && data.confidenceScore >= 0.2) {
+            try {
+              await this.storage.saveActivity(data, actUrl);
+              log.info(`[STREAMING] ✅ Guardada: "${data.title}"`);
+            } catch (err: any) {
+              log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${err?.message}`);
+            }
+          }
           results.push({ url: actUrl, data });
         } catch (error: any) {
           log.error(`Error en ${actUrl}: ${error.message}`);
@@ -331,6 +340,15 @@ export class ScrapingPipeline {
           try {
             const data = await this.runPipeline(actUrl, host);
             this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
+            // ── Streaming save ──
+            if (this.storage && data.confidenceScore >= 0.2) {
+              try {
+                await this.storage.saveActivity(data, actUrl);
+                log.info(`[STREAMING] ✅ Guardada: "${data.title}"`);
+              } catch (err: any) {
+                log.warn(`[STREAMING] Error (non-fatal): ${err?.message}`);
+              }
+            }
             return { url: actUrl, data };
           } catch (error: any) {
             log.error(`Error en ${actUrl}: ${error.message}`);

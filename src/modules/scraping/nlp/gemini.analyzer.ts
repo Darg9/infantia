@@ -50,6 +50,14 @@ REGLAS:
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
 - Fechas en formato YYYY-MM-DD.
 
+AGE INFERENCE RULES:
+If age is not explicitly stated, infer it ONLY if strong signals exist:
+- "niños", "infantil" → ageMin: 3, ageMax: 12
+- "familiar" → ageMin: 5, ageMax: 99
+- "todas las edades", "para todos" → ageMin: 0, ageMax: 99
+Do NOT infer age if no clear signal is present.
+If uncertain, leave ageMin and ageMax as null.
+
 AUDIENCIA (audience) — infiere basándote en el contenido:
 - "KIDS": actividad exclusivamente para niños, sin presencia esperada de adultos como participantes (ej: taller de robótica para niños 6-12 años, club de lectura infantil).
 - "FAMILY": actividad para familias completas o padres/adultos acompañando a niños (ej: obra de teatro familiar, paseo ecológico en familia, taller de manualidades para padres e hijos).
@@ -91,6 +99,14 @@ REGLAS:
 - pricePeriod: PER_SESSION, MONTHLY, TOTAL, o FREE.
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
 - Fechas en formato YYYY-MM-DD.
+
+AGE INFERENCE RULES:
+If age is not explicitly stated, infer it ONLY if strong signals exist:
+- "niños", "infantil" → ageMin: 3, ageMax: 12
+- "familiar" → ageMin: 5, ageMax: 99
+- "todas las edades", "para todos" → ageMin: 0, ageMax: 99
+Do NOT infer age if no clear signal is present.
+If uncertain, leave ageMin and ageMax as null.
 
 AUDIENCIA (audience) — infiere basándote en hashtags, emojis y texto:
 - "KIDS": actividad exclusivamente para niños (👶🧒 #niños #infantil #kids #children).

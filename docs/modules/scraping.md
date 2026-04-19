@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S54
-**Última actualización:** 17 de abril de 2026
+**Versión actual:** v0.11.0-S55
+**Última actualización:** 19 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -15,15 +15,39 @@ Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, la
 URL semilla / sitemap XML
    → ScrapingPipeline / Resilient Proxy (Intenta Cheerio primero)
    → [Falló Cheerio por JS Dinámico/SPA?] → Auto-Fallback a Playwright
-   → Date Preflight: eventos claramente pasados → skip NLP (conserva cuota Gemini)
-   → Filtrado por cache (URLs ya vistas)
-   → Fase 2: discoverWithFallback() — Gemini filtra URLs de actividades
-       [Si 429/503] → pasa TODOS los URLs (cero pérdida de actividades)
-   → Fase 3: parseActivity() — Gemini analiza con GeminiAnalyzer
-       [Si 429/503] → fallbackFromCheerio() (confidence 0.4, sin NLP)
-       [Si error no-retryable] → propaga, actividad se descarta
+   → Date Preflight (v2): skip predictivo heurístico → skip NLP → Date Regex Layers
+   → Filtrado por cache (SPI - Sitemap Pre-Index lastmod + URLs ya vistas)
+   → ScrapingCache.filterSPI(entries)  ← [NUEVO S54] omite URLs con sitemap lastmod <= scrapedAt
+    │
+    ▼
+discoverWithFallback(links, sourceUrl, analyzer)   [NUEVO S52]
+    ├─ Heurísticas pre-fetch: descarta años pasados en paths y pre-filtra binarios. [Activo S55]
+    ├─ Si PARSER_FALLBACK_ENABLED=true:
+    │   ├─ Intenta GeminiAnalyzer.discoverActivityLinks(links)
+    │   │   └─ Si 429/503/timeout → pasa TODOS los URLs (cero pérdida de actividades)
+    └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini, propaga error)
+    │
+    ▼
+ScrapingCache.filterNew()  ← omite URLs ya procesadas (salvo URLs de reparse inyectadas por el Scheduler Inteligente)
+    │
+    ▼
+parseActivity(html, url, raw, analyzer, skipPreflight)   [NUEVO S55 — Scheduler Inteligente]
+    ├─ Si la URL viene de reparseUrls, skipPreflight=true (evitamos perder tiempo).
+    ├─ Si PARSER_FALLBACK_ENABLED=true:
+    │   ├─ Intenta GeminiAnalyzer.analyze(sourceText, url)
+    │   │   └─ Si 429/503/timeout → fallbackFromCheerio(raw) [confidence 0.5, sin NLP, marca needsReparse=true en caché]
+    └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini)
+    │
+    ▼
+ScrapingStorage.saveActivity()
+    ├─ Streaming Saves [S54]: cada actividad validada se guarda instantáneamente, sin esperar al final del chunk.
+    ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
+    ├─ Threshold Diferenciado [S55]: Gemini entra con trust >=0.3, Fallback Cheerio >=0.5 (minimiza ruido institucional).
+    └─ Upsert Activity (sourceUrl como clave)
+    │
+    ▼
+ScrapingCache.save() + ScrapingCache.saveToDb() + ScrapingLogger.completeRun()
    → Normalización Base (Spam/Reglas Cortas/Validation) Vía Data Pipeline Core v1
-   → Validación Zod (activityNLPResultSchema) Enriquecido con `Environment` (INDOOR/OUTDOOR/MIXED)
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
    → Cache actualizado
@@ -68,9 +92,11 @@ ingest-sources.ts --queue
 
 **CTR Priority (NUEVO v0.11.0-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
 
-## Date Preflight Filter — conservación de cuota Gemini (S48 → S50)
+## Date Preflight Filter y Heurísticas pre-fetch — conservación de cuota Gemini (S48 → S55)
 
-Antes de invocar el NLP, `pipeline.ts` pasa el contenido HTML/texto por `evaluatePreflight()`. Si detecta que **todas** las fechas del texto son > 14 días en el pasado, omite Gemini y retorna resultado neutro. Cada evaluación se persiste en `date_preflight_logs` (fire-and-forget) para análisis posterior.
+Antes de invocar el NLP, `pipeline.ts` optimiza masivamente la cuota bloqueando basuras:
+1. **Heurísticas estáticas (O(1)):** `isOldByUrl(url)` (años pasados en URL) y `isOldByLastmod(lastmod)` (Sitemap Pre-Index > 60d o SPI estricto en caché), antes de hacer preflight o parse.
+2. **Date Preflight:** Pasa el contenido HTML/texto por `evaluatePreflight()`. Si detecta que **todas** las fechas del texto son > 14 días en el pasado, omite Gemini y retorna resultado neutro. Cada evaluación se persiste en `date_preflight_logs` (fire-and-forget) para análisis posterior. Si la URL está marcada para re-procesar (Scheduler Inteligente), **salta este preflight explícitamente (`skipPreflight`)** ahorrando operaciones.
 
 **Jerarquía de señales (v2 — S48b):**
 

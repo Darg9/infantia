@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S53
-**Última actualización:** 17 de abril de 2026
+**Versión actual:** v0.11.0-S55
+**Última actualización:** 19 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -225,7 +225,7 @@ Para proteger al proyecto como "Agregador de Información", la página de detall
 2.  Desmiente mediante disclaimers cualquier adjudicación sobre ser autor original del contenido.
 3.  Protege a la marca eliminando certificaciones de viabilidad como sellos estáticos de "Evento Verificado" o "100% Confianza".
 
-## Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S53
+## Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S55
 
 Todo flujo protegido (favoritos, acciones futuras) usa `requireAuth` del `src/lib/require-auth.ts` como único punto de entrada de auth. No se hacen redirects manuales a `/login`.
 

@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.11.0-S54
-**Última actualización:** 17 de abril de 2026
+**Versión:** ✅ v0.11.0-S55
+**Última actualización:** 19 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -49,6 +49,7 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 
 ### 4. Scraping y Data Pipeline V1 (Protección Preventiva)
 - En la etapa de Ingesta de Datos, el **Data Pipeline Core** opera bajo un principio preventivo legal: descarta proactivamente la información basura que pueda exponer al sistema como un recolector de texto no deseado (Spam).
+- Esto se refuerza mediante un Umbral Diferenciado: si una actividad fue ingestada sin IA (Fallback Cheerio), se le exige **confianza superior (0.5 vs 0.3)** y una re-evaluación prioritaria posterior (Scheduler Inteligente).
 - Esto garantiza que solo la metadata validada (ejemplo: categorización mediante 10 buckets estrictos y evaluación del SourceHealth) sea almacenada limpiamente en la Base de Datos PostgreSQL, cuidando los Principios de Calidad del Tratamiento de Datos.
 
 ### 5. Coherencia UI ↔ PDF ↔ SSOT (estado actual)

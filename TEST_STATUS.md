@@ -1,11 +1,11 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-17 | Version: v0.11.0-S53
+Actualizado: 2026-04-19 | Version: v0.11.0-S55
 
-## Resumen Actual (v0.11.0-S53 / Intent Manager + Design System Enforcement)
-- **Archivos de Test:** 73 (+2 desde S52)
-- **Tests Totales:** 1155 (+32 vs S52)
-- **Estado:** 100% pasando ✅ (2 Skipped out-of-mock-scope)
+## Resumen Actual (v0.11.0-S55 / Pipeline Optimization + Scheduler Inteligente)
+- **Archivos de Test:** 73
+- **Tests Totales:** 1203 (+48 vs S53)
+- **Estado:** 100% pasando ✅ (0 Skipped, 0 Fallidos)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
 
@@ -14,8 +14,8 @@ Actualizado: 2026-04-17 | Version: v0.11.0-S53
 | Metrica | Valor |
 |---------|-------|
 | Archivos de test | 73 |
-| Tests totales | 1155 |
-| Pasados | 1153 (2 skipped) |
+| Tests totales | 1203 |
+| Pasados | 1203 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 33) |
 | Statements | >91% ✅ |
@@ -221,12 +221,16 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S49** | **1082** | **69** | **>91%** | **>85%** |
 | **v0.11.0-S50** | **1101** | **70** | **>91%** | **>85%** |
 | **v0.11.0-S51** | **1105** | **70** | **>91%** | **>85%** |
+| **v0.11.0-S52** | **1123** | **71** | **>91%** | **>85%** |
+| **v0.11.0-S53** | **1155** | **73** | **>91%** | **>85%** |
+| **v0.11.0-S54** | **1191** | **73** | **>91%** | **>85%** |
+| **v0.11.0-S55** | **1203** | **73** | **>91%** | **>85%** |
 
-## Cambios en S49 (v0.11.0-S49 / Favoritos Polimórficos)
+## Cambios en S54 y S55 (v0.11.0-S55 / Pipeline Optimization)
 
-- **+12 tests** netos (reescritura total de 26 tests en `favorites.test.ts` por cambio polimórfico).
-- TargetId y TargetType reemplazan dependency acoplada a ActivityId.
-- `GET`, `POST` y `DELETE` validados íntegros contra Primary Key (UUID) en vez de llave compuesta vieja.
+- **+48 tests** (1155 → 1203):
+  - **S54**: `cache.test.ts` +7 tests por el nuevo filtro SPI (Sitemap Pre-Index) basado en lastmod.
+  - **S55**: `cache.test.ts` +9 tests de cobertura completa para `needsReparse`, `isMarkedForReparse` y `getReparseUrls` en el Scheduler Inteligente. `pipeline.test.ts` con mock de reparseUrls.
 - TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
 ## Cambios en S48 (v0.11.0-S48 / Observabilidad Confiable v2)

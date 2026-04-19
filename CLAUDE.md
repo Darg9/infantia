@@ -206,9 +206,9 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 
-## Estado actual (v0.11.0-S52 — Actualizado Hoy)
+## Estado actual (v0.11.0-S55 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1123 tests** en 71 archivos — `npm test` pasa — 0 errores TypeScript
+- **1203 tests** en 73 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -232,9 +232,9 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 - **Data Pipeline v1:** Eliminación de `validation.ts` legacy a favor de `data-pipeline.ts` Atómico (Filtrado de Spam + 10 Categorías Estrictas).
 - **Search Engine v1:** Motor de Relevancia que penaliza falta de metadatos críticos como edad (`*= 0.85`).
 - **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK) y renderer híbrido (`v0.11.0-S49`).
-- **Date Preflight métricas DB:** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget, `matchedText`, vocabulario de reason 5 valores). Migración pendiente: `npx tsx scripts/migrate-date-preflight-logs.ts` (`v0.11.0-S50`).
+- **Date Preflight v2 (S55):** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget). Skip predictivo por URL y por atributos HTML + fallback a Regex.
 - **Favorites XOR CHECK constraint:** `favorites_xor_check` garantiza exactamente uno de `activityId`/`locationId` a nivel BD. Script: `npx tsx scripts/migrate-favorites-xor.ts`. Tests de tipo inválido añadidos (`v0.11.0-S51`).
-- **Parser Resiliente (S52):** `src/modules/scraping/parser/` — `parseActivity()` (Fase 3) + `discoverWithFallback()` (Fase 2). Si Gemini lanza 429/503: Fase 2 pasa todos los URLs (cero pérdida), Fase 3 usa fallbackFromCheerio (confidence 0.4). Errores no-retryable propagan. `[PARSER:SUMMARY]` al final de cada batch. `CheerioExtractor.textFromHtml()` helper estático para texto limpio sin fetch.
+- **Parser Resiliente y Scheduler Inteligente (S52-S55):** `discoverWithFallback()` y `parseActivity()`. Fallback Cheerio marca `needsReparse=true` en caché si score < 0.5. El Scheduler omite el Preflight en `runPipeline(opts)` para IDs conocidos y reprioriza URLs usando `Set<string>`. `[FUNNEL:SUMMARY]` consolidado por todo batch.
 
 ### Known Technical Debt
 
@@ -297,3 +297,6 @@ Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios 
 | v0.7.5 | V16 | URLs canónicas, backfill imágenes, reportar error, filtro precio, API queue |
 | v0.7.6 | V16 | Mapa Leaflet, actividades similares, og:image pipeline, filtro ciudad, gradientes |
 | v0.7.7 | V17 | Web Push, admin actividades, página proveedor /proveedores/[slug] |
+| v0.11.0-S53 | V26 | Centralización Legal SSOT, Intent Manager y Rebranding Color Primitives |
+| v0.11.0-S54 | V26 | Streaming Save de actividades post-parse, SPI filter por Lastmod |
+| v0.11.0-S55 | V26 | Scheduler Inteligente, NFD string mapping, Threshold diferenciado de confianza, Fixes Banrep |

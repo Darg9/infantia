@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.11.0-S54 | Actualizado: 2026-04-17
+> Versión: v0.11.0-S55 | Actualizado: 2026-04-19
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -43,12 +43,17 @@ flowchart TD
        Proxy --> |"2. Try SPA Fallback"| Playwright(Playwright)
        Cheerio -.-> |"Falla / Bloqueo"| Playwright
        
-       %% Parser Resiliente (S52)
-       Proxy --> ParserOrch{Parser Orchestrator}
-       ParserOrch --> |"PARSER_FALLBACK=true"| NLP{Google Gemini 2.5 Flash}
-       ParserOrch --> |"429/503 → fallback"| CheerioFallback[Cheerio Fallback confidence=0.4]
-       NLP --> |"source=gemini"| DataPipeline
-       CheerioFallback --> |"source=fallback"| DataPipeline
+       %% Parser Resiliente y Scheduler Inteligente (S52-S55)
+       Proxy --> ParserOrch{Scheduler Orquestador}
+       ParserOrch --> |"Date Preflight"| PreflightGate{¿Evento Pasado?}
+       PreflightGate --> |"Sí → Skip NLP"| IgnoreList
+       PreflightGate --> |"No o needsReparse"| NLP{Google Gemini 2.5 Flash}
+       
+       ParserOrch --> |"PARSER_FALLBACK=true"| NLP
+       ParserOrch --> |"429/503 → fallback"| CheerioFallback[Cheerio Fallback score=0.5]
+       CheerioFallback --> |"Marca needsReparse=true"| Cache
+       NLP --> |"source=gemini score>=0.3"| DataPipeline
+       CheerioFallback --> |"source=fallback score>=0.5"| DataPipeline
 
        %% Data Pipeline System V1
        DataPipeline[Data Pipeline Core v1]

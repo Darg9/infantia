@@ -111,7 +111,7 @@ export default async function HomePage() {
               Descubre planes en familia cerca de ti
             </p>
             <p className="text-sm text-[var(--hp-text-muted)] mt-1">
-              <span className="text-brand-500 font-semibold">
+              <span className="text-brand-500 font-semibold tabular-nums">
                 {totalActivities.toLocaleString('es-CO')}
               </span>{" "}
               {totalActivities === 1

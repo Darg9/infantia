@@ -2,7 +2,7 @@
  * clean-baseline.ts — elimina outliers pre-threshold de fuentes problemáticas.
  *
  * Criterio conservador:
- *   - sourceDomain conocido como ruidoso
+ *   - sourceDomain conocido como ruidoso (o sourceUrl contiene el dominio si sourceDomain=NULL)
  *   - confidenceScore < 0.5 (pre-threshold diferenciado)
  *   - título coincide con blacklist institucional
  *
@@ -18,52 +18,78 @@ const prisma = new PrismaClient({ adapter });
 
 const DRY_RUN = process.argv.includes('--dry-run');
 
-// Dominios a revisar (fuentes donde el fallback metió ruido antes del threshold)
-const NOISY_DOMAINS = ['maloka.org'];
+// ── Fuentes ruidosas ────────────────────────────────────────────────────────
+// Cada entrada: dominio (para actividades con sourceDomain set) +
+// patrón de URL (para actividades pre-fix con sourceDomain=NULL)
+const NOISY_SOURCES = [
+  { domain: 'maloka.org', urlPattern: 'maloka' },
+];
 
-// Blacklist normalizada (sin tildes, minúsculas) — misma lógica que fallback-mapper.ts
+// ── Blacklist institucional ─────────────────────────────────────────────────
+// Misma lógica NFD que fallback-mapper.ts, más patrones específicos de Maloka.
 const NON_EVENT_PATTERNS = [
+  // Global (sincronizado con fallback-mapper.ts)
   'tratamiento de datos',
   'como llegar',
-  'cómo llegar',
   'trabaja con nosotros',
   'sala de prensa',
   'politica',
-  'política',
   'terminos',
-  'términos',
   'preguntas frecuentes',
   'pqrs',
   'quienes somos',
-  'quiénes somos',
   'contactenos',
-  'contáctenos',
   'compra tu entrada',
   'nuestros servicios',
+  // Páginas institucionales adicionales (horarios/tarifas, cotizaciones, about…)
+  'horarios, tarifas',
+  'tarifas y precios',
+  'cotizaciones y grupos',
+  'resolvemos aqui todas tus dudas',
+  'museo interactivo en bogota, colombia',   // homepage title pattern
+  'acerca de -',                              // "Acerca de - [Sitio]"
 ];
+
+function normalizeText(t: string): string {
+  return t.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
+function isNonEvent(title: string): boolean {
+  const t = normalizeText(title);
+  return NON_EVENT_PATTERNS.some((p) => t.includes(normalizeText(p)));
+}
 
 async function main() {
   console.log(`\n=== Limpieza de baseline ${DRY_RUN ? '(DRY-RUN)' : '(REAL)'} ===\n`);
 
-  for (const domain of NOISY_DOMAINS) {
-    // Fetch candidatas con baja confianza del dominio
+  for (const source of NOISY_SOURCES) {
+    // Fetch candidatas con baja confianza — cubre tanto domain set como NULL (pre-fix)
     const candidates = await prisma.activity.findMany({
       where: {
-        sourceDomain: domain,
-        sourceConfidence: { lt: 0.5 },
+        AND: [
+          {
+            OR: [
+              { sourceDomain: source.domain },
+              { AND: [{ sourceDomain: null }, { sourceUrl: { contains: source.urlPattern } }] },
+            ],
+          },
+          { sourceConfidence: { lt: 0.5 } },
+        ],
       },
       select: { id: true, title: true, sourceConfidence: true, sourceUrl: true },
     });
 
-    console.log(`${domain}: ${candidates.length} actividades con confidence < 0.5`);
+    console.log(`${source.domain}: ${candidates.length} actividades con confidence < 0.5`);
 
-    const toDelete = candidates.filter((act) => {
-      const title = (act.title ?? '').toLowerCase()
-        .normalize('NFD').replace(/\p{Diacritic}/gu, '');  // NFD igual que fallback-mapper
-      return NON_EVENT_PATTERNS.some((p) => title.includes(
-        p.normalize('NFD').replace(/\p{Diacritic}/gu, '')
-      ));
-    });
+    const toDelete = candidates.filter((act) => isNonEvent(act.title ?? ''));
+    const toKeep   = candidates.filter((act) => !isNonEvent(act.title ?? ''));
+
+    if (toKeep.length > 0) {
+      console.log(`  ✔ Conservadas (no coinciden blacklist): ${toKeep.length}`);
+      for (const act of toKeep) {
+        console.log(`    · "${act.title}" (score=${act.sourceConfidence})`);
+      }
+    }
 
     if (toDelete.length === 0) {
       console.log(`  → No hay registros que coincidan con el blacklist.\n`);

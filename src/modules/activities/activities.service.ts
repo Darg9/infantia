@@ -252,7 +252,9 @@ export async function listActivities(params: ListParams) {
   
   for (const h of healthData) {
     healthDict[h.source] = h.score;
-    if (h.score < 0.3) {
+    // Threshold conservador: solo ocultar fuentes con score < 0.1 (prácticamente muertas).
+    // Entre 0.1–0.3 el ranking score bajo ya las empuja al fondo sin ocultarlas.
+    if (h.score < 0.1) {
       badDomains.push(h.source);
     }
   }
@@ -261,8 +263,14 @@ export async function listActivities(params: ListParams) {
   const isRelevanceSort = !params.sortBy || params.sortBy === 'relevance';
   
   if (isRelevanceSort && badDomains.length > 0) {
+    // IMPORTANTE: NOT IN en SQL excluye NULLs (NULL NOT IN (...) → NULL, no TRUE).
+    // Las actividades sin sourceDomain (pre-fix) son legítimas y deben mostrarse.
+    // Usamos OR explícito para preservar las que aún no tienen dominio asignado.
     andConditions.push({
-      NOT: { sourceDomain: { in: badDomains } }
+      OR: [
+        { sourceDomain: null },
+        { NOT: { sourceDomain: { in: badDomains } } },
+      ],
     });
   }
 

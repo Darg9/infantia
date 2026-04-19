@@ -231,10 +231,19 @@ export async function updateSourceHealth(sourceHost: string, result: SourceHealt
     // 1. Evitar "cold start bias" en score (no ser 1.0 artificialmente)
     if (totalRequests < 5) {
       newScore = 0.5; // neutral
-    } 
+    }
     // 2. Evitar sobre-penalización por pocos errores
     else if (totalRequests < 10) {
       newScore = (newScore + 0.5) / 2; // suavizado progresivo
+    }
+
+    // 3. Floor por éxito reciente: si la fuente tuvo éxito en los últimos 7 días,
+    //    el promedio histórico de errores no puede ocultarla completamente del portal.
+    //    Mínimo 0.15 garantiza que sigue siendo visible (badDomains threshold es 0.1).
+    const recentSuccess = current?.lastSuccessAt
+      && (Date.now() - new Date(current.lastSuccessAt).getTime()) < 7 * 24 * 60 * 60 * 1000;
+    if (recentSuccess && newScore < 0.15) {
+      newScore = 0.15;
     }
 
     let newStatus = 'healthy';

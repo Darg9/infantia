@@ -1,62 +1,68 @@
+/**
+ * backfill-source-domain.ts
+ * Rellena sourceDomain para actividades que lo tienen NULL (creadas antes del fix en storage.ts).
+ * Extrae el dominio de sourceUrl (sin www.) igual que storage.ts.
+ *
+ * Uso: npx tsx scripts/backfill-source-domain.ts [--dry-run]
+ */
+import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
-import "dotenv/config";
-import { getDomainFromUrl } from '../src/modules/activities/ranking';
-import { createLogger } from '../src/lib/logger';
 
-const connectionString = `${process.env.DATABASE_URL}`;
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
-
-const log = createLogger('backfill:source-domain');
+const DRY_RUN = process.argv.includes('--dry-run');
 
 async function main() {
-  log.info('Iniciando Backfill de Source Domain en la Base de Datos...');
+  console.log(`\n=== Backfill sourceDomain ${DRY_RUN ? '(DRY-RUN)' : '(REAL)'} ===\n`);
 
-  const chunkSize = 500;
-  let cursorStr: string | undefined = undefined;
-  let processed = 0;
-  let updated = 0;
+  const nullDomain = await prisma.activity.findMany({
+    where: { sourceDomain: null },
+    select: { id: true, sourceUrl: true },
+  });
 
-  while (true) {
-    const records: any[] = await prisma.activity.findMany({
-      take: chunkSize,
-      skip: cursorStr ? 1 : 0,
-      ...(cursorStr ? { cursor: { id: cursorStr } } : {}),
-      select: { id: true, sourceUrl: true, sourceDomain: true }
-    });
+  console.log(`Actividades con sourceDomain=null: ${nullDomain.length}`);
 
-    if (records.length === 0) break;
+  const updates: { id: string; domain: string }[] = [];
+  const skipped: string[] = [];
 
-    const updates: Promise<any>[] = [];
-
-    for (const r of records) {
-      if (r.sourceUrl && !r.sourceDomain) {
-        const domain = getDomainFromUrl(r.sourceUrl);
-        if (domain) {
-          updates.push(
-            prisma.activity.update({
-              where: { id: r.id },
-              data: { sourceDomain: domain }
-            })
-          );
-          updated++;
-        }
-      }
+  for (const act of nullDomain) {
+    try {
+      const domain = new URL(act.sourceUrl).hostname.replace(/^www\./, '');
+      updates.push({ id: act.id, domain });
+    } catch {
+      skipped.push(act.id);
     }
-
-    if (updates.length > 0) {
-       await Promise.all(updates);
-    }
-
-    processed += records.length;
-    cursorStr = records[records.length - 1].id;
-    
-    log.info(`[Progreso] Procesados: ${processed} | Actualizados: ${updated}...`);
   }
 
-  log.info(`✅ Backfill finalizado exitosamente. Total procesadas: ${processed}. Actualizadas: ${updated}`);
+  console.log(`  ✔ Con dominio computable: ${updates.length}`);
+  console.log(`  ✗ Sin URL válida (skip): ${skipped.length}`);
+
+  // Preview por dominio
+  const byDomain: Record<string, number> = {};
+  for (const u of updates) byDomain[u.domain] = (byDomain[u.domain] ?? 0) + 1;
+  console.log('\n  Distribución:');
+  Object.entries(byDomain).sort((a, b) => b[1] - a[1]).forEach(([d, n]) =>
+    console.log(`    ${d.padEnd(45)} ${n}`)
+  );
+
+  if (!DRY_RUN && updates.length > 0) {
+    // Actualización en lotes de 100 para no saturar la conexión
+    const BATCH = 100;
+    let done = 0;
+    for (let i = 0; i < updates.length; i += BATCH) {
+      const batch = updates.slice(i, i + BATCH);
+      await Promise.all(batch.map((u) =>
+        prisma.activity.update({ where: { id: u.id }, data: { sourceDomain: u.domain } })
+      ));
+      done += batch.length;
+      process.stdout.write(`\r  Actualizadas: ${done}/${updates.length}`);
+    }
+    console.log('\n\n  ✅ Backfill completo.');
+  } else if (DRY_RUN) {
+    console.log('\n  [DRY-RUN] No se realizaron cambios.');
+  }
+
   await prisma.$disconnect();
 }
-
-main();
+main().catch(console.error);

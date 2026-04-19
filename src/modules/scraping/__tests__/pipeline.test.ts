@@ -21,6 +21,7 @@ const {
   mockStartRun,
   mockCompleteRun,
   mockUpdateSourceStatus,
+  mockGetReparseUrls,
 } = vi.hoisted(() => ({
   mockExtract: vi.fn(),
   mockExtractLinksAllPages: vi.fn(),
@@ -40,6 +41,7 @@ const {
   mockStartRun: vi.fn(),
   mockCompleteRun: vi.fn(),
   mockUpdateSourceStatus: vi.fn(),
+  mockGetReparseUrls: vi.fn((_urls: string[]) => [] as string[]),
 }));
 
 const { mockExtractSitemapLinks } = vi.hoisted(() => ({
@@ -81,9 +83,16 @@ vi.mock('../cache', () => ({
     this.filterNew = mockFilterNew;
     this.add = mockCacheAdd;
     this.save = mockCacheSave;
-    this.setSource = vi.fn();  // fix: pipeline.ts llama setSource antes de syncFromDb
+    this.setSource = vi.fn();
     this.syncFromDb = vi.fn().mockResolvedValue(undefined);
     this.saveToDb = vi.fn().mockResolvedValue(undefined);
+    // Scheduler inteligente — por defecto nunca hay URLs que re-parsear
+    this.getReparseUrls = mockGetReparseUrls;
+    // SPI filter — por defecto devuelve todas las URLs (sin skip)
+    this.filterSPI = vi.fn((entries: Array<{ url: string; lastmod?: string }>) => ({
+      urls: entries.map((e) => e.url),
+      spiSkipped: 0,
+    }));
   }),
 }));
 
@@ -174,6 +183,7 @@ beforeEach(() => {
   mockCompleteRun.mockResolvedValue(undefined);
   mockUpdateSourceStatus.mockResolvedValue(undefined);
   mockExtractSitemapLinks.mockResolvedValue([]);
+  mockGetReparseUrls.mockImplementation((_urls: string[]) => []);
 });
 
 // ── runPipeline() ─────────────────────────────────────────────────────────────

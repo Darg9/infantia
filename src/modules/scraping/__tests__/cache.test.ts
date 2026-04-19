@@ -297,4 +297,67 @@ describe('ScrapingCache', () => {
       expect(spiSkipped).toBe(0);
     });
   });
+
+  describe('needsReparse — marcado y helpers', () => {
+    it('add() sin meta no marca needsReparse', () => {
+      cache.add('https://a.com/act', 'Evento');
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(false);
+    });
+
+    it('add() con parserSource=gemini no marca needsReparse', () => {
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'gemini', confidenceScore: 0.85 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(false);
+    });
+
+    it('add() con fallback y score >= 0.5 no marca needsReparse', () => {
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'fallback', confidenceScore: 0.5 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(false);
+    });
+
+    it('add() con fallback y score < 0.5 marca needsReparse=true', () => {
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'fallback', confidenceScore: 0.42 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(true);
+    });
+
+    it('add() con fallback y score=0 marca needsReparse=true', () => {
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'fallback', confidenceScore: 0 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(true);
+    });
+
+    it('isMarkedForReparse() retorna false para URL no vista', () => {
+      expect(cache.isMarkedForReparse('https://unknown.com')).toBe(false);
+    });
+
+    it('re-add() con gemini despues de fallback limpia needsReparse', () => {
+      // Primera pasada: fallback bajo → marca needsReparse
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'fallback', confidenceScore: 0.3 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(true);
+      // Segunda pasada: Gemini → limpia flag
+      cache.add('https://a.com/act', 'Evento', undefined, { parserSource: 'gemini', confidenceScore: 0.9 });
+      expect(cache.isMarkedForReparse('https://a.com/act')).toBe(false);
+    });
+
+    it('getReparseUrls() devuelve solo URLs marcadas', () => {
+      cache.add('https://a.com/event1', 'E1', undefined, { parserSource: 'fallback', confidenceScore: 0.4 });
+      cache.add('https://a.com/event2', 'E2', undefined, { parserSource: 'gemini',   confidenceScore: 0.9 });
+      cache.add('https://a.com/event3', 'E3', undefined, { parserSource: 'fallback', confidenceScore: 0.2 });
+
+      const candidates = ['https://a.com/event1', 'https://a.com/event2', 'https://a.com/event3'];
+      const reparse = cache.getReparseUrls(candidates);
+
+      expect(reparse).toContain('https://a.com/event1');
+      expect(reparse).not.toContain('https://a.com/event2');
+      expect(reparse).toContain('https://a.com/event3');
+      expect(reparse).toHaveLength(2);
+    });
+
+    it('getReparseUrls() filtra candidatos no marcados', () => {
+      cache.add('https://a.com/ok', 'OK', undefined, { parserSource: 'gemini', confidenceScore: 0.8 });
+      expect(cache.getReparseUrls(['https://a.com/ok', 'https://nunca-vista.com'])).toHaveLength(0);
+    });
+
+    it('getReparseUrls() devuelve vacío con lista vacía', () => {
+      expect(cache.getReparseUrls([])).toHaveLength(0);
+    });
+  });
 });

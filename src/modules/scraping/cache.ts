@@ -11,6 +11,16 @@ type CacheEntry = {
   scrapedAt: string;
   /** Último <lastmod> visto en el sitemap cuando se scrapeó esta URL. */
   lastmod?: string;
+  /** Origen del parser que extrajo esta URL. */
+  parserSource?: 'gemini' | 'fallback';
+  /** Confidence score obtenida en la última extracción. */
+  confidenceScore?: number;
+  /**
+   * true  → se procesó con fallback Cheerio y no se guardó (confidence < 0.5).
+   *         Debe re-procesarse con Gemini en el próximo run que tenga cuota.
+   * false → ya procesado con Gemini, o guardado correctamente.
+   */
+  needsReparse?: boolean;
 };
 
 type CacheData = {
@@ -112,9 +122,43 @@ export class ScrapingCache {
     return url in this.data.entries;
   }
 
-  add(url: string, title: string, lastmod?: string): void {
-    this.data.entries[url] = { url, title, scrapedAt: new Date().toISOString(), lastmod };
+  /**
+   * Registra una URL como procesada.
+   * @param meta.parserSource  'gemini' | 'fallback' — quién extrajo el contenido
+   * @param meta.confidenceScore — score de la extracción
+   * Si parserSource='fallback' y confidenceScore < 0.5, marca needsReparse=true
+   * para que el próximo run con Gemini disponible la re-procese.
+   */
+  add(url: string, title: string, lastmod?: string, meta?: {
+    parserSource?: 'gemini' | 'fallback';
+    confidenceScore?: number;
+  }): void {
+    const parserSource   = meta?.parserSource;
+    const confidenceScore = meta?.confidenceScore;
+    const needsReparse   = parserSource === 'fallback'
+      && confidenceScore !== undefined
+      && confidenceScore < 0.5;
+
+    this.data.entries[url] = {
+      url,
+      title,
+      scrapedAt: new Date().toISOString(),
+      lastmod,
+      parserSource,
+      confidenceScore,
+      needsReparse: needsReparse || false,
+    };
     this.newEntries.set(url, { title, source: this.sourceName });
+  }
+
+  /** true si la URL fue cacheada con fallback de baja confianza y debe re-procesarse con Gemini. */
+  isMarkedForReparse(url: string): boolean {
+    return this.data.entries[url]?.needsReparse === true;
+  }
+
+  /** Devuelve el subconjunto de `candidates` que están marcados para re-proceso. */
+  getReparseUrls(candidates: string[]): string[] {
+    return candidates.filter((url) => this.isMarkedForReparse(url));
   }
 
   filterNew(urls: string[]): string[] {

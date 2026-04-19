@@ -63,7 +63,7 @@ export class ScrapingPipeline {
     this.verticalSlug = options?.verticalSlug ?? 'kids';
   }
 
-  async runPipeline(url: string, sourceHost?: string): Promise<ActivityNLPResult> {
+  async runPipeline(url: string, sourceHost?: string, opts?: { skipPreflight?: boolean }): Promise<ActivityNLPResult> {
     log.info(`1. Iniciando extracción resiliente desde: ${url}`);
     
     let htmlContent = '';
@@ -97,35 +97,41 @@ export class ScrapingPipeline {
     const sourceText = CheerioExtractor.textFromHtml(htmlContent);
 
     // ── Pre-filtro de fechas: evitar NLP en eventos claramente pasados ─────────
-    const preflight = evaluatePreflight(sourceText);
+    // Skip inteligente: si la URL ya está en caché y no requiere re-proceso,
+    // omitimos el Date Preflight para ahorrar cuota Gemini de discovery.
+    if (opts?.skipPreflight) {
+      log.info('[DATE-PREFLIGHT] Omitido — URL ya en caché (re-proceso con Gemini)');
+    } else {
+      const preflight = evaluatePreflight(sourceText);
 
-    // Persistir resultado en date_preflight_logs (fire-and-forget)
-    void savePreflightLog({ sourceId: sourceHost ?? null, url, result: preflight });
+      // Persistir resultado en date_preflight_logs (fire-and-forget)
+      void savePreflightLog({ sourceId: sourceHost ?? null, url, result: preflight });
 
-    if (preflight.skip) {
-      log.info('[DATE-PREFLIGHT] Evento descartado — NLP omitido', {
+      if (preflight.skip) {
+        log.info('[DATE-PREFLIGHT] Evento descartado — NLP omitido', {
+          url,
+          decision:     'skip',
+          reason:       preflight.reason,
+          dates_found:  preflight.datesFound,
+          matched_text: preflight.matchedText,
+        });
+        return {
+          title:           'Sin título',
+          description:     '',
+          categories:      ['General'],
+          currency:        'COP',
+          audience:        'ALL',
+          confidenceScore: 0,
+        } as ActivityNLPResult;
+      }
+      log.info('[DATE-PREFLIGHT] Enviando a Gemini', {
         url,
-        decision:     'skip',
+        decision:     'process',
         reason:       preflight.reason,
         dates_found:  preflight.datesFound,
         matched_text: preflight.matchedText,
       });
-      return {
-        title:           'Sin título',
-        description:     '',
-        categories:      ['General'],
-        currency:        'COP',
-        audience:        'ALL',
-        confidenceScore: 0,
-      } as ActivityNLPResult;
     }
-    log.info('[DATE-PREFLIGHT] Enviando a Gemini', {
-      url,
-      decision:     'process',
-      reason:       preflight.reason,
-      dates_found:  preflight.datesFound,
-      matched_text: preflight.matchedText,
-    });
 
     log.info(`3. Enviando a NLP (Gemini) para estructurar datos...`);
 
@@ -275,6 +281,16 @@ export class ScrapingPipeline {
       return { sourceUrl: listingUrl, discoveredLinks: allLinks.length, filteredLinks: 0, results: [] };
     }
 
+    // ── needsReparse: URLs en caché marcadas para re-proceso con Gemini ─────────
+    // Son URLs que en un run anterior se procesaron con Cheerio fallback (confidence < 0.5)
+    // y no se guardaron. Se re-procesan aquí junto con URLs nuevas pero:
+    //   - skip Date Preflight (ya sabemos que son actividades válidas)
+    //   - solo si Gemini está disponible (de lo contrario el loop las omite)
+    const reparseUrls = new Set(this.cache.getReparseUrls(activityUrls));
+    if (reparseUrls.size > 0) {
+      log.info(`[REPARSE] ${reparseUrls.size} URLs marcadas para re-proceso con Gemini (fallback previo, sin guardar)`);
+    }
+
     // Fase 2.5: Filtrar URLs ya procesadas — doble fuente de verdad
     // 1ª capa: SPI (sitemap) o filterNew (no-sitemap)
     //   SPI: skip si url en cache Y lastmod ≤ scrapedAt (sin cambios confirmados)
@@ -283,12 +299,17 @@ export class ScrapingPipeline {
     if (isSitemap && lastmodIndex.size > 0) {
       const spiEntries = activityUrls.map((url) => ({ url, lastmod: lastmodIndex.get(url) }));
       const { urls, spiSkipped } = this.cache.filterSPI(spiEntries);
-      afterCache = urls;
+      // Las URLs marcadas para re-proceso siempre pasan, aunque el SPI las saltaría
+      const reparseNotInSpi = [...reparseUrls].filter((u) => !urls.includes(u));
+      afterCache = [...urls, ...reparseNotInSpi];
       if (spiSkipped > 0) {
-        log.info(`[SPI] ${spiSkipped} URLs sin cambios (lastmod ≤ scrapedAt). A procesar: ${urls.length}`);
+        log.info(`[SPI] ${spiSkipped} URLs sin cambios (lastmod ≤ scrapedAt). A procesar: ${urls.length}${reparseNotInSpi.length > 0 ? ` (+${reparseNotInSpi.length} reparse)` : ''}`);
       }
     } else {
-      afterCache = this.cache.filterNew(activityUrls);
+      const freshUrls = this.cache.filterNew(activityUrls);
+      // Las URLs de reparse pasan aunque ya estén en caché
+      const reparseNotInFresh = [...reparseUrls].filter((u) => !freshUrls.includes(u));
+      afterCache = [...freshUrls, ...reparseNotInFresh];
     }
 
     // Normalización para comparación robusta — evita falsos "nuevos" por:
@@ -349,16 +370,28 @@ export class ScrapingPipeline {
     }
 
     // Fase 3: Scrapear solo actividades NUEVAS secuencialmente (concurrencia=1 respeta 5 RPM Gemini)
+    // Las URLs marcadas para re-proceso (needsReparse) se incluyen aquí y hacen skip de Date Preflight:
+    // ya sabemos que son actividades reales — el run anterior las cacheó pero no las guardó por cuota.
     log.info(`Fase 3: Scrapeando ${newUrls.length} actividades nuevas (concurrencia: ${concurrency})...`);
     const results: BatchPipelineResult['results'] = [];
+    let preflightCallsPhase3  = 0;
+    let preflightSkippedPhase3 = 0;
 
     if (concurrency <= 1) {
       // Procesamiento secuencial — sin bursts, respeta rate limit de Gemini
       for (let i = 0; i < newUrls.length; i++) {
         const actUrl = newUrls[i];
+        // Skip preflight si la URL ya está en caché como reparse (sabemos que es actividad válida)
+        const skipPreflight = reparseUrls.has(actUrl);
+        if (skipPreflight) preflightSkippedPhase3++;
+        else               preflightCallsPhase3++;
         try {
-          const data = await this.runPipeline(actUrl, host);
-          this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
+          const data = await this.runPipeline(actUrl, host, { skipPreflight });
+          // Pasa parserSource + confidenceScore al caché para marcar needsReparse si aplica
+          this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl), {
+            parserSource:    data.parserSource,
+            confidenceScore: data.confidenceScore,
+          });
           // ── Streaming save: threshold diferenciado por origen del parser ──
           // fallback Cheerio (0.5) es más estricto que Gemini (0.3) para reducir ruido
           const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
@@ -382,9 +415,13 @@ export class ScrapingPipeline {
       for (let i = 0; i < newUrls.length; i += concurrency) {
         const batch = newUrls.slice(i, i + concurrency);
         const batchPromises = batch.map(async (actUrl) => {
+          const skipPreflight = reparseUrls.has(actUrl);
           try {
-            const data = await this.runPipeline(actUrl, host);
-            this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
+            const data = await this.runPipeline(actUrl, host, { skipPreflight });
+            this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl), {
+              parserSource:    data.parserSource,
+              confidenceScore: data.confidenceScore,
+            });
             // ── Streaming save — threshold diferenciado ──
             const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
             if (this.storage && data.confidenceScore >= streamThreshold) {
@@ -401,6 +438,11 @@ export class ScrapingPipeline {
             return { url: actUrl, data: null, error: error.message };
           }
         });
+        // Contabilizar preflight calls/skips en batch (fuera del async interno para evitar race condition)
+        for (const u of batch) {
+          if (reparseUrls.has(u)) preflightSkippedPhase3++;
+          else                    preflightCallsPhase3++;
+        }
         const batchResults = await Promise.all(batchPromises);
         results.push(...batchResults);
         const processed = Math.min(i + concurrency, newUrls.length);
@@ -488,14 +530,18 @@ export class ScrapingPipeline {
     }
 
     // ── FUNNEL:SUMMARY — embudo completo por fuente ───────────────────────────
+    const reparseCount = [...reparseUrls].filter((u) => newUrls.includes(u)).length;
     log.info('[FUNNEL:SUMMARY]', {
-      discovered:      discoveredCount,
-      afterHeuristics: afterHeuristicsCount,
-      afterGemini:     activityUrls.length,
-      afterCache:      afterCache.length,
-      fetched:         newUrls.length,
-      parsed:          results.filter((r) => r.data !== null).length,
-      saved:           savedCount,
+      discovered:               discoveredCount,
+      afterHeuristics:          afterHeuristicsCount,
+      afterGemini:              activityUrls.length,
+      afterCache:               afterCache.length,
+      reparse:                  reparseCount,
+      fetched:                  newUrls.length,
+      parsed:                   results.filter((r) => r.data !== null).length,
+      saved:                    savedCount,
+      preflightCalls:           preflightCallsPhase3,
+      skippedPreflightFromCache: preflightSkippedPhase3,
     });
 
     return batchResult;

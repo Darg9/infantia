@@ -87,8 +87,10 @@ const ALL_SOURCES: Source[] = [
   // ── web: Bogotá — instituciones principales ───────────────────────────────
   { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
-  // Banrep Bogotá inline (antes que otras ciudades)
-  { name: 'Banrep — Bogotá',                    channel: 'web', url: 'https://www.banrepcultural.org/sitemap.xml',                       cityName: 'Bogotá', verticalSlug: 'kids', sitemapPatterns: ['/bogota/'] },
+  // Banrep Bogotá inline (antes que otras ciudades) — URL directa de agenda activa
+  // Antes: sitemap.xml con 1101 URLs históricas (alto errorCount, mucho consumo de cuota)
+  // Ahora: /actividades/bogota con ~40 eventos activos directamente
+  { name: 'Banrep — Bogotá',                    channel: 'web', url: 'https://www.banrepcultural.org/actividades/bogota',             cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
@@ -99,12 +101,13 @@ const ALL_SOURCES: Source[] = [
 
   // ── web: Banco de la República (otras ciudades) ───────────────────────────
   ...BANREP_CITIES.filter((c) => c.cityName !== 'Bogotá').map(({ cityName, slug }): Source => ({
-    name:            `Banrep — ${cityName}`,
-    channel:         'web',
-    url:             'https://www.banrepcultural.org/sitemap.xml',
+    name:         `Banrep — ${cityName}`,
+    channel:      'web',
+    // URL directa de agenda por ciudad: evita el sitemap histórico de 200+ URLs
+    // y reduce consumo de cuota Gemini de ~400 calls a ~60 por corrida completa de ciudades
+    url:          `https://www.banrepcultural.org/actividades/${slug}`,
     cityName,
-    verticalSlug:    'kids',
-    sitemapPatterns: [`/${slug}/`],
+    verticalSlug: 'kids',
   })),
 
   // ── web: Medellín ─────────────────────────────────────────────────────────

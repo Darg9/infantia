@@ -9,6 +9,104 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S55] — 2026-04-19 (Pipeline Optimization — Scheduler Inteligente + Cuota Gemini)
+
+### Features
+
+#### Scheduler inteligente — re-proceso de fallbacks con Gemini (`e124078`, `4b267f3`)
+- **`cache.ts`** — `CacheEntry` extendido con `parserSource`, `confidenceScore`, `needsReparse`.
+  - `add()` marca `needsReparse=true` si `parserSource='fallback'` y `confidenceScore < 0.5`.
+  - `isMarkedForReparse(url)` — helper de consulta O(1).
+  - `getReparseUrls(candidates[])` — devuelve subconjunto marcado para re-proceso.
+- **`pipeline.ts`** — `runPipeline()` acepta `opts.skipPreflight` — evita Date Preflight para URLs de reparse (ya confirmadas como actividades válidas en run anterior).
+- **`pipeline.ts`** — `runBatchPipeline()`:
+  - `reparseUrls` como `Set<string>` — lookup O(1) por URL.
+  - URLs de reparse pasan SPI y `filterNew` aunque ya estén en caché (se añaden a `afterCache` explícitamente).
+  - DB diff preserva URLs de reparse aunque ya existan en BD (corrección de bug crítico).
+  - Rehidratación de caché usa `has()` guard — no sobreescribe `parserSource`/`needsReparse` con `add` vacío.
+  - Loop Fase 3 propaga `skipPreflight` por URL individual.
+  - `preflightCallsPhase3` y `skippedPreflightFromCache` — contadores de cuota.
+- **`FUNNEL:SUMMARY`** ampliado: `reparse`, `preflightCalls`, `skippedPreflightFromCache`.
+
+#### Banrep `/actividades/{slug}` — reducción ~95% de cuota (`e124078`)
+- **`ingest-sources.ts`** — Banrep Bogotá y las 8 ciudades cambian de `sitemap.xml` (1101 URLs históricas) a `/actividades/{slug}` (~40 eventos activos por ciudad).
+  - Antes: `https://www.banrepcultural.org/sitemap.xml` + `sitemapPatterns:['/bogota/']`
+  - Ahora: `https://www.banrepcultural.org/actividades/bogota` (URL directa, sin filtros sitemap)
+  - Elimina el `errorCount` histórico que degradaba el health score de `banrepcultural.org`.
+
+#### NFD normalization + threshold diferenciado (`91521b8`)
+- **`fallback-mapper.ts`** — blacklist con normalización NFD: `str.normalize('NFD').replace(/\p{Mn}/gu, '')` — elimina dependencia de tildes en palabras clave.
+- **`storage.ts`** + **`pipeline.ts`** — threshold diferenciado: Gemini → 0.3, Cheerio fallback → 0.5. Propaga `parserSource` end-to-end.
+
+#### Heurísticas pre-fetch + métricas funnel (`955e0de`)
+- **`pipeline.ts`** — `isOldByUrl()` descarta URLs con año < actual en el path. `isOldByLastmod()` descarta URLs con lastmod > 60 días. Aplicadas antes de `discoverWithFallback` — ahorro de cuota sin llamada Gemini.
+- **`fallback-mapper.ts`** — `NON_EVENT_KEYWORDS` blacklist (15 términos). Páginas institucionales reciben `confidenceScore=0` → descartadas antes de storage.
+- **`expire-activities.ts`** — `DEFAULT_EXPIRATION_HOURS` 3 → 48 (grace period para evitar desaparición de eventos recién publicados).
+- **`pipeline.ts`** — `[FUNNEL:SUMMARY]` por fuente: `discovered → afterHeuristics → afterGemini → afterCache → fetched → parsed → saved`.
+
+#### Clean baseline script (`850004e`, `bf86bb1`)
+- **`scripts/clean-baseline.ts`** — elimina actividades basura pre-threshold: registros de `maloka.org` con score 0, títulos "Sin título", `sourceDomain=null`. Detecta entradas por `sourceUrl` domain cuando `sourceDomain` es null.
+
+### Fixes
+
+- **`fix(portal)`** — 3 bugs que ocultaban actividades (`0a15a56`):
+  - `listActivities()`: SQL `sourceDomain NOT IN (...)` no matcheaba registros con `sourceDomain=null` (NULL SQL semantics) — corregido con `OR sourceDomain IS NULL`.
+  - `resilience.ts`: health floor 0.15 para fuentes con éxito reciente (evita que `banrepcultural.org` caiga a 0.00 por errores históricos con cuota limitada).
+  - `storage.ts`: threshold de guardado 0.3 → aplicado correctamente con `parserSource` diferenciado.
+- **`fix(ts)`** — `backfill-source-domain.ts` null guard en `sourceUrl` (`18712b9`).
+- **`scripts/backfill-source-domain.ts`** — backfill de `sourceDomain` para 383 actividades históricas con campo `null`.
+
+### Tests
+- **1203 tests** — 73 archivos — 0 fallos ✅ (+12 vs S54)
+- `cache.test.ts` +9 tests: `needsReparse`, `isMarkedForReparse`, `getReparseUrls` — cobertura completa del scheduler inteligente.
+- `pipeline.test.ts`: mock `ScrapingCache` ampliado con `getReparseUrls` y `filterSPI`.
+- `tsc --noEmit`: 0 errores ✅
+
+### Operativo
+- `migrate-date-preflight-logs.ts` ejecutado — tabla `date_preflight_logs` activa en BD.
+- Commits principales: `955e0de`, `91521b8`, `850004e`, `bf86bb1`, `0a15a56`, `18712b9`, `e124078`, `4b267f3`
+
+---
+
+## [v0.11.0-S54] — 2026-04-18 (SPI Filter + Streaming Saves + Fix Portal 4 bugs)
+
+### Features
+
+#### SPI — Sitemap Pre-Index filter por lastmod (`9aa5013`)
+- **`cache.ts`** — `CacheEntry` extendido con `lastmod?: string`. Nuevo método `filterSPI(entries)` — salta URLs cuyo `lastmod ≤ scrapedAt` (sin cambios); incluye URLs con `lastmod > scrapedAt` (página actualizada). Comportamiento conservador: URL en caché sin lastmod → skip.
+- **`CheerioExtractor`** — `collectEntries()` reemplaza `collectUrls()` — extrae `lastmod` del XML junto a cada URL.
+- **`types.ts`** — `DiscoveredLink.lastmod?: string`.
+- **`pipeline.ts`** — `lastmodIndex: Map<string, string>`. Usa `filterSPI()` para fuentes sitemap; `filterNew()` para el resto.
+- Impacto: reduce fetches ~90–95% en runs subsecuentes de Banrep y Parque Explora.
+
+#### Streaming saves — actividades visibles inmediatamente (`e3770f9`)
+- **`pipeline.ts`** — Cada actividad se guarda en BD (`storage.saveActivity()`) tan pronto como se parsea, sin esperar al final de la fuente.
+- Fase 4 (`saveBatchResults`) conservada como safety-net para métricas y deduplicación final.
+- Impacto: Parque Explora pasa de "visible en 3h" a "visible en segundos".
+
+#### Reordenamiento de fuentes por prioridad (`badb7be`)
+- **`ingest-sources.ts`** — fuentes ordenadas por ROI: BibloRed → CRD → Banrep Bogotá → instituciones Bogotá → Banrep ciudades → Medellín → fuentes secundarias.
+
+### Fixes
+
+- **`fix(portal)`** — 4 bugs que ocultaban actividades (`4067df0`):
+  - **`storage.ts`**: `sourceDomain` siempre se seteaba `null` (rompía diversificación y health filter en `listActivities`). Ahora se extrae del `hostname` del `sourceUrl`.
+  - **`types.ts`**: `savedCount` añadido a `BatchPipelineResult` e `InstagramPipelineResult`.
+  - **`pipeline.ts`**: `savedCount` populado con el conteo real de BD (no estimado por `r.data`).
+  - **`ingest-sources.ts`**: usa `result.savedCount` real en lugar de `result.results.filter(r => r.data && r.data.confidenceScore >= 0.3).length`.
+  - **Script `fix-banrep-health.ts` ejecutado**: resetea `banrepcultural.org` score de 0.00 → 0.50 (estaba ocultando TODAS las actividades Banrep del portal).
+- **Diagnóstico documentado**: 338/692 actividades `EXPIRED` (fechas pasadas extraídas en runs sin Date Preflight v2), Banrep score=0.00 por errorCount de cuota agotada.
+
+### Tests
+- **1191 tests** — 73 archivos — 0 fallos ✅ (+7 vs S53 por SPI tests en `cache.test.ts`)
+- `tsc --noEmit`: 0 errores ✅
+
+### Operativo
+- Script `check-portal-activities.ts` creado para diagnóstico de actividades del portal.
+- Commits: `badb7be`, `9aa5013`, `e3770f9`, `4067df0`
+
+---
+
 ## [v0.11.0-S53] — 2026-04-17 (Design System Enforcement + Global Intent Manager)
 
 ### Features

@@ -119,16 +119,36 @@ export function fallbackFromCheerio(raw: ScrapedRawData): ParseResult {
   // Blacklist: páginas institucionales no-evento → confidence 0 (serán descartadas por el pipeline)
   const confidenceScore = isNonEvent(title) ? 0 : 0.4;
 
+  // Extracción regex básica (precio y edad) para salvaguardar puntaje de ranking
+  let price: number | undefined = undefined;
+  let minAge: number | undefined = undefined;
+  let maxAge: number | undefined = undefined;
+
+  const textLower = normalizeText(text);
+
+  if (/gratis|entrada libre|sin costo/.test(textLower)) {
+    price = 0;
+  }
+
+  // Patrón "3 a 5 anos" / "5-10 anos" (usamos 'anos' porque normalizeText quita tildes/eñes)
+  const ageMatch = textLower.match(/(\d{1,2})\s*(?:a|-)\s*(\d{1,2})\s*anos/);
+  if (ageMatch) {
+    minAge = parseInt(ageMatch[1], 10);
+    maxAge = parseInt(ageMatch[2], 10);
+  } else if (/ninos|infantil/.test(textLower)) {
+    minAge = 3;
+    maxAge = 12;
+  }
+
   const result: ActivityNLPResult = {
     title,
     description,
     categories,
     confidenceScore,
     schedules,
-    // Campos que requieren NLP — quedan como null/undefined
-    minAge:      undefined,
-    maxAge:      undefined,
-    price:       undefined,
+    minAge,
+    maxAge,
+    price,
     pricePeriod: undefined,
     currency:    'COP',
     audience:    'ALL',

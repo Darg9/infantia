@@ -126,18 +126,36 @@ describe('ScrapingStorage.saveBatchResults()', () => {
     expect(result.saved).toBe(0);
   });
 
-  it('omite items con confidenceScore < 0.2', async () => {
+  it('omite items Gemini con confidenceScore < 0.3 (nuevo threshold)', async () => {
     const batch = makeBatchResult([
-      { data: { ...actividadNLPBase, confidenceScore: 0.1 } },
+      { data: { ...actividadNLPBase, confidenceScore: 0.25 } },  // sin parserSource → umbral Gemini 0.3
     ]);
     const result = await storage.saveBatchResults(batch);
     expect(result.skipped).toBe(1);
     expect(result.saved).toBe(0);
   });
 
-  it('guarda items con confidenceScore >= 0.2', async () => {
+  it('guarda items Gemini con confidenceScore >= 0.3', async () => {
     const batch = makeBatchResult([
-      { data: { ...actividadNLPBase, confidenceScore: 0.2 } },
+      { data: { ...actividadNLPBase, confidenceScore: 0.3 } },
+    ]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.saved).toBe(1);
+    expect(result.skipped).toBe(0);
+  });
+
+  it('omite items fallback con confidenceScore < 0.5 (umbral más estricto)', async () => {
+    const batch = makeBatchResult([
+      { data: { ...actividadNLPBase, confidenceScore: 0.4, parserSource: 'fallback' } },
+    ]);
+    const result = await storage.saveBatchResults(batch);
+    expect(result.skipped).toBe(1);
+    expect(result.saved).toBe(0);
+  });
+
+  it('guarda items fallback con confidenceScore >= 0.5', async () => {
+    const batch = makeBatchResult([
+      { data: { ...actividadNLPBase, confidenceScore: 0.5, parserSource: 'fallback' } },
     ]);
     const result = await storage.saveBatchResults(batch);
     expect(result.saved).toBe(1);

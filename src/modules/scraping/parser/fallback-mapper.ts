@@ -32,9 +32,14 @@ const NON_EVENT_KEYWORDS = [
   'nuestros servicios',
 ] as const;
 
+/** Normaliza texto para comparación robusta: minúsculas + sin diacríticos. */
+function normalizeText(t: string): string {
+  return t.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+}
+
 function isNonEvent(title: string): boolean {
-  const t = title.toLowerCase();
-  return NON_EVENT_KEYWORDS.some((k) => t.includes(k));
+  const t = normalizeText(title);
+  return NON_EVENT_KEYWORDS.some((k) => t.includes(normalizeText(k)));
 }
 
 // ── Categorías inferibles por keywords ───────────────────────────────────────

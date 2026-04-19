@@ -227,8 +227,9 @@ export class ScrapingStorage {
         continue;
       }
 
-      // Ignorar resultados con confianza muy baja
-      if (item.data.confidenceScore < 0.2) {
+      // Threshold diferenciado: fallback Cheerio exige más para evitar ruido
+      const saveThreshold = item.data.parserSource === 'fallback' ? 0.5 : 0.3;
+      if (item.data.confidenceScore < saveThreshold) {
         result.skipped++;
         continue;
       }

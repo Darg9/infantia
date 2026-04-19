@@ -149,7 +149,8 @@ export class ScrapingPipeline {
     }
     log.info(`4. Análisis completado (source=${parsed.source}) con confianza: ${parsed.result.confidenceScore}`);
 
-    return parsed.result;
+    // Propagar origen del parser para threshold diferenciado en el guardado
+    return { ...parsed.result, parserSource: parsed.source };
   }
 
   async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
@@ -358,11 +359,13 @@ export class ScrapingPipeline {
         try {
           const data = await this.runPipeline(actUrl, host);
           this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
-          // ── Streaming save: visible en portal inmediatamente tras parsear ──
-          if (this.storage && data.confidenceScore >= 0.2) {
+          // ── Streaming save: threshold diferenciado por origen del parser ──
+          // fallback Cheerio (0.5) es más estricto que Gemini (0.3) para reducir ruido
+          const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
+          if (this.storage && data.confidenceScore >= streamThreshold) {
             try {
               await this.storage.saveActivity(data, actUrl);
-              log.info(`[STREAMING] ✅ Guardada: "${data.title}"`);
+              log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore})`);
             } catch (err: any) {
               log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${err?.message}`);
             }
@@ -382,11 +385,12 @@ export class ScrapingPipeline {
           try {
             const data = await this.runPipeline(actUrl, host);
             this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
-            // ── Streaming save ──
-            if (this.storage && data.confidenceScore >= 0.2) {
+            // ── Streaming save — threshold diferenciado ──
+            const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
+            if (this.storage && data.confidenceScore >= streamThreshold) {
               try {
                 await this.storage.saveActivity(data, actUrl);
-                log.info(`[STREAMING] ✅ Guardada: "${data.title}"`);
+                log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore})`);
               } catch (err: any) {
                 log.warn(`[STREAMING] Error (non-fatal): ${err?.message}`);
               }

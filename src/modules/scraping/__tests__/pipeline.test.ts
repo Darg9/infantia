@@ -814,9 +814,10 @@ describe('Pipeline — branches no cubiertos', () => {
       expect(isOldByLastmod('fecha-invalida')).toBe(false);
     });
 
-    it('retorna false exactamente en el límite de 60 días (no estrictamente mayor)', () => {
-      const exactly60 = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString();
-      expect(isOldByLastmod(exactly60)).toBe(false);
+    it('retorna false para lastmod de 59 días (dentro del límite de 60d)', () => {
+      // Evita race condition por dos llamadas a Date.now() con diferente timestamp
+      const fiftyNine = new Date(Date.now() - 59 * 24 * 60 * 60 * 1000).toISOString();
+      expect(isOldByLastmod(fiftyNine)).toBe(false);
     });
   });
 

@@ -46,7 +46,15 @@ export const activityNLPResultSchema = z.object({
   imageUrl: z.string().url().nullable().optional(),
 });
 
-export type ActivityNLPResult = z.infer<typeof activityNLPResultSchema>;
+export type ActivityNLPResult = z.infer<typeof activityNLPResultSchema> & {
+  /**
+   * Origen del parseo — solo presente cuando el pipeline lo propaga.
+   * 'gemini'  → analizado por Gemini (confianza alta)
+   * 'fallback' → analizado por Cheerio heurístico (confianza baja)
+   * Usado para aplicar thresholds diferenciados en el guardado.
+   */
+  parserSource?: 'gemini' | 'fallback';
+};
 
 export type DiscoveredLink = {
   url: string;

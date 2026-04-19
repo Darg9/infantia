@@ -331,6 +331,19 @@ describe('fallbackFromCheerio — blacklist NON_EVENT_KEYWORDS', () => {
     expect(result.result.confidenceScore).toBe(0.4)
   })
 
+  it('detecta keyword sin tilde (NFD normalization)', () => {
+    // "Como llegar" sin tilde → debe ser bloqueado igual que "Cómo llegar"
+    const raw = makeRawWithTitle('Como llegar a nuestras instalaciones')
+    const result = fallbackFromCheerio(raw)
+    expect(result.result.confidenceScore).toBe(0)
+  })
+
+  it('detecta keyword con variación de mayúsculas', () => {
+    const raw = makeRawWithTitle('TRABAJA CON NOSOTROS')
+    const result = fallbackFromCheerio(raw)
+    expect(result.result.confidenceScore).toBe(0)
+  })
+
   it('título vacío / Sin título no es bloqueado por blacklist (otro filtro lo descarta)', () => {
     const raw = makeRawWithTitle('')
     const result = fallbackFromCheerio(raw)

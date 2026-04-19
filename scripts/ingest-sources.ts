@@ -79,11 +79,26 @@ const BANREP_CITIES: { cityName: string; slug: string }[] = [
 ];
 
 // ── Catálogo de fuentes ────────────────────────────────────────────────────────
-// Orden = prioridad de ejecución. Banrep va primero para aprovechar cuota Gemini.
+// Orden = prioridad de ejecución.
+// Bogotá institucional primero (mayor volumen + cuota Gemini), luego Banrep
+// otras ciudades, luego Medellín web, luego fuentes secundarias.
 const ALL_SOURCES: Source[] = [
 
-  // ── web: Banco de la República (10 ciudades) ─────────────────────────────
-  ...BANREP_CITIES.map(({ cityName, slug }): Source => ({
+  // ── web: Bogotá — instituciones principales ───────────────────────────────
+  { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
+  // Banrep Bogotá inline (antes que otras ciudades)
+  { name: 'Banrep — Bogotá',                    channel: 'web', url: 'https://www.banrepcultural.org/sitemap.xml',                       cityName: 'Bogotá', verticalSlug: 'kids', sitemapPatterns: ['/bogota/'] },
+  { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Planetario de Bogotá',               channel: 'web', url: 'https://planetariodebogota.gov.co/programate',                     cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Jardín Botánico (JBB)',              channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },
+
+  // ── web: Banco de la República (otras ciudades) ───────────────────────────
+  ...BANREP_CITIES.filter((c) => c.cityName !== 'Bogotá').map(({ cityName, slug }): Source => ({
     name:            `Banrep — ${cityName}`,
     channel:         'web',
     url:             'https://www.banrepcultural.org/sitemap.xml',
@@ -93,10 +108,10 @@ const ALL_SOURCES: Source[] = [
   })),
 
   // ── web: Medellín ─────────────────────────────────────────────────────────
-  // Parque Explora — sitemap con 700+ eventos individuales bajo //programate/
-  { name: 'Parque Explora',     channel: 'web', url: 'https://www.parqueexplora.org/sitemap.xml',     cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/programate/'] },
+  // Parque Explora — sitemap con 700+ eventos individuales bajo /programate/
+  { name: 'Parque Explora',    channel: 'web', url: 'https://www.parqueexplora.org/sitemap.xml',    cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/programate/'] },
   // Biblioteca Piloto — sitemap + SSR Next.js, eventos niños/familias bajo /agenda/
-  { name: 'Biblioteca Piloto', channel: 'web', url: 'https://bibliotecapiloto.gov.co/sitemap.xml',  cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/agenda/'] },
+  { name: 'Biblioteca Piloto', channel: 'web', url: 'https://bibliotecapiloto.gov.co/sitemap.xml', cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/agenda/'] },
 
   // Pendientes Medellín (verificar disponibilidad):
   // { name: 'Sec. Cultura Antioquia', channel: 'web', url: 'https://www.culturaantioquia.gov.co/agenda',     cityName: 'Medellín', verticalSlug: 'kids' }, // ECONNREFUSED
@@ -105,17 +120,8 @@ const ALL_SOURCES: Source[] = [
   // { name: 'Museo de Antioquia',     channel: 'web', url: 'https://museodeantioquia.co/sitemap.xml',        cityName: 'Medellín', verticalSlug: 'kids' }, // sin agenda estructurada
   // { name: 'Infolocal Comfenalco',   channel: 'web', url: 'https://infolocal.comfenalcoantioquia.com/index.php/agenda', cityName: 'Medellín', verticalSlug: 'kids' }, // 150 eventos, contenido mixto adultos
 
-  // ── web: Bogotá — otras instituciones ────────────────────────────────────
-  { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'FUGA — Filarmónica de Bogotá',       channel: 'web', url: 'https://fuga.gov.co/agenda',                                      cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Planetario de Bogotá',               channel: 'web', url: 'https://planetariodebogota.gov.co/programate',                     cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Jardín Botánico (JBB)',              channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
+  // ── web: Bogotá — fuentes secundarias ────────────────────────────────────
+  { name: 'FUGA — Filarmónica de Bogotá', channel: 'web', url: 'https://fuga.gov.co/agenda', cityName: 'Bogotá', verticalSlug: 'kids' },
 
   // ── instagram ─────────────────────────────────────────────────────────────
   // Opciones disponibles por fuente:

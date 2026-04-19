@@ -51,6 +51,8 @@ export type ActivityNLPResult = z.infer<typeof activityNLPResultSchema>;
 export type DiscoveredLink = {
   url: string;
   anchorText: string;
+  /** ISO date string extraída del <lastmod> del sitemap. Presente solo en fuentes XML. */
+  lastmod?: string;
 };
 
 export const discoveredActivityUrlsSchema = z.object({

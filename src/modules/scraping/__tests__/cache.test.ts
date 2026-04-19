@@ -225,4 +225,76 @@ describe('ScrapingCache', () => {
       expect(cacheRoto.size).toBe(0);
     });
   });
+
+  describe('filterSPI()', () => {
+    const OLD  = '2024-01-01T00:00:00.000Z'; // lastmod anterior al scrape
+    const NEW  = '2030-01-01T00:00:00.000Z'; // lastmod posterior al scrape (futuro)
+
+    beforeEach(() => {
+      // URL previamente scrapeada (scrapedAt ~ ahora)
+      cache.add('https://a.com/evento', 'Evento A');
+    });
+
+    it('incluye URLs no vistas antes (primera vez)', () => {
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://nuevo.com/evento', lastmod: OLD },
+      ]);
+      expect(urls).toContain('https://nuevo.com/evento');
+      expect(spiSkipped).toBe(0);
+    });
+
+    it('salta URL en cache sin lastmod (comportamiento conservador)', () => {
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://a.com/evento' }, // sin lastmod
+      ]);
+      expect(urls).toHaveLength(0);
+      expect(spiSkipped).toBe(1);
+    });
+
+    it('salta URL en cache cuyo lastmod es anterior al scrape (sin cambios)', () => {
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://a.com/evento', lastmod: OLD },
+      ]);
+      expect(urls).toHaveLength(0);
+      expect(spiSkipped).toBe(1);
+    });
+
+    it('incluye URL en cache cuyo lastmod es posterior al scrape (página actualizada)', () => {
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://a.com/evento', lastmod: NEW },
+      ]);
+      expect(urls).toContain('https://a.com/evento');
+      expect(spiSkipped).toBe(0);
+    });
+
+    it('salta URL en cache con lastmod inválido (comportamiento conservador)', () => {
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://a.com/evento', lastmod: 'fecha-invalida' },
+      ]);
+      expect(urls).toHaveLength(0);
+      expect(spiSkipped).toBe(1);
+    });
+
+    it('maneja mezcla correctamente', () => {
+      cache.add('https://b.com/vieja', 'Vieja');
+      const { urls, spiSkipped } = cache.filterSPI([
+        { url: 'https://nueva.com/act',    lastmod: OLD }, // nueva → incluir
+        { url: 'https://a.com/evento',     lastmod: OLD }, // cached + viejo → skip
+        { url: 'https://b.com/vieja',      lastmod: NEW }, // cached + actualizado → incluir
+        { url: 'https://c.com/sin-lastmod'            }, // nueva sin lastmod → incluir
+      ]);
+      expect(urls).toEqual([
+        'https://nueva.com/act',
+        'https://b.com/vieja',
+        'https://c.com/sin-lastmod',
+      ]);
+      expect(spiSkipped).toBe(1);
+    });
+
+    it('devuelve todo vacío con input vacío', () => {
+      const { urls, spiSkipped } = cache.filterSPI([]);
+      expect(urls).toHaveLength(0);
+      expect(spiSkipped).toBe(0);
+    });
+  });
 });

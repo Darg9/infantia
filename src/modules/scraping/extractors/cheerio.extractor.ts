@@ -282,40 +282,48 @@ export class CheerioExtractor implements Extractor {
       return res.text();
     };
 
-    const collectUrls = async (xmlText: string): Promise<string[]> => {
+    type SitemapEntry = { loc: string; lastmod?: string };
+
+    const collectEntries = async (xmlText: string): Promise<SitemapEntry[]> => {
       const $ = cheerio.load(xmlText, { xmlMode: true });
       // Sitemap index: contains <sitemap><loc>...</loc></sitemap>
       const childSitemaps = $('sitemap > loc').map((_, el) => $(el).text().trim()).get();
       if (childSitemaps.length > 0) {
-        const nested: string[] = [];
+        const nested: SitemapEntry[] = [];
         for (const childUrl of childSitemaps) {
           try {
             const childXml = await fetchXml(childUrl);
-            nested.push(...(await collectUrls(childXml)));
+            nested.push(...(await collectEntries(childXml)));
           } catch (err: any) {
             log.warn(`Error fetching child sitemap ${childUrl}: ${err.message}`);
           }
         }
         return nested;
       }
-      // Plain sitemap: contains <url><loc>...</loc></url>
-      return $('url > loc').map((_, el) => $(el).text().trim()).get();
+      // Plain sitemap: contains <url><loc>...</loc><lastmod>...</lastmod></url>
+      const entries: SitemapEntry[] = [];
+      $('url').each((_, el) => {
+        const loc = $(el).find('loc').text().trim();
+        const lastmodRaw = $(el).find('lastmod').text().trim();
+        if (loc) entries.push({ loc, lastmod: lastmodRaw || undefined });
+      });
+      return entries;
     };
 
     log.info(`Leyendo sitemap: ${sitemapUrl}`);
     const xml = await fetchXml(sitemapUrl);
-    const allUrls = await collectUrls(xml);
-    log.info(`Total URLs en sitemap: ${allUrls.length}`);
+    const allEntries = await collectEntries(xml);
+    log.info(`Total URLs en sitemap: ${allEntries.length}`);
 
-    const filtered = urlPatterns.length > 0
-      ? allUrls.filter((u) => urlPatterns.some((p) => u.includes(p)))
-      : allUrls;
+    const filteredEntries = urlPatterns.length > 0
+      ? allEntries.filter((e) => urlPatterns.some((p) => e.loc.includes(p)))
+      : allEntries;
 
-    log.info(`URLs tras filtro de patrones: ${filtered.length}`);
+    log.info(`URLs tras filtro de patrones: ${filteredEntries.length}`);
 
     const seen = new Set<string>();
-    return filtered
-      .filter((u) => { if (seen.has(u)) return false; seen.add(u); return true; })
-      .map((u) => ({ url: u, anchorText: '' }));
+    return filteredEntries
+      .filter((e) => { if (seen.has(e.loc)) return false; seen.add(e.loc); return true; })
+      .map((e) => ({ url: e.loc, anchorText: '', lastmod: e.lastmod }));
   }
 }

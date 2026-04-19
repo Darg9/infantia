@@ -181,6 +181,18 @@ export class ScrapingPipeline {
       : await this.extractor.extractLinksAllPages(listingUrl, maxPages);
     log.info(`Links totales encontrados: ${allLinks.length}`);
 
+    // SPI — Sitemap Pre-Index: índice url→lastmod para filtrar ANTES del fetch
+    // Solo disponible en fuentes XML (las únicas que incluyen <lastmod>)
+    const lastmodIndex = new Map<string, string>();
+    if (isSitemap) {
+      for (const link of allLinks) {
+        if (link.lastmod) lastmodIndex.set(link.url, link.lastmod);
+      }
+      if (lastmodIndex.size > 0) {
+        log.info(`[SPI] Índice lastmod construido: ${lastmodIndex.size}/${allLinks.length} URLs con lastmod`);
+      }
+    }
+
     // Fallback a Playwright si Cheerio no encontró links (SPA / JS-rendered)
     if (allLinks.length === 0 && !isSitemap) {
       log.warn('Cheerio no encontró links. Intentando con Playwright (SPA fallback)...');
@@ -221,8 +233,20 @@ export class ScrapingPipeline {
     }
 
     // Fase 2.5: Filtrar URLs ya procesadas — doble fuente de verdad
-    // 1ª capa: cache en memoria/disco/BD (rápido, sin query extra)
-    const afterCache = this.cache.filterNew(activityUrls);
+    // 1ª capa: SPI (sitemap) o filterNew (no-sitemap)
+    //   SPI: skip si url en cache Y lastmod ≤ scrapedAt (sin cambios confirmados)
+    //   filterNew: skip si url en cache (comportamiento original)
+    let afterCache: string[];
+    if (isSitemap && lastmodIndex.size > 0) {
+      const spiEntries = activityUrls.map((url) => ({ url, lastmod: lastmodIndex.get(url) }));
+      const { urls, spiSkipped } = this.cache.filterSPI(spiEntries);
+      afterCache = urls;
+      if (spiSkipped > 0) {
+        log.info(`[SPI] ${spiSkipped} URLs sin cambios (lastmod ≤ scrapedAt). A procesar: ${urls.length}`);
+      }
+    } else {
+      afterCache = this.cache.filterNew(activityUrls);
+    }
 
     // Normalización para comparación robusta — evita falsos "nuevos" por:
     //   http vs https, trailing slash, mayúsculas en dominio
@@ -291,7 +315,7 @@ export class ScrapingPipeline {
         const actUrl = newUrls[i];
         try {
           const data = await this.runPipeline(actUrl, host);
-          this.cache.add(actUrl, data.title);
+          this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
           results.push({ url: actUrl, data });
         } catch (error: any) {
           log.error(`Error en ${actUrl}: ${error.message}`);
@@ -306,7 +330,7 @@ export class ScrapingPipeline {
         const batchPromises = batch.map(async (actUrl) => {
           try {
             const data = await this.runPipeline(actUrl, host);
-            this.cache.add(actUrl, data.title);
+            this.cache.add(actUrl, data.title, lastmodIndex.get(actUrl));
             return { url: actUrl, data };
           } catch (error: any) {
             log.error(`Error en ${actUrl}: ${error.message}`);

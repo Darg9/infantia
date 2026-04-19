@@ -9,6 +9,8 @@ type CacheEntry = {
   url: string;
   title: string;
   scrapedAt: string;
+  /** Último <lastmod> visto en el sitemap cuando se scrapeó esta URL. */
+  lastmod?: string;
 };
 
 type CacheData = {
@@ -110,13 +112,66 @@ export class ScrapingCache {
     return url in this.data.entries;
   }
 
-  add(url: string, title: string): void {
-    this.data.entries[url] = { url, title, scrapedAt: new Date().toISOString() };
+  add(url: string, title: string, lastmod?: string): void {
+    this.data.entries[url] = { url, title, scrapedAt: new Date().toISOString(), lastmod };
     this.newEntries.set(url, { title, source: this.sourceName });
   }
 
   filterNew(urls: string[]): string[] {
     return urls.filter((url) => !this.has(url));
+  }
+
+  /**
+   * SPI — Sitemap Pre-Index filter.
+   *
+   * Evita descargar páginas que no han cambiado desde el último scrape.
+   * Lógica por URL:
+   *   - No en cache            → incluir (primera vez)
+   *   - En cache, sin lastmod  → skip (comportamiento conservador)
+   *   - En cache, lastmod > scrapedAt → incluir (página actualizada)
+   *   - En cache, lastmod ≤ scrapedAt → skip (sin cambios confirmados)
+   *
+   * @returns urls  — array de URLs a procesar
+   * @returns spiSkipped — cuántas se saltaron por lastmod
+   */
+  filterSPI(entries: Array<{ url: string; lastmod?: string }>): { urls: string[]; spiSkipped: number } {
+    const urls: string[] = [];
+    let spiSkipped = 0;
+
+    for (const entry of entries) {
+      const cached = this.data.entries[entry.url];
+
+      if (!cached) {
+        // URL nueva — nunca procesada
+        urls.push(entry.url);
+        continue;
+      }
+
+      if (!entry.lastmod) {
+        // Sin información de lastmod → comportamiento conservador: skip
+        spiSkipped++;
+        continue;
+      }
+
+      const lastmodMs  = new Date(entry.lastmod).getTime();
+      const scrapedMs  = new Date(cached.scrapedAt).getTime();
+
+      if (isNaN(lastmodMs)) {
+        // lastmod inválido → skip conservador
+        spiSkipped++;
+        continue;
+      }
+
+      if (lastmodMs > scrapedMs) {
+        // Página modificada después de nuestro último scrape → re-fetch
+        urls.push(entry.url);
+      } else {
+        // Sin cambios
+        spiSkipped++;
+      }
+    }
+
+    return { urls, spiSkipped };
   }
 
   get size(): number {

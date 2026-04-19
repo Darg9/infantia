@@ -14,8 +14,11 @@ import { createLogger } from './logger';
 
 const log = createLogger('quota-tracker');
 
-// Heurístico: cuota gratuita de Gemini renueva a medianoche PST ≈ 3am COL ≈ 8am UTC
-const DEFAULT_RESET_HOURS = 6;
+// Gemini Free Tier renueva a medianoche Pacific Time (PST = UTC-8 / PDT = UTC-7).
+// En lugar de un TTL fijo de 6h (que causa reintentos inútiles antes del reset real),
+// calculamos el próximo medianoche PST ≈ 07:00-08:00 UTC + 30min de margen.
+const GEMINI_RESET_UTC_HOUR = 8; // medianoche PST (UTC-8) = 08:00 UTC, incluyendo margen PDT
+const MIN_WAIT_HOURS = 1;         // espera mínima aunque la medianoche ya pasó hoy
 
 function keyFor(apiKey: string): string {
   // Usa los últimos 8 chars como identificador — no guarda la key completa
@@ -23,10 +26,27 @@ function keyFor(apiKey: string): string {
   return `quota:gemini:${suffix}`;
 }
 
+/**
+ * Calcula el próximo momento en que la cuota de Gemini Free Tier se renovará.
+ * Gemini reset ≈ medianoche PST = 08:00 UTC (con margen para PDT = 07:00 UTC).
+ * Garantiza al menos MIN_WAIT_HOURS de espera para no reintentar demasiado pronto.
+ */
 function estimateReset(): Date {
   const now = new Date();
-  const reset = new Date(now.getTime() + DEFAULT_RESET_HOURS * 60 * 60 * 1000);
-  return reset;
+  const nowMs = now.getTime();
+
+  // Próxima medianoche PST = próximo día a las GEMINI_RESET_UTC_HOUR:00 UTC
+  const candidate = new Date(now);
+  candidate.setUTCHours(GEMINI_RESET_UTC_HOUR, 0, 0, 0);
+
+  // Si ya pasó la hora de reset hoy, usar mañana
+  if (candidate.getTime() <= nowMs) {
+    candidate.setUTCDate(candidate.getUTCDate() + 1);
+  }
+
+  // Garantizar espera mínima
+  const minWaitMs = nowMs + MIN_WAIT_HOURS * 60 * 60 * 1000;
+  return new Date(Math.max(candidate.getTime(), minWaitMs));
 }
 
 let _redis: IORedis | null = null;
@@ -106,5 +126,29 @@ export const quota = {
     } catch {
       return null;
     }
+  },
+
+  /**
+   * Limpia el estado de cuota de todas las keys del pool en Redis.
+   * Usar cuando se sabe que Google ya renovó la cuota (p.ej. después de las 8:00 UTC).
+   */
+  async clearAll(): Promise<number> {
+    const redis = getRedis();
+    if (!redis) return 0;
+
+    const raw = process.env.GEMINI_KEYS ?? process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    const keys = raw.split(',').map((k) => k.trim()).filter(Boolean);
+    let cleared = 0;
+
+    for (const key of keys) {
+      try {
+        const deleted = await redis.del(keyFor(key));
+        if (deleted > 0) cleared++;
+      } catch {
+        // no-op
+      }
+    }
+
+    return cleared;
   },
 };

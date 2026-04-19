@@ -86,7 +86,7 @@ const ALL_SOURCES: Source[] = [
 
   // ── web: Bogotá — instituciones principales ───────────────────────────────
   { name: 'BibloRed',                           channel: 'web', url: 'https://www.biblored.gov.co/eventos',                              cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',  cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Sec. de Cultura, Recreación y Dep.', channel: 'web', url: 'https://www.culturarecreacionydeporte.gov.co/es/agenda',           cityName: 'Bogotá', verticalSlug: 'kids' },
   // Banrep Bogotá inline (antes que otras ciudades) — URL directa de agenda activa
   // Antes: sitemap.xml con 1101 URLs históricas (alto errorCount, mucho consumo de cuota)
   // Ahora: /actividades/bogota con ~40 eventos activos directamente

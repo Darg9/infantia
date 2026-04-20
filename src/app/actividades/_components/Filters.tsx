@@ -50,6 +50,10 @@ interface FiltersProps {
   sort: string;
   facets: Facets;
   total: number;
+  /** Nombre estable de la categoría seleccionada (desde el servidor, no de la lista facetada) */
+  selectedCategoryName?: string;
+  /** Nombre estable de la ciudad seleccionada (desde el servidor, no de la lista facetada) */
+  selectedCityName?: string;
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -67,6 +71,21 @@ const AGE_OPTIONS = [
   { label: '11–14 años',     min: '11', max: '14' },
   { label: '15–18 años',     min: '15', max: '18' },
 ];
+
+/** Labels para el filtro de tipo de actividad */
+const TYPE_LABELS: Record<string, string> = {
+  ONE_TIME:  'Evento único',
+  RECURRING: 'Clases regulares',
+  WORKSHOP:  'Taller',
+  CAMP:      'Campamento',
+};
+
+/** Labels para el filtro de audiencia */
+const AUDIENCE_LABELS: Record<string, string> = {
+  KIDS:   'Solo niños',
+  FAMILY: 'Familias',
+  ADULTS: 'Adultos',
+};
 
 const HISTORY_KEY = 'hp_recent_searches';
 const HISTORY_MAX = 5;
@@ -128,6 +147,7 @@ function Spinner({ className = '' }: { className?: string }) {
 
 export default function Filters({
   search, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, facets, total,
+  selectedCategoryName, selectedCityName,
 }: FiltersProps) {
   const router   = useRouter();
   const pathname = usePathname();
@@ -385,6 +405,12 @@ export default function Filters({
   function handleSort(value: string) {
     navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort: value });
   }
+  function handleType(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price, sort });
+  }
+  function handleAudience(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price, sort });
+  }
   function handleReset() {
     setSearchValue('');
     navigate({});
@@ -411,20 +437,27 @@ export default function Filters({
 
   // ── Chips activos ─────────────────────────────────────────────────────────
 
-  const categoryName = facets.validCategories.find(c => c.id === categoryId)?.name;
-  const cityName     = facets.availableCities.find(c => c.id === cityId)?.name;
+  // IMPORTANT: Usamos los nombres estables del servidor (selectedCategoryName/selectedCityName)
+  // para evitar que el chip desaparezca cuando la lista facetada restringe las opciones.
+  // Fallback a la búsqueda en facets por compatibilidad.
+  const categoryName = selectedCategoryName ?? facets.validCategories.find(c => c.id === categoryId)?.name;
+  const cityName     = selectedCityName     ?? facets.availableCities.find(c => c.id === cityId)?.name;
   const ageName      = ageIndex !== 0 ? AGE_OPTIONS[ageIndex]?.label : null;
   const priceName    = price === 'free' ? 'Gratis' : price === 'paid' ? 'De pago' : null;
+  const typeName     = type ? (TYPE_LABELS[type] ?? type) : null;
+  const audienceName = audience ? (AUDIENCE_LABELS[audience] ?? audience) : null;
 
   type Chip = { key: string; label: string; onRemove: () => void };
   const chips: Chip[] = ([
-    cityName     && { key: 'city',     label: cityName,     onRemove: () => handleCity('')     },
-    categoryName && { key: 'category', label: categoryName, onRemove: () => handleCategory('') },
-    priceName    && { key: 'price',    label: priceName,    onRemove: () => handlePrice('')    },
-    ageName      && { key: 'age',      label: ageName,      onRemove: () => handleAge(0)       },
+    cityName     && { key: 'city',     label: cityName,     onRemove: () => handleCity('')       },
+    categoryName && { key: 'category', label: categoryName, onRemove: () => handleCategory('')   },
+    priceName    && { key: 'price',    label: priceName,    onRemove: () => handlePrice('')      },
+    ageName      && { key: 'age',      label: ageName,      onRemove: () => handleAge(0)         },
+    typeName     && { key: 'type',     label: typeName,     onRemove: () => handleType('')       },
+    audienceName && { key: 'audience', label: audienceName, onRemove: () => handleAudience('')   },
   ] as (Chip | false)[]).filter((c): c is Chip => Boolean(c));
 
-  const hasFilters = !!(search || ageMin || ageMax || categoryId || cityId || price || (sort && sort !== 'relevance'));
+  const hasFilters = !!(search || ageMin || ageMax || categoryId || cityId || price || type || audience || (sort && sort !== 'relevance'));
   const mobileHasChanges = !!(mobileCatId || mobileCityId || mobilePrice || mobileAgeIdx !== 0 || mobileSort !== 'relevance');
 
   // ── Estilos ───────────────────────────────────────────────────────────────
@@ -683,8 +716,8 @@ export default function Filters({
           </option>
         </select>
 
-        {/* Ubicación */}
-        {facets.availableCities.length > 1 && (
+        {/* Ubicación — visible siempre que existan ciudades disponibles o haya una seleccionada */}
+        {(facets.availableCities.length >= 1 || !!cityId) && (
           <select
             value={cityId}
             onChange={e => handleCity(e.target.value)}

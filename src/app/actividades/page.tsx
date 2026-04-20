@@ -245,7 +245,7 @@ export default async function ActividadesPage({
   // Cargar actividades, facets, sesión y categorías populares en paralelo
   let favoriteIds = new Set<string>();
 
-  const [{ activities, total }, facets, sessionUser, topCategories] = await Promise.all([
+  const [{ activities, total }, facets, sessionUser, topCategories, selectedCategory, selectedCity] = await Promise.all([
     listActivities({
       skip,
       pageSize: PAGE_SIZE,
@@ -261,6 +261,13 @@ export default async function ActividadesPage({
       orderBy: { _count: { id: 'desc' } },
       take: 6,
     }),
+    // Nombres estables de los filtros seleccionados (no dependen de la lista facetada)
+    filters.categoryId
+      ? prisma.category.findUnique({ where: { id: filters.categoryId }, select: { name: true } })
+      : Promise.resolve(null),
+    filters.cityId
+      ? prisma.city.findUnique({ where: { id: filters.cityId }, select: { name: true } })
+      : Promise.resolve(null),
   ]);
 
   // Si hay sesión, obtener los favoriteIds del usuario (query adicional pero inevitable)
@@ -320,6 +327,8 @@ export default async function ActividadesPage({
               sort={sortBy}
               facets={facets}
               total={total}
+              selectedCategoryName={selectedCategory?.name}
+              selectedCityName={selectedCity?.name}
             />
           </Suspense>
           <p className="text-xs text-[var(--hp-text-muted)] mt-2 pb-1">{ACTIVITY_DISCLAIMER_SHORT}</p>

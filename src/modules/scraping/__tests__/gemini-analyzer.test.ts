@@ -18,6 +18,7 @@ vi.mock('@google/generative-ai', () => ({
 import { GeminiAnalyzer } from '../nlp/gemini.analyzer';
 
 const validNLPResult = {
+  isActivity: true,
   title: 'Taller de Ciencias',
   description: 'Experimentos para niños de 6 a 12 años',
   categories: ['Ciencia'],
@@ -108,7 +109,8 @@ describe('GeminiAnalyzer', () => {
       });
 
       it('lanza error si la respuesta no cumple el schema Zod', async () => {
-        const invalid = { title: 'Algo', confidenceScore: 'no-numero' };
+        // Necesita isActivity:true para pasar el gate semántico y llegar al check de Zod
+        const invalid = { isActivity: true, title: 'Algo', confidenceScore: 'no-numero' };
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(invalid)));
         const analyzer = new GeminiAnalyzer();
         await expect(analyzer.analyze('texto', 'https://example.com'))
@@ -327,7 +329,8 @@ describe('GeminiAnalyzer', () => {
     });
 
     it('lanza error si respuesta de IG no cumple schema Zod', async () => {
-      const invalidSchema = { title: 'Algo', confidenceScore: 'no-num' };
+      // Necesita isActivity:true para pasar el gate y llegar al check de Zod
+      const invalidSchema = { isActivity: true, title: 'Algo', confidenceScore: 'no-num' };
       mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify(invalidSchema)));
       const analyzer = new GeminiAnalyzer();
       await expect(analyzer.analyzeInstagramPost(samplePost, profileBio))

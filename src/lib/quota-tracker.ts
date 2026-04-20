@@ -80,8 +80,14 @@ export async function getAvailableKey(): Promise<string | null> {
 }
 
 export const quota = {
+  /** Expuesto para testing — permite spyOn en tests sin romper el encapsulamiento */
+  getRedis(): IORedis | null {
+    return getRedis();
+  },
+
+
   async isAvailable(apiKey: string): Promise<boolean> {
-    const redis = getRedis();
+    const redis = this.getRedis();
     if (!redis) return true; // sin Redis → no bloquear
 
     try {
@@ -101,7 +107,7 @@ export const quota = {
   },
 
   async markExhausted(apiKey: string, resetAt?: Date): Promise<void> {
-    const redis = getRedis();
+    const redis = this.getRedis();
     if (!redis) return;
 
     const reset = resetAt ?? estimateReset();
@@ -117,7 +123,7 @@ export const quota = {
   },
 
   async getResetAt(apiKey: string): Promise<Date | null> {
-    const redis = getRedis();
+    const redis = this.getRedis();
     if (!redis) return null;
 
     try {
@@ -133,7 +139,7 @@ export const quota = {
    * Usar cuando se sabe que Google ya renovó la cuota (p.ej. después de las 8:00 UTC).
    */
   async clearAll(): Promise<number> {
-    const redis = getRedis();
+    const redis = this.getRedis();
     if (!redis) return 0;
 
     const raw = process.env.GEMINI_KEYS ?? process.env.GOOGLE_AI_STUDIO_KEY ?? '';

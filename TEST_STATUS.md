@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-20 | Version: v0.12.0
+Actualizado: 2026-04-20 | Version: v0.12.1
 
-## Resumen Actual (v0.12.0 / Data Quality Optimization & Activity Gate)
-- **Archivos de Test:** 73
-- **Tests Totales:** 1203 (+48 vs S53)
+## Resumen Actual (v0.12.1 / Filter UI Stabilization & Test Suite Green)
+- **Archivos de Test:** 75
+- **Tests Totales:** 1215
 - **Estado:** 100% pasando ✅ (0 Skipped, 0 Fallidos)
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
@@ -13,9 +13,9 @@ Actualizado: 2026-04-20 | Version: v0.12.0
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 73 |
-| Tests totales | 1203 |
-| Pasados | 1203 |
+| Archivos de test | 75 |
+| Tests totales | 1215 |
+| Pasados | 1215 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 33) |
 | Statements | >91% ✅ |

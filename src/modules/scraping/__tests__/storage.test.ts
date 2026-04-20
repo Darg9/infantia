@@ -109,6 +109,11 @@ describe('ScrapingStorage.saveBatchResults()', () => {
     mocks.mockProviderUpsert.mockResolvedValue(mocks.mockProvider);
     mocks.mockActivityFindFirst.mockResolvedValue(null);
     mocks.mockActivityCreate.mockResolvedValue(mocks.mockActivity);
+    mocks.mockActivityFindMany.mockResolvedValue([]);
+    mocks.mockCategoryFindMany.mockResolvedValue([]);
+    mocks.mockActivityCategoryUpsert.mockResolvedValue({});
+    mocks.mockContentQualityMetricFindFirst.mockResolvedValue(null);
+    mocks.mockSourceHealthFindMany.mockResolvedValue([]);
     storage = new ScrapingStorage();
   });
 
@@ -258,6 +263,9 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
     mocks.mockProviderUpsert.mockResolvedValue(mocks.mockProvider);
     mocks.mockActivityFindFirst.mockResolvedValue(null);
     mocks.mockActivityCreate.mockResolvedValue(mocks.mockActivity);
+    mocks.mockActivityFindMany.mockResolvedValue([]);
+    mocks.mockCategoryFindMany.mockResolvedValue([]);
+    mocks.mockActivityCategoryUpsert.mockResolvedValue({});
     storage = new ScrapingStorage();
   });
 
@@ -364,15 +372,18 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
     expect(d.schedule).toBe('__JSON_NULL__'); // Our mocked Prisma.JsonNull
   });
 
-  it('usa partial match de categoría (catName includes normalizedName)', async () => {
+  it('usa exact match de categoría (c.name.toLowerCase() === normalizedQuery)', async () => {
+    // El partial match fue eliminado en v0.12.0 — ahora solo match exacto
+    // 'Arte plásticas' NO coincide con 'arte' → no debería upsert
     mocks.mockCategoryFindMany.mockResolvedValue([
-      { id: 'cat-1', name: 'Artes plásticas', verticalId: 'vert-001' },
+      { id: 'cat-1', name: 'Arte plásticas', verticalId: 'vert-001' },
     ]);
     const batch = makeBatchResult([{
       data: { ...actividadNLPBase, categories: ['arte'] },
     }]);
     await storage.saveBatchResults(batch);
-    expect(mocks.mockActivityCategoryUpsert).toHaveBeenCalled();
+    // Sin match exacto → upsert NO debe llamarse
+    expect(mocks.mockActivityCategoryUpsert).not.toHaveBeenCalled();
   });
 });
 

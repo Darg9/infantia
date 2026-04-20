@@ -9,6 +9,14 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.12.1] — 2026-04-20 (Filter UI Stabilization & Test Suite Green)
+
+### Features & Bugfixes
+- **Frontend / UX (Filters):** Se reconstruyó la persistencia de los chips de filtros activos (`Filters.tsx`) obteniendo diccionarios estables de Categoría y Ciudad directamente desde el servidor (Server Component), en lugar de depender de la lista local de facetas (las cuales desaparecían al acotar resultados). 
+- **Filters Expansion:** Se agregaron chips con capacidad de eliminación (clear) para los filtros de Tipo de Actividad (`isType`) y Audiencia (`isAudience`).
+- **Mobile Filters:** Sincronización corregida del modal badge en Mobile con el estado real de la URL.
+- **QA / Test Suite:** Reparación de los tests caídos (`gemini-analyzer`, `storage`, `data-pipeline` y `quota-tracker`) que se desincronizaron por el endurecimiento del `Activity Gate`. Se ajustaron los mocks de validación estricta y se expuso `getRedis()` para inyección limpia de depedencias en testing, restaurando el 100% de la suite de 1215 tests en verde.
+
 ## [v0.12.0] — 2026-04-20 (Activity Gate & Quality Optimization)
 
 ### Features

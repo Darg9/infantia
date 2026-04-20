@@ -5,19 +5,22 @@ import { ActivityNLPResult } from './types';
 // Mapea ruido natural inferido por LLM hacia buckets definidos
 // =============================================================================
 const CATEGORY_MAP: Record<string, string> = {
-  'arte': 'arte-creatividad', 'artes': 'arte-creatividad', 'manualidades': 'arte-creatividad', 'pintura': 'arte-creatividad', 'dibujo': 'arte-creatividad', 
-  'danza': 'danza', 'teatro': 'teatro',
-  'musica': 'musica', 'música': 'musica',
-  'deporte': 'deportes', 'futbol': 'deportes', 'fútbol': 'deportes', 'natacion': 'deportes', 'natación': 'deportes', 
-  'karate': 'artes-marciales', 'artes marciales': 'artes-marciales', 'baloncesto': 'deportes', 'gimnasia': 'deportes', 'skate': 'deportes',
-  'ciencia': 'ciencias', 'tecnologia': 'tecnologia', 'tecnología': 'tecnologia', 'robotica': 'tecnologia', 'robótica': 'tecnologia', 'programacion': 'tecnologia', 'steam': 'ciencias',
-  'aire libre': 'naturaleza', 'naturaleza': 'naturaleza', 'campamento': 'naturaleza', 'parque': 'naturaleza',
-  'idiomas': 'idiomas', 'ingles': 'idiomas', 'inglés': 'idiomas', 'frances': 'idiomas',
-  'juegos': 'juegos', 'gamification': 'juegos', 'juegos de mesa': 'juegos',
-  'talleres': 'arte-creatividad', 'taller': 'arte-creatividad', 'workshop': 'arte-creatividad',
-  'eventos': 'general', 'show': 'general', 'espectaculo': 'general', 'concierto': 'musica',
-  'lectura': 'lectura', 'literatura': 'lectura',
-  'general': 'general'
+  'arte': 'Arte', 'artes': 'Arte', 'manualidades': 'Arte', 'pintura': 'Arte', 'dibujo': 'Arte',
+  'danza': 'Danza', 'teatro': 'Teatro',
+  'musica': 'Música', 'música': 'Música', 'concierto': 'Música',
+  'deporte': 'Deportes', 'deportes': 'Deportes', 'futbol': 'Deportes', 'fútbol': 'Deportes',
+  'natacion': 'Deportes', 'natación': 'Deportes', 'baloncesto': 'Deportes', 'gimnasia': 'Deportes', 'skate': 'Deportes',
+  'karate': 'Artes Marciales', 'artes marciales': 'Artes Marciales',
+  'ciencia': 'Ciencias', 'ciencias': 'Ciencias', 'steam': 'Ciencias',
+  'tecnologia': 'Tecnología', 'tecnología': 'Tecnología', 'robotica': 'Tecnología', 'robótica': 'Tecnología',
+  'programacion': 'Tecnología', 'programación': 'Tecnología',
+  'aire libre': 'Naturaleza', 'naturaleza': 'Naturaleza', 'campamento': 'Naturaleza', 'parque': 'Naturaleza',
+  'idiomas': 'Idiomas', 'ingles': 'Idiomas', 'inglés': 'Idiomas', 'frances': 'Idiomas', 'francés': 'Idiomas',
+  'juegos': 'Juegos', 'gamification': 'Juegos', 'juegos de mesa': 'Juegos',
+  'talleres': 'Arte', 'taller': 'Arte', 'workshop': 'Arte',
+  'lectura': 'Lectura', 'literatura': 'Lectura',
+  'eventos': 'General', 'show': 'General', 'espectaculo': 'General', 'espectáculo': 'General',
+  'general': 'General',
 };
 
 function standardizeCategory(raw: string): string {
@@ -26,8 +29,8 @@ function standardizeCategory(raw: string): string {
   if (mappedSlug) return mappedSlug;
 
   // Logging de ambigüedad para categorías no mapeadas
-  console.warn(`[data-pipeline] UNKNOWN_CATEGORY: "${norm}" (Fallback a general)`);
-  return 'general';
+  console.warn(`[data-pipeline] UNKNOWN_CATEGORY: "${norm}" (Fallback a General)`);
+  return 'General';
 }
 
 function normalizeText(text: string | null): string {

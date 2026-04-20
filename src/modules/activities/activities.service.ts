@@ -286,15 +286,13 @@ export async function listActivities(params: ListParams) {
   const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(effectiveSort);
 
   // 3. Estrategia híbrida: Sql Over-fetch
-  // Para relevance, traemos desde skip=0 con un buffer generoso para que la
-  // diversificación posterior siempre tenga suficientes elementos para cubrir
-  // hasta la página solicitada. Protegemos Vercel con MAX_FETCH=500.
+  // Para relevance, traemos desde skip=0 cubriendo al menos la página pedida + buffer
+  // para que el filtro de score no deje el slice vacío. MAX_FETCH=500 protege Vercel.
   const MAX_FETCH = 500;
 
-  // Buffer = 4× pageSize para compensar la diversificación agresiva por fuente.
-  // Garantiza que tras filtrar duplicados de dominio queden ≥ skip+pageSize elementos.
+  // Buffer = 3× pageSize para absorber actividades filtradas por ranking score.
   const takeAmount = isRelevanceSort
-    ? Math.min(params.skip + params.pageSize * 4, MAX_FETCH)
+    ? Math.min(params.skip + params.pageSize * 3, MAX_FETCH)
     : params.pageSize;
 
   const skipAmount = isRelevanceSort ? 0 : params.skip;
@@ -343,37 +341,46 @@ export async function listActivities(params: ListParams) {
     return { ...act, rankingScore, _domainTemp: domain };
   });
 
-  // 5. Ordenamiento final e Invisibilidad (Safety net redundante)
+  // 5. Ordenamiento final y diversificación POR PÁGINA
+  // IMPORTANTE: la diversificación se aplica DESPUÉS del slice de página para que
+  // nunca bloquee la paginación (si se aplica globalmente, con pocas fuentes/dominios
+  // los primeros N items consumen toda la cuota y las páginas 2+ quedan vacías).
   let totalHidden = 0;
   let diversified: any[] = processedActivities; // fallback para sort no-relevance
-  
+
   if (isRelevanceSort) {
     const initialCount = processedActivities.length;
-    
-    // Ocultar cutoff de ruido, pero mitigando el Incomplete Page
+    // needed = cuántos items necesitamos disponibles para llegar al final de esta página
+    const needed = params.skip + params.pageSize;
+
+    // Filtro de calidad con fallback progresivo según profundidad de página
     let filteredActivities = processedActivities.filter(a => a.rankingScore >= 0.3);
-    
-    // EDGE CASE: Fallback (relajar filtro temporalmente para no dejar huecos de layout UI vacios)
-    if (filteredActivities.length < params.pageSize) {
+    if (filteredActivities.length < needed) {
       filteredActivities = processedActivities.filter(a => a.rankingScore >= 0.2);
     }
-    
+    if (filteredActivities.length < needed) {
+      // Último recurso: mostrar todo antes de dejar la página vacía
+      filteredActivities = processedActivities;
+    }
+
     processedActivities = filteredActivities;
     totalHidden = initialCount - processedActivities.length;
 
+    // Ordenar por score descendente
     processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);
 
-    // Evitar dominancia: máx 8 ítems por dominio fuente.
-    // Valor más alto (vs 5 anterior) para que páginas 2+ tengan suficientes resultados
-    // sin sacrificar diversidad real (un solo dominio no puede copar más del ~8×n slots).
-    const MAX_ITEMS_PER_SOURCE = 8;
+    // Obtener el slice de la página actual
+    const pageSlice = processedActivities.slice(params.skip, params.skip + params.pageSize);
+
+    // Aplicar diversificación de fuentes SOLO dentro de la página
+    // (máx 5 items por dominio por página, no global)
+    const MAX_ITEMS_PER_SOURCE = 5;
     const grouped = new Map<string, number>();
     diversified = [];
 
-    for (const item of processedActivities) {
+    for (const item of pageSlice) {
       const d = item._domainTemp || 'unknown';
       const count = grouped.get(d) || 0;
-
       if (count < MAX_ITEMS_PER_SOURCE) {
         diversified.push(item);
         grouped.set(d, count + 1);
@@ -381,10 +388,10 @@ export async function listActivities(params: ListParams) {
     }
   }
 
-  // 6. Paginación final Slice 
-  const pagedActivities = isRelevanceSort
-    ? diversified.slice(params.skip, params.skip + params.pageSize).map(({ _domainTemp, ...rest }) => rest)
-    : diversified.map(({ _domainTemp, ...rest }) => rest);
+  // 6. Resultado final
+  // — relevance: `diversified` ya contiene exactamente el slice de la página actual
+  // — otros sorts: la paginación la hizo SQL (skipAmount/takeAmount)
+  const pagedActivities = diversified.map(({ _domainTemp, ...rest }) => rest);
 
   // 8. LOGGING OBLIGATORIO
   if (isRelevanceSort) {

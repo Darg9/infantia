@@ -224,10 +224,10 @@ export default function HeroSearch() {
 
     const trimmed = q.trim();
     if (!trimmed) {
-      // 🚀 Fase 2: Ejecuta la query subyacente del Hint Rotativo
+      // Campo vacío: ir a /actividades sin filtros (el hint es solo decorativo)
       setIsSubmitting(true);
       closeDropdown();
-      router.push(currentHref);
+      router.push('/actividades');
       setTimeout(() => setIsSubmitting(false), 800);
       return;
     }

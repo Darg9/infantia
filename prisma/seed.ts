@@ -110,7 +110,7 @@ async function main() {
     { name: 'Desarrollo Personal', slug: 'desarrollo-personal', icon: 'heart', children: [
       { name: 'Yoga Infantil', slug: 'yoga-infantil', icon: 'yoga' },
       { name: 'Mindfulness', slug: 'mindfulness', icon: 'meditation' },
-      { name: 'Cocina para Niños', slug: 'cocina-ninos', icon: 'chef' },
+      { name: 'Cocina', slug: 'cocina', icon: 'chef' },
     ]},
     { name: 'Apoyo Académico', slug: 'apoyo-academico', icon: 'book', children: [
       { name: 'Tutorías', slug: 'tutorias', icon: 'tutor' },

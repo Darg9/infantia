@@ -12,7 +12,7 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
   'arte-y-creatividad':  'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)',
   'artes-marciales':     'linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%)',
   'ciencias':            'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-  'cocina-para-ninos':   'linear-gradient(135deg, #fb923c 0%, #fde68a 100%)',
+  'cocina':              'linear-gradient(135deg, #fb923c 0%, #fde68a 100%)',
   'danza':               'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
   'deportes':            'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
   'lectura':             'linear-gradient(135deg, #d97706 0%, #92400e 100%)',

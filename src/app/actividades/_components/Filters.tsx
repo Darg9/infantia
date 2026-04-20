@@ -343,7 +343,9 @@ export default function Filters({
     setSearchValue(value);
     fetchSuggestions(value);
     // Debounce para actualizar los resultados de la página
+    // Solo navegar si el campo está vacío (limpiar) o tiene ≥ 3 caracteres
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (value.length > 0 && value.length < 3) return; // esperar más caracteres
     debounceRef.current = setTimeout(() => {
       navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
       if (value.trim().length >= 3) {

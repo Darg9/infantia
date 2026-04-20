@@ -27,7 +27,7 @@ describe('getCategoryEmoji', () => {
   it('es case-insensitive', () => {
     expect(getCategoryEmoji('MÚSICA')).toBe('🎵');
     expect(getCategoryEmoji('teatro')).toBe('🎭');
-    expect(getCategoryEmoji('Cocina Para Niños')).toBe('👨‍🍳');
+    expect(getCategoryEmoji('Cocina')).toBe('👨‍🍳');
   });
 
   it('devuelve ✨ para categorías sin match', () => {

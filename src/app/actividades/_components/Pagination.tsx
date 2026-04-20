@@ -1,10 +1,12 @@
-'use client';
-
 // =============================================================================
 // Pagination — controles de paginación para /actividades
+// Usa <a> nativas en lugar de router.push para evitar desfase entre el
+// estado del cliente y lo que el Server Component recibe como searchParams.
 // =============================================================================
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+'use client';
+
+import { usePathname, useSearchParams } from 'next/navigation';
 
 interface PaginationProps {
   page: number;
@@ -12,16 +14,20 @@ interface PaginationProps {
 }
 
 export default function Pagination({ page, totalPages }: PaginationProps) {
-  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
   if (totalPages <= 1) return null;
 
-  function goTo(newPage: number) {
+  function hrefFor(newPage: number): string {
     const sp = new URLSearchParams(searchParams.toString());
-    sp.set('page', String(newPage));
-    router.push(`${pathname}?${sp.toString()}`);
+    if (newPage === 1) {
+      sp.delete('page');
+    } else {
+      sp.set('page', String(newPage));
+    }
+    const qs = sp.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
   }
 
   // Genera array de páginas a mostrar (máx 7 números)
@@ -37,41 +43,41 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
     return pages;
   }
 
+  const anchorCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors';
+  const disabledCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 opacity-40 cursor-not-allowed pointer-events-none';
+
   return (
-    <div className="flex items-center justify-center gap-1">
-      <button
-        onClick={() => goTo(page - 1)}
-        disabled={page === 1}
-        className="rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        ← Anterior
-      </button>
+    <nav aria-label="Paginación" className="flex items-center justify-center gap-1">
+      {page === 1 ? (
+        <span className={disabledCls}>← Anterior</span>
+      ) : (
+        <a href={hrefFor(page - 1)} className={anchorCls}>← Anterior</a>
+      )}
 
       {getPages().map((p, i) =>
         p === '…' ? (
-          <span key={`ellipsis-${i}`} className="px-2 text-[var(--hp-text-muted)] text-sm">…</span>
+          <span key={`ellipsis-${i}`} className="px-2 text-[var(--hp-text-muted)] text-sm" aria-hidden>…</span>
         ) : (
-          <button
+          <a
             key={p}
-            onClick={() => goTo(p as number)}
+            href={hrefFor(p as number)}
+            aria-current={p === page ? 'page' : undefined}
             className={
               p === page
-                ? 'rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white'
-                : 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors'
+                ? 'rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white pointer-events-none'
+                : anchorCls
             }
           >
             {p}
-          </button>
+          </a>
         )
       )}
 
-      <button
-        onClick={() => goTo(page + 1)}
-        disabled={page >= totalPages}
-        className="rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      >
-        Siguiente →
-      </button>
-    </div>
+      {page >= totalPages ? (
+        <span className={disabledCls}>Siguiente →</span>
+      ) : (
+        <a href={hrefFor(page + 1)} className={anchorCls}>Siguiente →</a>
+      )}
+    </nav>
   );
 }

@@ -94,6 +94,7 @@ export class ClaudeAnalyzer {
 
   private mockAnalysis(url: string): ActivityNLPResult {
     return {
+      isActivity: true,
       title: 'Actividad Infantil (Mock)',
       description: `Extracción simulada de ${url}`,
       categories: ['General'],

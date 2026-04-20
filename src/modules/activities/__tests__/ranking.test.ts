@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { computeActivityScore } from '../ranking';
 import { ctrToBoost } from '../../analytics/metrics';
-import { Activity } from '../../../generated/prisma/client';
+import { Activity, Prisma } from '../../../generated/prisma/client';
 
 describe('Activity Ranking Engine - Curaduría y Pruebas Exhaustivas', () => {
   const baseActivity: Partial<Activity> & { _count?: { views: number } } = {
@@ -163,16 +163,16 @@ describe('Activity Ranking Engine - Curaduría y Pruebas Exhaustivas', () => {
     it('otorga +5% por cada atributo clave existente sin rebasar el +15%', () => {
       const baseScore = computeActivityScore(baseActivity, 1.0); // 0.85 crudo, boost X1.0
 
-      const conPrecio = { ...baseActivity, price: 0 };
+      const conPrecio = { ...baseActivity, price: new Prisma.Decimal(0) };
       expect(computeActivityScore(conPrecio, 1.0)).toBeCloseTo(baseScore * 1.05, 5);
 
-      const conPrecioYEdad = { ...baseActivity, price: 50000, ageMin: 4 };
+      const conPrecioYEdad = { ...baseActivity, price: new Prisma.Decimal(50000), ageMin: 4 };
       expect(computeActivityScore(conPrecioYEdad, 1.0)).toBeCloseTo(baseScore * 1.10, 5);
 
       const conUbicacion = { ...baseActivity, locationId: 'loc-1' };
       expect(computeActivityScore(conUbicacion, 1.0)).toBeCloseTo(baseScore * 1.05, 5);
 
-      const actoPerfecto = { ...baseActivity, price: 0, ageMax: 8, locationId: 'loc-2' };
+      const actoPerfecto = { ...baseActivity, price: new Prisma.Decimal(0), ageMax: 8, locationId: 'loc-2' };
       expect(computeActivityScore(actoPerfecto, 1.0)).toBeCloseTo(baseScore * 1.15, 5);
     });
   });

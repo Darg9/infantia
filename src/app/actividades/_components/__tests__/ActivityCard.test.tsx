@@ -26,6 +26,8 @@ const baseActivity = {
   pricePeriod: 'FREE',
   imageUrl: null,
   sourceUrl: 'https://example.com',
+  sourceDomain: 'example.com',
+  duplicatesCount: 0,
   // createdAt hace 1 día → entra dentro de los 7 días
   createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
   provider: { name: 'BibloRed', isVerified: true, isPremium: false },

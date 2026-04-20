@@ -71,6 +71,7 @@ import { ScrapingStorage } from '../storage';
 // Fixtures
 // ---------------------------------------------------------------------------
 const actividadNLPBase: ActivityNLPResult = {
+  isActivity: true,
   title: 'Taller de arte para niños',
   description: 'Taller creativo en el centro cultural para todas las edades garantizando diversión.',
   categories: ['Arte'],

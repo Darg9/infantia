@@ -141,6 +141,7 @@ export function fallbackFromCheerio(raw: ScrapedRawData): ParseResult {
   }
 
   const result: ActivityNLPResult = {
+    isActivity: true,
     title,
     description,
     categories,

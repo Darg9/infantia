@@ -284,6 +284,7 @@ export class GeminiAnalyzer {
       if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
         log.warn('Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
         return {
+          isActivity: false,
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${url}`,
           categories: ['Sin categoría'],
@@ -509,6 +510,7 @@ ${profileBio}`;
       if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
         log.warn('Confianza < 0.1 — el post no parece ser una actividad infantil.');
         return {
+          isActivity: false,
           title: 'No identificado',
           description: `No se encontró información de actividad infantil en ${post.url}`,
           categories: ['Sin categoría'],
@@ -536,6 +538,7 @@ ${profileBio}`;
 
   private mockAnalysis(url: string): ActivityNLPResult {
     return {
+      isActivity: true,
       title: 'Actividad Infantil (Mock)',
       description: `Extracción simulada de ${url}`,
       categories: ['General'],

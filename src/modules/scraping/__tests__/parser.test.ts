@@ -43,6 +43,7 @@ function makeRaw(overrides: Partial<ScrapedRawData> = {}): ScrapedRawData {
 
 function makeNLPResult(overrides: Partial<ActivityNLPResult> = {}): ActivityNLPResult {
   return {
+    isActivity:      true,
     title:           'Taller de Arte',
     description:     'Taller de pintura para niños.',
     categories:      ['Arte'],

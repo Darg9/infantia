@@ -9,6 +9,7 @@ import type { ActivityNLPResult } from '../types';
 
 // ── Fixture base válida ────────────────────────────────────────────────────────
 const base: ActivityNLPResult = {
+  isActivity: true,
   title: 'Taller de arte para niños',
   description: 'Taller creativo en el centro cultural para todas las edades, garantizando diversión y aprendizaje.',
   categories: ['Arte'],

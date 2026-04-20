@@ -15,6 +15,8 @@
 //   - No modifica datos — solo devuelve pass/fail + motivo
 // =============================================================================
 
+import type { ActivityNLPResult } from '../types';
+
 export interface GateResult {
   pass: boolean;
   score: number;      // 0.0 – 1.0

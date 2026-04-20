@@ -112,3 +112,44 @@ export function ctrToBoost(ctr: number): number {
 export function clearCTRCacheForTests(): void {
   ctrCache = null;
 }
+
+/**
+ * Obtiene métricas promedio (saveRate, avgCost) de los últimos 5 runs por fuente.
+ * Se utiliza para calcular heurísticas del Predictitve Scheduler.
+ */
+export async function getSourceAggregatedStats(sourceId: string, limit: number = 5): Promise<{ saveRate: number; avgCost: number }> {
+  try {
+    const rows = await prisma.$queryRawUnsafe<any[]>(`
+      SELECT posts_detected, posts_parsed
+      FROM "ingest_metrics"
+      WHERE source_id = $1
+      ORDER BY id DESC
+      LIMIT $2
+    `, sourceId, limit);
+
+    if (!rows || rows.length === 0) {
+      return { saveRate: 0, avgCost: 0 };
+    }
+
+    let totalDiscovered = 0;
+    let totalSaved = 0;
+    let totalCalls = 0; // Aproximamos llamadas como urls totales detectadas + costs extras de parsing.
+
+    for (const row of rows) {
+      const detected = Number(row.posts_detected) || 0;
+      const saved = Number(row.posts_parsed) || 0;
+      totalDiscovered += detected;
+      totalSaved += saved;
+      // Estimación del costo real de esa ejecución
+      totalCalls += detected; 
+    }
+
+    const saveRate = totalDiscovered > 0 ? totalSaved / totalDiscovered : 0;
+    const avgCost = totalCalls / rows.length;
+
+    return { saveRate, avgCost };
+  } catch (err) {
+    log.error('Error fetching source aggregated stats', { error: err instanceof Error ? err.message : String(err), sourceId });
+    return { saveRate: 0, avgCost: 0 }; // Fallback neutro
+  }
+}

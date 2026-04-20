@@ -23,6 +23,7 @@ const activityIncludes = {
   },
   vertical: { select: { id: true, slug: true, name: true } },
   categories: { select: { category: { select: { id: true, name: true, slug: true } } } },
+  _count: { select: { views: true } }
 } satisfies Prisma.ActivityInclude;
 
 // =========================================================================
@@ -124,6 +125,10 @@ function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInp
 }
 
 export async function listActivities(params: ListParams) {
+  // SAFETY NET: Feature Flag global para apagar el ranking y forzar cronológico transversalmente
+  const isForced = process.env.FORCE_CHRONO === 'true';
+  const effectiveSort = isForced ? 'newest' : params.sortBy;
+
   const where: Prisma.ActivityWhereInput = {};
 
   if (params.status) {
@@ -260,7 +265,7 @@ export async function listActivities(params: ListParams) {
   }
 
   // 2. Filtrado mínimo pre-SQL para aliviar presión y asegurar páginas completas
-  const isRelevanceSort = !params.sortBy || params.sortBy === 'relevance';
+  const isRelevanceSort = !effectiveSort || effectiveSort === 'relevance';
   
   if (isRelevanceSort && badDomains.length > 0) {
     // IMPORTANTE: NOT IN en SQL excluye NULLs (NULL NOT IN (...) → NULL, no TRUE).
@@ -278,7 +283,7 @@ export async function listActivities(params: ListParams) {
     where.AND = andConditions;
   }
 
-  const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(params.sortBy);
+  const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(effectiveSort);
 
   // 3. Estrategia híbrida: Sql Over-fetch 
   // Multiplicamos por 3 el buffer y aseguramos que no se exceda el MAX_FETCH (200) para protección de Vercel.
@@ -394,7 +399,14 @@ export async function listActivities(params: ListParams) {
     log.info('Búsqueda de actividades completada', { action: 'activity_search', result: 'success', results: finalTotal });
   }
 
-  return { activities: pagedActivities, total: finalTotal };
+  return { 
+    activities: pagedActivities, 
+    total: finalTotal,
+    meta: {
+      sort: effectiveSort,
+      forced: isForced
+    }
+  };
 }
 
 export async function getActivityById(id: string) {

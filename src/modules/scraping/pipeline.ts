@@ -553,6 +553,67 @@ export class ScrapingPipeline {
   }
 
   /**
+   * Recovery Pipeline (PARSE_ONLY mode).
+   * Omite la fase completa de discovery y preflight de URLs y se dirige directamente a intentar reparar 
+   * el scraping de URLs problemáticas registradas con cuota Gemini usando un fetch determinista y parseo profundo.
+   */
+  async runReparsePipeline(urls: string[], listingUrl: string): Promise<BatchPipelineResult> {
+    const host = new URL(listingUrl).hostname.replace('www.', '');
+    log.info(`\n[REPARSE] ========== INICIO REPARSE PIPELINE ==========`);
+    log.info(`Dominio: ${host} | URLs a intentar recuperar: ${urls.length}`);
+
+    // Sincronizar cache solo para reparse
+    this.cache.setSource(host);
+    await this.cache.syncFromDb(host);
+
+    const results: BatchPipelineResult['results'] = [];
+    let savedCount = 0;
+
+    for (let i = 0; i < urls.length; i++) {
+        const actUrl = urls[i];
+        try {
+          const data = await this.runPipeline(actUrl, host, { skipPreflight: true });
+          
+          this.cache.add(actUrl, data.title, undefined, {
+            parserSource:    data.parserSource,
+            confidenceScore: data.confidenceScore,
+          });
+
+          const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
+          if (this.storage && data.confidenceScore >= streamThreshold) {
+            try {
+              await this.storage.saveActivity(data, actUrl);
+              log.info(`[REPARSE-STREAMING] ✅ Recuperada: "${data.title}" (score=${data.confidenceScore})`);
+              savedCount++;
+            } catch (err: any) {
+              log.warn(`[REPARSE-STREAMING] Error (non-fatal): ${err?.message}`);
+            }
+          }
+          results.push({ url: actUrl, data });
+        } catch (error: any) {
+          log.error(`[REPARSE] Error en ${actUrl}: ${error.message}`);
+          results.push({ url: actUrl, data: null, error: error.message });
+        }
+        log.info(`Reparse Progreso: ${i + 1}/${urls.length}`);
+    }
+
+    this.cache.save();
+    await this.cache.saveToDb();
+
+    log.info(`========== FIN REPARSE PIPELINE ==========`);
+    log.info(`Recuperadas y Guardadas: ${savedCount}/${urls.length}`);
+
+    return {
+      sourceUrl: listingUrl,
+      sourceId: host,
+      discoveredLinks: urls.length,
+      filteredLinks: urls.length,
+      savedCount,
+      results
+    };
+  }
+
+  /**
    * Scrape an Instagram profile: extract posts, analyze each with Gemini,
    * optionally save to DB. Posts are processed sequentially to avoid bans.
    */

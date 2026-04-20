@@ -35,6 +35,11 @@ import { ScrapingPipeline } from '../src/modules/scraping/pipeline';
 import { enqueueBatchJob, closeScrapingQueue, closeRedisConnection } from '../src/modules/scraping/queue';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
+import { buildPredictivePlan } from '../src/modules/scraping/scheduler/scheduler.core';
+import { getSourceAggregatedStats } from '../src/modules/analytics/metrics';
+import { getCTRByDomain } from '../src/modules/analytics/metrics';
+import { quota } from '../src/lib/quota-tracker';
+import { ScrapingCache } from '../src/modules/scraping/cache';
 
 type Channel = 'web' | 'instagram' | 'tiktok' | 'facebook' | 'telegram';
 
@@ -238,7 +243,7 @@ function selectSources(channelArg: string | null, sourceArg: string | null): Sou
   return sources;
 }
 
-// ── Runners ────────────────────────────────────────────────────────────────────
+// ── Runners / Predictive Scheduler ─────────────────────────────────────────────
 
 async function saveMetrics(
   prisma: PrismaClient,
@@ -265,10 +270,72 @@ async function saveMetrics(
   }
 }
 
-async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
-  console.log(`\n🚀 INGESTA SECUENCIAL — ${sources.length} fuentes`);
+/** 
+ * Recopila estadísticas y construye el plan según el presupuesto de Gemini (Predictive Scheduler).
+ */
+async function buildRunPlan(sources: Source[]) {
+  const { prisma } = require('../src/lib/db');
+  const [healthData, ctrMap, budget] = await Promise.all([
+    prisma.sourceHealth.findMany({ select: { source: true, score: true } }),
+    getCTRByDomain(),
+    quota.getRemaining()
+  ]);
+
+  const healthDict: Record<string, number> = {};
+  for (const h of healthData) {
+    healthDict[h.source] = h.score;
+  }
+
+  // Pre-cargar stats para cada fuente
+  const sourceInputs = [];
+  const dummyCache = new ScrapingCache(); // Solo para leer count de reparse offline
+
+  for (const source of sources) {
+    const host = new URL(source.url).hostname.replace('www.', '');
+    const { saveRate, avgCost } = await getSourceAggregatedStats(host, 5);
+    const ctr = (ctrMap as Record<string, number>)[host] ?? 0;
+    const score = healthDict[host] ?? 0.5;
+
+    // Conteo de deuda (necesita reparse) local. Asumimos sincronización paralela en pipeline para precisión.
+    dummyCache.setSource(host);
+    await dummyCache.syncFromDb(host);
+    const reparseUrls = dummyCache.getReparseUrlsByDomain(host);
+
+    const isGov = host.includes('.gov.co');
+
+    sourceInputs.push({
+      source,
+      stats: {
+        sourceId: host,
+        ctr7d: ctr,
+        saveRate,
+        health: score,
+        avgCost,
+        reparseCount: reparseUrls.length,
+        isGov
+      }
+    });
+  }
+
+  return buildPredictivePlan(sourceInputs, budget);
+}
+
+/** Ejecuta el plan preparado de forma sincrónica. */
+async function runDirect(sources: Source[], dryRun: boolean) {
+  console.log(`\n🚀 SCHEDULER PREDICTIVO (Direct) — Evaluando ${sources.length} fuentes`);
   console.log(`   Modo: ${dryRun ? 'DRY RUN (sin guardar)' : 'GUARDAR EN BD'}`);
-  console.log(`   Páginas máx por fuente: ${maxPages}\n`);
+  
+  const planResult = await buildRunPlan(sources);
+
+  if (dryRun) {
+     console.log('\n📊 DRY RUN (Plan de Ejecución Esperado):');
+     console.log(JSON.stringify({
+       budgetUsed: planResult.budgetUsed,
+       plannedSources: planResult.planned.map(p => ({ source: p.source.name, mode: p.mode, cost: p.estimatedCost, maxUrls: p.maxUrls })),
+       skippedSources: planResult.skipped.map(s => ({ source: s.source.name, reason: s.reason }))
+     }, null, 2));
+     return;
+  }
 
   const connectionString = `${process.env.DATABASE_URL}`;
   const adapter = new PrismaPg({ connectionString });
@@ -276,10 +343,11 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
 
   const summary: { name: string; saved: number; failed: number; skipped: number }[] = [];
 
-  for (const source of sources) {
+  for (const item of planResult.planned) {
+    const source = item.source as Source;
     const icon = CHANNEL_ICON[source.channel];
     console.log(`\n${'='.repeat(60)}`);
-    console.log(`${icon} ${source.name}`);
+    console.log(`${icon} ${source.name} [MODO: ${item.mode}] [Presupuesto: max ${item.maxUrls} urls]`);
     console.log(`  ${source.url}`);
     console.log('='.repeat(60));
 
@@ -287,33 +355,47 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
     try {
       let saved = 0, failed = 0, skipped = 0;
 
-      switch (source.channel) {
-        case 'instagram': {
-          const result = await pipeline.runInstagramPipeline(source.url, source.instagram ?? {});
-          // savedCount = realmente persistidas en BD (excluye baja confianza, rechazos de calidad, duplicados)
-          saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
-          failed  = result.results.filter((r) => !r.data && r.error).length;
-          skipped = result.postsExtracted - result.results.length;
-          const errorType = result.results.some((r) => r.error?.includes('QUOTA_EXHAUSTED')) ? 'quota'
-            : failed > 0 ? 'parse' : null;
-          await saveMetrics(metricsPrisma, source, result.postsExtracted, saved, failed, errorType);
-          break;
+      if (item.mode === 'PARSE_ONLY') {
+         // CIRCUITO CORTO: Entrar directo al Rescue Pipeline prescindiendo de discovery
+         const host = new URL(source.url).hostname.replace('www.', '');
+         const tempCache = new ScrapingCache();
+         await tempCache.syncFromDb(host);
+         const rescueUrls = tempCache.getReparseUrlsByDomain(host);
+
+         if (rescueUrls.length > 0) {
+           const limitedRescue = rescueUrls.slice(0, item.maxUrls); // Safe limit
+           const result = await pipeline.runReparsePipeline(limitedRescue, source.url);
+           saved = result.savedCount ?? result.results.filter(r => r.data).length;
+           failed = result.results.filter(r => !r.data).length;
+         }
+      } else {
+        // FLUJO STANDARD CON MAX PAGES ALTERADO POR EL BUDGET
+        switch (source.channel) {
+          case 'instagram': {
+            const igConfig = Object.assign({}, source.instagram ?? {}, { maxPosts: item.maxUrls });
+            const result = await pipeline.runInstagramPipeline(source.url, igConfig);
+            saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
+            failed  = result.results.filter((r) => !r.data && r.error).length;
+            skipped = result.postsExtracted - result.results.length;
+            const errorType = result.results.some((r) => r.error?.includes('QUOTA_EXHAUSTED')) ? 'quota' : failed > 0 ? 'parse' : null;
+            await saveMetrics(metricsPrisma, source, result.postsExtracted, saved, failed, errorType);
+            break;
+          }
+          case 'web':
+          case 'tiktok':
+          case 'facebook':
+          case 'telegram': {
+            const result = await pipeline.runBatchPipeline(source.url, { maxPages: item.maxUrls, sitemapPatterns: source.sitemapPatterns });
+            saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
+            failed  = result.results.filter((r) => !r.data).length;
+            skipped = result.discoveredLinks - result.filteredLinks;
+            const errorType = failed > 0 ? 'parse' : null;
+            await saveMetrics(metricsPrisma, source, result.filteredLinks, saved, failed, errorType);
+            break;
+          }
+          default:
+            throw new Error(`Canal desconocido: ${(source as Source).channel}`);
         }
-        case 'web':
-        case 'tiktok':
-        case 'facebook':
-        case 'telegram': {
-          const result = await pipeline.runBatchPipeline(source.url, { maxPages, sitemapPatterns: source.sitemapPatterns });
-          // savedCount = realmente persistidas en BD (excluye Date Preflight descarts, baja confianza, rechazos)
-          saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
-          failed  = result.results.filter((r) => !r.data).length;
-          skipped = result.discoveredLinks - result.filteredLinks;
-          const errorType = failed > 0 ? 'parse' : null;
-          await saveMetrics(metricsPrisma, source, result.filteredLinks, saved, failed, errorType);
-          break;
-        }
-        default:
-          throw new Error(`Canal desconocido: ${(source as Source).channel}`);
       }
 
       summary.push({ name: source.name, saved, failed, skipped });
@@ -332,61 +414,52 @@ async function runDirect(sources: Source[], dryRun: boolean, maxPages: number) {
   await metricsPrisma.$disconnect();
 
   console.log(`\n${'='.repeat(60)}`);
-  console.log('📊 RESUMEN FINAL');
+  console.log('📊 RESUMEN FINAL SCHEDULER');
   console.log('='.repeat(60));
   for (const s of summary) {
     console.log(`  ${s.name.padEnd(32)} ✅ ${s.saved} guardadas  ❌ ${s.failed} fallidas`);
   }
   const totalSaved = summary.reduce((acc, s) => acc + s.saved, 0);
-  console.log(`\n  TOTAL NUEVAS: ${totalSaved} actividades\n`);
+  console.log(`\n  TOTAL NUEVAS (Direct): ${totalSaved} actividades\n`);
 }
 
-async function runQueue(sources: Source[], maxPages: number) {
-  console.log(`\n🚀 ENCOLANDO — ${sources.length} fuentes en Redis/BullMQ`);
-  console.log(`   Páginas máx por fuente: ${maxPages}`);
+async function runQueue(sources: Source[]) {
+  console.log(`\n🚀 SCHEDULER PREDICTIVO (Encolando en Redis/BullMQ)`);
+  
+  const planResult = await buildRunPlan(sources);
+  console.log(`   Fuentes Aprobadas por presupuesto: ${planResult.planned.length} / ${sources.length}`);
   console.log(`   Asegúrate de que el worker esté corriendo: npx tsx scripts/run-worker.ts\n`);
 
-  const { prisma } = require('../src/lib/db');
-  const { getCTRByDomain, ctrToBoost } = await import('../src/modules/analytics/metrics');
-
-  const [healthData, ctrMap] = await Promise.all([
-    prisma.sourceHealth.findMany({ select: { source: true, score: true } }),
-    getCTRByDomain(),
-  ]);
-  const healthDict: Record<string, number> = {};
-  for (const h of healthData) {
-    healthDict[h.source] = h.score;
-  }
-
-  for (const source of sources) {
+  for (const item of planResult.planned) {
+    const source = item.source as Source;
     const host = new URL(source.url).hostname.replace('www.', '');
-    const score = healthDict[host] ?? 0.5; // neutral fallback
 
-    // Prioridad base por salud de la fuente (1=Alta, 2=Normal, 3=Baja)
-    let healthPriority = 2;
-    if (score > 0.8) healthPriority = 1;
-    else if (score < 0.4) healthPriority = 3;
-
-    // Prioridad por CTR real: fuentes con más conversión se scrapean primero
-    const ctr = (ctrMap as Record<string, number>)[host] ?? 0;
-    const ctrPriority = ctr > 0.3 ? 1 : ctr > 0.15 ? 2 : 3;
-
-    // Combinar: Math.min toma el más prioritario (número menor = más urgente)
-    const priority = Math.min(healthPriority, ctrPriority);
+    if (item.mode === 'PARSE_ONLY') {
+       console.log(`  ⚡ ${source.name.padEnd(32)} → MODO PARSE_ONLY no bloqueante. Ejecutando salvamento in-place preventivo...`);
+       const pipeline = new ScrapingPipeline({ saveToDb: true, cityName: source.cityName, verticalSlug: source.verticalSlug });
+       const tempCache = new ScrapingCache();
+       await tempCache.syncFromDb(host);
+       const rescueUrls = tempCache.getReparseUrlsByDomain(host);
+       if (rescueUrls.length > 0) {
+          const limitedRescue = rescueUrls.slice(0, item.maxUrls);
+          await pipeline.runReparsePipeline(limitedRescue, source.url);
+       }
+       await pipeline.disconnect();
+       continue;
+    }
 
     const id = await enqueueBatchJob({
       url:             source.url,
       cityName:        source.cityName ?? 'Bogotá',
       verticalSlug:    source.verticalSlug ?? 'kids',
-      maxPages,
+      maxPages:        item.maxUrls,
       sitemapPatterns: source.sitemapPatterns,
-    }, { priority });
+    }, { priority: item.mode === 'DEEP' ? 1 : item.mode === 'SURFACE' ? 2 : 3 });
 
-    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id} (P:${priority} health:${score.toFixed(2)} ctr:${ctr.toFixed(3)})`);
-    console.info(JSON.stringify({ event: 'ctr_priority_applied', domain: host, ctr, priority }));
+    console.log(`  ✅ ${source.name.padEnd(32)} → job ${id} (Modo: ${item.mode} MaxUrls: ${item.maxUrls})`);
   }
 
-  console.log(`\n  ${sources.length} jobs encolados. El worker los procesa secuencialmente.\n`);
+  console.log(`\n  Jobs encolados y salvamentos ejecutados.\n`);
   await closeScrapingQueue();
   await closeRedisConnection();
 }
@@ -396,7 +469,6 @@ async function runQueue(sources: Source[], maxPages: number) {
 async function main() {
   const args = process.argv.slice(2);
 
-  // --list
   if (args.includes('--list')) {
     printList();
     return;
@@ -404,8 +476,11 @@ async function main() {
 
   const dryRun     = args.includes('--dry-run');
   const useQueue   = args.includes('--queue');
-  const maxPagesArg = args.find((a) => a.startsWith('--max-pages='));
-  const maxPages   = maxPagesArg ? parseInt(maxPagesArg.split('=')[1], 10) : 10;
+
+  // Ignoramos --max-pages CLI si es proporcionado explícitamente y lo dejamos al Scheduler
+  if (args.some(a => a.startsWith('--max-pages='))) {
+      console.warn('⚠️ Parámetro --max-pages ignorado. Ahora es operado dinámicamente por el predictive scheduler.');
+  }
 
   const channelArg = args.find((a) => a.startsWith('--channel='))?.split('=')[1] ?? null;
   const sourceArg  = args.find((a) => a.startsWith('--source='))?.split('=')[1]  ?? null;
@@ -418,13 +493,12 @@ async function main() {
       sourceArg  && `source="${sourceArg}"`,
     ].filter(Boolean).join(' + ');
     console.log(`🔍 Filtros activos [${label}]: ${sources.length}/${ALL_SOURCES.length} fuentes seleccionadas`);
-    for (const s of sources) console.log(`   ${CHANNEL_ICON[s.channel]} ${s.name}`);
   }
 
   if (useQueue) {
-    await runQueue(sources, maxPages);
+    await runQueue(sources);
   } else {
-    await runDirect(sources, dryRun, maxPages);
+    await runDirect(sources, dryRun);
   }
 }
 

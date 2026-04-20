@@ -29,6 +29,9 @@ interface Activity {
   pricePeriod: string | null;
   imageUrl: string | null;
   sourceUrl: string | null;
+  sourceDomain: string | null;
+  duplicatesCount: number;
+  _count?: { views: number };
   createdAt: Date;
   provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
   location: {
@@ -92,6 +95,18 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
   const isNew = activity.status !== 'EXPIRED'
     && Date.now() - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
 
+  // ── Product Trust Signals ──
+  const isFeatured = (activity.duplicatesCount ?? 0) >= 1;
+  const OFFICIAL_DOMAINS = ['.gov.co', 'biblored.gov.co', 'idartes.gov.co', 'planetariodebogota.gov.co'];
+  const isOfficial = OFFICIAL_DOMAINS.some(d => activity.sourceDomain?.endsWith(d));
+  const isPopular = (activity._count?.views ?? 0) >= 10;
+
+  // Resolver visibilidad de overlays prioritarios (Permitir hasta 2 si son Featured y Official)
+  const shouldShowFeatured = isFeatured;
+  const shouldShowOfficial = isOfficial;
+  // Popular solo se muestra si no hay otros badges para no saturar 3 al mismo tiempo
+  const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowOfficial;
+
   const cardContent = (
     <div className="group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
 
@@ -117,11 +132,30 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         )}
 
         {/* Badge tipo — oculto en compact */}
-        {!compact && (
+        {!compact && !shouldShowFeatured && !shouldShowOfficial && !shouldShowPopular && (
           <span className="absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-sm">
             {TYPE_LABELS[activity.type] ?? activity.type}
           </span>
         )}
+
+        {/* ── Badges de Producto (Max 2 permitidos) ── */}
+        <div className="absolute top-1.5 left-2 flex gap-1 items-start max-w-[80%] flex-wrap">
+          {shouldShowFeatured && (
+            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-[0_0_8px_rgba(251,191,36,0.5)] border border-amber-300">
+              ⭐ Destacado
+            </span>
+          )}
+          {shouldShowOfficial && (
+            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-900 shadow-sm border border-indigo-200">
+              🛡️ Oficial
+            </span>
+          )}
+          {shouldShowPopular && (
+            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-900 shadow-sm border border-rose-200">
+              🔥 Popular
+            </span>
+          )}
+        </div>
 
         {/* Badge precio */}
         {priceLabel !== 'No disponible' && (
@@ -140,16 +174,16 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           </span>
         )}
 
-        {/* Badge Destacado — proveedor premium */}
-        {activity.provider?.isPremium && (
+        {/* Badge Destacado — proveedor premium puro (se quita si isFeatured manda arriba, para no sobrecargar) */}
+        {activity.provider?.isPremium && !shouldShowFeatured && (
           <span className="absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-sm">
-            ⭐ Destacado
+            ⭐ Sponsor
           </span>
         )}
 
-        {/* Badge Nuevo — últimos 7 días (solo si no es destacado) */}
-        {isNew && !activity.provider?.isPremium && (
-          <span className="absolute bottom-1.5 left-2 rounded-full bg-rose-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+        {/* Badge Nuevo — últimos 7 días */}
+        {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowOfficial && (
+          <span className="absolute bottom-1.5 left-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
             🆕 Nuevo
           </span>
         )}

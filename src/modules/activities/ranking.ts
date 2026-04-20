@@ -50,7 +50,7 @@ function computeRelevanceScore(activity: Partial<Activity>): number {
  * NO reemplaza las señales existentes — las complementa.
  */
 export function computeActivityScore(
-  activity: Partial<Activity>,
+  activity: Partial<Activity> & { _count?: { views?: number } & Record<string, number> },
   sourceHealthScore: number | undefined,
   ctrBoost: number = 0,
 ): number {
@@ -60,7 +60,49 @@ export function computeActivityScore(
   // Asumimos un score neutral (0.5) si el dominio aún no ha sido medido
   const trustScore = sourceHealthScore ?? 0.5;
 
-  const rankingScore = (relevance * 0.5) + (recency * 0.2) + (trustScore * 0.3) + ctrBoost;
+  let rankingScore = (relevance * 0.5) + (recency * 0.2) + (trustScore * 0.3) + ctrBoost;
+
+  // PRODUCT SIGNALS:
+  // ⭐ Destacado (ha absorbido duplicados -> es confiable y deseable)
+  const duplicates = activity.duplicatesCount ?? 0;
+  if (duplicates > 0) {
+    const cappedDuplicates = Math.min(duplicates, 5);
+    rankingScore *= 1 + (cappedDuplicates * 0.02); // máx +10%
+  }
+
+  // 🛡️ Oficial (dominios verificados y seguros gubernamentales)
+  const OFFICIAL_DOMAINS = [
+    '.gov.co',
+    'biblored.gov.co',
+    'idartes.gov.co',
+    'planetariodebogota.gov.co'
+  ];
+  const isOfficial = OFFICIAL_DOMAINS.some(d => activity.sourceDomain?.endsWith(d));
+  rankingScore *= isOfficial ? 1.2 : 1;
+
+  // 🔥 Popular (views boost)
+  const views = activity._count?.views ?? 0;
+  if (views > 0) {
+    const cappedViews = Math.min(views, 20);
+    rankingScore *= 1 + (cappedViews * 0.005); // máx +10% de boost por tráfico comprobado
+  }
+
+  // 🧩 Data Completeness Boost
+  // Premia la existencia de campos clave sin penalizar a los que no lo tienen. Nivel máximo: +15%
+  let completenessBoost = 1.0;
+  if (activity.price !== null && typeof activity.price !== 'undefined') completenessBoost += 0.05;
+  if (activity.ageMin !== null && typeof activity.ageMin !== 'undefined' || activity.ageMax !== null && typeof activity.ageMax !== 'undefined') completenessBoost += 0.05;
+  if (activity.locationId !== null && typeof activity.locationId !== 'undefined') completenessBoost += 0.05;
+  
+  rankingScore *= completenessBoost;
+
+  // ⏳ Decaimiento Temporal Suave (Freshness Decay)
+  // Penaliza levemente a los eventos antiguos (independientemente de que hayan sido insertados ayer si el startDate es viejo)
+  if (activity.startDate) {
+    const daysSinceStart = daysSince(activity.startDate);
+    const freshnessDecay = 1 - (daysSinceStart * 0.02);
+    rankingScore *= Math.max(freshnessDecay, 0.8); // Drop máximo del 20%
+  }
 
   return rankingScore;
 }

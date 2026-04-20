@@ -151,4 +151,22 @@ export const quota = {
 
     return cleared;
   },
+
+  /**
+   * Obtiene la cuota estimada restante (en número de llamadas/tokens).
+   * Determinado dinámicamente según la cantidad de keys no agotadas.
+   */
+  async getRemaining(): Promise<number> {
+    const raw = process.env.GEMINI_KEYS ?? process.env.GOOGLE_AI_STUDIO_KEY ?? '';
+    const keys = raw.split(',').map((k) => k.trim()).filter(Boolean);
+    let availableKeys = 0;
+
+    for (const key of keys) {
+       if (await this.isAvailable(key)) availableKeys++;
+    }
+
+    // Retorna una cantidad fija teórica de "requests seguros" por llave antes de arriesgar 429.
+    // Esto es el input para buildPredictivePlan.
+    return availableKeys * 100;
+  }
 };

@@ -55,11 +55,8 @@ interface FiltersProps {
 // ── Constantes ────────────────────────────────────────────────────────────────
 
 const SORT_OPTIONS = [
-  { value: 'relevance',  label: 'Relevancia'      },
-  { value: 'date',       label: 'Próximas primero' },
-  { value: 'newest',     label: 'Recién agregadas' },
-  { value: 'price_asc',  label: 'Precio: menor'    },
-  { value: 'price_desc', label: 'Precio: mayor'    },
+  { value: 'relevance',  label: 'Recomendado'   },
+  { value: 'newest',     label: 'Más recientes' },
 ] as const;
 
 const AGE_OPTIONS = [
@@ -382,8 +379,8 @@ export default function Filters({
   function handleCity(value: string) {
     navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price, sort });
   }
-  function handlePriceToggle(value: 'free' | 'paid') {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: price === value ? '' : value, sort });
+  function handlePrice(value: string) {
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value, sort });
   }
   function handleSort(value: string) {
     navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort: value });
@@ -423,7 +420,7 @@ export default function Filters({
   const chips: Chip[] = ([
     cityName     && { key: 'city',     label: cityName,     onRemove: () => handleCity('')     },
     categoryName && { key: 'category', label: categoryName, onRemove: () => handleCategory('') },
-    priceName    && { key: 'price',    label: priceName,    onRemove: () => handlePriceToggle(price as 'free' | 'paid') },
+    priceName    && { key: 'price',    label: priceName,    onRemove: () => handlePrice('')    },
     ageName      && { key: 'age',      label: ageName,      onRemove: () => handleAge(0)       },
   ] as (Chip | false)[]).filter((c): c is Chip => Boolean(c));
 
@@ -670,21 +667,21 @@ export default function Filters({
           ))}
         </select>
 
-        {/* Precio — pills independientes */}
-        <div className="flex rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-1 gap-1" role="group" aria-label="Precio">
-          <button type="button" onClick={() => handlePriceToggle('free')} className={pillCls(price === 'free')}>
-            Gratis
-            {facets.priceCounts.free > 0 && price !== 'free' && (
-              <span className="ml-1 text-xs opacity-50">({facets.priceCounts.free})</span>
-            )}
-          </button>
-          <button type="button" onClick={() => handlePriceToggle('paid')} className={pillCls(price === 'paid')}>
-            De pago
-            {facets.priceCounts.paid > 0 && price !== 'paid' && (
-              <span className="ml-1 text-xs opacity-50">({facets.priceCounts.paid})</span>
-            )}
-          </button>
-        </div>
+        {/* Precio */}
+        <select
+          value={price}
+          onChange={e => handlePrice(e.target.value)}
+          className={selectCls(!!price)}
+          aria-label="Precio"
+        >
+          <option value="">Cualquier precio</option>
+          <option value="free">
+            Solo gratis {facets.priceCounts.free > 0 && price !== 'free' ? `(${facets.priceCounts.free})` : ''}
+          </option>
+          <option value="paid">
+            Con precio visible {facets.priceCounts.paid > 0 && price !== 'paid' ? `(${facets.priceCounts.paid})` : ''}
+          </option>
+        </select>
 
         {/* Ubicación */}
         {facets.availableCities.length > 1 && (
@@ -860,18 +857,12 @@ export default function Filters({
 
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Precio</label>
-              <div className="grid grid-cols-2 gap-2">
-                {(['free', 'paid'] as const).map(v => (
-                  <button key={v} type="button" onClick={() => setMobilePrice(p => p === v ? '' : v)}
-                    className={`rounded-xl border py-3 text-sm font-medium transition-colors ${
-                      mobilePrice === v
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-indigo-300'
-                    }`}>
-                    {v === 'free' ? 'Gratis' : 'De pago'}
-                  </button>
-                ))}
-              </div>
+              <select value={mobilePrice} onChange={e => setMobilePrice(e.target.value)}
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
+                <option value="">Cualquier precio</option>
+                <option value="free">Solo gratis</option>
+                <option value="paid">Con precio visible</option>
+              </select>
             </div>
 
             {facets.availableCities.length > 1 && (

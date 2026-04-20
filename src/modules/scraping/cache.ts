@@ -161,6 +161,20 @@ export class ScrapingCache {
     return candidates.filter((url) => this.isMarkedForReparse(url));
   }
 
+  /**
+   * Obtiene TODAS las URLs guardadas localmente en cache que necesitan reparse para un domino específico.
+   * Útil para el Recovery Pipeline del Scheduler Inteligente.
+   */
+  getReparseUrlsByDomain(domain: string): string[] {
+    const urls: string[] = [];
+    for (const entry of Object.values(this.data.entries)) {
+      if (entry.needsReparse === true && entry.url.includes(domain)) {
+        urls.push(entry.url);
+      }
+    }
+    return urls;
+  }
+
   filterNew(urls: string[]): string[] {
     return urls.filter((url) => !this.has(url));
   }

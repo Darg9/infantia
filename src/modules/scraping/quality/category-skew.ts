@@ -54,7 +54,7 @@ export async function runCategorySkewGuardrail(): Promise<void> {
     const anomalies = detectAnomalies(stats);
 
     if (anomalies.length > 0) {
-      log.warn('CATEGORY_SKEW_DETECTED', JSON.stringify({ anomalies }, null, 2));
+      log.warn('CATEGORY_SKEW_DETECTED', { anomalies });
 
       // Optional: Store this signal in DB (e.g. ContentQualityMetric) or alert system
       // We will leave the warning log which Vercel/Datadog picks up instantly.

@@ -53,7 +53,7 @@ export default function IntentResolver() {
         }
       } catch (err) {
         // No romper flujo de login si falla la acción
-        // eslint-disable-next-line no-console
+         
         console.error('[IntentResolver]', err)
         router.replace('/')
       }

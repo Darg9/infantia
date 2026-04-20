@@ -9,6 +9,15 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.12.2] — 2026-04-20 (Fixed Geographic Mapping & Test Suite Rescue)
+
+### Features & Bugfixes
+- **Scraping / Geographic Pipeline:** Implementación de rutas duras (Hardcoded Location Rules) en el \`saveActivity\` del engine backend para evitar fallas ocasionales de la IA y clasificar deterministicamente actividades hacia ciudades requeridas (ej. Pasto para @festiencuentro, Medellín para @parqueexplora y @quehacerenmedellin).
+- **Quality Optimization:** Fix de los tests de \`discoverActivityLinks\` integrándolos con la métrica mínima de score (\`>= 45\`) para el prefiltro exigido por GeminiAnalyzer.
+- **Test Integrity:** Aislamiento exitoso de la inyección de dependencias mutable del QuotaTracker (Redis state leakage) que corrompía la ejecución paralela en la pipeline \`GeminiAnalyzer\`, logrando un pase limpio del 100% (1215 tests en verde) evitando flakiness.
+
+---
+
 ## [v0.12.1] — 2026-04-20 (Filter UI Stabilization & Test Suite Green)
 
 ### Features & Bugfixes

@@ -28,7 +28,7 @@ vi.mock('@prisma/adapter-pg', () => ({
 }))
 
 vi.mock('@/generated/prisma/client', () => ({
-  // eslint-disable-next-line prefer-arrow-callback
+   
   PrismaClient: function PrismaClient() { return mockPrisma; },
 }))
 

@@ -15,6 +15,16 @@ vi.mock('@google/generative-ai', () => ({
   }),
 }));
 
+vi.mock('../../../lib/quota-tracker', () => ({
+  quota: {
+    markExhausted: vi.fn().mockResolvedValue(undefined),
+    isAvailable: vi.fn().mockResolvedValue(true),
+  },
+  getAvailableKey: vi.fn().mockImplementation(async () => {
+    return process.env.GOOGLE_AI_STUDIO_KEY || 'mock-key';
+  }),
+}));
+
 import { GeminiAnalyzer } from '../nlp/gemini.analyzer';
 
 const validNLPResult = {
@@ -137,80 +147,80 @@ describe('GeminiAnalyzer', () => {
     describe('discoverActivityLinks()', () => {
       it('mapea índices a URLs correctamente', async () => {
         const links = [
-          { url: 'https://x.com/taller', anchorText: 'Taller' },
-          { url: 'https://x.com/contacto', anchorText: 'Contacto' },
-          { url: 'https://x.com/curso', anchorText: 'Curso' },
+          { url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' },
+          { url: 'https://example.com/contacto-nosotros-faq', anchorText: 'Contacto' },
+          { url: 'https://example.com/actividad-curso-vacacional', anchorText: 'Curso' },
         ];
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1, 3] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toEqual(['https://x.com/taller', 'https://x.com/curso']);
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
+        expect(result).toEqual(['https://example.com/evento-taller-infantil', 'https://example.com/actividad-curso-vacacional']);
       });
 
       it('ignora índices fuera de rango (> chunk.length)', async () => {
         const links = [
-          { url: 'https://x.com/taller', anchorText: 'Taller' },
+          { url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' },
         ];
         // índice 1 es válido, índice 99 excede el tamaño del chunk (1)
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1, 99] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toEqual(['https://x.com/taller']);
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
+        expect(result).toEqual(['https://example.com/evento-taller-infantil']);
       });
 
       it('devuelve array vacío si Gemini retorna indices: []', async () => {
-        const links = [{ url: 'https://x.com/nosotros', anchorText: 'Nosotros' }];
+        const links = [{ url: 'https://example.com/nosotros', anchorText: 'Nosotros' }];
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
         expect(result).toEqual([]);
       });
 
       it('continúa con otros lotes si un lote falla con JSON inválido', async () => {
         // 200 links → 2 lotes (100, 100). El primero falla, el segundo ok (índice 1 → link-101)
         const links = Array.from({ length: 200 }, (_, i) => ({
-          url: `https://x.com/link-${i + 1}`,
+          url: `https://example.com/evento-infantil-link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
         mockGenerateContent
           .mockResolvedValueOnce(makeResponse('{ json roto'))
           .mockResolvedValueOnce(makeResponse(JSON.stringify({ indices: [1] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toContain('https://x.com/link-101');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
+        expect(result).toContain('https://example.com/evento-infantil-link-101');
       });
 
       it('continúa si un lote devuelve schema inválido', async () => {
-        const links = [{ url: 'https://x.com/ok', anchorText: 'OK' }];
+        const links = [{ url: 'https://example.com/evento-ok-infantil', anchorText: 'OK' }];
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ activityUrls: [] }))); // schema incorrecto
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
         expect(result).toEqual([]);
       });
 
       it('maneja error general del lote (catch branch)', async () => {
-        const links = [{ url: 'https://x.com/taller', anchorText: 'Taller' }];
+        const links = [{ url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' }];
         mockGenerateContent.mockRejectedValue(new Error('Network error'));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
         expect(result).toEqual([]);
       });
 
       it('re-lanza error 429 si TODOS los lotes fallan y no hay resultados (activa fallback en discoverWithFallback)', async () => {
         const links = [
-          { url: 'https://x.com/taller', anchorText: 'Taller' },
-          { url: 'https://x.com/curso', anchorText: 'Curso' },
+          { url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' },
+          { url: 'https://example.com/actividad-curso-vacacional', anchorText: 'Curso' },
         ];
         const quotaError = new Error('[429 Too Many Requests] quota exceeded');
         mockGenerateContent.mockRejectedValue(quotaError);
         const analyzer = new GeminiAnalyzer();
-        await expect(analyzer.discoverActivityLinks(links, 'https://x.com')).rejects.toThrow('429');
+        await expect(analyzer.discoverActivityLinks(links, 'https://example.com')).rejects.toThrow('429');
       }, 15000); // callWithRetry: 2s + 4s delays + enforceRateLimit
 
       it('devuelve resultados parciales si algún lote fue exitoso (no re-lanza aunque otro lote falle con 429)', async () => {
         // 200 links → 2 lotes. El primero ok (índice 1 → link-1), el segundo 429
         const links = Array.from({ length: 200 }, (_, i) => ({
-          url: `https://x.com/link-${i + 1}`,
+          url: `https://example.com/evento-infantil-link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
         const quotaError = new Error('[429 Too Many Requests] quota exceeded');
@@ -218,44 +228,44 @@ describe('GeminiAnalyzer', () => {
           .mockResolvedValueOnce(makeResponse(JSON.stringify({ indices: [1] }))) // lote 1 ok
           .mockRejectedValueOnce(quotaError);                                     // lote 2 falla
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
         // Debería retornar el resultado parcial del lote 1, sin re-lanzar
-        expect(result).toContain('https://x.com/link-1');
+        expect(result).toContain('https://example.com/evento-infantil-link-1');
         expect(result).toHaveLength(1);
       });
 
       it('procesa links en lotes de 100', async () => {
         const links = Array.from({ length: 450 }, (_, i) => ({
-          url: `https://x.com/link-${i + 1}`,
+          url: `https://example.com/evento-infantil-link-${i + 1}`,
           anchorText: `Link ${i + 1}`,
         }));
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [] })));
         const analyzer = new GeminiAnalyzer();
-        await analyzer.discoverActivityLinks(links, 'https://x.com');
+        await analyzer.discoverActivityLinks(links, 'https://example.com');
         // 450 links → 5 lotes (100, 100, 100, 100, 50) — CHUNK_SIZE=100 (benchmark S34)
         expect(mockGenerateContent).toHaveBeenCalledTimes(5);
       });
 
       it('excluye URLs con query params en pre-filtro y registra log (línea 223)', async () => {
         const links = [
-          { url: 'https://x.com/taller', anchorText: 'Taller' },
-          { url: 'https://x.com/actividades?page=2', anchorText: 'Pág 2' },
-          { url: 'https://x.com/curso?f[0]=arte', anchorText: 'Filtro' },
+          { url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' },
+          { url: 'https://example.com/actividades?page=2', anchorText: 'Pág 2' },
+          { url: 'https://example.com/curso?f[0]=arte', anchorText: 'Filtro' },
         ];
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
-        expect(result).toEqual(['https://x.com/taller']);
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
+        expect(result).toEqual(['https://example.com/evento-taller-infantil']);
       });
 
       it('incluye URL inválida en pre-filtro (catch branch línea 219)', async () => {
         const links = [
-          { url: 'https://x.com/taller', anchorText: 'Taller' },
-          { url: 'not-a-valid-url', anchorText: 'Inválido' },
+          { url: 'https://example.com/evento-taller-infantil', anchorText: 'Taller' },
+          { url: 'not-a-valid-url-evento', anchorText: 'Inválido' },
         ];
         mockGenerateContent.mockResolvedValue(makeResponse(JSON.stringify({ indices: [1, 2] })));
         const analyzer = new GeminiAnalyzer();
-        const result = await analyzer.discoverActivityLinks(links, 'https://x.com');
+        const result = await analyzer.discoverActivityLinks(links, 'https://example.com');
         expect(result.length).toBeGreaterThanOrEqual(1);
       });
     });

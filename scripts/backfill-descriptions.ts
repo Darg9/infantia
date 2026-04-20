@@ -384,7 +384,7 @@ async function main() {
       rules: finalRules,
     }));
 
-    let result = await processActivity({ ...activity, sourceUrl: activity.sourceUrl ?? '' }, genAI, finalRules);
+    const result = await processActivity({ ...activity, sourceUrl: activity.sourceUrl ?? '' }, genAI, finalRules);
 
     // Validación Final Estricta: si queda por debajo de las rules adaptativas de su dominio/entorno, se descarta estrepitosamente.
     if (result.method !== 'skipped' && result.newDescription.length < finalRules.minDescriptionLength) {

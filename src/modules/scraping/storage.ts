@@ -41,6 +41,50 @@ const BLOCKED_DOMAINS = new Set([
   'mercadolibre.com', 'amazon.com', 'rappi.com',
 ]);
 
+// Mapa duro de dominios/cuentas a ciudades (bypass NLP)
+// Fuentes abiertas (ej. FCE, BanRep con sedes múltiples) se omiten intencionalmente.
+const HARDCODED_CITY_RULES: Array<{ match: (url: string, igUsername?: string) => boolean, city: string }> = [
+  // --- Bogotá Oficial / Institucional ---
+  { match: (url, _) => url.includes('bogota.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('idartes.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('biblored.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('planetariodebogota.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('cinematecadebogota.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('culturarecreacionydeporte.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('fuga.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('jbb.gov.co'), city: 'Bogotá' },
+  { match: (url, _) => url.includes('maloka.org'), city: 'Bogotá' },
+
+  // --- Medellín ---
+  { match: (_, ig) => ig === 'parqueexplora', city: 'Medellín' },
+  { match: (_, ig) => ig === 'quehacerenmedellin', city: 'Medellín' },
+
+  // --- Pasto ---
+  { match: (_, ig) => ig === 'festiencuentro', city: 'Pasto' },
+
+  // --- Bogotá Agregadores & Independientes ---
+  { match: (_, ig) => ig === 'quehaypahacerenbogota', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'planesenbogotaa', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'plansitosbogota', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'bogotaplan', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'parchexbogota', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'bogotateatralycircense', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'teatropetra', city: 'Bogotá' },
+  { match: (_, ig) => ig === 'centrodeljapon', city: 'Bogotá' },
+];
+
+function getHardcodedCity(sourceUrl: string, igUsername?: string): string | null {
+  const urlLower = sourceUrl.toLowerCase();
+  const igLower = igUsername?.toLowerCase();
+  for (const rule of HARDCODED_CITY_RULES) {
+    if (rule.match(urlLower, igLower)) {
+      return rule.city;
+    }
+  }
+  return null;
+}
+
+
 export class ScrapingStorage {
   /**
    * Guarda una actividad individual en la BD.
@@ -179,13 +223,20 @@ export class ScrapingStorage {
         sourceCapturedAt: new Date(),
       };
 
-      // 4. Obtener o crear Location (con geocoding)
+      // 4. Obtener o crear Location (con geocoding y overrides fijos)
       let locationId: string | null = null;
-      if (data.location?.address || data.location?.city) {
-        const cityName = data.location.city || 'Bogotá';
+      const hardcodedCity = getHardcodedCity(sourceUrl, sourceOptions?.instagramUsername);
+      const resolvedCityStr = hardcodedCity || data.location?.city || 'Bogotá';
+      const needsLocation = data.location?.address || hardcodedCity || data.location?.city;
+
+      if (needsLocation) {
+        // Fallback robusto: Si Gemini no extrajo dirección exacta pero tenemos ciudad (fija o NLP), 
+        // usamos el nombre del proveedor en esa ciudad. Ej: "IDARTES", "Bogotá".
+        const locNameStr = data.location?.address || provider.name;
+        
         const locId = await this.getOrCreateLocation(
-          data.location.address || cityName,
-          cityName,
+          locNameStr,
+          resolvedCityStr,
         );
         locationId = locId;
       }

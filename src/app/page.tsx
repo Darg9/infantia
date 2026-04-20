@@ -99,14 +99,14 @@ export default async function HomePage() {
       {/* HERO                                                              */}
       {/* ================================================================ */}
       <section className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)]">
-        <div className="mx-auto max-w-5xl px-4 py-14 sm:py-20 text-center">
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14 text-center">
 
           <h1 className="text-4xl sm:text-5xl font-bold text-[var(--hp-text-primary)] leading-tight mb-3">
             ¿Qué hacemos{' '}
             <span className="text-brand-600">hoy?</span>
           </h1>
 
-          <div className="max-w-xl mx-auto mb-8">
+          <div className="max-w-xl mx-auto mb-6">
             <p className="text-lg text-[var(--hp-text-secondary)]">
               Descubre planes en familia cerca de ti
             </p>
@@ -131,7 +131,7 @@ export default async function HomePage() {
       {/* CATEGORÍAS DESTACADAS                                            */}
       {/* ================================================================ */}
       {topCategories.length > 0 && (
-        <section className="mx-auto max-w-5xl px-4 py-10 pb-12">
+        <section className="mx-auto max-w-5xl px-4 py-8">
           <SectionHeader title="Explora por tipo de actividad" href="/actividades" linkText="Ver todas →" />
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {topCategories.map((cat) => (
@@ -162,7 +162,7 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
-      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] py-12">
+      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] py-8">
         <div className="mx-auto max-w-5xl px-4">
           {(hasRecent || hasPopular) ? (
             <>
@@ -176,7 +176,7 @@ export default async function HomePage() {
                   <ActivityCard key={activity.id} activity={activity} compact />
                 ))}
               </div>
-              <div className="mt-8 text-center">
+              <div className="mt-6 text-center">
                 <Link
                   href={activityHref}
                   className="inline-flex items-center gap-2 rounded-full border-2 border-brand-600 px-8 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
@@ -208,12 +208,12 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* CTA FINAL                                                        */}
       {/* ================================================================ */}
-      <section className="mx-auto max-w-5xl px-4 py-12 text-center">
-        <div className="rounded-3xl bg-brand-600 px-8 py-10">
+      <section className="mx-auto max-w-5xl px-4 py-8 text-center">
+        <div className="rounded-3xl bg-brand-600 px-8 py-8">
           <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
             ¿No encontraste algo que te guste?
           </h2>
-          <p className="text-brand-100 mb-7 max-w-md mx-auto text-sm">
+          <p className="text-brand-100 mb-6 max-w-md mx-auto text-sm">
             Descubre más actividades filtrando por edad, precio o ubicación
           </p>
           <Link
@@ -245,7 +245,7 @@ function SectionHeader({
   linkText?: string;
 }) {
   return (
-    <div className="flex items-start justify-between mb-6">
+    <div className="flex items-start justify-between mb-4">
       <div>
         <h2 className="text-lg font-bold text-[var(--hp-text-primary)] leading-snug">{title}</h2>
         {subtitle && (

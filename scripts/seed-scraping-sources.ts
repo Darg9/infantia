@@ -17,8 +17,44 @@ const SOURCES = [
     scraperType: 'cheerio-batch',
   },
   {
-    name: 'Bogotá.gov.co',
-    url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',
+    name: 'Bogotá.gov.co - Agenda Cultural',
+    url: 'https://bogota.gov.co/que-hacer/agenda-cultural',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Idartes – Agenda Cultural',
+    url: 'https://www.idartes.gov.co/es/agenda',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Jardín Botánico - Agenda Cultural',
+    url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Jardín Botánico - Eventos Generales',
+    url: 'https://jbb.gov.co/eventos/',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Planetario de Bogotá',
+    url: 'https://planetariodebogota.gov.co/programate',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Cinemateca - Agenda',
+    url: 'https://cinematecadebogota.gov.co/agenda/11',
+    platform: 'WEBSITE' as const,
+    scraperType: 'cheerio-batch',
+  },
+  {
+    name: 'Cinemateca - Cartelera Cine',
+    url: 'https://cinematecadebogota.gov.co/cine/11',
     platform: 'WEBSITE' as const,
     scraperType: 'cheerio-batch',
   },
@@ -33,18 +69,6 @@ const SOURCES = [
     url: 'https://www.instagram.com/quehaypahacerenbogota',
     platform: 'INSTAGRAM' as const,
     scraperType: 'playwright',
-  },
-  {
-    name: 'Cultura Recreación y Deporte – Centro Felicidad Chapinero',
-    url: 'https://www.culturarecreacionydeporte.gov.co/es/centro-felicidad-chapinero/eventos',
-    platform: 'WEBSITE' as const,
-    scraperType: 'cheerio-batch',
-  },
-  {
-    name: 'Idartes – Agenda Cultural',
-    url: 'https://idartes.gov.co/es/agenda',
-    platform: 'WEBSITE' as const,
-    scraperType: 'cheerio-batch',
   },
 ]
 

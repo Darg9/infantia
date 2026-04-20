@@ -35,6 +35,21 @@ const NON_PRODUCTIVE_PATTERNS = [
   /\/signup\//i,
   /\/register\//i,
 
+  // Institucional / Ruido específico
+  /\/nosotros(\/|$)/i,
+  /\/escuelas-leo(\/|$)/i,
+  /\/escenarios-moviles(\/|$)/i,
+  /\/mas-cultura-local(\/|$)/i,
+  /\/explora-el-jardin(\/|$)/i,
+  /\/recursos-educativos(\/|$)/i,
+  /\/reservas(\/|$)/i,
+  /\/buscador/i,
+  /\/participacion/i,
+  /\/sondeos/i,
+  /\/home-cinemateca/i,
+  /\/visita-cinemateca/i,
+  /\/institucional/i,
+
   // Archivos y listados (no eventos)
   /\/archive\//i,
   /\/archivo\//i,

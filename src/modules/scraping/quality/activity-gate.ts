@@ -73,6 +73,23 @@ const NOISE_KEYWORDS = [
   'comprar libros', 'mi cuenta', 'tienda-librería',
 ];
 
+// ─── Rutas URL de ruido general (presencia en sourceUrl → penalización alta) ───
+const NOISE_URL_FRAGMENTS = [
+  '/nosotros',
+  '/escuelas-leo',
+  '/escenarios-moviles',
+  '/mas-cultura-local',
+  '/explora-el-jardin',
+  '/recursos-educativos',
+  '/reservas',
+  '/buscador',
+  '/participacion',
+  '/sondeos',
+  '/home-cinemateca',
+  '/visita-cinemateca',
+  '/institucional',
+];
+
 // ─── Paths de fuentes problemáticas que solo se aceptan por ruta específica ──
 // formato: { domain, allowedPaths[] }
 const SOURCE_PATH_ALLOWLIST: { domain: string; allowed: string[] }[] = [
@@ -138,7 +155,7 @@ export function evaluateActivityGate(
   ]);
 
   // ── Señal 4: Ruido institucional ─────────────────────────────────────────
-  const noiseDetected = matchesAny(fullText, NOISE_KEYWORDS);
+  const noiseDetected = matchesAny(fullText, NOISE_KEYWORDS) || matchesAny(sourceUrl, NOISE_URL_FRAGMENTS);
 
   // ── Señal 5: Path restringido por dominio ────────────────────────────────
   const blockedBySourcePath = isBlockedBySourcePath(sourceUrl);

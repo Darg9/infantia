@@ -9,6 +9,17 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.12.0] — 2026-04-20 (Activity Gate & Quality Optimization)
+
+### Features
+- **Data Architecture:** Refactor del pipeline de extracción para introducir un estricto `Activity Gate` determinista de doble capa (semántico por Gemini con fail-safe puro, + heurístico por tiempo/intención en pipeline) antes de cualquier guardado en BD.
+- **Backfill y Geolocalización Restante:** Expansión masiva del target `Ruta C` con dominios estáticos para infirimiento geográfico (`biblored`, `idartes`, `planetariodebogota`) sin falsos positivos, empujando la cobertura global de location > 86%.
+- **Limpieza de NLP / Baseline:** Desactivación de falsos positivos heredados (`EXPIRED`) de Whatsapp APIs y dominios genéricos.
+- **Differential Logging:** Trazabilidad estricta (`discard:llm` vs `discard:gate`) garantizando auditoria observable en cada rebaso de pipeline.
+
+### Refactors
+- Reemplazo y blindaje del enrutador de validación y de recálculo (`types.ts`) eliminando el valor default de `isActivity` para no encubrir corrupciones de JSON, obligando la intervención activa del Gate.
+
 ## [v0.11.0-S57] — 2026-04-19 (Honest Facets UX & Data Completeness Boost)
 
 ### Features

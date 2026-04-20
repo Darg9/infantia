@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-19 | Version: v0.11.0-S55
+Actualizado: 2026-04-20 | Version: v0.12.0
 
-## Resumen Actual (v0.11.0-S55 / Pipeline Optimization + Scheduler Inteligente)
+## Resumen Actual (v0.12.0 / Data Quality Optimization & Activity Gate)
 - **Archivos de Test:** 73
 - **Tests Totales:** 1203 (+48 vs S53)
 - **Estado:** 100% pasando ✅ (0 Skipped, 0 Fallidos)

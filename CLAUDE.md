@@ -161,8 +161,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
 | v0.9.2 | V21 | Instagram 10 fuentes activas, --validate-only, ratings.test.ts, branches ✅ |
 | v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
-| v0.9.3-S31..44 | V22..V25 | Features iterativas de Pipeline, ranking híbrido y Rebrand Habitaplan completados listados abajo. |
-| v0.9.3 | V26 | Consolidación **Data Pipeline v1**, Search Engine v1 (penalización edad), zero-debt absoluto (60 tests files 100%). |
+| v0.11.0 | V25 | Pipeline Scheduler, Deduplication Engine, Observability |
+| v0.12.0 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -170,7 +170,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v23.mjs` (V23 es la versión actual — cambios S38-S40 son UX, no requieren nuevo doc fundacional)
+Comando: `node scripts/generate_v26.mjs` (V26 es la versión actual)
 
 ## Notas de arquitectura críticas
 

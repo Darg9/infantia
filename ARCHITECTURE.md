@@ -367,6 +367,14 @@ parseActivity(html, url, raw, analyzer)   [NUEVO S52 — concurrencia: 1]
     └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini)
     │
     ▼
+evaluateActivityGate(data, url)   [NUEVO S58 — Activity Gate]
+    ├─ Rechaza tempranamente si Gemini declaró explícitamente `isActivity !== true`
+    ├─ Verifica métricas deterministas de intención de evento (taller, festival, etc.)
+    ├─ Verifica métricas relativas al tiempo (dateStart, dateEnd, schedule)
+    ├─ Detiene falsos positivos institucionales (Gestión, Noticias, Directorio)
+    └─ Emite diferencial de trazabilidad `[discard:llm]` vs `[discard:gate]`
+    │
+    ▼
 ScrapingStorage.saveActivity()
     ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
     ├─ Crea / reutiliza Provider por hostname

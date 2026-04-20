@@ -9,6 +9,22 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.11.0-S57] — 2026-04-19 (Honest Facets UX & Data Completeness Boost)
+
+### Features
+- **Frontend / UX:** Refactor de componentes en `Filters.tsx` reemplazando pills binarios excluyentes por `<select>` dropshowns para evitar la confusión de sumas gestálticas incompletas sobre el precio nulo. Configuración "Honest but Invisible".
+- **Backend / Ranking Engine:** Se agregó una nueva bonificación `completenessBoost` en `ranking.ts` que suma paramétricamente hasta +15% adicional por atributos de data completa (precio, edad y ubicación).
+- **Core Guidelines:** Se selló estructuralmente una prohibición algorítmica sobre la normalización engañosa a cero en BD (`CLAUDE.md`).
+
+## [v0.11.0-S56] — 2026-04-19 (Deduplication Engine & Force_Chrono fallback)
+
+### Features
+- **Deduplicación Masiva Híbrida (`scripts/deduplicate-sources.ts`):** 
+  - Se estructuró lógica de `Merger` y `Clusterizer` en `src/modules/deduplication/` empleando un scoring de `confidence` paramétrico (hasta 40ptos por coincidencia de fecha, location, edad, price y horario).
+  - Integración multi-nodo capaz de condensar `canonicalId` sobre la fuente dominante, sumando `duplicatesCount` a la canonical root.
+- **Fail-safe Engine (`activities.service.ts`):** 
+  - Kill-switch transversal con flag `FORCE_CHRONO` de Node Environment integrado al pipeline de indexación para fallbacks críticos de clasificación.
+
 ## [v0.11.0-S55] — 2026-04-19 (Pipeline Optimization — Scheduler Inteligente + Cuota Gemini)
 
 ### Features

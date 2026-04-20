@@ -238,11 +238,12 @@ npx tsx scripts/find-all-duplicates.ts
 # Genera reporte completo con todos los pares
 ```
 
-### Trimestral
+### Trimestral / Batch On-Demand (Nivel 4)
 ```bash
 # Revisar configuración de similitud umbral
-# ¿Hay fuentes nuevas problemáticas?
-# Actualizar DEDUP-CONFIG por fuente
+# Ejecutar Deduplicación Masiva (Clusterizer & Merger)
+npx tsx scripts/deduplicate-sources.ts
+# Consolida eventos bajo un canonicalId asimilando el duplicatesCount
 ```
 
 ---

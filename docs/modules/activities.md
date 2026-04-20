@@ -101,6 +101,8 @@ Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo s
 |-------|---------|
 | `relevance` (default) | ACTIVE primero → `isPremium desc` → sourceConfidence* → createdAt |
 
+> **Kill-Switch (S56):** Si la variable de entorno `FORCE_CHRONO='true'` está presente, el sistema forzará `newest` sobreescribiendo algorítmicamente cualquier ordenamiento de tipo `relevance`. Útil ante caídas de algoritmos de ranking.
+
 * *Nota técnica sobre sourceConfidence:* El índice de confianza es una variable puramente algorítmica para priorización en BD y cache, **nunca** se expone a cliente garantizando 100% de veracidad, protegiendo así el Compliance Legal.*
 | `date` | Próximas primero, sin fecha al final |
 | `price_asc` | Precio ascendente, gratis y sin precio al final |
@@ -109,31 +111,24 @@ Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo s
 
 > **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
 
-## CTR Boost en Ranking (NUEVO v0.11.0-S44)
+## Ranking Híbrido en Memoria (NUEVO v0.11.0-S57)
 
-`computeActivityScore()` en `src/modules/activities/ranking.ts` acepta un tercer parámetro opcional `ctrBoost: number = 0` que se suma al score final:
+`computeActivityScore()` en `src/modules/activities/ranking.ts` inyecta las siguientes métricas al listado y determina el orden absoluto:
 
 ```typescript
 computeActivityScore(activity, sourceHealthScore, ctrBoost)
 // score = (relevance × 0.5) + (recency × 0.2) + (trust × 0.3) + ctrBoost
 ```
 
-El boost proviene de `src/modules/analytics/metrics.ts`:
+**Modificadores (Stack multiplicativo):**
+1. **⭐ Destacado (Canonical Root):** Hasta `x1.10` (+10%) basado en el `duplicatesCount` (Eventos que eclipsan duplicados validando popularidad del crawler).
+2. **🛡️ Oficial:** `x1.2` si el dominio terminal pertenece a fuentes seguras (ej. `.gov.co`).
+3. **🔥 Popular:** Hasta `x1.10` (+10%) basado en vistas orgánicas extraidas paralelamente.
+4. **🧩 Completeness:** Hasta `x1.15` sumatorio para actividades ricas en metadata sin ocultar incompletas (Precio: +5%, Edad: +5%, Location: +5%). 
+5. **⏳ Freshness Decay:** Caída de máximo `-20%` penalizando eventos pasados independientemente de cuando entraron al pipeline (evita monopolios).
 
-| CTR del dominio fuente | Boost aplicado |
-|------------------------|---------------|
-| > 30% | +0.15 |
-| > 15% | +0.08 |
-| > 5% | +0.03 |
-| ≤ 5% | 0 |
-
-**Flujo en `activities.service.ts`:**
-1. `getCachedCTR()` — CTR por dominio (cache 5min, 0 queries repetidos en el mismo ciclo)
-2. `activity.sourceUrl → getDomainFromUrl()` — extrae dominio de la actividad
-3. `ctrToBoost(ctr)` — convierte CTR a boost numérico
-4. `computeActivityScore(act, healthScore, ctrBoost)` — score final con señal de conversión
-
-**Cold start:** sin eventos acumulados, `ctrMap = {}` → `ctr = 0` → boost = 0 → comportamiento idéntico al sistema previo. Sin riesgo de regresión.
+El boost de CTR (+0.15 de máx), se maneja via pre-integración auditando dominios orgánicos:
+**Cold start safe**: sin eventos acumulados, `ctr = 0` → comportamiento idéntico al sistema previo.
 
 ## Modelo Sponsor (NUEVO v0.8.1)
 

@@ -16,6 +16,7 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 ## 🔍 Motor de Búsqueda y Filtros (`HeroSearch` & `Filters`)
 
 El buscador está diseñado para proveer una sugerencia fluida de resultados.
+- **Honest but Invisible Facets:** Los filtros UI de exclusión absoluta (como "Precio nulo") son tratados sin sesgo y no rellenan sus huecos con asunciones matemáticas para evitar sumas erróneas (Falsa expectativa Gestalt en los usuarios). Si un campo tiene datos desconocidos, la interfaz de filtro se colapsa a componentes genéricos (`<select>`) evitando botones que sugieran que cubren matemáticamente el 100% de la oferta.
 - **Mix de Resultados**: Muestra hasta 5 entidades agrupadas (3 Actividades, 1 Categoría, 1 Ciudad). Esto evita que una categoría inunde y tape resultados directos.
 - **Búsqueda Avanzada Híbrida (`Search Engine V1`)**: Combina la flexibilidad de `pg_trgm` (tolerancia a errores ortográficos e inversión de sílabas; umbrales: `similarity(title) > 0.25`, `word_similarity(title) > 0.30`, `similarity(desc) > 0.15`; score ponderado 0.7/0.3 + prefix boost +0.10) con una normalización estricta mediante TypeScript. Esta estrategia previene el quiebre de base de datos causado por wildcards masivos `%` y pondera los puntajes antes de regresar los resultados.
 - **Normalización de Queries**: Tokeniza la entrada del usuario omitiendo "stopwords", colapsando espacios y reduciendo a la raíz semántica para una mejor correlación.
@@ -45,7 +46,8 @@ rankingScore = (relevance × 0.5) + (recency × 0.2) + (trustScore × 0.3) + ctr
   | > 5% | +0.03 |
   | ≤ 5% | 0 |
 
-- **Penalización por Edad Nula (-15%)**: Actividades sin `ageMin`/`ageMax` parseados reciben `score *= 0.85`, garantizando calidad algorítmica en el tope del motor.
+- **Completeness Boost (+15%)**: Actividades ricas en metadata reciben una bonificación sumatoria sin ocultar las incompletas: `+5%` por Precio estriado, `+5%` por Rango de Edad explícito, y `+5%` por Geolocalización exacta (`locationId`). 
+- **Penalización por Edad Nula (-15%)**: Actividades sin `ageMin`/`ageMax` parseados reciben `score *= 0.85`, garantizando calidad algorítmica en el tope del motor (combinado con el completeness boost, esto genera un delta significativo).
 
 ## 🧩 Eventos UX Trackeados (Vínculo al módulo Analytics)
 

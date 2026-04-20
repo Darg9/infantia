@@ -5,16 +5,16 @@ import { ActivityNLPResult } from './types';
 // Mapea ruido natural inferido por LLM hacia buckets definidos
 // =============================================================================
 const CATEGORY_MAP: Record<string, string> = {
-  'arte': 'arte-y-creatividad', 'artes': 'arte-y-creatividad', 'manualidades': 'arte-y-creatividad', 'pintura': 'arte-y-creatividad', 'dibujo': 'arte-y-creatividad', 
+  'arte': 'arte-creatividad', 'artes': 'arte-creatividad', 'manualidades': 'arte-creatividad', 'pintura': 'arte-creatividad', 'dibujo': 'arte-creatividad', 
   'danza': 'danza', 'teatro': 'teatro',
   'musica': 'musica', 'música': 'musica',
   'deporte': 'deportes', 'futbol': 'deportes', 'fútbol': 'deportes', 'natacion': 'deportes', 'natación': 'deportes', 
   'karate': 'artes-marciales', 'artes marciales': 'artes-marciales', 'baloncesto': 'deportes', 'gimnasia': 'deportes', 'skate': 'deportes',
-  'ciencia': 'ciencias', 'tecnologia': 'ciencias', 'tecnología': 'ciencias', 'robotica': 'ciencias', 'robótica': 'ciencias', 'programacion': 'ciencias', 'steam': 'ciencias',
+  'ciencia': 'ciencias', 'tecnologia': 'tecnologia', 'tecnología': 'tecnologia', 'robotica': 'tecnologia', 'robótica': 'tecnologia', 'programacion': 'tecnologia', 'steam': 'ciencias',
   'aire libre': 'naturaleza', 'naturaleza': 'naturaleza', 'campamento': 'naturaleza', 'parque': 'naturaleza',
   'idiomas': 'idiomas', 'ingles': 'idiomas', 'inglés': 'idiomas', 'frances': 'idiomas',
   'juegos': 'juegos', 'gamification': 'juegos', 'juegos de mesa': 'juegos',
-  'talleres': 'arte-y-creatividad', 'taller': 'arte-y-creatividad', 'workshop': 'arte-y-creatividad',
+  'talleres': 'arte-creatividad', 'taller': 'arte-creatividad', 'workshop': 'arte-creatividad',
   'eventos': 'general', 'show': 'general', 'espectaculo': 'general', 'concierto': 'musica',
   'lectura': 'lectura', 'literatura': 'lectura',
   'general': 'general'

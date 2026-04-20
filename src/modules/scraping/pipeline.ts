@@ -529,6 +529,13 @@ export class ScrapingPipeline {
           metadata: { discoveredLinks: allLinks.length, processed: results.length, cached: skipped },
         });
         await this.logger.updateSourceStatus(sourceId, status as any, activityUrls.length);
+
+        // -- Skew Guardrail (Post-Ingesta) --
+        // Ejecución lazy para no bloquear la finalización
+        import('./quality/category-skew').then(module => {
+          module.runCategorySkewGuardrail().catch(e => log.error('Guardrail err', e));
+        }).catch(err => log.error('Failed to run category skew guardrail', err));
+
       } catch (err: any) {
         log.warn(`Logger complete error (non-fatal): ${err.message}`);
       }

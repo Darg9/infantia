@@ -398,17 +398,14 @@ export class ScrapingPipeline {
             parserSource:    data.parserSource,
             confidenceScore: data.confidenceScore,
           });
-          // ── Rechazo semántico (Gemini declaró isActivity=false) ──────────────
-          if (data.isActivity === false) {
-            log.info(`[GEMINI:isActivity=false] Descartado sin gate: "${data.title}" (${actUrl})`);
+          // ── Rechazo Jerárquico (LLM -> Gate) ──────────────
+          if (data.isActivity !== true) {
+            log.warn(`[discard:llm] Rechazado por LLM fail-safe: "${data.title}"`, { url: actUrl });
           } else {
           // ── Activity Gate: valida contenido antes de persistir ──────────────
           const gate = evaluateActivityGate(data, actUrl);
           if (!gate.pass) {
-            log.info(`[GATE] ⛔ Descartado: "${data.title}" | reason=${gate.reason} score=${gate.score.toFixed(2)}`, {
-              url: actUrl,
-              signals: gate.signals,
-            });
+            log.warn(`[discard:gate] Rechazado por heurística: "${data.title}" | reason=${gate.reason}`, { url: actUrl, score: gate.score });
           } else {
           // ── Streaming save: threshold diferenciado por origen del parser ──
           // fallback Cheerio (0.5) es más estricto que Gemini (0.3) para reducir ruido
@@ -443,9 +440,12 @@ export class ScrapingPipeline {
               confidenceScore: data.confidenceScore,
             });
             // ── Activity Gate — paralelo ──────────────────────────────────────
+            if (data.isActivity !== true) {
+              log.warn(`[discard:llm] Rechazado por LLM fail-safe: "${data.title}"`, { url: actUrl });
+            } else {
             const gate = evaluateActivityGate(data, actUrl);
             if (!gate.pass) {
-              log.info(`[GATE] ⛔ Descartado: "${data.title}" | reason=${gate.reason} score=${gate.score.toFixed(2)}`);
+              log.warn(`[discard:gate] Rechazado por heurística: "${data.title}" | reason=${gate.reason}`, { url: actUrl });
             } else {
             // ── Streaming save — threshold diferenciado ──
             const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
@@ -456,8 +456,9 @@ export class ScrapingPipeline {
               } catch (err: any) {
                 log.warn(`[STREAMING] Error (non-fatal): ${err?.message}`);
               }
-            }
-            }
+            } // end storage check
+            } // end gate else
+            } // end isActivity else
             return { url: actUrl, data };
           } catch (error: any) {
             log.error(`Error en ${actUrl}: ${error.message}`);

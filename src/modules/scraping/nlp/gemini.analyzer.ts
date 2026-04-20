@@ -41,9 +41,19 @@ Tu tarea es extraer información estructurada de texto crudo de páginas web.
 
 DECISIÓN INICIAL (crítica):
 Antes de extraer datos, decide si el contenido describe una actividad real a la que alguien puede asistir.
-ES una actividad válida si describe un taller, evento, clase, show, festival, concierto, obra, exposición o curso con intención de participación.
-NO es una actividad si es: noticia, comunicado de prensa, página de gestión, directorio, logro institucional, premio, catálogo, términos de servicio o PQRS.
-Si no es una actividad, devuelve { "isActivity": false } y omite los demás campos.
+
+Set "isActivity" to TRUE only if:
+- A real person could attend this in person or virtually
+- There is a clear time reference (date, schedule or upcoming occurrence)
+
+Set "isActivity" to FALSE if:
+- It is news, a press release, an institutional announcement or "convocatoria"
+- It lacks a concrete time to attend
+- It is a listing page ("noticias", "directorio")
+- It is an institutional achievement, terms of service, or PQRS
+
+Be conservative: if unsure → FALSE.
+Si decides false, devuelve { "isActivity": false } y omite los demás campos.
 
 REGLAS:
 - Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional ni markdown.
@@ -256,10 +266,10 @@ export class GeminiAnalyzer {
       // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
       const rawParsed = parsed as Record<string, unknown>;
 
-      // Rechazo semántico temprano: Gemini declara explícitamente que no es una actividad
-      // Esto ocurre cuando el contenido es noticia, directorio, PQRS, etc.
-      if (rawParsed.isActivity === false) {
-        log.info(`[GEMINI:isActivity=false] Contenido rechazado semánticamente: ${url}`);
+      // Rechazo semántico temprano: Gemini NO declaró explícitamente que es una actividad (incluye null/undefined)
+      // Esto frena noticias, convocatorias, PQRS, y actúa como fail-safe si el schema se corrompe
+      if (rawParsed.isActivity !== true) {
+        log.info(`[GEMINI:isActivity=false] Contenido rechazado semánticamente (fail-safe): ${url}`);
         return {
           title: 'No es actividad',
           description: '',

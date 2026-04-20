@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.11.0-S55
-**Última actualización:** 19 de abril de 2026
+**Versión actual:** v0.12.0
+**Última actualización:** 20 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -37,6 +37,13 @@ parseActivity(html, url, raw, analyzer, skipPreflight)   [NUEVO S55 — Schedule
     │   ├─ Intenta GeminiAnalyzer.analyze(sourceText, url)
     │   │   └─ Si 429/503/timeout → fallbackFromCheerio(raw) [confidence 0.5, sin NLP, marca needsReparse=true en caché]
     └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini)
+    │
+    ▼
+evaluateActivityGate(data, url)   [NUEVO v0.12.0 — Doble capa semántica + heurística]
+    ├─ **Capa 1 — LLM Priority Gate (fail-safe estricto):** Si Gemini no retornó `isActivity === true` de forma explícita, descarta inmediatamente con `[discard:llm]`. Cero default positivos.
+    ├─ **Capa 2 — Heuristic Gate:** Valida señales de intención de evento (taller, festival, función, concierto…) y señal temporal (dateStart, dateEnd, schedule).
+    ├─ Palabras negativas eliminan (gestión, noticias, comunicado, directorio, PQRS, boletín).
+    └─ Emite log diferencial: `[discard:llm]` vs `[discard:gate]` para métricas de `llm_rejection_rate`.
     │
     ▼
 ScrapingStorage.saveActivity()
@@ -293,6 +300,55 @@ El pipeline de ingesta cuenta con un flujo estricto de **mitigación legal/copyr
 3. **`ai`** (Fallback Inactivo por defecto): Se envía a LLM si las capas previas no logran rescatar >60 caracteres no ambiguos.
 
 Para mantener total monitoreo sobre las fuentes, cada bloque ingestado se inserta temporalmente en la BD como un reporte de degradación (`ContentQualityMetric`) visible en `/admin/quality`. Evalúa % Cortas, % Ruido y % Promo de los strings.
+
+## Activity Gate — Semántica de Evento (NUEVO v0.12.0)
+
+El Gate es la primera defensa **de calidad ontológica** del pipeline. Responde a la pregunta "¿Es esto un evento al que una persona puede asistir?" antes de tocar la BD.
+
+### Arquitectura del Gate (doble capa jerárquica)
+
+**Capa 1: LLM Priority Gate** — `isActivity` field en schema Zod de `types.ts`
+- Gemini analiza el contenido y emite explícitamente `"isActivity": true/false`.
+- El prompt es extremadamente conservador: ante la duda, `false`.
+- `isActivity` **no tiene valor por defecto en Zod** — si Gemini no lo emite, o el JSON viene corrupto, se trata como `false`.
+- Resultado: `[discard:llm]` en el log diferencial.
+
+**Capa 2: Heuristic Gate** — `activityGate()` en `pipeline.ts`
+- Solo se ejecuta si Gemini aprobó la capa 1.
+- Valida señales de **intención** (keywords: taller, festival, concierto, función…) y **tiempo** (dateStart, dateEnd, schedule no vacío).
+- Palabras negativas causan descarte inmediato.
+- Resultado: `[discard:gate]` en el log diferencial.
+
+### Prompt de Gemini (directriz conservadora)
+
+```
+Set "isActivity" to TRUE only if:
+- A real person could attend this
+- There is a clear time reference (date, schedule or upcoming occurrence)
+
+Set "isActivity" to FALSE if:
+- It is news, announcement, or institutional content
+- It lacks a concrete time to attend
+
+Be conservative: if unsure → FALSE
+```
+
+### Métricas de Observabilidad
+
+| Log event | Significado | Acción si sube mucho |
+|-----------|-------------|----------------------|
+| `[discard:llm]` | Gemini rechazó contenido como no-evento | Normal si fuente mezcla noticias |
+| `[discard:gate]` | Gemini lo aprobó pero faltó fecha/intención | Revisar preflight de fechas |
+| `llm_rejection_rate` > 60% | Fuente emite demasiado ruido | Pausar / revisar fuente |
+| `llm_rejection_rate` < 5% | Gate muy permisivo | Endurecer prompt |
+
+### Archivos involucrados
+
+| Archivo | Rol |
+|---------|-----|
+| `src/modules/scraping/types.ts` | Campo `isActivity` en schema Zod (sin default) |
+| `src/modules/scraping/nlp/gemini.analyzer.ts` | Prompt conservador + fail-safe en `analyze()` |
+| `src/modules/scraping/pipeline.ts` | Jerarquía LLM → Gate → DB + logging diferencial |
 
 ## Curaduría Adaptativa (NUEVO v0.11.0-S43)
 El Pipeline cuenta con un **Filtro Adaptativo Inteligente** que evalúa dinámicamente si debe descartar una actividad antes de guardarla.

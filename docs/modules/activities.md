@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.11.0-S55
-**Última actualización:** 19 de abril de 2026
+**Versión actual:** v0.12.0
+**Última actualización:** 20 de abril de 2026
 
 ## ¿Qué hace?
 

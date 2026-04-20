@@ -1,5 +1,5 @@
-# HABITAPLAN — DOCUMENTO FUNDACIONAL V24
-> Generado estáticamente por el script V24.
+# HABITAPLAN — DOCUMENTO FUNDACIONAL V26
+> Generado por el script V26. Actualizado: 2026-04-20.
 
 
 # 1. VISION Y PROBLEMA
@@ -411,22 +411,23 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Cron Vercel: 9am UTC diario → POST /api/admin/send-notifications (CRON_SECRET).
 - Web Push VAPID: public/sw.js + API /api/push/subscribe. sendPushToMany() limpia endpoints expirados.
 
-# 16. ESTADO ACTUAL — v0.11.0-S54 (2026-04-17)
+# 16. ESTADO ACTUAL — v0.12.0 (2026-04-20)
 
 | Metrica | Valor |
 | --- | --- |
-| Actividades en BD | ~300+ actividades activas |
+| Actividades en BD | ~300+ actividades activas (con cobertura de ciudad > 86%) |
 | Locations geocodificadas | 29/29 con coordenadas reales |
-| Tests | 1157 tests en 73 archivos — todos verdes (+ 2 skipped) |
+| Tests | 1203 tests en 73 archivos — todos verdes |
 | Cobertura | >91% stmts / >85% branches / >88% funcs |
 | TypeScript | 0 errores (tsc --noEmit) |
-| npm audit | 3 moderate dev-only (@hono/node-server via @prisma/dev — NO --force) |
-| Build | OK — sin warnings criticos |
+| npm audit | 3 moderate dev-only aceptables |
+| Build | OK — sin warnings críticos |
 | Deployment | Vercel ACTIVO — habitaplan.com |
 | CI/CD | GitHub Actions — tests + build + smoke CI |
 | Cola | BullMQ + Upstash Redis OPERATIVO — Cron 6h activo |
-| Fuentes activas | 10 web Bogota + 2 web Medellin + 10 Instagram + 1 Telegram |
+| Fuentes activas | 10 web Bogotá + 2 web Medellín + 10 Instagram + 1 Telegram |
 | Search engine | pg_trgm activo — similarity + GIN indexes |
+| Activity Gate | ACTIVO (v0.12.0) — doble capa semántica + heurística. Logging diferencial. |
 | Date Preflight | Activo — date_preflight_logs. 3 capas. |
 | Parser Resiliente | Activo — PARSER_FALLBACK_ENABLED. Cheerio fallback cuando Gemini 429/503. |
 | Intent Manager | Activo — hp_intent localStorage TTL 15min |
@@ -460,7 +461,9 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | S51 | V24 | Favorites XOR CHECK constraint BD. migrate-favorites-xor.ts. 1105 tests. |
 | S52 | V24 | Parser Resiliente: fallback Cheerio 429/503. parser.ts + fallback-mapper.ts. 1123 tests. |
 | S53 — 043aa3e | V24 | Design System ESLint. Intent Manager. toggle-favorite.ts. requireAuth. 1155 tests. |
-| S54 — 2542178 | V24 | Fix fallback-mapper HTML completo. Design System Zero Debt (erradicación alert). FUGA + IG Medellin. 1157 tests. |
+| S54 — 2542178 | V24 | Fix fallback-mapper HTML completo. Design System Zero Debt (erradicación alert). FUGA + IG Medellín. 1157 tests. |
+| S55 | V25 | Pipeline Optimization. Scheduler Inteligente. Honest Facets UX. Deduplication Engine. 1203 tests. |
+| S58 — d958311 | **V26** | **Activity Gate v0.12.0**: fail-safe LLM estricto (`isActivity` sin default), Gate heurístico, logging diferencial `[discard:llm]/[discard:gate]`, backfill ubicaciones 86%. |
 
 
 # 17. TESTING
@@ -540,5 +543,5 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | npx tsx scripts/source-ranking.ts [--weeks=4] | Ranking de fuentes por produccion/volumen |
 | npx tsx scripts/source-pause-manager.ts | Calcular scores y pausar fuentes bajas (NUEVO V24) |
 | npx tsx scripts/test-instagram.ts <URL> --count-new | Contar posts nuevos sin consumir Gemini |
-| node scripts/generate_v24.mjs | Generar este Documento Fundacional V24 |
+| node scripts/generate_v26.mjs | Generar Documento Fundacional V26 (actual) |
 

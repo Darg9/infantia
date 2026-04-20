@@ -285,15 +285,18 @@ export async function listActivities(params: ListParams) {
 
   const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(effectiveSort);
 
-  // 3. Estrategia híbrida: Sql Over-fetch 
-  // Multiplicamos por 3 el buffer y aseguramos que no se exceda el MAX_FETCH (200) para protección de Vercel.
-  const MAX_FETCH = 200;
-  
-  // Start from skip 0 to capture all elements on the left, up to requested UI chunk.
-  const takeAmount = isRelevanceSort 
-      ? Math.min(params.skip + (params.pageSize * 3), MAX_FETCH) 
-      : params.pageSize;
-  
+  // 3. Estrategia híbrida: Sql Over-fetch
+  // Para relevance, traemos desde skip=0 con un buffer generoso para que la
+  // diversificación posterior siempre tenga suficientes elementos para cubrir
+  // hasta la página solicitada. Protegemos Vercel con MAX_FETCH=500.
+  const MAX_FETCH = 500;
+
+  // Buffer = 4× pageSize para compensar la diversificación agresiva por fuente.
+  // Garantiza que tras filtrar duplicados de dominio queden ≥ skip+pageSize elementos.
+  const takeAmount = isRelevanceSort
+    ? Math.min(params.skip + params.pageSize * 4, MAX_FETCH)
+    : params.pageSize;
+
   const skipAmount = isRelevanceSort ? 0 : params.skip;
 
   let rawActivities: any[] = [];
@@ -360,8 +363,10 @@ export async function listActivities(params: ListParams) {
 
     processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);
 
-    // Evitar dominancia usando Map (Max 5 items per source globales)
-    const MAX_ITEMS_PER_SOURCE = 5;
+    // Evitar dominancia: máx 8 ítems por dominio fuente.
+    // Valor más alto (vs 5 anterior) para que páginas 2+ tengan suficientes resultados
+    // sin sacrificar diversidad real (un solo dominio no puede copar más del ~8×n slots).
+    const MAX_ITEMS_PER_SOURCE = 8;
     const grouped = new Map<string, number>();
     diversified = [];
 

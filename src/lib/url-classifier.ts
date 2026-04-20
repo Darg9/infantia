@@ -4,6 +4,38 @@
 // Objetivo: Reducir carga Gemini + mejorar tasa de actividades extraídas
 
 /**
+ * Dominios que NUNCA deben indexarse como fuente de actividades.
+ * Comerciales, redes sociales, mensajería, etc.
+ */
+const BLOCKED_DOMAINS = new Set([
+  // Agencias y comercios digitales
+  'agenciadigitalamd.com',
+
+  // Mensajería
+  'api.whatsapp.com',
+  'whatsapp.com',
+  'telegram.me',
+  't.me',
+
+  // Redes sociales (se maneja por separado vía PlaywrightExtractor, no Cheerio)
+  'linkedin.com',
+  'twitter.com',
+  'x.com',
+  'tiktok.com',
+  'facebook.com',
+
+  // Plataformas de video
+  'youtube.com',
+  'youtu.be',
+  'vimeo.com',
+
+  // Compras y marketplaces
+  'mercadolibre.com',
+  'amazon.com',
+  'rappi.com',
+]);
+
+/**
  * Patrones regex que indican URL NO productiva
  * (no contiene información de actividad)
  */
@@ -100,6 +132,18 @@ export function classifyUrlProductivity(url: string): {
 } {
   // Normalizar URL
   const normalized = url.toLowerCase().trim();
+
+  // 0. Rechazar dominios bloqueados explícitamente
+  try {
+    const hostname = new URL(url).hostname.replace(/^www\./, '');
+    if (BLOCKED_DOMAINS.has(hostname)) {
+      return {
+        score: 0,
+        isProductive: false,
+        reason: `Blocked domain: ${hostname}`,
+      };
+    }
+  } catch { /* url inválida */ }
 
   // 1. Penalizar patrones NO productivos (score 0-20)
   for (const pattern of NON_PRODUCTIVE_PATTERNS) {

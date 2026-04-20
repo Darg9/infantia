@@ -31,6 +31,16 @@ type AdaptiveContext = {
 
 const EMPTY_ADAPTIVE_CTX: AdaptiveContext = { globalMetrics: null, sourceHealthMap: {} };
 
+// Dominios que nunca deben almacenarse como fuente válida
+const BLOCKED_DOMAINS = new Set([
+  'agenciadigitalamd.com',
+  'api.whatsapp.com', 'whatsapp.com',
+  'telegram.me', 't.me',
+  'linkedin.com', 'twitter.com', 'x.com', 'tiktok.com', 'facebook.com',
+  'youtube.com', 'youtu.be', 'vimeo.com',
+  'mercadolibre.com', 'amazon.com', 'rappi.com',
+]);
+
 export class ScrapingStorage {
   /**
    * Guarda una actividad individual en la BD.
@@ -46,6 +56,15 @@ export class ScrapingStorage {
     ctx: AdaptiveContext = EMPTY_ADAPTIVE_CTX,
   ): Promise<string | null> {
     try {
+      // Rechazar dominios spam antes de cualquier procesamiento
+      try {
+        const hostname = new URL(sourceUrl).hostname.replace(/^www\./, '');
+        if (BLOCKED_DOMAINS.has(hostname)) {
+          log.warn(`[STORAGE] Dominio bloqueado rechazado: ${hostname} (${sourceUrl})`);
+          return 'DISCARDED_BLOCKED_DOMAIN';
+        }
+      } catch { /* url inválida — dejar pasar, el pipeline lo rechazará */ }
+
       log.info('Data Pipeline Iniciado', { action: 'pipeline_process', result: 'attempt', sourceUrl });
       
       const pipeline = runDataPipeline(data);

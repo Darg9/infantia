@@ -12,6 +12,7 @@ import { savePreflightLog } from './utils/preflight-db';
 import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
+import { evaluateActivityGate } from './quality/activity-gate';
 
 const log = createLogger('scraping:pipeline');
 
@@ -397,16 +398,25 @@ export class ScrapingPipeline {
             parserSource:    data.parserSource,
             confidenceScore: data.confidenceScore,
           });
+          // ── Activity Gate: valida contenido antes de persistir ──────────────
+          const gate = evaluateActivityGate(data, actUrl);
+          if (!gate.pass) {
+            log.info(`[GATE] ⛔ Descartado: "${data.title}" | reason=${gate.reason} score=${gate.score.toFixed(2)}`, {
+              url: actUrl,
+              signals: gate.signals,
+            });
+          } else {
           // ── Streaming save: threshold diferenciado por origen del parser ──
           // fallback Cheerio (0.5) es más estricto que Gemini (0.3) para reducir ruido
           const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
           if (this.storage && data.confidenceScore >= streamThreshold) {
             try {
               await this.storage.saveActivity(data, actUrl);
-              log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore})`);
+              log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore}, gate=${gate.score.toFixed(2)})`);
             } catch (err: any) {
               log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${err?.message}`);
             }
+          }
           }
           results.push({ url: actUrl, data });
         } catch (error: any) {
@@ -427,15 +437,21 @@ export class ScrapingPipeline {
               parserSource:    data.parserSource,
               confidenceScore: data.confidenceScore,
             });
+            // ── Activity Gate — paralelo ──────────────────────────────────────
+            const gate = evaluateActivityGate(data, actUrl);
+            if (!gate.pass) {
+              log.info(`[GATE] ⛔ Descartado: "${data.title}" | reason=${gate.reason} score=${gate.score.toFixed(2)}`);
+            } else {
             // ── Streaming save — threshold diferenciado ──
             const streamThreshold = data.parserSource === 'fallback' ? 0.5 : 0.3;
             if (this.storage && data.confidenceScore >= streamThreshold) {
               try {
                 await this.storage.saveActivity(data, actUrl);
-                log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore})`);
+                log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore}, gate=${gate.score.toFixed(2)})`);
               } catch (err: any) {
                 log.warn(`[STREAMING] Error (non-fatal): ${err?.message}`);
               }
+            }
             }
             return { url: actUrl, data };
           } catch (error: any) {

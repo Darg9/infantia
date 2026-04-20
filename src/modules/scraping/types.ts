@@ -22,6 +22,9 @@ export const activityNLPResultSchema = z.object({
   // Gemini puede devolver null o string vacío en title — normalizamos a 'Sin título'
   title: z.union([z.string(), z.null()]).transform((v) => (v && v.trim()) ? v.trim() : 'Sin título'),
   description: z.string().nullable().default(''),
+  // Gemini declara explícitamente si el contenido es una actividad real.
+  // false → pipeline rechaza antes de heurísticas. Omitido = true (compatibilidad hacia atrás).
+  isActivity: z.boolean().optional().default(true),
   // Gemini puede devolver null o [] en categories — normalizamos a ['General']
   categories: z.union([z.array(z.string()), z.null()])
     .transform((v) => (v && v.length > 0) ? v : ['General']),

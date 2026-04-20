@@ -39,6 +39,12 @@ function sanitizeGeminiResponse(raw: Record<string, unknown>): Record<string, un
 const SYSTEM_PROMPT = `Eres un analizador experto de actividades infantiles para la plataforma HabitaPlan.
 Tu tarea es extraer información estructurada de texto crudo de páginas web.
 
+DECISIÓN INICIAL (crítica):
+Antes de extraer datos, decide si el contenido describe una actividad real a la que alguien puede asistir.
+ES una actividad válida si describe un taller, evento, clase, show, festival, concierto, obra, exposición o curso con intención de participación.
+NO es una actividad si es: noticia, comunicado de prensa, página de gestión, directorio, logro institucional, premio, catálogo, términos de servicio o PQRS.
+Si no es una actividad, devuelve { "isActivity": false } y omite los demás campos.
+
 REGLAS:
 - Responde ÚNICAMENTE con un objeto JSON válido, sin texto adicional ni markdown.
 - Si el texto está en otro idioma, traduce título y descripción al español.
@@ -66,6 +72,7 @@ AUDIENCIA (audience) — infiere basándote en el contenido:
 
 ESTRUCTURA JSON ESPERADA:
 {
+  "isActivity": true,
   "title": "string",
   "description": "string (máx 300 caracteres, en español)",
   "categories": ["string"],
@@ -248,6 +255,22 @@ export class GeminiAnalyzer {
 
       // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
       const rawParsed = parsed as Record<string, unknown>;
+
+      // Rechazo semántico temprano: Gemini declara explícitamente que no es una actividad
+      // Esto ocurre cuando el contenido es noticia, directorio, PQRS, etc.
+      if (rawParsed.isActivity === false) {
+        log.info(`[GEMINI:isActivity=false] Contenido rechazado semánticamente: ${url}`);
+        return {
+          title: 'No es actividad',
+          description: '',
+          categories: ['General'],
+          audience: 'ALL' as const,
+          isActivity: false,
+          confidenceScore: 0,
+          currency: 'COP',
+        };
+      }
+
       if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
         log.warn('Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
         return {

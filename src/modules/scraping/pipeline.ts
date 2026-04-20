@@ -398,6 +398,10 @@ export class ScrapingPipeline {
             parserSource:    data.parserSource,
             confidenceScore: data.confidenceScore,
           });
+          // ── Rechazo semántico (Gemini declaró isActivity=false) ──────────────
+          if (data.isActivity === false) {
+            log.info(`[GEMINI:isActivity=false] Descartado sin gate: "${data.title}" (${actUrl})`);
+          } else {
           // ── Activity Gate: valida contenido antes de persistir ──────────────
           const gate = evaluateActivityGate(data, actUrl);
           if (!gate.pass) {
@@ -417,7 +421,8 @@ export class ScrapingPipeline {
               log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${err?.message}`);
             }
           }
-          }
+          } // end gate.pass check
+          } // end isActivity check
           results.push({ url: actUrl, data });
         } catch (error: any) {
           log.error(`Error en ${actUrl}: ${error.message}`);

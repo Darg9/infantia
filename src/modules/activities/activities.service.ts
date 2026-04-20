@@ -366,26 +366,9 @@ export async function listActivities(params: ListParams) {
     processedActivities = filteredActivities;
     totalHidden = initialCount - processedActivities.length;
 
-    // Ordenar por score descendente
+    // Ordenar por score descendente y tomar el slice de la página
     processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);
-
-    // Obtener el slice de la página actual
-    const pageSlice = processedActivities.slice(params.skip, params.skip + params.pageSize);
-
-    // Aplicar diversificación de fuentes SOLO dentro de la página
-    // (máx 5 items por dominio por página, no global)
-    const MAX_ITEMS_PER_SOURCE = 5;
-    const grouped = new Map<string, number>();
-    diversified = [];
-
-    for (const item of pageSlice) {
-      const d = item._domainTemp || 'unknown';
-      const count = grouped.get(d) || 0;
-      if (count < MAX_ITEMS_PER_SOURCE) {
-        diversified.push(item);
-        grouped.set(d, count + 1);
-      }
-    }
+    diversified = processedActivities.slice(params.skip, params.skip + params.pageSize);
   }
 
   // 6. Resultado final

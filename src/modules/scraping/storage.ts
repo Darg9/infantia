@@ -341,14 +341,13 @@ export class ScrapingStorage {
       where: { verticalId },
     });
 
-    for (const name of categoryNames) {
-      const normalizedName = name.toLowerCase().trim();
+    for (const nameOrSlug of categoryNames) {
+      const normalizedQuery = nameOrSlug.toLowerCase().trim();
 
-      // Buscar match exacto o parcial
-      const match = allCategories.find((c) => {
-        const catName = c.name.toLowerCase();
-        return catName === normalizedName || catName.includes(normalizedName) || normalizedName.includes(catName);
-      });
+      // Buscar match determinístico exacto (cero fuzzy matching o includes)
+      const match = allCategories.find((c) => 
+        c.slug === normalizedQuery || c.name.toLowerCase() === normalizedQuery
+      );
 
       if (match) {
         // Upsert en la tabla intermedia

@@ -36,7 +36,7 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-red-500 text-white hover:bg-hp-action-primary-hover active:opacity-90 ' +
+    'bg-hp-action-primary text-white hover:bg-hp-action-primary-hover active:opacity-90 ' +
     'disabled:bg-hp-bg-subtle disabled:text-hp-text-muted ' +
     'focus-visible:ring-hp-action-primary',
 

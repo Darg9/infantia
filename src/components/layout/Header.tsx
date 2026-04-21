@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
@@ -23,7 +24,14 @@ export async function Header() {
       <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="text-xl font-bold text-brand-500">HabitaPlan</span>
+          <Image 
+            src="/logo.png" 
+            alt="HabitaPlan Logo" 
+            width={160} 
+            height={40} 
+            className="h-8 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Nav */}

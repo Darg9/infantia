@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 // =============================================================================
 // Footer — estructura de 4 columnas + barra inferior
@@ -42,7 +43,13 @@ export function Footer() {
 
           {/* Columna 1 — Brand */}
           <div className="col-span-2 sm:col-span-1">
-            <span className="text-lg font-bold text-brand-500">HabitaPlan</span>
+            <Image 
+              src="/logo.png" 
+              alt="HabitaPlan Logo" 
+              width={160} 
+              height={40} 
+              className="h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity"
+            />
             <p className="text-sm text-[var(--hp-text-secondary)] mt-2 leading-relaxed max-w-xs">
               Encuentra actividades para disfrutar en familia
             </p>

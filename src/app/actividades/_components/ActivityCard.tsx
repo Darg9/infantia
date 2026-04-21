@@ -10,6 +10,7 @@ import { FavoriteButton } from '@/components/FavoriteButton';
 import { activityPath } from '@/lib/activity-url';
 import { trackEvent } from '@/lib/track';
 import { normalizePrice } from '@/lib/decimal';
+import { highlightText } from '@/lib/highlight';
 
 // Tipo local inferido desde lo que devuelve listActivities.
 // En producción puede llegar como number, string o Decimal serializado.
@@ -52,6 +53,8 @@ interface ActivityCardProps {
    * título más prominente, footer reducido a ubicación + favorito
    */
   compact?: boolean;
+  /** Término de búsqueda activo — se resaltan coincidencias en título y descripción */
+  searchQuery?: string;
 }
 
 
@@ -85,7 +88,7 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
 
-export default function ActivityCard({ activity, isFavorited = false, compact = false }: ActivityCardProps) {
+export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '' }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
@@ -213,13 +216,13 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             ? 'text-base font-bold text-[var(--hp-text-primary)]'
             : 'text-sm font-semibold text-[var(--hp-text-primary)]'
         )}>
-          {activity.title}
+          {highlightText(activity.title, searchQuery)}
         </h3>
 
         {/* Descripción — oculta en compact */}
         {!compact && (
           <p className="text-xs text-[var(--hp-text-secondary)] line-clamp-2 leading-relaxed flex-1">
-            {activity.description}
+            {highlightText(activity.description, searchQuery)}
           </p>
         )}
 

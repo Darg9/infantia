@@ -104,3 +104,19 @@ body {
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ── SEARCH HIGHLIGHT ── */
+.hp-highlight {
+  background-color: oklch(from var(--hp-accent) l c h / 0.20);
+  color: var(--hp-text-primary);
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 2px;
+  /* No usar italic: evitar desplazamiento de layout */
+  font-style: normal;
+}
+
+.dark .hp-highlight {
+  background-color: oklch(from var(--hp-accent) l c h / 0.30);
+  color: #fff;
+}

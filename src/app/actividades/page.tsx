@@ -388,6 +388,7 @@ export default async function ActividadesPage({
                     key={activity.id}
                     activity={activity}
                     isFavorited={favoriteIds.has(activity.id)}
+                    searchQuery={filters.search ?? ''}
                   />
                 ))}
               </div>

@@ -12,6 +12,18 @@ import { createLogger } from '@/lib/logger';
 
 const log = createLogger('activities:search');
 
+// =============================================================================
+// Ranking Híbrido — Pesos configurables (Fase 2)
+// Ajustar aquí cuando haya suficiente volumen de datos para calibrar con A/B.
+// =============================================================================
+const RANK_W = {
+  TEXT:    0.50,  // similitud pg_trgm (señal más fuerte en búsqueda activa)
+  HEALTH:  0.25,  // calidad de la fuente (confianza del dominio)
+  CTR:     0.15,  // CTR implícito por dominio (behaviour signal)
+  RECENCY: 0.10,  // frescura del evento (startDate o createdAt)
+} as const;
+
+
 const activityIncludes = {
   provider: { select: { id: true, name: true, slug: true, type: true, logoUrl: true, isVerified: true, isPremium: true } },
   location: {
@@ -327,10 +339,24 @@ export async function listActivities(params: ListParams) {
 
     let rankingScore = computeActivityScore(act, healthScore, ctrBoost);
     
-    // Si viene de una busqueda con score textual, aplicamos la nueva formula hibrida
+    // Si viene de una búsqueda con score textual, aplicamos la fórmula híbrida completa
     if (textScoreMap && textScoreMap.has(act.id)) {
       const textScore = textScoreMap.get(act.id)!;
-      rankingScore = (textScore * 0.5) + (healthScore * 0.3) + (ctrBoost * 0.2);
+
+      // Recency: usar startDate si existe, sino createdAt como proxy
+      const eventDate = act.startDate ? new Date(act.startDate) : new Date(act.createdAt);
+      const daysAgo   = Math.max(0, (Date.now() - eventDate.getTime()) / 86_400_000);
+      const recency   = 1 / (1 + daysAgo * 0.05); // decay suave: ~0.95 a 1d, ~0.5 a 13d
+
+      // CTR por dominio (ya computado desde getCachedCTR + ctrToBoost)
+      // Fallback: 0.1 si el dominio no tiene historial suficiente
+      const actCtr = ctrBoost > 0 ? ctrBoost : 0.1;
+
+      rankingScore =
+        textScore  * RANK_W.TEXT    +
+        healthScore * RANK_W.HEALTH  +
+        actCtr     * RANK_W.CTR     +
+        recency    * RANK_W.RECENCY;
     }
 
     // Penalización por metadatos incompletos (Pipeline Requirement)

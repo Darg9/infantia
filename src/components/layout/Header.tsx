@@ -47,7 +47,7 @@ export async function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo-light.svg"
+              src="/logo.png"
               alt="HabitaPlan Logo"
               width={160}
               height={40}
@@ -55,7 +55,7 @@ export async function Header() {
               priority
             />
             <Image
-              src="/logo-dark.svg"
+              src="/logo.png"
               alt="HabitaPlan Logo"
               width={160}
               height={40}

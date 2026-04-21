@@ -7,111 +7,100 @@
    Para tokens semánticos de superficie/texto: var(--hp-*)
 ───────────────────────────────────────────────────────────────────────────── */
 
-/* ── Primitivos: generan clases Tailwind bg-brand-*, text-error-*, etc. ── */
+/* ── Primitivos: escalas puras ── */
 @theme {
-  /* Brand — naranja HabitaPlan */
-  --color-brand-50:  #fff7ed;
-  --color-brand-100: #ffedd5;
-  --color-brand-200: #fed7aa;
-  --color-brand-300: #fdba74;
-  --color-brand-400: #fb923c;
-  --color-brand-500: #f97316;   /* primary */
-  --color-brand-600: #ea580c;   /* hover */
-  --color-brand-700: #c2410c;   /* active */
-  --color-brand-800: #9a3412;
-  --color-brand-900: #7c2d12;
-
-  /* Success */
-  --color-success-50:  #f0fdf4;
-  --color-success-100: #dcfce7;
   --color-success-500: #22c55e;
   --color-success-600: #16a34a;
-  --color-success-700: #15803d;
-
-  /* Error */
-  --color-error-50:  #fef2f2;
-  --color-error-100: #fee2e2;
-  --color-error-400: #f87171;
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
-
-  /* Warning */
-  --color-warning-50:  #fffbeb;
-  --color-warning-100: #fef3c7;
   --color-warning-500: #f59e0b;
   --color-warning-600: #d97706;
 }
 
-/* ── Tokens semánticos (light) ── */
+/* ===== BRAND (LOCKED) ===== */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --hp-primary: #002147;
+  --hp-accent: #ff8c00;
 
-  /* Superficies */
-  --hp-bg-page:    #f9fafb;
+  /* TEXT */
+  --hp-text-primary: #002147;
+  --hp-text-secondary: rgba(0, 33, 71, 0.7);
+  --hp-text-muted: rgba(0, 33, 71, 0.5);
+
+  /* BACKGROUNDS */
+  --hp-bg-page: #ffffff;
   --hp-bg-surface: #ffffff;
-  --hp-bg-subtle:  #f3f4f6;
+  --hp-bg-subtle: #f8fafc;
   --hp-bg-elevated: #ffffff;
 
-  /* Texto */
-  --hp-text-primary:   #111827;
-  --hp-text-secondary: #6b7280;
-  --hp-text-muted:     #9ca3af;
+  /* BORDER */
+  --hp-border-subtle: rgba(0, 33, 71, 0.1);
 
-  /* Bordes */
-  --hp-border:        #e5e7eb;
-  --hp-border-subtle: #f3f4f6;
+  /* ACTION */
+  --hp-action-primary: #ff8c00;
+  --hp-action-primary-hover: #e67e00;
 
-  /* Radius */
-  --hp-radius-xs:  0.375rem;   /*  6px — badges, tags */
-  --hp-radius-sm:  0.5rem;     /*  8px — inputs */
-  --hp-radius-md:  0.75rem;    /* 12px — botones */
-  --hp-radius-lg:  1rem;       /* 16px — cards */
-  --hp-radius-xl:  1.5rem;     /* 24px — cards grandes */
+  /* RADIUS */
+  --hp-radius-sm: 8px;
+  --hp-radius-md: 12px;
+  --hp-radius-lg: 16px;
 
-  /* Sombras */
-  --hp-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --hp-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --hp-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05);
-
-  /* Transición base */
-  --hp-transition: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* SHADOW */
+  --hp-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --hp-shadow-md: 0 4px 8px rgba(0,0,0,0.08);
 }
 
-/* ── Tokens semánticos (dark) ── */
+/* DARK */
 .dark {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  --hp-bg-page: #0b1220;
+  --hp-bg-surface: #111827;
+  --hp-bg-subtle: #1f2937;
+  --hp-bg-elevated: #111827;
 
-  --hp-bg-page:    #0f172a;
-  --hp-bg-surface: #1e293b;
-  --hp-bg-subtle:  #334155;
-  --hp-bg-elevated: #334155;
-  --hp-text-primary:   #f1f5f9;
-  --hp-text-secondary: #94a3b8;
-  --hp-text-muted:     #64748b;
-  --hp-border:        #334155;
-  --hp-border-subtle: #1e293b;
+  --hp-text-primary: #ffffff;
+  --hp-text-secondary: rgba(255,255,255,0.7);
+  --hp-text-muted: rgba(255,255,255,0.4);
+
+  --hp-border-subtle: rgba(255,255,255,0.1);
 }
 
-/* ── Font variables ── */
+/* ── Mapping a Tailwind v4 Utilities ── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--hp-bg-page);
+  --color-foreground: var(--hp-text-primary);
+  
+  /* Conectores Semánticos */
+  --color-hp-bg-page: var(--hp-bg-page);
+  --color-hp-bg-surface: var(--hp-bg-surface);
+  --color-hp-bg-subtle: var(--hp-bg-subtle);
+  --color-hp-bg-elevated: var(--hp-bg-elevated);
+
+  --color-hp-text-primary: var(--hp-text-primary);
+  --color-hp-text-secondary: var(--hp-text-secondary);
+  --color-hp-text-muted: var(--hp-text-muted);
+
+  --color-hp-border-subtle: var(--hp-border-subtle);
+
+  --color-hp-action-primary: var(--hp-action-primary);
+  --color-hp-action-primary-hover: var(--hp-action-primary-hover);
 }
 
 /* ── Base ── */
-body {
-  background: var(--hp-bg-page);
-  color: var(--hp-text-primary);
-  font-family: var(--font-geist-sans, Arial, sans-serif);
+* {
+  transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              color 180ms cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* ── Focus visible global (accesibilidad AA) ── */
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: var(--font-sans), Arial, sans-serif;
+}
+
+/* ── ACCESSIBILITY ── */
 :focus-visible {
-  outline: 2px solid #f97316;
+  outline: 2px solid var(--hp-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }

@@ -36,33 +36,25 @@ const BASE =
 
 const VARIANTS: Record<ButtonVariant, string> = {
   primary:
-    'bg-brand-500 text-white hover:bg-brand-600 active:bg-brand-700 ' +
-    'disabled:bg-brand-200 disabled:text-brand-400 ' +
-    'focus-visible:ring-brand-500 ' +
-    'dark:disabled:bg-brand-900/40 dark:disabled:text-brand-600',
+    'bg-hp-action-primary text-white hover:bg-hp-action-primary-hover active:opacity-90 ' +
+    'disabled:bg-hp-bg-subtle disabled:text-hp-text-muted ' +
+    'focus-visible:ring-hp-action-primary',
 
   secondary:
-    'border-2 border-gray-800 text-[var(--hp-text-primary)] bg-transparent ' +
-    'hover:bg-gray-800 hover:text-white active:bg-gray-900 ' +
-    'disabled:border-gray-300 disabled:text-[var(--hp-text-muted)] disabled:bg-transparent ' +
-    'focus-visible:ring-gray-800 ' +
-    'dark:border-gray-400 dark:text-[var(--hp-text-muted)] ' +
-    'dark:hover:bg-gray-700 dark:hover:border-gray-700 dark:hover:text-white ' +
-    'dark:focus-visible:ring-gray-400 ' +
-    'dark:disabled:border-gray-700 dark:disabled:text-gray-600',
+    'border border-hp-border-subtle text-hp-text-primary bg-transparent ' +
+    'hover:bg-hp-bg-subtle active:opacity-90 ' +
+    'disabled:opacity-50 disabled:bg-transparent ' +
+    'focus-visible:ring-hp-text-primary',
 
   ghost:
-    'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-[var(--hp-text-primary)] active:bg-gray-200 ' +
-    'disabled:text-[var(--hp-text-muted)] disabled:bg-transparent ' +
-    'focus-visible:ring-gray-500 ' +
-    'dark:text-[var(--hp-text-muted)] dark:hover:bg-gray-800 dark:hover:text-white ' +
-    'dark:focus-visible:ring-gray-500',
+    'bg-transparent text-hp-text-secondary hover:bg-hp-bg-subtle hover:text-hp-text-primary active:opacity-90 ' +
+    'disabled:opacity-50 disabled:bg-transparent ' +
+    'focus-visible:ring-hp-bg-subtle',
 
   destructive:
     'bg-error-500 text-white hover:bg-error-600 active:bg-error-600 ' +
-    'disabled:bg-error-100 disabled:text-error-400 ' +
-    'focus-visible:ring-error-500 ' +
-    'dark:disabled:bg-error-900/30 dark:disabled:text-error-600',
+    'disabled:opacity-50 ' +
+    'focus-visible:ring-error-500',
 }
 
 const SIZES: Record<ButtonSize, string> = {

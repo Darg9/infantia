@@ -75,6 +75,7 @@ export const PRIVACY_SECTIONS = [
       { type: 'bullet' as const, text: 'Garantizar la seguridad del servicio' },
       { type: 'bullet' as const, text: 'Generar métricas agregadas' },
       { type: 'bullet' as const, text: 'Atender consultas o solicitudes' },
+      { type: 'bullet' as const, text: 'Envío de notificaciones push relacionadas con nuevas actividades o actualizaciones, previa autorización expresa del usuario' },
       { type: 'bullet' as const, text: 'Cumplir obligaciones legales' },
     ],
   },
@@ -136,10 +137,11 @@ export const PRIVACY_SECTIONS = [
   },
   {
     num: '11',
-    title: 'Cookies',
+    title: 'Cookies y Tecnologías Similares',
     content: [
-      { type: 'text' as const, text: 'Usamos cookies necesarias para el funcionamiento.' },
-      { type: 'text' as const, text: 'Si se incorporan otras, se solicitará consentimiento.' },
+      { type: 'text' as const, text: 'Utilizamos cookies técnicas y de sesión estrictamente necesarias para el funcionamiento seguro de la Plataforma (por ejemplo, gestión de acceso y preferencias de visualización como el modo oscuro).' },
+      { type: 'text' as const, text: 'Adicionalmente, empleamos almacenamiento local del navegador (Local Storage) para mantener el estado de la interfaz de usuario, persistir interacciones temporales y enriquecer la experiencia general.' },
+      { type: 'text' as const, text: 'Si en el futuro implementamos cookies analíticas avanzadas o con fines publicitarios, desplegaremos un mecanismo para solicitar y gestionar tu consentimiento explícito antes de su uso.' },
     ],
   },
   {

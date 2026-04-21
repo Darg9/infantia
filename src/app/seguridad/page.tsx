@@ -31,9 +31,10 @@ const CARDS = [
     title: 'Transparencia',
     subtitle: 'Uso responsable de la información',
     items: [
-      'La información presentada tiene fines informativos',
+      'La información y las imágenes presentadas tienen fines informativos',
+      'La información puede no reflejar cambios recientes realizados por el proveedor',
       'No garantizamos la disponibilidad, veracidad o condiciones de servicios de terceros',
-      'Las decisiones tomadas a partir de la información son responsabilidad del usuario',
+      'Las imágenes pueden provenir de terceros; se respetan sus derechos de autor',
     ],
   },
   {
@@ -103,8 +104,8 @@ export default function SeguridadPage() {
           </h1>
 
           <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed">
-            Nuestra prioridad es ofrecer una experiencia confiable, transparente y segura
-            para todos los usuarios.
+            Trabajamos para ofrecer una experiencia transparente y segura, basada en buenas
+            prácticas y uso responsable de la información.
           </p>
           <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed mt-3">
             HabitaPlan implementa medidas de protección de datos alineadas con la normativa

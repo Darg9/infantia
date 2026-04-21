@@ -5,6 +5,7 @@ import { prisma } from '@/lib/db'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
+import { MobileNav } from '@/components/layout/MobileNav'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -19,60 +20,89 @@ export async function Header() {
     providerSlug = provider?.slug ?? null
   }
 
+  // Props forwarded to the mobile client component
+  const mobileSession = session
+    ? {
+        email: session.user.email ?? '',
+        avatarUrl,
+        isAdmin: session.role === 'admin',
+        providerSlug,
+      }
+    : null
+
   return (
-    <header aria-label="Sitio principal" className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] transition-colors duration-[var(--hp-transition)]">
-      <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <Image 
-            src="/logo.png" 
-            alt="HabitaPlan Logo" 
-            width={160} 
-            height={40} 
-            className="h-8 w-auto object-contain"
-            priority
-          />
-        </Link>
-
-        {/* Nav */}
-        <nav aria-label="Navegación principal" className="flex items-center gap-6 text-sm">
-          <Link href="/actividades" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
-            Actividades
-          </Link>
-          <Link href="/mapa" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
-            Mapa
-          </Link>
-
-          {/* Toggle de tema — visible para todos los usuarios */}
-          <ThemeToggle />
-
-          <span className="w-px h-4 bg-[var(--hp-border)]" aria-hidden="true" />
-
-          {session ? (
-            <UserMenu
-              email={session.user.email ?? ''}
-              avatarUrl={avatarUrl}
-              isAdmin={session.role === 'admin'}
-              providerSlug={providerSlug}
-            />
-          ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/login"
-                className={buttonVariants({ variant: 'ghost', size: 'sm' })}
-              >
-                Inicia sesión
-              </Link>
-              <Link
-                href="/registro"
-                className={buttonVariants({ variant: 'secondary', size: 'sm' })}
-              >
-                Regístrate
-              </Link>
-            </div>
-          )}
-        </nav>
+    <>
+      {/* ── Mobile navigation (≤ md): header + drawer + bottom nav ──────────
+          Hidden on md+ via `md:hidden` wrapper inside MobileNav              */}
+      <div className="md:hidden">
+        <MobileNav session={mobileSession} />
       </div>
-    </header>
+
+      {/* ── Desktop header (≥ md): unchanged ─────────────────────────────── */}
+      <header
+        aria-label="Sitio principal"
+        className="hidden md:block bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] transition-colors duration-[var(--hp-transition)]"
+      >
+        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <Image
+              src="/logo-light.svg"
+              alt="HabitaPlan Logo"
+              width={160}
+              height={40}
+              className="h-8 w-auto object-contain dark:hidden"
+              priority
+            />
+            <Image
+              src="/logo-dark.svg"
+              alt="HabitaPlan Logo"
+              width={160}
+              height={40}
+              className="h-8 w-auto object-contain hidden dark:block"
+              priority
+            />
+          </Link>
+
+          {/* Nav */}
+          <nav aria-label="Navegación principal" className="flex items-center gap-6 text-sm">
+            <Link href="/actividades" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
+              Actividades
+            </Link>
+            <Link href="/mapa" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
+              Mapa
+            </Link>
+
+            <ThemeToggle />
+
+            <span className="w-px h-4 bg-[var(--hp-border)]" aria-hidden="true" />
+
+            {session ? (
+              <UserMenu
+                email={session.user.email ?? ''}
+                avatarUrl={avatarUrl}
+                isAdmin={session.role === 'admin'}
+                providerSlug={providerSlug}
+              />
+            ) : (
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/login"
+                  className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                >
+                  Inicia sesión
+                </Link>
+                <Link
+                  href="/registro"
+                  className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+                >
+                  Regístrate
+                </Link>
+              </div>
+            )}
+          </nav>
+        </div>
+      </header>
+    </>
   )
 }

@@ -29,9 +29,9 @@ interface CardProps {
 }
 
 const CARD_VARIANTS: Record<CardVariant, string> = {
-  default:  'bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800',
-  flat:     'bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800/50',
-  elevated: 'bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 shadow-md',
+  default:  'bg-hp-bg-surface border border-hp-border-subtle',
+  flat:     'bg-hp-bg-surface border border-hp-border-subtle',
+  elevated: 'bg-hp-bg-surface border border-hp-border-subtle shadow-md',
 }
 
 export function Card({ variant = 'default', className, children, ...props }: CardProps) {
@@ -58,12 +58,12 @@ function CardHeader({ title, description, className, id }: CardHeaderProps) {
     <div className={clsx('mb-6', className)}>
       <h2
         id={id}
-        className="text-base font-semibold text-[var(--hp-text-primary)] dark:text-white"
+        className="text-base font-semibold text-hp-text-primary"
       >
         {title}
       </h2>
       {description && (
-        <p className="text-sm text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] mt-1">{description}</p>
+        <p className="text-sm text-hp-text-secondary mt-1">{description}</p>
       )}
     </div>
   )
@@ -88,7 +88,7 @@ function CardFooter({ children, className }: CardFooterProps) {
     <div
       className={clsx(
         'flex items-center justify-end pt-4 mt-4',
-        'border-t border-[var(--hp-border)] dark:border-gray-800',
+        'border-t border-hp-border-subtle',
         className
       )}
     >

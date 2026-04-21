@@ -17,7 +17,9 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
-    "schema:check": "tsx scripts/check-schema.ts"
+    "schema:check": "tsx scripts/check-schema.ts",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -36,6 +38,7 @@
     "dotenv": "^17.3.1",
     "ioredis": "^5.10.1",
     "leaflet": "^1.9.4",
+    "lucide-react": "^1.8.0",
     "next": "^16.2.1",
     "pg": "^8.20.0",
     "playwright": "^1.58.2",
@@ -52,6 +55,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
+    "@storybook/addon-themes": "^10.3.5",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -63,11 +67,13 @@
     "@types/react-dom": "^19",
     "@types/web-push": "^3.6.4",
     "@vitest/coverage-v8": "^4.1.0",
+    "chromatic": "^16.4.0",
     "docx": "^9.6.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "jsdom": "^29.0.1",
     "node-fetch": "^3.3.2",
+    "storybook-addon-pseudo-states": "^10.3.5",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",

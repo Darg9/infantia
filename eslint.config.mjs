@@ -1,3 +1,6 @@
+// For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
+import storybook from "eslint-plugin-storybook";
+
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
@@ -43,69 +46,71 @@ const LEGACY_ANY_FILES = [
   "src/**/__tests__/**/*.tsx",
 ];
 
-const eslintConfig = defineConfig([
-  ...nextVitals,
-  ...nextTs,
-  {
-    rules: {
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector: "CallExpression[callee.property.name='toNumber']",
-          message: "❗ Nunca usar .toNumber() directamente. Usa normalizePrice()."
-        }
-      ],
-      "no-restricted-globals": [
-        "error",
-        {
-          name: "alert",
-          message: "Use useToast instead of alert()"
-        },
-        {
-          name: "prompt",
-          message: "Use a controlled UI component instead of prompt()"
-        }
-      ],
-      "no-restricted-imports": [
-        "error",
-        {
-          paths: [
-            {
-              name: "react-hot-toast",
-              message: "Use internal useToast system"
-            },
-            {
-              name: "sonner",
-              message: "Use internal useToast system"
-            },
-            {
-              name: "react-toastify",
-              message: "Use internal useToast system"
-            }
-          ]
-        }
-      ],
-      // Block new `any` in all files not explicitly overridden below.
-      "@typescript-eslint/no-explicit-any": "error",
-    }
-  },
-  // Legacy files: downgrade to warn so they stay visible but don't block CI.
-  {
-    files: LEGACY_ANY_FILES,
-    rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-    }
-  },
-  // Override default ignores of eslint-config-next.
-  globalIgnores([
-    // Default ignores of eslint-config-next:
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-    // Prisma auto-generated — never lint:
-    "src/generated/**",
-  ]),
-]);
+const eslintConfig = defineConfig([...nextVitals, ...nextTs, {
+  rules: {
+    "no-restricted-syntax": [
+      "error",
+      {
+        selector: "CallExpression[callee.property.name='toNumber']",
+        message: "❗ Nunca usar .toNumber() directamente. Usa normalizePrice()."
+      },
+      {
+        selector: "JSXAttribute[value.value=/(bg-white|text-gray-|bg-brand-|text-brand-)/]",
+        message: "❗ No uses colores legacy de Tailwind base. Usa tokens semánticos (var(--hp-*) o hp-*)."
+      },
+      {
+        selector: "JSXOpeningElement[name.name='button']",
+        message: "❗ No uses <button> estandar. Utiliza el componente <Button> de @/components/ui/Button."
+      }
+    ],
+    "no-restricted-globals": [
+      "error",
+      {
+        name: "alert",
+        message: "Use useToast instead of alert()"
+      },
+      {
+        name: "prompt",
+        message: "Use a controlled UI component instead of prompt()"
+      }
+    ],
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "react-hot-toast",
+            message: "Use internal useToast system"
+          },
+          {
+            name: "sonner",
+            message: "Use internal useToast system"
+          },
+          {
+            name: "react-toastify",
+            message: "Use internal useToast system"
+          }
+        ]
+      }
+    ],
+    // Block new `any` in all files not explicitly overridden below.
+    "@typescript-eslint/no-explicit-any": "error",
+  }
+}, // Legacy files: downgrade to warn so they stay visible but don't block CI.
+{
+  files: LEGACY_ANY_FILES,
+  rules: {
+    "@typescript-eslint/no-explicit-any": "warn",
+  }
+}, // Override default ignores of eslint-config-next.
+globalIgnores([
+  // Default ignores of eslint-config-next:
+  ".next/**",
+  "out/**",
+  "build/**",
+  "next-env.d.ts",
+  // Prisma auto-generated — never lint:
+  "src/generated/**",
+]), ...storybook.configs["flat/recommended"]]);
 
 export default eslintConfig;

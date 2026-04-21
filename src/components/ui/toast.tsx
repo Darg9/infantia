@@ -210,7 +210,7 @@ const TOAST_STYLES: Record<ToastType, string> = {
   success: 'bg-success-600 text-white',
   error:   'bg-error-600 text-white',
   warning: 'bg-warning-500 text-white',
-  info:    'bg-gray-800 text-white dark:bg-gray-700',
+  info:    'bg-hp-text-primary text-hp-bg-surface',
 }
 
 // ─── Region (renderizado) ─────────────────────────────────────────────────────

@@ -103,7 +103,7 @@ export default async function HomePage() {
 
           <h1 className="text-4xl sm:text-5xl font-bold text-[var(--hp-text-primary)] leading-tight mb-2">
             ¿Qué hacemos{' '}
-            <span className="text-brand-600">hoy?</span>
+            <span className="text-hp-action-primary">hoy?</span>
           </h1>
 
           <div className="max-w-xl mx-auto mb-5">
@@ -111,7 +111,7 @@ export default async function HomePage() {
               Descubre planes en familia cerca de ti
             </p>
             <p className="text-sm text-[var(--hp-text-muted)] mt-1">
-              <span className="text-brand-500 font-semibold tabular-nums">
+              <span className="text-hp-action-primary font-semibold tabular-nums">
                 {totalActivities.toLocaleString('es-CO')}
               </span>{" "}
               {totalActivities === 1
@@ -147,7 +147,7 @@ export default async function HomePage() {
                 >
                   {getCategoryEmoji(cat.name)}
                 </div>
-                <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-brand-600 transition-colors leading-tight">
+                <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-hp-action-primary transition-colors leading-tight">
                   {cat.name}
                 </span>
                 <span className="text-xs text-[var(--hp-text-muted)]">
@@ -179,7 +179,7 @@ export default async function HomePage() {
               <div className="mt-5 text-center">
                 <Link
                   href={activityHref}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-brand-600 px-8 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white transition-all"
                 >
                   Ver más actividades →
                 </Link>
@@ -196,7 +196,7 @@ export default async function HomePage() {
               </p>
               <Link
                 href="/actividades"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-brand-600 px-8 py-3 text-sm font-semibold text-brand-600 hover:bg-brand-600 hover:text-white transition-all"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white transition-all"
               >
                 Ver más actividades →
               </Link>
@@ -218,7 +218,7 @@ export default async function HomePage() {
           </p>
           <Link
             href="/actividades"
-            className="inline-flex items-center gap-2 rounded-full bg-white px-8 py-3 text-sm font-semibold text-brand-700 hover:bg-brand-50 transition-colors shadow"
+            className="inline-flex items-center gap-2 rounded-full bg-hp-bg-surface px-8 py-3 text-sm font-semibold text-hp-text-primary hover:bg-hp-bg-subtle transition-colors shadow"
           >
             Ver más actividades →
           </Link>
@@ -253,7 +253,7 @@ function SectionHeader({
         )}
       </div>
       {href && linkText && (
-        <Link href={href} className="text-sm text-brand-600 hover:underline font-medium shrink-0 mt-0.5">
+        <Link href={href} className="text-sm text-hp-action-primary hover:underline font-medium shrink-0 mt-0.5">
           {linkText}
         </Link>
       )}

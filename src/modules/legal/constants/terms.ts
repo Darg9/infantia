@@ -42,14 +42,18 @@ export const TERMS_SECTIONS = [
   {
     num: "5",
     title: "Contenido de terceros",
-    content: [{ type: "text" as const, text: "HabitaPlan puede recopilar, organizar y mostrar información proveniente de entidades públicas, organizaciones privadas o proveedores externos. Dicha información se presenta con fines exclusivamente informativos y puede ser modificada por sus respectivos titulares en cualquier momento. HabitaPlan no garantiza la exactitud, disponibilidad, vigencia ni idoneidad de dicha información y no asume responsabilidad alguna por decisiones tomadas con base en ella." }]
+    content: [
+      { type: "text" as const, text: "HabitaPlan puede recopilar, organizar y mostrar información proveniente de entidades públicas, organizaciones privadas o proveedores externos. Dicha información se presenta con fines exclusivamente informativos y puede ser modificada por sus respectivos titulares en cualquier momento. HabitaPlan no garantiza la exactitud, disponibilidad, vigencia ni idoneidad de dicha información y no asume responsabilidad alguna por decisiones tomadas con base en ella." },
+      { type: "text" as const, text: "La información publicada en la Plataforma puede no reflejar cambios recientes o de última hora realizados directamente por el proveedor del evento o actividad." }
+    ]
   },
   {
     num: "6",
     title: "Limitación de responsabilidad",
     content: [
       { type: "text" as const, text: "HabitaPlan actúa exclusivamente como intermediario informativo. En ningún caso será responsable por la veracidad, disponibilidad, calidad, idoneidad o condiciones de los servicios ofrecidos por terceros, ni por decisiones tomadas por los usuarios con base en la información publicada." },
-      { type: "text" as const, text: "El usuario reconoce que cualquier relación o contratación se realiza directamente con el proveedor correspondiente bajo su propia responsabilidad." }
+      { type: "text" as const, text: "El usuario reconoce que cualquier relación o contratación se realiza directamente con el proveedor correspondiente bajo su propia responsabilidad." },
+      { type: "text" as const, text: "HabitaPlan no actúa como agente, representante ni parte en ninguna relación entre usuarios y proveedores." }
     ]
   },
   {
@@ -65,7 +69,10 @@ export const TERMS_SECTIONS = [
   {
     num: "9",
     title: "Propiedad intelectual",
-    content: [{ type: "text" as const, text: "El diseño, código y contenido propio de la plataforma son propiedad de HabitaPlan. La información proveniente de terceros pertenece a sus respectivos titulares. HabitaPlan la presenta en su rol de agregador informativo, sin reclamar derechos sobre dicho contenido externo. Cualquier solicitud de remoción puede realizarse a través del canal de contacto habilitado en la plataforma." }]
+    content: [
+      { type: "text" as const, text: "El diseño, código y contenido propio de la plataforma son propiedad de HabitaPlan. La información proveniente de terceros pertenece a sus respectivos titulares. HabitaPlan la presenta en su rol de agregador informativo, sin reclamar derechos sobre dicho contenido externo. Cualquier solicitud de remoción puede realizarse a través del canal de contacto habilitado en la plataforma." },
+      { type: "text" as const, text: "Las imágenes pueden provenir de terceros y se utilizan con fines informativos bajo el principio de intermediación." }
+    ]
   },
   {
     num: "10",

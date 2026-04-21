@@ -17,7 +17,7 @@ import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
-import { Icon } from "@/components/ui/Icon"
+import { Icon } from "@/components/ui/icon"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

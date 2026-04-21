@@ -163,6 +163,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
 | v0.11.0 | V25 | Pipeline Scheduler, Deduplication Engine, Observability |
 | v0.12.0 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
+| v0.13.0 | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -170,7 +171,7 @@ Generar nueva versión del doc cuando:
 - Cambia la arquitectura o el stack
 - Se completa un milestone del roadmap
 
-Comando: `node scripts/generate_v26.mjs` (V26 es la versión actual)
+Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 
 ## Notas de arquitectura críticas
 
@@ -206,16 +207,17 @@ Comando: `node scripts/generate_v26.mjs` (V26 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-## Estado actual (v0.11.0-S55 — Actualizado Hoy)
+## Estado actual (v0.13.0-S56 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1203 tests** en 73 archivos — `npm test` pasa — 0 errores TypeScript
+- **1215 tests** en 73 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
 - Gemini: `gemini-2.5-flash`, 20 RPD — quota renueva medianoche UTC (19:00 COL). CHUNK_SIZE=100
-- Documento Fundacional: **V25** generado (`scripts/generate_v25.mjs`)
+- Documento Fundacional: **V27** generado (`scripts/generate_v27.mjs`)
+- Design System: **Chromatic Visual Regression Testing** automático en GitHub Actions.
 - **3 vulnerabilidades moderate npm** en `@prisma/dev` (dev-only, no producción — mantener hasta Prisma fix)
 - **0 console.*** en producción (migrado a logger estructurado)
 - Tablas BD operativas: `scraping_cache`, `source_pause_config`, `source_url_stats` ✅
@@ -300,3 +302,4 @@ Comando: `node scripts/generate_v26.mjs` (V26 es la versión actual)
 | v0.11.0-S53 | V26 | Centralización Legal SSOT, Intent Manager y Rebranding Color Primitives |
 | v0.11.0-S54 | V26 | Streaming Save de actividades post-parse, SPI filter por Lastmod |
 | v0.11.0-S55 | V26 | Scheduler Inteligente, NFD string mapping, Threshold diferenciado de confianza, Fixes Banrep |
+| v0.13.0     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |

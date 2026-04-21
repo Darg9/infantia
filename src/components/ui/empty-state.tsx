@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Search } from "lucide-react"
-import { Icon } from "@/components/ui/Icon"
+import { Icon } from "@/components/ui/icon"
 
 interface EmptyStateProps {
   title: string;

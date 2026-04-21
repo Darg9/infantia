@@ -9,6 +9,19 @@ Actualizado: 2026-04-21 | Version: v0.13.0
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
 
+## 🛡️ Deuda Técnica UI (Design System Enforcement)
+*Baseline medido al activar el enforcement mecánico (ESLint)*
+
+- **UI Debt (Tailwind directo / Elementos Nativos):** 1344 warnings (baseline)
+- **Objetivo:** 0 warnings
+- **Estrategia (Boy Scout Rule):** Limpieza progresiva al tocar el archivo.
+
+**Prioridad de Limpieza:**
+1. Componentes en `src/components/ui/*`
+2. Layouts principales (`Header`, `MobileNav`, `Footer`)
+3. Páginas de primer nivel
+4. Resto del árbol de renderizado
+
 ## Resumen
 
 | Metrica | Valor |

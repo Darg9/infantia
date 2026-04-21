@@ -14,7 +14,7 @@ import { createLogger } from '@/lib/logger';
 
 const log = createLogger('api:suggestions');
 
-export type SuggestionType = 'activity' | 'category' | 'city';
+export type SuggestionType = 'query' | 'activity' | 'category' | 'city';
 
 export interface SuggestionItem {
   type: SuggestionType;
@@ -26,7 +26,7 @@ export interface SuggestionItem {
 export async function GET(req: NextRequest) {
   const q = req.nextUrl.searchParams.get('q')?.trim() ?? '';
 
-  if (q.length < 3) {
+  if (q.length < 2) {
     return NextResponse.json({ suggestions: [] });
   }
 
@@ -136,11 +136,40 @@ export async function GET(req: NextRequest) {
         sublabel: null,
       }));
 
-    const suggestions = [
+    // ── Queries Históricas (SearchLog) ─────────────────────────────────────
+    const logRows = await prisma.searchLog.groupBy({
+      by: ['query'],
+      where: {
+        query: { startsWith: term, mode: 'insensitive' },
+      },
+      _count: { query: true },
+      orderBy: { _count: { query: 'desc' } },
+      take: 5,
+    });
+
+    const rankedQueries: SuggestionItem[] = logRows.map((q) => ({
+      type: 'query',
+      id: q.query,
+      label: q.query,
+      sublabel: null,
+    }));
+
+    const merged = [
+      ...rankedQueries,
       ...rankedActivities,
       ...rankedCategories,
       ...rankedCities,
-    ].slice(0, 5);
+    ];
+
+    const seen = new Set<string>();
+    const final = merged.filter((s) => {
+      const key = `${s.type}-${s.label}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    const suggestions = final.slice(0, 8);
 
     return NextResponse.json({ suggestions });
   } catch (err: unknown) {

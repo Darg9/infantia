@@ -16,9 +16,10 @@ import { createLogger } from '@/lib/logger';
 const logger = createLogger('Search');
 
 const QUICK_CHIPS = [
-  { label: 'Hoy',         href: '/actividades?sort=date'  },
-  { label: 'Gratis',      href: '/actividades?price=free' },
-  { label: 'Cerca de ti', href: '/mapa'                   },
+  { label: 'Hoy',            href: '/actividades?sort=date' },
+  { label: 'Gratis',         href: '/actividades?price=free' },
+  { label: 'Conversatorios', href: '/actividades?search=conversatorios' },
+  { label: 'Cerca de ti',    href: '/mapa' },
 ] as const;
 
 // ── Hints Estructurales (Fase 2) ──────────────────────────────────────────────
@@ -81,6 +82,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
 }
 
 function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
+  if (type === 'query')    return <span aria-hidden>🔍</span>;
   if (type === 'category') return <span aria-hidden>📂</span>;
   if (type === 'city')     return <span aria-hidden>📍</span>;
   return                          <span aria-hidden>🎯</span>;
@@ -135,7 +137,7 @@ export default function HeroSearch() {
   }, []);
 
   function saveToHistory(q: string) {
-    if (!q || q.trim().length < 3) return;
+    if (!q || q.trim().length < 2) return;
     setRecent(prev => {
       const updated = [q.trim(), ...prev.filter(r => r !== q.trim())].slice(0, HISTORY_MAX);
       try { sessionStorage.setItem(HISTORY_KEY, JSON.stringify(updated)); } catch {}
@@ -155,7 +157,7 @@ export default function HeroSearch() {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (fetchCtrlRef.current) fetchCtrlRef.current.abort();
 
-    if (value.length < 3) {
+    if (value.length < 2) {
       setSugg([]);
       setShowSugg(false);
       setIsFetching(false);
@@ -204,11 +206,21 @@ export default function HeroSearch() {
         setShowSugg(false);
         setIsFetching(false);
       }
-    }, 300);
+    }, 250);
   }
 
   function selectSuggestion(s: SuggestionItem) {
     closeDropdown();
+
+    trackEvent({
+      type: "search_suggestion_clicked",
+      metadata: {
+        query,
+        suggestion: s.label,
+        type: s.type,
+      }
+    });
+
     if (s.type === 'activity') {
       saveToHistory(query);
       router.push(activityPath(s.id, s.label));
@@ -216,6 +228,9 @@ export default function HeroSearch() {
       router.push(`/actividades?categoryId=${s.id}`);
     } else if (s.type === 'city') {
       router.push(`/actividades?cityId=${s.id}`);
+    } else if (s.type === 'query') {
+      setQuery(s.label);
+      router.push(`/actividades?search=${encodeURIComponent(s.label)}`);
     }
   }
 
@@ -316,7 +331,7 @@ export default function HeroSearch() {
           value={query}
           onChange={e => handleChange(e.target.value)}
           onFocus={() => {
-            if (query.length < 3) {
+            if (query.length < 2) {
               if (recentSearches.length > 0) setShowHistory(true);
             } else if (suggestions.length > 0) {
               setShowSugg(true);
@@ -428,7 +443,7 @@ export default function HeroSearch() {
                         <span className="text-xs text-[var(--hp-text-muted)] truncate block mt-0.5">{s.sublabel}</span>
                       )}
                     </span>
-                    {s.type !== 'activity' && (
+                    {s.type !== 'activity' && s.type !== 'query' && (
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
                           ? 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200'

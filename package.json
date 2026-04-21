@@ -19,7 +19,8 @@
     "test:e2e:report": "playwright show-report",
     "schema:check": "tsx scripts/check-schema.ts",
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build",
+    "chromatic": "chromatic"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -54,8 +55,14 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^1.9.0",
     "@playwright/test": "^1.58.2",
-    "@storybook/addon-themes": "^10.3.5",
+    "@storybook/addon-essentials": "^8.6.14",
+    "@storybook/addon-interactions": "^8.6.14",
+    "@storybook/addon-themes": "^8.6.18",
+    "@storybook/blocks": "^8.6.14",
+    "@storybook/react-vite": "^8.6.18",
+    "@storybook/test": "^8.6.15",
     "@tailwindcss/postcss": "^4",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
@@ -73,10 +80,12 @@
     "eslint-config-next": "16.1.6",
     "jsdom": "^29.0.1",
     "node-fetch": "^3.3.2",
-    "storybook-addon-pseudo-states": "^10.3.5",
+    "storybook": "^8.6.18",
+    "storybook-addon-pseudo-states": "^3.1.1",
     "tailwindcss": "^4",
     "tsx": "^4.21.0",
     "typescript": "^5",
+    "vite": "^8.0.9",
     "vitest": "^4.1.0"
   }
 }

@@ -1,11 +1,42 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.12.0
-**Última actualización:** 20 de abril de 2026
+**Versión actual:** v0.13.0
+**Última actualización:** 21 de abril de 2026
 
 ## ¿Qué hace?
 
 Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal). Incluye parser resiliente con fallback a Cheerio cuando Gemini no está disponible (429/503).
+
+## 📉 Naturaleza del Inventario
+
+HabitaPlan NO garantiza cobertura total del mercado.
+El inventario es:
+- oportunista (según fuentes activas)
+- dinámico
+- no exhaustivo
+
+### Implicación
+El sistema depende de calidad de fuentes, no de cantidad.
+
+## ✅ Definición de Actividad (Quality Gate)
+
+Un registro solo se considera actividad si:
+- `isActivity === true`
+- tiene título válido
+- tiene fecha o schedule interpretable
+- tiene contexto familiar/infantil
+
+### Regla
+Si no cumple → se descarta antes de persistencia.
+
+## ⏱️ Ejecución del Pipeline
+
+- El scraping es ejecutado por `run-worker.ts`
+- Las fuentes se recorren dinámicamente desde la base de datos
+- No existen pipelines hardcodeados
+
+### Regla
+Si una fuente no está en BD → no existe para el sistema.
 
 ## Flujos disponibles
 
@@ -204,51 +235,22 @@ El pipeline integra geocoding automático en cada actividad guardada:
 - Filtra URLs por patrones (ej: `/bogota/` para Banrep Bogotá)
 - Sin Playwright, sin bot-detection
 
-## Fuentes activas (20 web + 12 Instagram + canal Telegram pendiente) — S40
+## 📡 Fuentes Activas (SSOT)
 
-### Web (14 fuentes)
+Fuente única: `scripts/seed-scraping-sources.ts`
 
-| Fuente | Ciudad | Tipo |
-|--------|--------|------|
-| BibloRed | Bogotá | Web — 150 actividades |
-| IDARTES | Bogotá | Sitemap XML |
-| bogota.gov.co | Bogotá | Sitemap XML |
-| Cultura, Rec. y Deporte | Bogotá | Sitemap XML |
-| Planetario | Bogotá | Sitemap XML — 25 actividades |
-| Cinemateca | Bogotá | Sitemap XML |
-| Jardín Botánico (JBB) | Bogotá | Sitemap XML |
-| Maloka | Bogotá | Sitemap XML |
-| Banrep Bogotá | Bogotá | Sitemap filtrado /bogota/ |
-| Banrep Medellín | Medellín | Sitemap filtrado /medellin/ |
-| Banrep Cali | Cali | Sitemap filtrado /cali/ |
-| Banrep Barranquilla | Barranquilla | Sitemap filtrado /barranquilla/ |
-| Banrep Cartagena | Cartagena | Sitemap filtrado /cartagena/ |
-| Banrep (Buca/Mani/Pereira/Ibagué/Santa Marta) | Multi | Sitemap por ciudad |
+### Reglas
+- Cualquier fuente no presente en el seed → se considera inexistente.
+- No documentar fuentes manualmente en este archivo.
+- Toda modificación de fuentes debe hacerse vía seed + migración.
 
-### Instagram (12 fuentes activas — +2 Medellín en S35)
+### Enforcement
+- Documentación debe derivarse del seed, no al revés.
 
-| Cuenta | Seguidores | Tipo de contenido |
-|--------|-----------|-------------------|
-| @quehaypahacerenbogota | 53K | Agenda cultural Bogotá |
-| @plansitosbogota | 22K | Planes gratis Bogotá |
-| @parchexbogota | 214K | Ferias, eventos, planes |
-| @bogotaplan | 299K | Cultura en Bogotá |
-| @planesenbogotaa | 60K | Planes en Bogotá |
-| @bogotateatralycircense | 17K | Teatro y circo — Idartes |
-| @festiencuentro | 1.6K | Festival de títeres |
-| @teatropetra | 87K | Teatro — programación activa |
-| @distritojovenbta | 24K | Agenda juventudes Bogotá |
-| @centrodeljapon | 7K | Cultura japonesa — talleres |
-| @parqueexplora | — | Ciencia y tecnología — Medellín (NUEVO S35) |
-| @quehacerenmedellin | — | Agenda cultural — Medellín (NUEVO S35) |
-
-Configuración por fuente: `instagram.contentMode` (text/image/both) + `instagram.maxPosts` (1–12).
-Validación sin cuota: `npx tsx scripts/test-instagram.ts <URL> --validate-only`
-
-### Telegram (pendiente)
-| Canal | Ciudad | Estado |
-|-------|--------|--------|
-| @quehaypahacer | Bogotá | MTProto operativo — pendiente correr sin --dry-run |
+### Telegram
+Estado: **PROTOTIPO (no productivo)**
+No considerado parte del pipeline oficial.
+El extractor y la conexión MTProto existen en código, pero no hay fuentes `TELEGRAM` registradas en la base de datos, por lo que el Scheduler y el Cron nunca lo ejecutarán en producción.
 
 ## Comandos
 
@@ -448,16 +450,18 @@ Tiers: 🥇 A (≥70) · 🥈 B (≥40) · 🥉 C (≥20) · ❌ D (<20)
 
 Lógica reutilizable en `src/lib/source-scoring.ts` para uso en UI admin.
 
-## Tolerancia Zod ante Gemini (NUEVO S31)
+## 📦 Contrato Estricto (Zod)
 
-`activityNLPResultSchema` normaliza respuestas imprecisas de Gemini antes de rechazarlas:
+El schema en `src/modules/scraping/types.ts` es la única fuente válida.
 
-| Campo | Valor Gemini | Normalizado a |
-|-------|-------------|---------------|
-| `title` | `null` o `""` | `"Sin título"` |
-| `categories` | `null` o `[]` | `["General"]` |
+### Reglas
+- No se permiten campos fuera del schema.
+- Si el LLM no puede inferir → usar fallback controlado.
+- Campos críticos (`minAge`, `isActivity`) no pueden ser null.
 
-`sanitizeGeminiResponse()` en `gemini.analyzer.ts` aplica la limpieza antes de Zod como capa adicional.
+### Falla dura
+Si `isActivity !== true` → el registro se descarta.
+Esto convierte el scraping en pipeline gobernado, no heurístico.
 
 ## Limitaciones conocidas
 

@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // PushButton — solicita permiso de notificaciones push y gestiona suscripción
@@ -114,7 +115,7 @@ export function PushButton() {
 
   const checked = state === 'subscribed'
   return (
-    <button
+    <Button
       type="button"
       role="switch"
       aria-checked={checked}
@@ -133,8 +134,8 @@ export function PushButton() {
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />
-    </button>
-  )
+    </Button>
+  );
 }
 
 // Convierte VAPID public key de base64url a Uint8Array

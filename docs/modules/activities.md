@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.12.0
-**Última actualización:** 20 de abril de 2026
+**Versión actual:** v0.13.0
+**Última actualización:** 21 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -74,6 +74,15 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | `PATCH` | `/api/admin/claims/[id]` | Admin | Aprueba o rechaza claim |
 | `PUT/DELETE` | `/api/admin/activities/[id]` | Admin | Actualiza/elimina actividad (C-01) |
 
+## 🔌 Contrato API/UI
+
+La UI no debe enviar parámetros no soportados por el schema.
+Regla:
+- El contrato válido está definido por:
+  - `listActivitiesSchema` en `src/modules/activities/activities.schemas.ts`.
+  - `ListParams` en el servicio `activities.service.ts`.
+Cualquier desviación genera comportamiento inconsistente o ignorado.
+
 ## Filtros disponibles (GET /api/activities)
 
 | Parámetro | Tipo | Descripción |
@@ -85,29 +94,40 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | `cityId` | UUID | Filtrar por ciudad |
 | `ageMin` / `ageMax` | number | Rango de edad (0–120) |
 | `priceMin` / `priceMax` | number | Rango de precio |
-| `free` | boolean | Solo actividades gratuitas (`PricePeriod.FREE` inferido o precio 0) |
+| `price` | string | `free` o `paid`. Filtro comercial simplificado. |
 | `status` | enum | `ACTIVE`, `PAUSED`, `EXPIRED`, `DRAFT` |
 | `type` | enum | `RECURRING`, `ONE_TIME`, `CAMP`, `WORKSHOP` |
-| `environment` | enum | `INDOOR`, `OUTDOOR`, `MIXED` (Inyectado atómicamente por `Data Pipeline V1`) |
 | `audience` | enum | `KIDS`, `FAMILY`, `ADULTS`, `ALL` |
-| `search` | string | Búsqueda por texto (1–200 chars) ponderada con pg_trgm + Health + Age Penalty |
+| `search` | string | Búsqueda por texto (1–200 chars) |
 | `sortBy` | enum | `relevance` \| `date` \| `price_asc` \| `price_desc` \| `newest` |
 
-Los filtros son **facetados**: cada dimensión calcula sus opciones excluyendo su propia selección, garantizando 0 combinaciones vacías.
+### ⚠️ Validación de Query Params (Zod Gate)
+Todos los parámetros de entrada son filtrados por `listActivitiesSchema`.
+**Regla:** Si un parámetro no está en el schema → no existe para el sistema.
+**Implicación:** UI, API y Schema deben evolucionar en sincronía. Zod eliminará silenciosamente cualquier filtro fantasma.
 
-## Ordenamiento (sortBy)
+### Regla de Filtros
+Solo se documentan filtros implementados activamente en:
+- Zod schema (`listActivitiesSchema`)
+- Prisma query (`activities.service.ts`)
+
+## 🔢 Ordenamiento
+
+Orden por defecto: `relevance`
+
+Nota: Actualmente otros tipos de orden (date, price, newest) no están expuestos en la interfaz de usuario en producción, aunque el motor de base de datos los soporta completamente a través del query param `sortBy`.
 
 | Valor | Criterio |
 |-------|---------|
 | `relevance` (default) | ACTIVE primero → `isPremium desc` → sourceConfidence* → createdAt |
-
-> **Kill-Switch (S56):** Si la variable de entorno `FORCE_CHRONO='true'` está presente, el sistema forzará `newest` sobreescribiendo algorítmicamente cualquier ordenamiento de tipo `relevance`. Útil ante caídas de algoritmos de ranking.
-
-* *Nota técnica sobre sourceConfidence:* El índice de confianza es una variable puramente algorítmica para priorización en BD y cache, **nunca** se expone a cliente garantizando 100% de veracidad, protegiendo así el Compliance Legal.*
 | `date` | Próximas primero, sin fecha al final |
 | `price_asc` | Precio ascendente, gratis y sin precio al final |
 | `price_desc` | Precio descendente, gratis y sin precio al final |
 | `newest` | Recién agregadas a HabitaPlan |
+
+> **Kill-Switch (S56):** Si la variable de entorno `FORCE_CHRONO='true'` está presente, el sistema forzará `newest` sobreescribiendo algorítmicamente cualquier ordenamiento de tipo `relevance`. Útil ante caídas de algoritmos de ranking.
+
+* *Nota técnica sobre sourceConfidence:* El índice de confianza es una variable puramente algorítmica para priorización en BD y cache, **nunca** se expone a cliente garantizando 100% de veracidad, protegiendo así el Compliance Legal.*
 
 > **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
 
@@ -194,24 +214,15 @@ Cada actividad en detalle y mapa expone `location.latitude` / `location.longitud
 3. cityFallback
 4. null (actividad sin pin)
 
-## Datos actuales (2026-04-06)
+## 📊 Métricas
 
-| Proveedor | Actividades |
-|-----------|------------|
-| BibloRed | ~150 |
-| Sec. Cultura | ~29 |
-| Planetario | ~25 |
-| Alcaldía Bogotá | ~20 |
-| IDARTES | ~19 |
-| FCE Colombia | ~10 |
-| Cinemateca | ~14 |
-| JBB | ~7 |
-| Banrep (todas ciudades) | ~17 |
-| **Total** | **~275** |
+Las métricas del inventario **NO** se documentan de forma estática.
 
-- 29/29 locations con coordenadas reales ✅
-- BD bajó de 293 a ~275 por expiración de actividades de marzo (fechas pasadas → EXPIRED)
-- Pendiente: ingest Banrep ciudades + nuevo ingest web cuando se renueve cuota Gemini (19:00 COL)
+**Fuente única:**
+- `/api/admin/analytics`
+
+**Regla:**
+- Ningún documento técnico o de arquitectura puede contener datos numéricos dinámicos hardcodeados (como conteos totales o actividades por proveedor). Esto rompe la veracidad del sistema Zero-Debt en cada nuevo ciclo de scraping.
 
 ## UX y Compliance Legal de Atribución
 

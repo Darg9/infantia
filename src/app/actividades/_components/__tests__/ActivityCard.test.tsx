@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 // @vitest-environment jsdom
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
@@ -6,7 +7,7 @@ import { render, screen } from '@testing-library/react';
 vi.mock('next/navigation', () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock('@/components/FavoriteButton', () => ({
   FavoriteButton: ({ activityId, initialIsFavorited }: { activityId: string; initialIsFavorited: boolean }) => (
-    <button aria-label={initialIsFavorited ? 'Quitar de favoritos' : 'Guardar en favoritos'} data-activity-id={activityId} />
+    <Button aria-label={initialIsFavorited ? 'Quitar de favoritos' : 'Guardar en favoritos'} data-activity-id={activityId} />
   ),
 }));
 

@@ -1,4 +1,6 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react';
 
@@ -70,7 +72,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       {/* Nombre */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Tu nombre</label>
-        <input
+        <Input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -79,18 +81,16 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
           required
         />
       </div>
-
       {/* Email — solo lectura */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Email de tu cuenta</label>
-        <input
+        <Input
           type="email"
           value={userEmail}
           readOnly
           className="w-full border border-[var(--hp-border)] rounded-lg px-3 py-2 text-sm bg-[var(--hp-bg-page)] text-[var(--hp-text-muted)] cursor-not-allowed"
         />
       </div>
-
       {/* Mensaje */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">
@@ -106,21 +106,18 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
         />
         <p className="text-xs text-[var(--hp-text-muted)] mt-1 text-right">{message.length}/1000</p>
       </div>
-
       {error && (
         <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
-
-      <button
+      <Button
         type="submit"
         disabled={loading || !name.trim()}
         className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-2.5 text-sm transition-colors"
       >
         {loading ? 'Enviando solicitud…' : 'Enviar solicitud'}
-      </button>
-
+      </Button>
       <p className="text-xs text-[var(--hp-text-muted)] text-center">
         Al enviar, confirmas que representas legítimamente a {providerName}.
       </p>

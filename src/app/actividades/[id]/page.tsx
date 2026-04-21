@@ -237,11 +237,9 @@ export default async function ActividadDetallePage({
     <>
       {/* Tracker Invisible de Visita Pura */}
       <ActivityViewTracker activityId={id} />
-
       {/* JSON-LD: evento + breadcrumb */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-
       <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
       {/* Breadcrumb visual */}
@@ -270,7 +268,7 @@ export default async function ActividadDetallePage({
         {activity.imageUrl ? (
 
           /* CASO 1: con imagen → layout 2 columnas, imagen secundaria a la derecha */
-          <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] overflow-hidden">
+          (<div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] overflow-hidden">
             <div className="flex flex-col sm:flex-row">
 
               {/* Imagen: compacta en mobile (arriba), thumbnail en desktop (derecha) */}
@@ -325,15 +323,14 @@ export default async function ActividadDetallePage({
                 )}
               </div>
             </div>
-          </div>
+          </div>)
 
         ) : (
 
           /* CASO 2: sin imagen → título protagonista, acento de color por categoría */
-          <div className="rounded-2xl overflow-hidden border border-[var(--hp-border)]">
+          (<div className="rounded-2xl overflow-hidden border border-[var(--hp-border)]">
             {/* Barra de color de categoría */}
             <div className="h-1.5 w-full" style={{ background: gradient }} />
-
             <div className="bg-[var(--hp-bg-surface)] rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
               {/* Chips de contexto */}
               <div className="flex flex-wrap gap-2">
@@ -382,7 +379,7 @@ export default async function ActividadDetallePage({
                 </p>
               )}
             </div>
-          </div>
+          </div>)
         )}
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -673,12 +670,10 @@ export default async function ActividadDetallePage({
         </div>
       </div>
       </div>
-
       {/* Actividades similares */}
       <div className="mx-auto max-w-5xl px-4 pb-12">
         <SimilarActivities activityId={id} />
       </div>
-
       {/* Track activity view in browser history */}
       <ActivityHistoryTracker
         activityId={id}

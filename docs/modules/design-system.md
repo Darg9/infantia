@@ -1,12 +1,34 @@
-# HabitaPlan Design System (v2 — v0.12.0)
+# HabitaPlan Design System (v2 — v0.13.0)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
+*Nota v0.13.0: Estabilización estructural bajo dependencias limpias y unificación de ecosistema.*
 
 ## 1. Principios Core
 
 - **Consistencia Visual**: Jamás se usarán clases Tailwind hardcodeadas (como `bg-orange-600` o `bg-red-500`). Todo recaerá en el vocabulario semántico: `brand`, `success`, `error`, `warning`.
-- **Accesibilidad en su Raíz**: Los inputs esconden su label de forma accesible (`sr-only`), las acciones complejas emiten feedback semántico, interactivos proveen \`focus-visible\` states limpios y navegación guiada (`aria-busy`, `aria-label`).
+- **Accesibilidad en su Raíz**: Los inputs esconden su label de forma accesible (`sr-only`), las acciones complejas emiten feedback semántico, interactivos proveen `focus-visible` states limpios y navegación guiada (`aria-busy`, `aria-label`).
 - **Simplicidad Funcional**: Evitar la recarga visual. Las escalas tipográficas y de ritmo (spacing) emplean bases unificadas (múltiplos de 4/8pt) apoyando layouts amplios.
+
+## 🎨 Estilos
+
+- ❌ No usar clases directas (`bg-*`, `text-*`)
+- ❌ No usar hex values
+- ✔ Usar tokens (`hp-*`)
+- ✔ Usar componentes del DS
+
+### Enforcement
+Cualquier PR con estilos directos debe ser rechazado.
+
+## 🧱 Uso de Primitivos
+
+- ❌ No usar `<button>` nativo
+- ❌ No usar `<input>` nativo
+- ✔ Usar `<Button />`, `<Input />`, etc.
+
+### Motivo
+- consistencia
+- accesibilidad
+- control centralizado
 
 ---
 
@@ -46,45 +68,51 @@ Todas nuestras definiciones base yacen configuradas en el motor `@theme` de *Tai
 
 Todo reside exportado limpiamente en su Barrel `src/components/ui`.
 
-### Button (`<Button />`)
+## 📦 Regla de Documentación de Componentes
 
-- **Propósito**: Ejecuta las llamadas operacionales de navegación o forms.
-- **Variantes**:
-  - `primary` (default): Acción decisiva del container (Solo 1 por vista o jerarquía).
-  - `secondary`: Tareas alternativas (Botones de Cancelar, Menús no resaltados).
-  - `ghost`: Acciones de reducida presencia ubicadas como links incrustados.
-- **Ejemplo**:
-  ```tsx
-  import { Button } from '@/components/ui'
-  <Button variant="ghost" loading={isSubmitting}>Siguiente</Button>
-  ```
-- **Nota**: Se extraen los `buttonVariants` explícitamente cuando deban aplicarse a polimórficos como el tag `<Link>`.
+El Design System debe reflejar exactamente las props disponibles en el código.
 
-### Input (`<Input />`)
+**Fuente única:**
+- `/src/components/ui/*`
 
-- **Propósito**: Atrapa y valida los text-nodes de usuario.
-- **Props**: Soporta `label`, `hideLabel` (ideal para buscadores / accesible vía `sr-only`), `error` y `leftSlot` interactivo.
-- **Ejemplo**:
-  ```tsx
-  <Input label="Correo" error="Dominio inválido" />
-  ```
+**Regla:**
+- Si existe en código → debe documentarse
+- Si no está documentado → no se considera soportado
 
-### Card (`<Card />`)
+### `<Button />`
 
-- **Propósito**: Superficie base enmarcadora que aporta las sombras, radius, y borders uniformes.
-- **Ejemplo**:
-  ```tsx
-  <Card className="max-w-md p-8"> {/* Layout Interno */} </Card>
-  ```
+**Props:**
+- `variant`: `primary` | `secondary` | `ghost` | `destructive`
+- `size`: `sm` | `md` | `lg`
+- `loading`: boolean
 
-### Avatar (`<Avatar />`)
+**Propósito**: Ejecuta llamadas operacionales de navegación o forms.
 
-- **Propósito**: Renderiza rostros o iniciales dinámicas para cuentas.
-- **Props**: Soporta `src`, fallbacks (`name`), tamaño `size`, interactividad `editable` y loading spin (`uploading`).
-- **Ejemplo**:
-  ```tsx
-  <Avatar name="Roberto" uploading={isUploading} size="lg" />
-  ```
+### `<Input />`
+
+**Props:**
+- `label`, `hideLabel`
+- `hint`
+- `error`
+- `leftSlot`, `rightSlot` (icons, toggles)
+
+**Propósito**: Atrapa y valida los text-nodes de usuario.
+
+### `<Avatar />`
+
+**Sizes:**
+- `xs` | `sm` | `md` | `lg` | `xl`
+
+**Props:**
+- `src`, `name`, `uploading`, `editable`, `onClick`
+
+**Propósito**: Renderiza rostros o iniciales dinámicas para cuentas.
+
+### `<Card />`
+**Propósito**: Superficie base enmarcadora que aporta las sombras, radius, y borders uniformes.
+
+### `<Modal />`
+**Propósito**: Renderiza diálogos destructivos o de confirmación crítica que requieren bloqueo del canvas.
 
 ### Toast (`useToast`)
 
@@ -150,18 +178,37 @@ import { Button, Input, Card, useToast } from '@/components/ui'
 
 ---
 
-## 7. Notificaciones — Regla Estricta (NUEVO v0.11.0-S53)
+## 7. Notificaciones y Bloqueos — Reglas Estrictas
 
-El sistema de notificaciones es un **monopolio arquitectónico**. Su propósito es garantizar UX no bloqueante y coherente en toda la plataforma.
+El sistema de feedback al usuario es un **monopolio arquitectónico**. Su propósito es garantizar UX no bloqueante y coherente.
 
-### Mandato
+## 🚫 Bloqueos y Confirmaciones
+
+- ❌ `window.confirm()` → **PROHIBIDO**
+- ❌ `alert()` → **PROHIBIDO**
+- ❌ `prompt()` → **PROHIBIDO**
+
+### Regla
+Todas las acciones destructivas deben usar `<Modal />`.
+
+### Ejemplos obligatorios
+- Eliminar elemento
+- Cerrar sesión crítica
+- Acciones irreversibles
+
+### Motivo
+- UX consistente
+- Control de estilo
+- Accesibilidad
+
+### Enforcement
+Cualquier PR que use APIs nativas bloqueantes debe ser rechazado.
+
+### Notificaciones (Toasts)
 
 | Método | Estado | Motivo |
 |---|---|---|
 | `useToast()` (interno) | ✅ **Único válido** | SSOT de feedback — cola FIFO, auto-dismiss 4s |
-| `window.alert()` | ❌ **Prohibido** | Bloqueante, no estándar, rompe UX |
-| `window.prompt()` | ❌ **Prohibido** | Bloqueante, sin control de diseño |
-| `window.confirm()` | ⚠️ **Temporal permitido** | Hasta que exista el componente `Modal` en DS |
 | `react-hot-toast` | ❌ **Prohibido** | Librería externa — rompe Design System |
 | `sonner` | ❌ **Prohibido** | Librería externa — rompe Design System |
 | `react-toastify` | ❌ **Prohibido** | Librería externa — rompe Design System |
@@ -199,3 +246,11 @@ toast.error('Error al guardar')
 toast.info('Sesión iniciada')
 toast.warning('Acción irreversible')
 ```
+
+## 🛡️ Validación Visual (Chromatic)
+
+- Todo cambio visual debe pasar Chromatic.
+- Cambios no aprobados → **bloquean PR**.
+
+### Regla
+El diseño está gobernado por snapshots visuales (SSOT automatizado), no por opinión.

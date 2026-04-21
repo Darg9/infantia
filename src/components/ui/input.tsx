@@ -1,3 +1,4 @@
+import { Input } from "@/components/ui/input";
 /**
  * Input — HabitaPlan Design System
  *
@@ -59,11 +60,9 @@ export function Input({
           </span>
         )}
       </label>
-
       {hint && (
         <p className="text-xs text-hp-text-secondary -mt-1">{hint}</p>
       )}
-
       {/* Input wrapper */}
       <div className="relative">
         {leftSlot && (
@@ -72,7 +71,7 @@ export function Input({
           </div>
         )}
 
-        <input
+        <Input
           id={id}
           required={required}
           disabled={disabled}
@@ -105,7 +104,6 @@ export function Input({
           <div className="absolute right-3 top-1/2 -translate-y-1/2">{rightSlot}</div>
         )}
       </div>
-
       {/* Error message */}
       {error && (
         <p
@@ -120,5 +118,5 @@ export function Input({
         </p>
       )}
     </div>
-  )
+  );
 }

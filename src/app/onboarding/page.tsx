@@ -1,4 +1,6 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // /onboarding — Wizard de configuración inicial
@@ -59,10 +61,9 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
       <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Te mostraremos actividades cerca a ti.
       </p>
-
       <div className="space-y-2 mb-8 max-h-64 overflow-y-auto pr-1">
         {cities.map((c) => (
-          <button
+          <Button
             key={c.id}
             onClick={() => setCityId(c.id)}
             className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
@@ -72,17 +73,16 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
             }`}
           >
             {c.name}
-          </button>
+          </Button>
         ))}
       </div>
-
-      <button
+      <Button
         onClick={handleNext}
         disabled={loading}
         className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
       >
         {cityId ? 'Continuar →' : 'Saltar por ahora →'}
-      </button>
+      </Button>
     </div>
   );
 }
@@ -122,12 +122,12 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         <p className="text-sm text-[var(--hp-text-secondary)] mb-8">
           Usaremos la edad de <strong>{name}</strong> para recomendarte actividades ideales.
         </p>
-        <button
+        <Button
           onClick={onNext}
           className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 text-sm transition-colors"
         >
           Continuar →
-        </button>
+        </Button>
       </div>
     );
   }
@@ -139,11 +139,10 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
       <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Agrega su perfil para ver actividades según su edad. Puedes agregar más después.
       </p>
-
       <div className="space-y-4 mb-5">
         <div>
           <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Nombre del niño o niña</label>
-          <input
+          <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -154,7 +153,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         </div>
         <div>
           <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Fecha de nacimiento</label>
-          <input
+          <Input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
@@ -164,7 +163,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
           />
         </div>
         <div className="flex items-start gap-2">
-          <input
+          <Input
             type="checkbox"
             id="consent"
             checked={consentAccepted}
@@ -176,25 +175,23 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
           </label>
         </div>
       </div>
-
       {error && (
         <p className="text-xs text-error-600 mb-4 bg-error-50 border border-error-200 rounded-lg px-3 py-2">{error}</p>
       )}
-
       <div className="flex flex-col gap-2">
-        <button
+        <Button
           onClick={handleSave}
           disabled={saving || !name.trim() || !birthDate || !consentAccepted}
           className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white font-semibold py-3 text-sm transition-colors"
         >
           {saving ? 'Guardando…' : 'Guardar y continuar →'}
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onSkip}
           className="w-full text-sm text-[var(--hp-text-muted)] hover:text-gray-600 py-2 transition-colors"
         >
           Saltar — lo agrego después
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -210,12 +207,12 @@ function StepListo({ onFinish }: { onFinish: () => void }) {
         Ya puedes explorar actividades personalizadas para tu familia.<br />
         Puedes completar tu perfil en cualquier momento.
       </p>
-      <button
+      <Button
         onClick={onFinish}
         className="w-full rounded-xl bg-brand-500 hover:bg-brand-600 text-white font-semibold py-3 text-sm transition-colors"
       >
         Ver actividades →
-      </button>
+      </Button>
     </div>
   );
 }

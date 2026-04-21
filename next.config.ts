@@ -4,6 +4,15 @@ import { withSentryConfig } from "@sentry/nextjs";
 const nextConfig: NextConfig = {
   // @react-pdf/renderer must run server-side only (uses Node.js APIs)
   serverExternalPackages: ['@react-pdf/renderer'],
+  async redirects() {
+    return [
+      {
+        source: '/tratamiento-datos',
+        destination: '/seguridad/datos',
+        permanent: true, // 308 redirect
+      },
+    ];
+  },
   // ===========================================================================
   // Security Headers — aplican a todas las rutas
   // ===========================================================================

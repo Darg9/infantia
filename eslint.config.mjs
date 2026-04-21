@@ -53,28 +53,37 @@ const eslintConfig = defineConfig([...nextVitals, ...nextTs, {
         message: "❗ Nunca usar .toNumber() directamente. Usa normalizePrice()."
       },
       {
-        selector: "JSXAttribute[value.value=/(bg-white|text-gray-|bg-brand-|text-brand-)/]",
-        message: "❗ No uses colores legacy de Tailwind base. Usa tokens semánticos (var(--hp-*) o hp-*)."
+        selector: "JSXOpeningElement[name.name='button']",
+        message: "Use <Button /> del Design System"
       },
       {
-        selector: "JSXOpeningElement[name.name='button']",
-        message: "❗ No uses <button> estandar. Utiliza el componente <Button> de @/components/ui/Button."
+        selector: "JSXOpeningElement[name.name='input']",
+        message: "Use <Input /> del Design System"
+      },
+      {
+        selector: "JSXOpeningElement[name.name='select']",
+        message: "Use componente del DS"
       }
     ],
     "no-restricted-globals": [
       "error",
       {
         name: "alert",
-        message: "Use useToast instead of alert()"
+        message: "Prohibido. Use Toast o Modal"
       },
       {
         name: "prompt",
         message: "Use a controlled UI component instead of prompt()"
+      },
+      {
+        name: "confirm",
+        message: "Use <Modal /> del Design System"
       }
     ],
     "no-restricted-imports": [
       "error",
       {
+        patterns: ["*.css"],
         paths: [
           {
             name: "react-hot-toast",
@@ -89,6 +98,13 @@ const eslintConfig = defineConfig([...nextVitals, ...nextTs, {
             message: "Use internal useToast system"
           }
         ]
+      }
+    ],
+    "no-restricted-properties": [
+      "error",
+      {
+        object: "className",
+        message: "No usar Tailwind directo (bg-*, text-*). Usa tokens hp-* o componentes UI"
       }
     ],
     // Block new `any` in all files not explicitly overridden below.
@@ -109,6 +125,20 @@ globalIgnores([
   "next-env.d.ts",
   // Prisma auto-generated — never lint:
   "src/generated/**",
-])]);
+]),
+// AST Regex Rule for className (anti-Tailwind directo)
+{
+  files: ["**/*.tsx"],
+  rules: {
+    "no-restricted-syntax": [
+      "error",
+      {
+        selector: "JSXAttribute[name.name='className'][value.value=/bg-|text-|border-/]",
+        message: "Uso de Tailwind directo prohibido. Usa tokens hp-* o primitives"
+      }
+    ]
+  }
+}
+]);
 
 export default eslintConfig;

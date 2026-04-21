@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // DownloadPDFButton — Botón cliente para descargar documentos legales en PDF
@@ -45,7 +46,7 @@ export function DownloadPDFButton({ href, label = 'Descargar Documento', filenam
   };
 
   return (
-    <button
+    <Button
       onClick={handleDownload}
       className="inline-flex items-center gap-2 shrink-0 rounded-xl
                  bg-gray-900 text-white text-sm font-medium
@@ -54,6 +55,6 @@ export function DownloadPDFButton({ href, label = 'Descargar Documento', filenam
     >
       <span>↓</span>
       <span>{label}</span>
-    </button>
+    </Button>
   );
 }

@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -61,14 +63,13 @@ export default function NuevoHijoPage() {
       <p className="text-sm text-[var(--hp-text-secondary)] mb-8">
         Esto nos ayuda a recomendarte actividades adecuadas para su edad.
       </p>
-
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre <span className="text-error-500">*</span>
           </label>
-          <input
+          <Input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -84,7 +85,7 @@ export default function NuevoHijoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Fecha de nacimiento <span className="text-error-500">*</span>
           </label>
-          <input
+          <Input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
@@ -122,7 +123,7 @@ export default function NuevoHijoPage() {
           <p className="text-xs text-[var(--hp-text-secondary)] mb-3">
             Conforme a la{' '}
             <Link
-              href="/tratamiento-datos"
+              href="/seguridad/datos"
               target="_blank"
               className="text-brand-600 hover:underline"
             >
@@ -131,7 +132,7 @@ export default function NuevoHijoPage() {
             de HabitaPlan y la Ley 1581 de 2012.
           </p>
           <div className="flex items-start gap-2">
-            <input
+            <Input
               type="checkbox"
               id="consent"
               checked={consentAccepted}
@@ -158,15 +159,15 @@ export default function NuevoHijoPage() {
           >
             Cancelar
           </Link>
-          <button
+          <Button
             type="submit"
             disabled={loading || !consentAccepted}
             className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Guardando...' : 'Guardar perfil'}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
-  )
+  );
 }

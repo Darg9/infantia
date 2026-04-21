@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // MobileNav — Dual Navigation Model (≤768px only)
@@ -143,7 +144,7 @@ const DRAWER_SECTIONS = [
       { label: 'Centro de Seguridad',              href: '/seguridad',         icon: ShieldCheck },
       { label: 'Términos de uso',                  href: '/terminos',          icon: Shield },
       { label: 'Política de privacidad',           href: '/privacidad',        icon: Shield },
-      { label: 'Política de tratamiento de datos', href: '/tratamiento-datos', icon: Shield },
+      { label: 'Política de tratamiento de datos', href: '/seguridad/datos', icon: Shield },
     ],
   },
 ] as const
@@ -174,14 +175,14 @@ function MobileThemeToggle() {
   }
 
   return (
-    <button
+    <Button
       onClick={toggle}
       aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
     >
       <Icon icon={dark ? Sun : Moon} size="lg" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]" />
-    </button>
-  )
+    </Button>
+  );
 }
 
 // ─── Drawer ───────────────────────────────────────────────────────────────────
@@ -247,7 +248,6 @@ function MobileDrawer({
           open ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       />
-
       {/* Drawer panel */}
       <div
         ref={drawerRef}
@@ -276,13 +276,13 @@ function MobileDrawer({
               className="h-7 w-auto object-contain hidden dark:block"
             />
           </Link>
-          <button
+          <Button
             onClick={onClose}
             aria-label="Cerrar menú"
             className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
           >
             <Icon icon={X} size="lg" />
-          </button>
+          </Button>
         </div>
 
         {/* Session banner */}
@@ -352,12 +352,12 @@ function MobileDrawer({
         {/* Session footer */}
         <div className="border-t border-[var(--hp-border)] px-4 py-4">
           {session ? (
-            <button
+            <Button
               onClick={handleLogout}
               className="w-full px-3 py-2.5 rounded-lg text-sm font-medium text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors text-left"
             >
               Cerrar sesión
-            </button>
+            </Button>
           ) : (
             <div className="space-y-2">
               <Link
@@ -379,7 +379,7 @@ function MobileDrawer({
         </div>
       </div>
     </>
-  )
+  );
 }
 
 // ─── Bottom Navigation ────────────────────────────────────────────────────────
@@ -450,14 +450,14 @@ function MobileHeader({
     >
       <div className="relative flex items-center justify-between px-3 h-14">
         {/* Left: hamburger */}
-        <button
+        <Button
           onClick={onOpenDrawer}
           aria-label="Abrir menú de navegación"
           aria-haspopup="dialog"
           className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         >
           <Icon icon={Menu} size="lg" />
-        </button>
+        </Button>
 
         {/* Center: logo */}
         <Link
@@ -487,7 +487,7 @@ function MobileHeader({
         <MobileThemeToggle />
       </div>
     </header>
-  )
+  );
 }
 
 // ─── Root export ──────────────────────────────────────────────────────────────

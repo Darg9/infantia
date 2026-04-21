@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
@@ -89,15 +91,15 @@ export default function ContactoPage() {
               ? 'Responderemos a solicitudes de datos personales en un máximo de 10 días hábiles.'
               : 'Responderemos a la brevedad posible.'}
           </p>
-          <button
+          <Button
             onClick={() => { setEnviado(false); setMotivo(''); setNombre(''); setEmail(''); setMensaje(''); setActividadUrl(''); }}
             className="mt-6 text-sm text-brand-600 hover:underline"
           >
             Enviar otra solicitud
-          </button>
+          </Button>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,7 +109,6 @@ export default function ContactoPage() {
         Escríbenos para consultas, reportar errores, solicitar remoción de contenido o ejercer tus derechos
         sobre datos personales.
       </p>
-
       {/* Takedown notice - always visible */}
       <div className="bg-brand-50 border border-brand-200 rounded-xl p-4 mb-8">
         <h2 className="text-sm font-semibold text-brand-800 mb-1">Remoción de contenido</h2>
@@ -117,7 +118,6 @@ export default function ContactoPage() {
           Nos comprometemos a responder en un máximo de <strong>5 días hábiles</strong>.
         </p>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-5">
         {/* Motivo */}
         <div>
@@ -142,7 +142,7 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre completo <span className="text-error-500">*</span>
           </label>
-          <input
+          <Input
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
@@ -157,7 +157,7 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Correo electrónico <span className="text-error-500">*</span>
           </label>
-          <input
+          <Input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -173,7 +173,7 @@ export default function ContactoPage() {
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
               URL de la actividad en HabitaPlan {isTakedown && <span className="text-error-500">*</span>}
             </label>
-            <input
+            <Input
               type="url"
               value={actividadUrl}
               onChange={(e) => setActividadUrl(e.target.value)}
@@ -232,15 +232,14 @@ export default function ContactoPage() {
           </p>
         )}
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
           className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
         >
           {loading ? 'Enviando...' : 'Enviar solicitud'}
-        </button>
+        </Button>
       </form>
-
       {/* Plazos legales */}
       <div className="mt-8 rounded-xl border border-[var(--hp-border)] p-4 text-xs text-[var(--hp-text-muted)] space-y-1">
         <p><strong className="text-[var(--hp-text-secondary)]">Plazos de respuesta:</strong></p>
@@ -250,5 +249,5 @@ export default function ContactoPage() {
         <p>Derechos de datos personales (reclamo): máximo 15 días hábiles</p>
       </div>
     </div>
-  )
+  );
 }

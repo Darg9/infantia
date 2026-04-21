@@ -110,7 +110,7 @@ export const ActivityDigestEmail = ({
                   <Text style={sponsorLabel}>Patrocinado por</Text>
                   {sponsor.logoUrl && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={sponsor.logoUrl} alt={sponsor.name} style={sponsorLogo} />
+                    (<img src={sponsor.logoUrl} alt={sponsor.name} style={sponsorLogo} />)
                   )}
                   <Text style={sponsorName}>{sponsor.name}</Text>
                   <Text style={sponsorTagline}>{sponsor.tagline}</Text>

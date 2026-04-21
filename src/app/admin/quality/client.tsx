@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { createLogger } from '@/lib/logger'
 import { useEffect, useState } from "react"
@@ -81,11 +83,10 @@ export default function QualityDashboardClient() {
           ← Volver a Admin
         </Link>
       </div>
-
       <div className="bg-[var(--hp-bg-surface)] p-4 rounded-xl border border-[var(--hp-border)] shadow-sm mb-8 flex flex-wrap gap-4 items-end">
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Desde</label>
-          <input 
+          <Input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.from}
@@ -94,7 +95,7 @@ export default function QualityDashboardClient() {
         </div>
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Hasta</label>
-          <input 
+          <Input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.to}
@@ -113,14 +114,13 @@ export default function QualityDashboardClient() {
             <option value="ingestion">Ingestión diaria</option>
           </select>
         </div>
-        <button 
+        <Button 
           onClick={() => setFilters({ from: "", to: "", source: "" })}
           className="text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] px-2 py-1.5"
         >
           Reset
-        </button>
+        </Button>
       </div>
-
       {status === 'over' && (
         <div className="bg-error-50 border-l-4 border-error-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
@@ -132,7 +132,6 @@ export default function QualityDashboardClient() {
           </div>
         </div>
       )}
-
       {status === 'under' && (
         <div className="bg-warning-50 border-l-4 border-warning-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
@@ -144,7 +143,6 @@ export default function QualityDashboardClient() {
           </div>
         </div>
       )}
-
       {status === 'healthy' && (
         <div className="bg-success-50 border-l-4 border-success-500 p-4 mb-8 rounded-md shadow-sm">
           <div className="flex">
@@ -156,7 +154,6 @@ export default function QualityDashboardClient() {
           </div>
         </div>
       )}
-
       {latest && (
         <div className="grid grid-cols-2 gap-4 mb-8">
           <div className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm flex flex-col justify-center">
@@ -169,7 +166,6 @@ export default function QualityDashboardClient() {
           </div>
         </div>
       )}
-
       {loading ? (
         <div className="animate-pulse flex space-x-4">
           <div className="flex-1 space-y-6 py-1">
@@ -250,5 +246,5 @@ export default function QualityDashboardClient() {
         </div>
       )}
     </div>
-  )
+  );
 }

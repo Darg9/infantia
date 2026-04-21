@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect } from 'react'
 import { SITE_URL } from '@/config/site'
@@ -122,30 +123,28 @@ export function ShareButton({
 
   if (supportsWebShare) {
     return (
-      <button
+      <Button
         onClick={handleWebShare}
         className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-200 transition-colors"
       >
-        <span>📤</span>
-        Compartir
-      </button>
-    )
+        <span>📤</span>Compartir
+              </Button>
+    );
   }
 
   return (
     <div className="relative w-full">
-      <button
+      <Button
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-200 transition-colors"
       >
         <span>📤</span>
         Compartir
-      </button>
-
+      </Button>
       {isOpen && (
         <div className="absolute right-0 mt-2 w-48 rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-lg z-50">
           {/* Copiar vínculo (siempre al inicio) */}
-          <button
+          <Button
             onClick={() => {
               copyToClipboard()
               setIsOpen(false)
@@ -154,12 +153,12 @@ export function ShareButton({
           >
             <span>{copied ? '✓' : '🔗'}</span>
             {copied ? 'Vínculo copiado' : 'Copiar vínculo'}
-          </button>
+          </Button>
 
           {/* Redes sociales en grid 2 columnas */}
           <div className="grid grid-cols-2 gap-0">
             {shareLinks.map((link) => (
-              <button
+              <Button
                 key={link.name}
                 onClick={() => {
                   if (link.onClick) {
@@ -173,12 +172,11 @@ export function ShareButton({
               >
                 <span>{link.icon}</span>
                 <span className="hidden sm:inline">{link.name}</span>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
       )}
-
       {/* Overlay para cerrar dropdown */}
       {isOpen && (
         <div
@@ -187,5 +185,5 @@ export function ShareButton({
         />
       )}
     </div>
-  )
+  );
 }

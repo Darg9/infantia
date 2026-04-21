@@ -28,7 +28,7 @@ const NAV_COLUMNS = [
       { label: 'Centro de Seguridad',              href: '/seguridad'         },
       { label: 'Términos de uso',                  href: '/terminos'          },
       { label: 'Política de privacidad',           href: '/privacidad'        },
-      { label: 'Política de tratamiento de datos', href: '/tratamiento-datos' },
+      { label: 'Política de tratamiento de datos', href: '/seguridad/datos' },
     ],
   },
 ] as const;

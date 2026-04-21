@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.12.0
-**Última actualización:** 20 de abril de 2026
+**Versión:** ✅ v0.13.0
+**Última actualización:** 21 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -74,6 +74,8 @@ Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/
 | `GET /api/legal/datos/pdf` | API | Descarga PDF Tratamiento Datos |
 
 ## 💡 Reglas de Modificación
+- **Un solo namespace:** Todas las rutas legales deben vivir estrictamente bajo `/seguridad/*`. No duplicar rutas legales.
+- **Redirecciones:** Las rutas legacy deben redirigir vía 308 (permanent) en `next.config.ts`.
 - *Nunca hardcodear* textos legales directamente en los componentes de React, UI, `Layout`, o modales.
 - Para cambiar cualquier texto legal: modificar el archivo `.ts` correspondiente en `src/modules/legal/constants/` → compila la app → web y PDF se actualizan simultáneamente.
 - Cambios en datos recolectados → actualizar `privacy.ts` **y** `data-treatment.ts` para mantener coherencia.

@@ -19,7 +19,7 @@ export function slugifyTitle(title: string): string {
     .replace(/\s+/g, '-')           // espacios → guiones
     .replace(/-+/g, '-')            // colapsar guiones múltiples
     .replace(/^-|-$/g, '')          // trim guiones al inicio/final
-    .slice(0, 60)                   // máximo 60 chars
+    .slice(0, 60);                   // máximo 60 chars
 }
 
 /** Construye la ruta canónica de una actividad */

@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import type { Meta, StoryObj } from '@storybook/react'
 import { Card } from './card'
 
@@ -21,9 +22,9 @@ const meta: Meta<typeof Card> = {
         </div>
       </Card.Body>
       <Card.Footer>
-        <button className="bg-hp-action-primary text-white w-full py-2 rounded-lg font-medium text-sm hover:opacity-90">
+        <Button className="bg-hp-action-primary text-white w-full py-2 rounded-lg font-medium text-sm hover:opacity-90">
           Guardar
-        </button>
+        </Button>
       </Card.Footer>
     </Card>
   )

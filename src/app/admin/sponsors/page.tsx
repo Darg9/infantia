@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
@@ -84,7 +85,7 @@ export default function SponsorsAdminPage() {
   const field = (k: keyof typeof form, label: string, type = 'text') => (
     <div>
       <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">{label}</label>
-      <input
+      <Input
         type={type}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         value={form[k] as string}
@@ -102,7 +103,6 @@ export default function SponsorsAdminPage() {
         </div>
         <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
-
       {/* Formulario */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 mb-8">
         <h2 className="font-semibold text-[var(--hp-text-primary)] mb-4">{editId ? 'Editar patrocinador' : 'Nuevo patrocinador'}</h2>
@@ -114,7 +114,7 @@ export default function SponsorsAdminPage() {
           {field('campaignStart', 'Inicio campaña', 'date')}
           {field('campaignEnd', 'Fin campaña', 'date')}
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="checkbox"
               id="isActive"
               checked={form.isActive}
@@ -142,7 +142,6 @@ export default function SponsorsAdminPage() {
           {msg && <span className="text-sm text-success-600">{msg}</span>}
         </div>
       </div>
-
       {/* Lista */}
       {sponsors.length === 0 ? (
         <p className="text-center text-[var(--hp-text-muted)] py-12">No hay patrocinadores aún.</p>
@@ -152,7 +151,7 @@ export default function SponsorsAdminPage() {
             <div key={s.id} className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 flex items-start gap-4">
               {s.logoUrl && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={s.logoUrl} alt={s.name} className="h-10 w-10 object-contain rounded-lg border border-[var(--hp-border)] flex-shrink-0" />
+                (<img src={s.logoUrl} alt={s.name} className="h-10 w-10 object-contain rounded-lg border border-[var(--hp-border)] flex-shrink-0" />)
               )}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">

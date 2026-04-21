@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
 
 import { useState, useEffect, useCallback, FormEvent } from 'react';
 import { Button, useToast } from '@/components/ui';
@@ -161,7 +162,6 @@ export function SourcesManager({ cities, verticals }: Props) {
           {showForm ? 'Cancelar' : '+ Nueva fuente'}
         </Button>
       </div>
-
       {/* Add form */}
       {showForm && (
         <form
@@ -174,7 +174,7 @@ export function SourcesManager({ cities, verticals }: Props) {
             {/* Name */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-600">Nombre</label>
-              <input
+              <Input
                 type="text"
                 required
                 minLength={2}
@@ -189,7 +189,7 @@ export function SourcesManager({ cities, verticals }: Props) {
             {/* URL */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-600">URL</label>
-              <input
+              <Input
                 type="url"
                 required
                 value={form.url}
@@ -263,7 +263,7 @@ export function SourcesManager({ cities, verticals }: Props) {
             {/* Schedule */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-600">Cron (schedule)</label>
-              <input
+              <Input
                 type="text"
                 value={form.scheduleCron}
                 onChange={(e) => setForm((f) => ({ ...f, scheduleCron: e.target.value }))}
@@ -275,7 +275,7 @@ export function SourcesManager({ cities, verticals }: Props) {
             {/* Notes */}
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium text-gray-600">Notas (opcional)</label>
-              <input
+              <Input
                 type="text"
                 maxLength={1000}
                 value={form.notes}
@@ -288,7 +288,7 @@ export function SourcesManager({ cities, verticals }: Props) {
 
           <div className="flex items-center gap-4 pt-2">
             <label className="flex items-center gap-2 text-sm text-[var(--hp-text-primary)] cursor-pointer">
-              <input
+              <Input
                 type="checkbox"
                 checked={form.isActive}
                 onChange={(e) => setForm((f) => ({ ...f, isActive: e.target.checked }))}
@@ -308,7 +308,6 @@ export function SourcesManager({ cities, verticals }: Props) {
           </div>
         </form>
       )}
-
       {/* Table */}
       {loading ? (
         <div className="text-center py-8 text-[var(--hp-text-muted)] text-sm">Cargando fuentes…</div>

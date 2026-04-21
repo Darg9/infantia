@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -33,7 +35,6 @@ export default function ContribuirPage() {
           ← Volver a actividades
         </Link>
       </div>
-
       <div className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-bold text-[var(--hp-text-primary)] mb-3">Ayúdanos a crecer</h1>
         <p className="text-gray-600 mb-8">
@@ -44,7 +45,7 @@ export default function ContribuirPage() {
         {!tipo ? (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Card: Sugerir actividad */}
-            <button
+            <Button
               onClick={() => setTipo('actividad')}
               className="group relative rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
             >
@@ -56,10 +57,10 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </button>
+            </Button>
 
             {/* Card: Sugerir institución */}
-            <button
+            <Button
               onClick={() => setTipo('institucion')}
               className="group relative rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
             >
@@ -71,16 +72,16 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </button>
+            </Button>
           </div>
         ) : (
           <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-8">
-            <button
+            <Button
               onClick={() => setTipo(null)}
               className="mb-6 text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors"
             >
               ← Volver
-            </button>
+            </Button>
 
             {tipo === 'actividad' ? (
               <>
@@ -99,7 +100,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Nombre de la actividad *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Ej: Taller de programación infantil"
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -111,7 +112,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Institución o proveedor *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Ej: Academia Tech Kids"
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -123,7 +124,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       URL o fuente de información *
                     </label>
-                    <input
+                    <Input
                       type="url"
                       placeholder="https://..."
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -131,12 +132,12 @@ export default function ContribuirPage() {
                     />
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-brand-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
-                  </button>
+                  </Button>
                 </form>
               </>
             ) : (
@@ -156,7 +157,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Nombre de la institución *
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Ej: Centro Deportivo Municipal"
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -168,7 +169,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Tipo de actividades
                     </label>
-                    <input
+                    <Input
                       type="text"
                       placeholder="Ej: Deportes, arte, música"
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -179,19 +180,19 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Sitio web
                     </label>
-                    <input
+                    <Input
                       type="url"
                       placeholder="https://..."
                       className="w-full rounded-lg border border-[var(--hp-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
 
-                  <button
+                  <Button
                     type="submit"
                     className="w-full rounded-lg bg-brand-500 text-white font-medium py-2 hover:bg-brand-600 transition-colors text-sm"
                   >
                     Enviar sugerencia
-                  </button>
+                  </Button>
                 </form>
               </>
             )}
@@ -205,5 +206,5 @@ export default function ContribuirPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

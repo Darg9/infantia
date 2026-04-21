@@ -1,4 +1,6 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react';
 
@@ -47,14 +49,13 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
   return (
     <div className="mt-4 pt-4 border-t border-[var(--hp-border)]">
       <p className="text-xs font-medium text-[var(--hp-text-secondary)] tracking-wide mb-3">Configuración Instagram</p>
-
       <div className="flex flex-wrap items-end gap-6">
         {/* Content mode */}
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Contenido a extraer</label>
           <div className="flex gap-2">
             {(Object.keys(modeLabels) as ContentMode[]).map((mode) => (
-              <button
+              <Button
                 key={mode}
                 onClick={() => setContentMode(mode)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
@@ -64,7 +65,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
                 }`}
               >
                 {modeLabels[mode].label}
-              </button>
+              </Button>
             ))}
           </div>
           <p className="text-xs text-[var(--hp-text-muted)] mt-1">
@@ -76,7 +77,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Posts por corrida</label>
           <div className="flex items-center gap-2">
-            <input
+            <Input
               type="range"
               min={1}
               max={12}
@@ -90,13 +91,13 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
 
         {/* Guardar */}
         <div className="flex items-center gap-2">
-          <button
+          <Button
             onClick={handleSave}
             disabled={saving}
             className="px-4 py-1.5 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 text-white text-xs font-medium rounded-lg transition-colors"
           >
             {saving ? 'Guardando…' : 'Guardar'}
-          </button>
+          </Button>
           {saved && <span className="text-xs text-success-600 font-medium">✓ Guardado</span>}
           {error && <span className="text-xs text-error-500">{error}</span>}
         </div>

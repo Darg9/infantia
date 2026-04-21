@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 import Link from 'next/link'
 import { useActivityHistory } from '@/hooks/useActivityHistory'
@@ -34,15 +35,14 @@ export default function HistorialPage() {
           )}
         </div>
         {history.length > 0 && (
-          <button
+          <Button
             onClick={clearHistory}
             className="text-xs text-[var(--hp-text-muted)] hover:text-error-500 transition-colors"
           >
             Borrar historial
-          </button>
+          </Button>
         )}
       </div>
-
       {history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">🕐</span>
@@ -87,5 +87,5 @@ export default function HistorialPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

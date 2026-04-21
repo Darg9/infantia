@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect } from 'react'
 import { PushButton } from '@/components/PushButton'
@@ -35,7 +37,7 @@ function Toggle({
   disabled?: boolean
 }) {
   return (
-    <button
+    <Button
       type="button"
       role="switch"
       aria-checked={checked}
@@ -54,8 +56,8 @@ function Toggle({
           checked ? 'translate-x-5' : 'translate-x-0'
         }`}
       />
-    </button>
-  )
+    </Button>
+  );
 }
 
 export default function NotificacionesPage() {
@@ -116,7 +118,6 @@ export default function NotificacionesPage() {
       <p className="text-sm text-[var(--hp-text-secondary)] mb-6">
         Configura como y cuando quieres recibir notificaciones.
       </p>
-
       {msg && (
         <div className={`text-sm px-3 py-2 rounded-lg mb-4 ${
           msg.type === 'success'
@@ -126,7 +127,6 @@ export default function NotificacionesPage() {
           {msg.text}
         </div>
       )}
-
       {/* Canales */}
       <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 mb-4">
         <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Canales</h2>
@@ -152,7 +152,6 @@ export default function NotificacionesPage() {
           </div>
         </div>
       </section>
-
       {/* Frecuencia */}
       <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5 mb-4">
         <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Frecuencia</h2>
@@ -170,7 +169,7 @@ export default function NotificacionesPage() {
                   : 'border border-transparent hover:bg-[var(--hp-bg-page)]'
               }`}
             >
-              <input
+              <Input
                 type="radio"
                 name="frequency"
                 value={opt.value}
@@ -186,7 +185,6 @@ export default function NotificacionesPage() {
           ))}
         </div>
       </section>
-
       {/* Categorias */}
       <section className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5">
         <h2 className="text-sm font-semibold text-[var(--hp-text-primary)] mb-4">Categorías</h2>
@@ -222,10 +220,9 @@ export default function NotificacionesPage() {
           </div>
         </div>
       </section>
-
       {saving && (
         <p className="text-xs text-[var(--hp-text-muted)] mt-3 text-center">Guardando...</p>
       )}
     </div>
-  )
+  );
 }

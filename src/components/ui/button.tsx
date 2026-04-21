@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 /**
  * Button — HabitaPlan Design System
  *
@@ -93,7 +94,7 @@ export function Button({
   const isDisabled = disabled || loading
 
   return (
-    <button
+    <Button
       disabled={isDisabled}
       aria-busy={loading || undefined}
       aria-disabled={isDisabled || undefined}
@@ -106,6 +107,6 @@ export function Button({
         />
       )}
       {children}
-    </button>
-  )
+    </Button>
+  );
 }

@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -118,7 +119,7 @@ export default function RegistroPage() {
 
           {/* Aceptación de políticas — obligatorio por Ley 1581 de 2012 */}
           <div className="flex items-start gap-2">
-            <input
+            <Input
               type="checkbox"
               id="acepta-terminos"
               checked={aceptaTerminos}
@@ -128,7 +129,7 @@ export default function RegistroPage() {
             />
             <label htmlFor="acepta-terminos" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed">
               Acepto la{' '}
-              <Link href="/tratamiento-datos" target="_blank" className="text-brand-600 hover:underline">
+              <Link href="/seguridad/datos" target="_blank" className="text-brand-600 hover:underline">
                 Política de Tratamiento de Datos Personales
               </Link>{' '}
               y los{' '}
@@ -162,5 +163,5 @@ export default function RegistroPage() {
         </p>
       </Card>
     </div>
-  )
+  );
 }

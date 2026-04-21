@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 'use client'
 
 import { useRouter } from 'next/navigation'
@@ -14,11 +15,10 @@ export function LogoutButton() {
   }
 
   return (
-    <button
+    <Button
       onClick={handleLogout}
       className="text-sm text-[var(--hp-text-secondary)] hover:text-error-600 transition-colors"
-    >
-      Salir
-    </button>
-  )
+    >Salir
+          </Button>
+  );
 }

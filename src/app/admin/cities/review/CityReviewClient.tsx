@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -159,12 +160,12 @@ export function CityReviewClient({ cities }: Props) {
     return (
       <div className="bg-error-50 border border-error-200 rounded-2xl p-4 text-error-700 text-sm">
         {pageError}{' '}
-        <button
+        <Button
           onClick={fetchEntries}
           className="underline hover:no-underline ml-1"
         >
           Reintentar
-        </button>
+        </Button>
       </div>
     );
   }
@@ -189,7 +190,6 @@ export function CityReviewClient({ cities }: Props) {
         {entries.length !== 1 ? 's' : ''} · ordenadas por score ASC (más
         dudosas arriba) · límite 50
       </p>
-
       <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
         <table className="w-full text-sm">
           <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)] text-xs text-gray-600">
@@ -219,14 +219,12 @@ export function CityReviewClient({ cities }: Props) {
                       {entry.raw_input}
                     </span>
                   </td>
-
                   {/* Normalized */}
                   <td className="px-4 py-3 max-w-[160px]">
                     <span className="font-mono text-xs text-[var(--hp-text-secondary)] break-words">
                       {entry.normalized_input}
                     </span>
                   </td>
-
                   {/* Suggested city */}
                   <td className="px-4 py-3">
                     {entry.suggested_city_name ? (
@@ -239,7 +237,6 @@ export function CityReviewClient({ cities }: Props) {
                       </span>
                     )}
                   </td>
-
                   {/* Score */}
                   <td className="px-4 py-3 text-center">
                     <span
@@ -248,7 +245,6 @@ export function CityReviewClient({ cities }: Props) {
                       {Math.round(entry.similarity_score * 100)}%
                     </span>
                   </td>
-
                   {/* Actions */}
                   <td className="px-4 py-3 min-w-[260px]">
                     <div className="flex flex-col gap-1.5">
@@ -256,17 +252,17 @@ export function CityReviewClient({ cities }: Props) {
                         <div className="flex items-center gap-2 flex-wrap">
                           {/* Approve — solo si hay sugerencia */}
                           {entry.suggested_city_id && (
-                            <button
+                            <Button
                               onClick={() => handleApprove(entry)}
                               disabled={busy}
                               className="px-3 py-1 text-xs font-medium bg-success-100 text-success-700 hover:bg-success-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                             >
                               ✓ Aprobar
-                            </button>
+                            </Button>
                           )}
 
                           {/* Reassign toggle */}
-                          <button
+                          <Button
                             onClick={() =>
                               setShowReassign((prev) => ({
                                 ...prev,
@@ -277,20 +273,20 @@ export function CityReviewClient({ cities }: Props) {
                             className="px-3 py-1 text-xs font-medium bg-brand-100 text-brand-700 hover:bg-brand-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             ↔ Reasignar
-                          </button>
+                          </Button>
 
                           {/* Ignore */}
-                          <button
+                          <Button
                             onClick={() => handleIgnore(entry.id)}
                             disabled={busy}
                             className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             × Ignorar
-                          </button>
+                          </Button>
                         </div>
                       ) : (
                         /* ── Inline reassign form ── */
-                        <div className="flex items-center gap-2 flex-wrap">
+                        (<div className="flex items-center gap-2 flex-wrap">
                           <select
                             value={reassignCity[entry.id] ?? ''}
                             onChange={(e) =>
@@ -309,16 +305,14 @@ export function CityReviewClient({ cities }: Props) {
                               </option>
                             ))}
                           </select>
-
-                          <button
+                          <Button
                             onClick={() => handleReassign(entry.id)}
                             disabled={busy}
                             className="px-3 py-1 text-xs font-medium bg-brand-600 text-white hover:bg-brand-700 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             Guardar
-                          </button>
-
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => {
                               setShowReassign((prev) => ({
                                 ...prev,
@@ -330,8 +324,8 @@ export function CityReviewClient({ cities }: Props) {
                             className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                           >
                             Cancelar
-                          </button>
-                        </div>
+                          </Button>
+                        </div>)
                       )}
 
                       {/* Inline feedback */}

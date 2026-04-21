@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.12.0
-**Última actualización:** 20 de abril de 2026
+**Versión:** ✅ v0.13.0
+**Última actualización:** 21 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -9,9 +9,17 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 
 1. **Onboarding Contextual** (`/onboarding`): Sistema rápido de 3 pasos (Ubicación -> Dependientes/Niños -> Configuración Base). Define la visualización del contenido.
 2. **Hero Search** (Búsqueda Principal): Un ecosistema compuesto capaz de devolver predicciones mixtas. Enlaza con el listado `/actividades`.
-3. **Listado de Actividades**: Experiencia de filtros facetados (que actualizan conteos reales de categorías concurrentes en PostgreSQL vs Memoria Node).
+3. **Listado de Actividades y Filtros**: Experiencia de filtros facetados en tiempo real. 
+   - **Desktop (`>= md`)**: Filtros persistentes (sidebar o topbar). Actualización en tiempo real (sin CTA explícito).
+   - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).
 4. **Detalle de la Actividad**: Resumen unificado por la IA de NLP, protegiendo sobre cargas cognitivas o fotos gigantes cuando el texto es la metadata esencial. Enlaza siempre hacia la ruta saliente `outbound_click`.
 5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) estructurado por la base de datos de manera tipo-segura (XOR foreign keys). Agrupa el inventario en una única vista unificada (`/perfil/favoritos`) con tarjetas visuales polimórficas (identificación visual Actividad/Lugar) sin incurrir en deudas de integridad.
+
+## 🔍 Punto de Entrada Principal (Search-First UX)
+
+- La plataforma está centrada en búsqueda.
+- El componente `<HeroSearch />` es el entry point dominante.
+- Todo flujo de discovery debe derivar de una intención de búsqueda o exploración.
 
 ## 🔍 Motor de Búsqueda y Filtros (`HeroSearch` & `Filters`)
 
@@ -77,3 +85,37 @@ Patrón global y reutilizable para preservar la intención del usuario ante cual
 - `IntentManager` usa `localStorage` con TTL 15 min — expire silencioso.
 - `IntentResolver` usa `useEffect([])` — ejecución única al montar, idempotente.
 - Errores se manejan silenciosamente para no romper el login flow.
+
+## 🔲 Estados de Interfaz (UI States)
+
+### Reglas Globales
+- Nunca usar spinners bloqueantes como estado principal.
+- Siempre preferir Skeletons que preserven layout (no CLS).
+- Todo listado debe definir explícitamente: loading, empty, error.
+
+### Loading (Skeleton)
+- Se usa `<Skeleton />` replicando layout final.
+- Debe evitar layout shift (CLS ≈ 0).
+
+### Empty State
+- Se usa `<EmptyState />`.
+- Debe incluir:
+  - mensaje claro
+  - acción de salida (CTA)
+- Nunca dejar pantallas vacías sin contexto.
+
+### Error State
+- Errores de ruta → `error.tsx` (Next.js boundary).
+- Errores de interacción → `useToast()` (no bloqueante).
+
+## 🏷️ Terminología Oficial (Naming Convention)
+
+### Regla SSOT
+- Término único: **"Actividades"**
+
+### Prohibiciones
+- No usar: "Planes", "Eventos", "Citas" en UI.
+- "Evento" solo permitido en contexto técnico (analytics).
+
+### Enforcement
+- Cualquier PR que introduzca terminología distinta debe ser rechazado.

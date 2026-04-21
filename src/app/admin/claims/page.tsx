@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Button } from "@/components/ui/button";
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui';
@@ -71,11 +72,10 @@ export default function ClaimsAdminPage() {
         </div>
         <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
-
       {/* Filtros */}
       <div className="flex gap-2 mb-6">
         {(['PENDING', 'APPROVED', 'REJECTED'] as ClaimStatus[]).map((s) => (
-          <button
+          <Button
             key={s}
             onClick={() => setFilter(s)}
             className={`text-xs font-medium px-4 py-1.5 rounded-full border transition-colors ${
@@ -85,14 +85,12 @@ export default function ClaimsAdminPage() {
             }`}
           >
             {STATUS_LABELS[s]}
-          </button>
+          </Button>
         ))}
       </div>
-
       {msg && (
         <p className="text-sm mb-4 px-3 py-2 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg text-[var(--hp-text-primary)]">{msg}</p>
       )}
-
       {claims.length === 0 ? (
         <p className="text-center text-[var(--hp-text-muted)] py-12">No hay solicitudes {STATUS_LABELS[filter].toLowerCase()}s.</p>
       ) : (

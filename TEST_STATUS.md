@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-20 | Version: v0.12.1
+Actualizado: 2026-04-21 | Version: v0.13.0
 
-## Resumen Actual (v0.12.1 / Filter UI Stabilization & Test Suite Green)
+## Resumen Actual (v0.13.0 / Estabilización Estructural Zero-Debt)
 - **Archivos de Test:** 75
 - **Tests Totales:** 1215
 - **Estado:** 100% pasando ✅ (0 Skipped, 0 Fallidos)

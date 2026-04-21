@@ -89,7 +89,7 @@ export default async function HijosPage() {
 
       <p className="text-xs text-[var(--hp-text-muted)] mt-6 leading-relaxed">
         Los datos de tus hijos se tratan conforme a nuestra{' '}
-        <Link href="/tratamiento-datos" className="underline hover:text-gray-600">
+        <Link href="/seguridad/datos" className="underline hover:text-gray-600">
           Politica de Tratamiento de Datos
         </Link>
         . Puedes eliminar cualquier perfil en cualquier momento.

@@ -30,7 +30,8 @@
  *   - Scroll del body bloqueado mientras el modal está abierto
  */
 
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 import {
   useEffect,
@@ -127,7 +128,7 @@ export function Modal({
 
   const panel = (
     // Overlay
-    <div
+    (<div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
       aria-hidden="false"
     >
@@ -137,7 +138,6 @@ export function Modal({
         onClick={disableOverlayClose ? undefined : onClose}
         aria-hidden="true"
       />
-
       {/* Panel */}
       <div
         ref={panelRef}
@@ -174,7 +174,7 @@ export function Modal({
             )}
           </div>
           {!hideCloseButton && (
-            <button
+            <Button
               type="button"
               aria-label="Cerrar"
               onClick={onClose}
@@ -188,14 +188,14 @@ export function Modal({
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
                 <path d="M2 2l12 12M14 2L2 14" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
               </svg>
-            </button>
+            </Button>
           )}
         </div>
 
         {/* Content (children) */}
         {children}
       </div>
-    </div>
+    </div>)
   )
 
   return createPortal(panel, document.body)

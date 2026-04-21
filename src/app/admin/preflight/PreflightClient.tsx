@@ -1,4 +1,6 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect, useCallback } from 'react';
 
@@ -162,7 +164,7 @@ export function PreflightClient() {
       <div className="flex flex-wrap items-end gap-4 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl px-5 py-4">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-600">Desde</label>
-          <input
+          <Input
             type="date"
             value={from}
             max={to}
@@ -173,7 +175,7 @@ export function PreflightClient() {
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-600">Hasta</label>
-          <input
+          <Input
             type="date"
             value={to}
             min={from}
@@ -195,24 +197,22 @@ export function PreflightClient() {
           </select>
         </div>
 
-        <button
+        <Button
           onClick={() => { setFrom(nDaysAgoStr(7)); setTo(todayStr()); }}
           className="text-xs text-brand-600 hover:underline self-end pb-1.5"
         >
           Últimos 7 días
-        </button>
+        </Button>
       </div>
-
       {/* ── Error ───────────────────────────────────────────────────────── */}
       {error && (
         <div className="bg-error-50 border border-error-200 rounded-2xl p-4 text-error-700 text-sm">
           {error}{' '}
-          <button onClick={fetchData} className="underline hover:no-underline ml-1">
+          <Button onClick={fetchData} className="underline hover:no-underline ml-1">
             Reintentar
-          </button>
+          </Button>
         </div>
       )}
-
       {/* ── KPIs ────────────────────────────────────────────────────────── */}
       <section>
         <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Resumen</h2>
@@ -279,7 +279,6 @@ export function PreflightClient() {
           </div>
         ) : null}
       </section>
-
       {/* ── Alertas de over/under filtering ────────────────────────────── */}
       {!loading && data && data.stats.total > 0 && (
         <div>
@@ -303,7 +302,6 @@ export function PreflightClient() {
           )}
         </div>
       )}
-
       {/* ── Breakdown por reason ────────────────────────────────────────── */}
       <section>
         <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Breakdown por razón</h2>
@@ -360,7 +358,6 @@ export function PreflightClient() {
           <p className="text-[var(--hp-text-muted)] text-sm">No hay datos en este rango.</p>
         ) : null}
       </section>
-
       {/* ── Breakdown por fuente ────────────────────────────────────────── */}
       <section>
         <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">Por fuente (top 15)</h2>
@@ -423,7 +420,6 @@ export function PreflightClient() {
           </div>
         )}
       </section>
-
       {/* ── Tabla de filas ──────────────────────────────────────────────── */}
       <section>
         <h2 className="text-base font-semibold text-[var(--hp-text-primary)] mb-3">

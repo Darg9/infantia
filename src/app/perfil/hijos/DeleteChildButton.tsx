@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -16,12 +17,12 @@ export function DeleteChildButton({ id, name }: { id: string; name: string }) {
   }
 
   return (
-    <button
+    <Button
       onClick={handleDelete}
       disabled={loading}
       className="text-xs text-error-400 hover:text-error-600 transition-colors disabled:opacity-40"
     >
       {loading ? 'Eliminando...' : 'Eliminar'}
-    </button>
-  )
+    </Button>
+  );
 }

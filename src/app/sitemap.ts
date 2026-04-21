@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/contribuir`,         lastModified: new Date(), changeFrequency: 'monthly',  priority: 0.7 },
     { url: `${baseUrl}/privacidad`,         lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.5 },
     { url: `${baseUrl}/terminos`,           lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.5 },
-    { url: `${baseUrl}/tratamiento-datos`,  lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.5 },
+    { url: `${baseUrl}/seguridad/datos`,  lastModified: new Date(), changeFrequency: 'yearly',   priority: 0.5 },
   ];
 
   // ── Landings SEO de categoría ────────────────────────────────────────────────

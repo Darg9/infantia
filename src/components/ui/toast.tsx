@@ -25,7 +25,8 @@
  *   toast.show({ type: 'warning', text: 'Archivo grande', duration: 4000 })
  */
 
-'use client'
+'use client';
+import { Button } from "@/components/ui/button";
 
 import { createContext, useCallback, useContext, useReducer, useRef } from 'react'
 import { clsx } from 'clsx'
@@ -264,7 +265,7 @@ function ToastRegion({ items, onDismiss, onPause, onResume }: ToastRegionProps) 
                     {item.action.label}
                   </Link>
                 ) : (
-                  <button
+                  <Button
                     onClick={() => {
                       if (item.action?.onClick) item.action.onClick();
                       onDismiss(item.id);
@@ -272,13 +273,13 @@ function ToastRegion({ items, onDismiss, onPause, onResume }: ToastRegionProps) 
                     className="font-bold hover:opacity-80 transition-opacity"
                   >
                     {item.action.label}
-                  </button>
+                  </Button>
                 )}
               </div>
             )}
           </div>
 
-          <button
+          <Button
             onClick={() => onDismiss(item.id)}
             aria-label="Cerrar notificación"
             className="p-1 rounded-lg hover:bg-white/20 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-white ml-1"
@@ -286,9 +287,9 @@ function ToastRegion({ items, onDismiss, onPause, onResume }: ToastRegionProps) 
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
-          </button>
+          </Button>
         </div>
       ))}
     </div>
-  )
+  );
 }

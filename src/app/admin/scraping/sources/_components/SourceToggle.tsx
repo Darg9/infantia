@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Button } from "@/components/ui/button";
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -36,7 +37,7 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
   }
 
   return (
-    <button
+    <Button
       onClick={toggle}
       disabled={loading}
       title={active ? 'Desactivar fuente' : 'Activar fuente'}
@@ -52,6 +53,6 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
           ${active ? 'translate-x-6' : 'translate-x-1'}
         `}
       />
-    </button>
+    </Button>
   );
 }

@@ -22,10 +22,12 @@ export const listActivitiesSchema = z.object({
   ageMax: z.coerce.number().int().min(0).max(120).optional(),
   priceMin: z.coerce.number().min(0).optional(),
   priceMax: z.coerce.number().min(0).optional(),
+  price: z.enum(['free', 'paid']).optional(),
   status: ActivityStatus.optional(),
   type: ActivityType.optional(),
   audience: ActivityAudience.optional(),
   search: z.string().trim().min(1).max(200).optional(),
+  sortBy: z.enum(['relevance', 'date', 'price_asc', 'price_desc', 'newest']).optional(),
 }).refine(
   (data) => !(data.ageMin != null && data.ageMax != null && data.ageMin > data.ageMax),
   { message: 'ageMin must be <= ageMax', path: ['ageMin'] },

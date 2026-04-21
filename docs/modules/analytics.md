@@ -1,21 +1,52 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.12.0
-**Última actualización:** 20 de abril de 2026
+**Versión:** ✅ v0.13.0
+**Última actualización:** 21 de abril de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
 
 La meta de este módulo adherido al paradigma "Zero-Debt" es garantizar que la base analítica nunca añada latencia JavaScript en cliente, no cargue scripts asincrónos inyectados globalmente y evite los firewalls ad-blockers al ser considerado tráfico API _first-party_.
 
-## 📊 Diccionario de Eventos a Medir
+## 📦 Diccionario de Eventos (SSOT)
 
-El sistema es restringido. En vez de almacenar "todo", capta exclusivamente los 5 embudos funcionales que certifican la supervivencia o conversión de un producto:
+El archivo `src/lib/track.ts` es la única fuente válida para:
+- nombres de eventos
+- payloads
+- validaciones
+
+Cualquier evento nuevo debe declararse primero ahí para evitar fragmentación. El sistema capta exclusivamente el embudo de conversión:
 
 1. **`page_view`**: Medición clásica de carga de vista Next.js router.
-2. **`activity_view`**: Apertura del modal/detalle completo.
+2. **`activity_view`**: Navegación hacia la ruta canónica (`/actividades/[id]`). HabitaPlan utiliza páginas de detalle indexables (no modales) para SEO y shareability.
 3. **`activity_click`**: Clic a una tarjeta en un listado global.
-4. **`outbound_click`**: Clic al enlace externo que extrajimos para referir o vender hacia un proveedor (El norte comercial).
-5. **`search_applied`**: Registro estricto del input de texto de un usuario evaluando la pertinencia del NLP/Scraper frente a la demanda real local.
+4. **`outbound_click`**: Clic al enlace externo hacia un proveedor (Norte comercial).
+5. **`search_applied`**: Input textual de un usuario (para evaluar la pertinencia del NLP).
+
+6. **`filter_applied` [CRITICAL - NOT IMPLEMENTED]**:
+   - El sistema actualmente NO mide interacción con filtros facetados.
+   - Esto genera ceguera en navegación no textual.
+   - **Impacto**: No se puede entender intención real de exploración ni optimizar UX de filtros.
+   - **Prioridad**: HIGH (bloquea decisiones de producto).
+   - **Recomendación**: Instrumentar evento en cambios de categoría, rango de edad, precio, ubicación.
+
+## 👤 Identidad de Usuario (Tracking)
+
+- Todo evento de comportamiento debe incluir:
+  - `sessionId` (obligatorio para análisis de cohortes y retención).
+  - `userId` (opcional, si existe sesión autenticada).
+- Sin identificadores de sesión correlacionados, no es posible construir un funnel real de producto.
+
+## 🔀 Pipelines de Ingesta (SSOT)
+
+El sistema de Analytics opera sobre dos modelos de base de datos separados estructuralmente:
+
+- `Event` → Comportamiento del usuario (UX funnel).
+- `SearchLog` → Intención textual (queries de búsqueda).
+
+### Regla de separación
+- Eventos de UI van a `Event` (vía `POST /api/events`).
+- Consultas de texto van a `SearchLog` (vía `POST /api/search/log`).
+- **Nunca mezclar ambos modelos.** `SearchLog` NO es parte del funnel de conversión, es un subsistema de inteligencia de demanda e inventario.
 
 ## ⚙️ Arquitectura Técnica de Ingesta
 

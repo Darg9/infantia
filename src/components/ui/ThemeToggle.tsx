@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 'use client'
 
 // =============================================================================
@@ -16,7 +17,7 @@ export function ThemeToggle() {
   const isDark = theme === 'dark'
 
   return (
-    <button
+    <Button
       id="theme-toggle"
       onClick={toggleTheme}
       aria-label={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
@@ -32,8 +33,8 @@ export function ThemeToggle() {
       "
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
-    </button>
-  )
+    </Button>
+  );
 }
 
 // ── Ícono Luna (modo claro activo → ofrecer dark) ──────────────────────────

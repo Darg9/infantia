@@ -1,4 +1,6 @@
-'use client';
+'use client';;
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // Filters — cabecera de resultados de /actividades
@@ -489,14 +491,13 @@ export default function Filters({
 
   return (
     <div className="flex flex-col gap-3">
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* BUSCADOR prominente + dropdown                                   */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <div className="relative" ref={searchContainerRef}>
 
         {/* Lupa — clickeable, dispara búsqueda */}
-        <button
+        <Button
           type="button"
           onClick={handleSearchSubmit}
           aria-label="Buscar"
@@ -506,9 +507,9 @@ export default function Filters({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
           </svg>
-        </button>
+        </Button>
 
-        <input
+        <Input
           type="text"
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}
@@ -683,7 +684,6 @@ export default function Filters({
           </div>
         )}
       </div>
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CONTROLES DESKTOP                                               */}
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -765,22 +765,21 @@ export default function Filters({
             <span className="text-xs font-bold text-brand-700 bg-[var(--hp-bg-subtle)] px-2.5 py-1 rounded-full">
                {chips.length} activo{chips.length !== 1 ? 's' : ''}
             </span>
-            <button
+            <Button
               type="button"
               onClick={handleReset}
               className="text-sm text-[var(--hp-text-muted)] hover:text-brand-500 underline underline-offset-2 whitespace-nowrap transition-colors"
             >
               Limpiar filtros
-            </button>
+            </Button>
           </>
         )}
       </div>
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CONTROLES MOBILE                                                 */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <div className="flex sm:hidden gap-2">
-        <button
+        <Button
           type="button"
           onClick={openMobile}
           className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
@@ -798,18 +797,17 @@ export default function Filters({
               {chips.length}
             </span>
           )}
-        </button>
+        </Button>
         {hasFilters && (
-          <button
+          <Button
             type="button"
             onClick={handleReset}
             className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline underline-offset-2 transition-colors self-center"
           >
             Limpiar
-          </button>
+          </Button>
         )}
       </div>
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CHIPS activos (Ubicación → Categoría → Precio → Edad)           */}
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -821,19 +819,18 @@ export default function Filters({
               className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-[var(--hp-bg-subtle)] px-3 py-1 text-sm font-medium text-indigo-700"
             >
               {chip.label}
-              <button
+              <Button
                 type="button"
                 onClick={chip.onRemove}
                 aria-label={`Quitar filtro ${chip.label}`}
                 className="ml-0.5 text-indigo-400 hover:text-indigo-700 transition-colors leading-none"
               >
                 ✕
-              </button>
+              </Button>
             </span>
           ))}
         </div>
       )}
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CONTEO de resultados                                             */}
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -847,10 +844,10 @@ export default function Filters({
           <span className="text-[var(--hp-text-secondary)]">
             No hay actividades con estos filtros.{' '}
             {hasFilters && (
-              <button type="button" onClick={handleReset}
+              <Button type="button" onClick={handleReset}
                 className="text-indigo-600 hover:underline font-medium">
                 Limpiar filtros
-              </button>
+              </Button>
             )}
           </span>
         ) : (
@@ -860,7 +857,6 @@ export default function Filters({
           </span>
         )}
       </p>
-
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* MODAL MOBILE                                                     */}
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -870,10 +866,10 @@ export default function Filters({
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hp-border)]">
             <h2 className="text-base font-bold text-[var(--hp-text-primary)]">Filtros</h2>
-            <button type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
+            <Button type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
               className="text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center">
               ✕
-            </button>
+            </Button>
           </div>
 
           {/* Contenido */}
@@ -917,14 +913,14 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
               <div className="grid grid-cols-2 gap-2">
                 {AGE_OPTIONS.map((o, i) => (
-                  <button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
+                  <Button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
                     className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                       mobileAgeIdx === i
                         ? 'border-indigo-500 bg-indigo-600 text-white'
                         : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-indigo-300'
                     }`}>
                     {o.label}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -933,7 +929,7 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ordenar por</label>
               <div className="flex flex-col gap-2">
                 {SORT_OPTIONS.map(o => (
-                  <button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
+                  <Button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
                       mobileSort === o.value
                         ? 'border-indigo-500 bg-[var(--hp-bg-subtle)] text-indigo-700'
@@ -941,7 +937,7 @@ export default function Filters({
                     }`}>
                     {o.label}
                     {mobileSort === o.value && <span className="float-right text-indigo-500">✓</span>}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -949,14 +945,14 @@ export default function Filters({
 
           {/* Footer */}
           <div className="border-t border-[var(--hp-border)] px-5 py-4 flex gap-3 bg-[var(--hp-bg-surface)]">
-            <button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
+            <Button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
               className="flex-1 rounded-xl border border-[var(--hp-border)] py-3 text-sm font-medium text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Limpiar
-            </button>
-            <button type="button" onClick={applyMobile}
+            </Button>
+            <Button type="button" onClick={applyMobile}
               className="flex-[2] rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
               Aplicar filtros
-            </button>
+            </Button>
           </div>
         </div>
       )}

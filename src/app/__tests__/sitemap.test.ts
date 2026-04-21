@@ -53,7 +53,7 @@ describe('sitemap()', () => {
     const urls = result.map(r => r.url);
     expect(urls).toContain(`${SITE_URL}/privacidad`);
     expect(urls).toContain(`${SITE_URL}/terminos`);
-    expect(urls).toContain(`${SITE_URL}/tratamiento-datos`);
+    expect(urls).toContain(`${SITE_URL}/seguridad/datos`);
   });
 
   it('incluye rutas dinámicas de actividades', async () => {

@@ -94,7 +94,6 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen bg-[var(--hp-bg-page)]">
-
       {/* ================================================================ */}
       {/* HERO                                                              */}
       {/* ================================================================ */}
@@ -126,7 +125,6 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
-
       {/* ================================================================ */}
       {/* CATEGORÍAS DESTACADAS                                            */}
       {/* ================================================================ */}
@@ -158,7 +156,6 @@ export default async function HomePage() {
           </div>
         </section>
       )}
-
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
@@ -187,7 +184,7 @@ export default async function HomePage() {
             </>
           ) : (
             /* Empty state: no hay ninguna actividad disponible */
-            <div className="text-center py-8">
+            (<div className="text-center py-8">
               <p className="text-lg font-semibold text-[var(--hp-text-primary)] mb-1">
                 No hay actividades nuevas por ahora
               </p>
@@ -200,11 +197,10 @@ export default async function HomePage() {
               >
                 Ver más actividades →
               </Link>
-            </div>
+            </div>)
           )}
         </div>
       </section>
-
       {/* ================================================================ */}
       {/* CTA FINAL                                                        */}
       {/* ================================================================ */}
@@ -224,7 +220,6 @@ export default async function HomePage() {
           </Link>
         </div>
       </section>
-
     </div>
   );
 }

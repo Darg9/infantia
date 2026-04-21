@@ -59,7 +59,6 @@ export default async function PerfilPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-
       {/* ── Header del perfil ──────────────────────────────────────────────
           Estructura: Avatar + datos | CTA "Editar perfil"
           El botón está visible sin scroll y es el único CTA principal.
@@ -122,7 +121,6 @@ export default async function PerfilPage() {
           </Link>
         </div>
       </div>
-
       {/* ── KPIs ───────────────────────────────────────────────────────────
           Empty state cuando count = 0: texto descriptivo + CTA secundario.
           No muestra "0" — muestra intención y siguiente paso.
@@ -131,7 +129,7 @@ export default async function PerfilPage() {
         {stats.map((stat) =>
           stat.count > 0 ? (
             // Estado con datos — clic navega a la sección
-            <Link
+            (<Link
               key={stat.href}
               href={stat.href}
               className="
@@ -150,10 +148,10 @@ export default async function PerfilPage() {
               <p className="text-sm text-[var(--hp-text-secondary)] group-hover:text-[var(--hp-text-primary)] transition-colors">
                 {stat.label}
               </p>
-            </Link>
+            </Link>)
           ) : (
             // Empty state — texto + CTA para explorar
-            <div
+            (<div
               key={stat.href}
               className="
                 bg-[var(--hp-bg-subtle)] border border-dashed border-[var(--hp-border)]
@@ -173,12 +171,12 @@ export default async function PerfilPage() {
                   Explorar actividades →
                 </Link>
               )}
-            </div>
+            </div>)
           )
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // ── Ícono de edición (SVG inline, 0 deps) ────────────────────────────────────

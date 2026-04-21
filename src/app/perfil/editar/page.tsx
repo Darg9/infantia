@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -134,7 +136,7 @@ function InputField({
         )}
       </label>
       <div className="relative">
-        <input
+        <Input
           id={id}
           type={type}
           value={value}
@@ -169,7 +171,7 @@ function InputField({
         </p>
       )}
     </div>
-  )
+  );
 }
 
 // ─── Page ──────────────────────────────────────────────────────────────────────
@@ -437,7 +439,6 @@ export default function EditarPerfilPage() {
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
-
       {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[var(--hp-text-primary)] dark:text-white">
@@ -447,7 +448,6 @@ export default function EditarPerfilPage() {
           Actualizá tu información personal y contraseña
         </p>
       </div>
-
       {/* ══════════════════════════════════════════════════════════════
           Sección 1 — Información básica
       ══════════════════════════════════════════════════════════════ */}
@@ -510,7 +510,7 @@ export default function EditarPerfilPage() {
                 </div>
               ) : (
                 /* Hover overlay — cámara + texto */
-                <div
+                (<div
                   className="absolute inset-0 rounded-full bg-black/50 opacity-0
                                group-hover/avatar:opacity-100 transition-opacity
                                flex flex-col items-center justify-center gap-1
@@ -521,7 +521,7 @@ export default function EditarPerfilPage() {
                   <span className="text-white text-[10px] font-semibold leading-none">
                     Cambiar
                   </span>
-                </div>
+                </div>)
               )}
             </div>
 
@@ -550,18 +550,18 @@ export default function EditarPerfilPage() {
                   <ExclamationIcon className="w-3 h-3 shrink-0" />
                   {avatarUploadError}
                   {/* Retry dispara el submit del form para reintentar upload + save */}
-                  <button
+                  <Button
                     type="submit"
                     className="ml-1 underline underline-offset-2 font-medium hover:no-underline"
                   >
                     Reintentar
-                  </button>
+                  </Button>
                 </p>
               )}
             </div>
 
             {/* Input file oculto — tabIndex=-1, aria-hidden: accesible solo via div[role=button] */}
-            <input
+            <Input
               ref={fileInputRef}
               id="avatar-input"
               type="file"
@@ -598,7 +598,7 @@ export default function EditarPerfilPage() {
                 Cambios guardados
               </span>
             )}
-            <button
+            <Button
               type="submit"
               disabled={!isDirty || basicLoading || !nameLoaded}
               aria-busy={basicLoading}
@@ -616,11 +616,10 @@ export default function EditarPerfilPage() {
               ) : (
                 'Guardar cambios'
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </section>
-
       {/* ══════════════════════════════════════════════════════════════
           Sección 2 — Seguridad
       ══════════════════════════════════════════════════════════════ */}
@@ -658,7 +657,7 @@ export default function EditarPerfilPage() {
               required
               autoComplete="new-password"
               rightSlot={
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowNew((v) => !v)}
                   className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
@@ -670,7 +669,7 @@ export default function EditarPerfilPage() {
                   ) : (
                     <EyeIcon className="w-4 h-4" />
                   )}
-                </button>
+                </Button>
               }
             />
 
@@ -738,7 +737,7 @@ export default function EditarPerfilPage() {
               required
               autoComplete="new-password"
               rightSlot={
-                <button
+                <Button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
                   className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
@@ -750,7 +749,7 @@ export default function EditarPerfilPage() {
                   ) : (
                     <EyeIcon className="w-4 h-4" />
                   )}
-                </button>
+                </Button>
               }
             />
 
@@ -780,7 +779,7 @@ export default function EditarPerfilPage() {
                 Contraseña actualizada
               </span>
             )}
-            <button
+            <Button
               type="submit"
               disabled={passLoading || !newPassword || !confirmPassword}
               aria-busy={passLoading}
@@ -801,10 +800,10 @@ export default function EditarPerfilPage() {
               ) : (
                 'Actualizar contraseña'
               )}
-            </button>
+            </Button>
           </div>
         </form>
       </section>
     </div>
-  )
+  );
 }

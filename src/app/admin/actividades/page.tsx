@@ -1,4 +1,5 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -90,10 +91,9 @@ export default function AdminActividadesPage() {
           <p className="text-sm text-[var(--hp-text-secondary)]">{total} actividades en total</p>
         </div>
       </div>
-
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 mb-5">
-        <input
+        <Input
           type="text"
           placeholder="Buscar por título..."
           value={search}
@@ -112,7 +112,6 @@ export default function AdminActividadesPage() {
           <option value="EXPIRED">Expiradas</option>
         </select>
       </div>
-
       {/* Tabla */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
         {loading ? (
@@ -185,7 +184,6 @@ export default function AdminActividadesPage() {
           </table>
         )}
       </div>
-
       {/* Paginación */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-5">
@@ -211,5 +209,5 @@ export default function AdminActividadesPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -111,12 +113,10 @@ export default function EditarActividadPage() {
         <span>›</span>
         <span className="text-[var(--hp-text-primary)] font-medium">Editar</span>
       </nav>
-
       <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-1">Editar actividad</h1>
       {activity.provider && (
         <p className="text-sm text-[var(--hp-text-muted)] mb-6">Proveedor: {activity.provider.name}</p>
       )}
-
       {msg && (
         <div className={`text-sm px-4 py-3 rounded-xl mb-5 ${
           msg.type === 'success'
@@ -125,22 +125,21 @@ export default function EditarActividadPage() {
         }`}>
           {msg.text}
           {msg.type === 'success' && (
-            <button
+            <Button
               onClick={() => router.push('/admin/actividades')}
               className="ml-3 underline text-success-700"
             >
               Volver a la lista
-            </button>
+            </Button>
           )}
         </div>
       )}
-
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 space-y-5">
 
         {/* Título */}
         <div>
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Título</label>
-          <input
+          <Input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -193,7 +192,7 @@ export default function EditarActividadPage() {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Precio (COP)</label>
-            <input
+            <Input
               type="number"
               min="0"
               value={price}
@@ -204,7 +203,7 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad mín.</label>
-            <input
+            <Input
               type="number"
               min="0"
               max="120"
@@ -215,7 +214,7 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad máx.</label>
-            <input
+            <Input
               type="number"
               min="0"
               max="120"
@@ -243,16 +242,15 @@ export default function EditarActividadPage() {
           )}
         </div>
       </div>
-
       {/* Botones */}
       <div className="flex items-center gap-3 mt-5">
-        <button
+        <Button
           onClick={save}
           disabled={saving}
           className="px-6 py-2.5 bg-brand-500 text-white rounded-xl text-sm font-medium hover:bg-brand-600 disabled:opacity-50 transition-colors"
         >
           {saving ? 'Guardando...' : 'Guardar cambios'}
-        </button>
+        </Button>
         <Link
           href="/admin/actividades"
           className="px-6 py-2.5 border border-[var(--hp-border)] text-gray-600 rounded-xl text-sm hover:border-gray-300 transition-colors"
@@ -268,5 +266,5 @@ export default function EditarActividadPage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

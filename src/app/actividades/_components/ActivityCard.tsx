@@ -121,12 +121,12 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
       >
         {activity.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img
+          (<img
             src={activity.imageUrl}
             alt={activity.title}
             className="h-full w-full object-cover"
             loading="lazy"
-          />
+          />)
         ) : (
           <span className="text-4xl select-none drop-shadow-sm">{categoryEmoji}</span>
         )}

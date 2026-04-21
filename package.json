@@ -20,7 +20,8 @@
     "schema:check": "tsx scripts/check-schema.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "chromatic": "chromatic"
+    "chromatic": "chromatic",
+    "prepare": "husky install"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -78,7 +79,9 @@
     "docx": "^9.6.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "husky": "^8.0.0",
     "jsdom": "^29.0.1",
+    "lint-staged": "^16.4.0",
     "node-fetch": "^3.3.2",
     "storybook": "^8.6.18",
     "storybook-addon-pseudo-states": "^3.1.1",
@@ -87,5 +90,10 @@
     "typescript": "^5",
     "vite": "^6.4.2",
     "vitest": "^4.1.0"
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
   }
 }

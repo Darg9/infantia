@@ -1,4 +1,5 @@
-'use client';
+'use client';;
+import { Button } from "@/components/ui/button";
 // =============================================================================
 // ViewToggle — alterna entre vista Lista y Mapa en /actividades
 // =============================================================================
@@ -28,12 +29,12 @@ export function ViewToggle({ view }: Props) {
 
   return (
     <div className="flex items-center gap-1 rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-1 shadow-sm">
-      <button onClick={() => setView('list')} className={view === 'list' ? active : inactive}>
+      <Button onClick={() => setView('list')} className={view === 'list' ? active : inactive}>
         📋 Lista
-      </button>
-      <button onClick={() => setView('map')} className={view === 'map' ? active : inactive}>
+      </Button>
+      <Button onClick={() => setView('map')} className={view === 'map' ? active : inactive}>
         🗺 Mapa
-      </button>
+      </Button>
     </div>
   );
 }

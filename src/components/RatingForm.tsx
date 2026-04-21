@@ -1,4 +1,6 @@
-'use client'
+'use client';
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -74,35 +76,34 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
-
       {/* Panel */}
       <div className="relative w-full max-w-sm bg-[var(--hp-bg-surface)] rounded-2xl shadow-xl p-6 flex flex-col gap-4">
 
         {/* Cerrar */}
-        <button
+        <Button
           onClick={onClose}
           className="absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-gray-600 transition-colors"
           aria-label="Cerrar"
         >
           ✕
-        </button>
+        </Button>
 
         {registered ? (
           /* Estado: registro exitoso, confirmar correo */
-          <div className="text-center py-2">
+          (<div className="text-center py-2">
             <span className="text-3xl mb-3 block">📬</span>
             <h2 className="font-bold text-[var(--hp-text-primary)] text-lg mb-1">Revisa tu correo</h2>
             <p className="text-sm text-[var(--hp-text-secondary)]">
               Te enviamos un enlace de confirmación a <strong>{email}</strong>.
               Una vez confirmado, vuelve aquí para enviar tu calificación.
             </p>
-            <button
+            <Button
               onClick={onClose}
               className="mt-4 text-sm text-brand-600 hover:underline font-medium"
             >
               Entendido
-            </button>
-          </div>
+            </Button>
+          </div>)
         ) : (
           <>
             {/* Encabezado */}
@@ -119,7 +120,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
 
             {/* Formulario */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              <input
+              <Input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -127,7 +128,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 placeholder="tu@correo.com"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               />
-              <input
+              <Input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -143,7 +144,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 </p>
               )}
 
-              <button
+              <Button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
@@ -153,28 +154,28 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                   : mode === 'login'
                   ? 'Ingresar y enviar calificación'
                   : 'Crear cuenta'}
-              </button>
+              </Button>
             </form>
 
             {/* Toggle login/registro */}
             <p className="text-center text-xs text-[var(--hp-text-secondary)]">
               {mode === 'login' ? (
                 <>¿No tienes cuenta?{' '}
-                  <button
+                  <Button
                     onClick={() => { setMode('register'); setError(null) }}
                     className="text-brand-600 font-medium hover:underline"
                   >
                     Regístrate
-                  </button>
+                  </Button>
                 </>
               ) : (
                 <>¿Ya tienes cuenta?{' '}
-                  <button
+                  <Button
                     onClick={() => { setMode('login'); setError(null) }}
                     className="text-brand-600 font-medium hover:underline"
                   >
                     Inicia sesión
-                  </button>
+                  </Button>
                 </>
               )}
             </p>
@@ -182,7 +183,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
         )}
       </div>
     </div>
-  )
+  );
 }
 
 // ── Formulario principal ──────────────────────────────────────────────────────
@@ -250,7 +251,6 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
           onClose={() => setShowModal(false)}
         />
       )}
-
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
         {/* Paso 1 — Estrellas */}
@@ -297,7 +297,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         )}
 
         {/* Paso 3 — Botón siempre visible, activo solo con estrella */}
-        <button
+        <Button
           type="submit"
           disabled={loading || score === 0}
           className="self-start bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-[var(--hp-text-muted)] disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
@@ -307,7 +307,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
             : isExisting
             ? 'Actualizar calificación'
             : 'Enviar calificación'}
-        </button>
+        </Button>
 
         {/* Microcopy para usuarios no autenticados */}
         {!isAuthenticated && score === 0 && (
@@ -322,5 +322,5 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         )}
       </form>
     </>
-  )
+  );
 }

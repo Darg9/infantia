@@ -4,7 +4,7 @@ import { DATA_TREATMENT_SECTIONS, DATA_TREATMENT_SUMMARY, DATA_TREATMENT_META } 
 
 // =============================================================================
 // DataTreatmentContent — Fuente de verdad para el Tratamiento de Datos
-// Usado en: /tratamiento-datos y /seguridad/datos
+// Usado en: /seguridad/datos
 // =============================================================================
 
 export function DataTreatmentContent() {

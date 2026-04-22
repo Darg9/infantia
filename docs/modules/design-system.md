@@ -41,6 +41,35 @@ Todo asset de marca (logo, isologo, isotipo) debe pasar validación automatizada
 
 Estas directrices previenen assets defectuosos, asegurando la consistencia limpia sobre múltiples temas (`light`, `dark` y *high-contrast*). No se confía en inputs externos: ni humanos, ni de Inteligencia Artificial. Todo asset es verificado programáticamente.
 
+## 🌓 Asset Theming (Light / Dark Mode)
+
+HabitaPlan utiliza dos variantes oficiales del logo según el contexto visual para garantizar accesibilidad y legibilidad máxima.
+
+### Variantes
+- `/logo.svg` → Uso exclusivo en fondos claros.
+- `/logo-dark.svg` → Uso exclusivo en fondos oscuros.
+
+### Reglas de Implementación
+- El logo **nunca se modifica dinámicamente** mediante CSS (nada de filtros, ni opacidad, ni `invert()`).
+- La adaptación al modo oscuro se realiza **únicamente por reemplazo físico de asset**.
+- La única diferencia formal permitida entre los SVGs es el color del texto de la palabra "Habita":
+  - Light Mode: Azul Navy (`#0F1D38`)
+  - Dark Mode: Blanco Puro (`#FFFFFF`)
+- El color acento de la palabra "Plan" (`#F57321`) y la composición base del isotipo **nunca cambian**.
+
+### Implementación Obligatoria
+
+```tsx
+<img src="/logo.svg" className="dark:hidden" />
+<img src="/logo-dark.svg" className="hidden dark:block" />
+```
+
+### Prohibiciones
+- ❌ Usar un solo logo estático para ambos modos (afecta la legibilidad en Dark Mode).
+- ❌ Aplicar filtros CSS (`invert`, `brightness`, etc.) para simular el modo oscuro.
+- ❌ Cambiar colores fuera de la paleta permitida.
+- ❌ Alterar las proporciones, *viewBox* o layout interno del logo entre ambas versiones.
+
 ## 🧱 Uso de Primitivos
 
 - ❌ No usar `<button>` nativo

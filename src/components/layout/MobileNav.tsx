@@ -176,6 +176,7 @@ function MobileThemeToggle() {
 
   return (
     <Button
+      variant="ghost"
       onClick={toggle}
       aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
@@ -448,29 +449,19 @@ function MobileHeader({
       aria-label="Cabecera móvil"
       className="sticky top-0 z-30 bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] transition-colors duration-[var(--hp-transition)]"
     >
-      <div className="relative flex items-center justify-between px-3 h-14">
-        {/* Left: hamburger */}
-        <Button
-          onClick={onOpenDrawer}
-          aria-label="Abrir menú de navegación"
-          aria-haspopup="dialog"
-          className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
-        >
-          <Icon icon={Menu} size="lg" />
-        </Button>
-
-        {/* Center: logo */}
+      <div className="flex items-center justify-between px-4 h-14">
+        {/* Left: logo */}
         <Link
           href="/"
           aria-label="HabitaPlan — Inicio"
-          className="absolute left-1/2 -translate-x-1/2 flex items-center"
+          className="flex items-center"
         >
           <Image
             src="/logo.svg"
             alt="HabitaPlan"
             width={140}
             height={36}
-            className="h-8 w-auto object-contain dark:hidden"
+            className="h-8 md:h-10 w-auto object-contain dark:hidden"
             priority
           />
           <Image
@@ -478,13 +469,24 @@ function MobileHeader({
             alt="HabitaPlan"
             width={140}
             height={36}
-            className="h-8 w-auto object-contain hidden dark:block"
+            className="h-8 md:h-10 w-auto object-contain hidden dark:block"
             priority
           />
         </Link>
 
-        {/* Right: theme toggle */}
-        <MobileThemeToggle />
+        {/* Right: theme & hamburger */}
+        <div className="flex items-center gap-2">
+          <MobileThemeToggle />
+          <Button
+            variant="ghost"
+            onClick={onOpenDrawer}
+            aria-label="Abrir menú de navegación"
+            aria-haspopup="dialog"
+            className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+          >
+            <Icon icon={Menu} size="lg" />
+          </Button>
+        </div>
       </div>
     </header>
   );

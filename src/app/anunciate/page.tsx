@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { prisma } from '@/lib/db';
 
 export const metadata: Metadata = {
   title: 'Anúnciate en HabitaPlan — Llega a familias en Bogotá',
@@ -8,49 +9,19 @@ export const metadata: Metadata = {
 
 const CONTACT_EMAIL = 'info@habitaplan.com';
 
-const STATS = [
-  { label: 'Actividades indexadas', value: '260+' },
-  { label: 'Fuentes activas', value: '14' },
-  { label: 'Ciudades cubiertas', value: '10' },
-  { label: 'Tasa apertura email', value: '~35%' },
-];
+export default async function AnunciatePage() {
+  const [totalActivities, activeSources, activeCities] = await Promise.all([
+    prisma.activity.count({ where: { status: 'ACTIVE' } }),
+    prisma.scrapingSource.count({ where: { isActive: true } }),
+    prisma.city.count({ where: { isActive: true } }),
+  ]);
 
-const OPTIONS = [
-  {
-    id: 'newsletter',
-    badge: 'Disponible mes 6',
-    title: 'Patrocinio de Newsletter',
-    price: 'COP 200.000 – 500.000 / edición',
-    description:
-      'Tu marca aparece en el digest semanal que enviamos a familias suscritas. Incluye logo, tagline y enlace con UTM tracking para medir clicks reales.',
-    items: [
-      'Bloque destacado en el email semanal',
-      'Logo + tagline + link a tu sitio',
-      'UTM tracking — sabrás exactamente cuántos clicks recibiste',
-      'Mención en redes sociales de HabitaPlan',
-    ],
-    cta: 'Reservar lugar en lista de espera',
-    subject: 'Quiero patrocinar el newsletter de HabitaPlan',
-  },
-  {
-    id: 'listing',
-    badge: 'Disponible mes 9',
-    title: 'Listing Destacado',
-    price: 'COP 150.000 – 300.000 / mes',
-    description:
-      'Tus actividades aparecen primero en los resultados de búsqueda con un badge "Destacado" en color dorado. Máxima visibilidad para padres que buscan activamente.',
-    items: [
-      'Badge ⭐ Destacado en todas tus tarjetas',
-      'Posición preferente en búsqueda y filtros',
-      'Perfil de proveedor verificado y reclamado',
-      'Métricas de vistas e interacciones',
-    ],
-    cta: 'Reservar mi lugar destacado',
-    subject: 'Quiero un listing destacado en HabitaPlan',
-  },
-];
+  const stats = [
+    { label: 'Actividades indexadas', value: `${totalActivities}+` },
+    { label: 'Fuentes activas', value: activeSources.toString() },
+    { label: 'Ciudades cubiertas', value: activeCities.toString() },
+  ];
 
-export default function AnunciatePage() {
   return (
     <main className="min-h-screen bg-[var(--hp-bg-page)]">
       {/* Hero */}
@@ -71,8 +42,8 @@ export default function AnunciatePage() {
 
       {/* Stats */}
       <section className="bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] py-10 px-4">
-        <div className="max-w-4xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          {STATS.map((s) => (
+        <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          {stats.map((s) => (
             <div key={s.label}>
               <p className="text-3xl font-bold text-indigo-700">{s.value}</p>
               <p className="text-sm text-[var(--hp-text-secondary)] mt-1">{s.label}</p>
@@ -81,41 +52,6 @@ export default function AnunciatePage() {
         </div>
       </section>
 
-      {/* Opciones */}
-      <section className="max-w-5xl mx-auto px-4 py-16">
-        <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] text-center mb-10">
-          Elige cómo aparecer en HabitaPlan
-        </h2>
-        <div className="grid md:grid-cols-2 gap-8">
-          {OPTIONS.map((opt) => (
-            <div
-              key={opt.id}
-              className="bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] shadow-sm p-8 flex flex-col"
-            >
-              <span className="inline-block rounded-full bg-warning-100 text-warning-800 text-xs font-semibold px-3 py-1 mb-4 w-fit">
-                {opt.badge}
-              </span>
-              <h3 className="text-xl font-bold text-[var(--hp-text-primary)] mb-1">{opt.title}</h3>
-              <p className="text-indigo-700 font-semibold text-sm mb-4">{opt.price}</p>
-              <p className="text-gray-600 text-sm leading-relaxed mb-6">{opt.description}</p>
-              <ul className="space-y-2 mb-8 flex-1">
-                {opt.items.map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-sm text-[var(--hp-text-primary)]">
-                    <span className="text-emerald-500 mt-0.5 flex-shrink-0">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-              <a
-                href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(opt.subject)}`}
-                className="block text-center rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 transition-colors"
-              >
-                {opt.cta}
-              </a>
-            </div>
-          ))}
-        </div>
-      </section>
 
       {/* Contacto directo */}
       <section className="bg-[var(--hp-bg-subtle)] border-t border-indigo-100 py-14 px-4 text-center">

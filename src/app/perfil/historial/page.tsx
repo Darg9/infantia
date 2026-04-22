@@ -1,9 +1,35 @@
 'use client';
+// =============================================================================
+// /perfil/historial — Historial de actividades vistas (localStorage)
+//
+// PATRÓN MOUNTED: Durante SSR renderiza vacío → sin hydration mismatch.
+// Después del mount, lee localStorage. Esto evita conflictos con React 19.
+// =============================================================================
 
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
-import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { activityPath } from '@/lib/activity-url';
+
+const STORAGE_KEY = 'habitaplan:activity-history';
+
+interface HistoryEntry {
+  activityId: string;
+  title: string;
+  imageUrl: string | null;
+  viewedAt: string;
+}
+
+function readHistory(): HistoryEntry[] {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -21,7 +47,50 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function HistorialPage() {
-  const { history, clearHistory } = useActivityHistory();
+  // ── Patrón mounted: evita hydration mismatch en React 19 ─────────────────
+  // SSR → mounted=false → renderiza vacío (sin acceso a localStorage)
+  // Client → mounted=true → lee localStorage y muestra el historial real
+  const [mounted, setMounted] = useState(false);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+
+  useEffect(() => {
+    setHistory(readHistory());
+    setMounted(true);
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Storage no disponible
+    }
+    setHistory([]);
+  }, []);
+
+  // ── Skeleton durante SSR y primer render ─────────────────────────────────
+  if (!mounted) {
+    return (
+      <div className="max-w-3xl mx-auto px-4 py-8">
+        <div className="flex items-center gap-3 mb-6">
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Historial</h1>
+        </div>
+        <div className="space-y-2">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="flex items-center gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-3 animate-pulse"
+            >
+              <div className="w-12 h-12 rounded-xl bg-[var(--hp-bg-subtle)] shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-3 bg-[var(--hp-bg-subtle)] rounded w-3/4" />
+                <div className="h-3 bg-[var(--hp-bg-subtle)] rounded w-1/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -39,7 +108,6 @@ export default function HistorialPage() {
             variant="ghost"
             size="sm"
             onClick={clearHistory}
-            className="text-xs text-[var(--hp-text-muted)] hover:text-error-500 transition-colors"
           >
             Borrar historial
           </Button>

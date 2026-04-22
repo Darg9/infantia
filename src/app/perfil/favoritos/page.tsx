@@ -60,7 +60,8 @@ export default async function FavoritosPage() {
           categories: {
             select: { category: { select: { id: true, name: true, slug: true } } },
           },
-          _count: { select: { views: true } },
+          // _count NO se puede usar en select anidado en Prisma 7;
+          // se omite y se defaultea a 0 en el mapper (campo opcional en ActivityCard)
         },
       },
       // ── Lugar favorito ──
@@ -153,7 +154,7 @@ export default async function FavoritosPage() {
           provider: act.provider,
           location: act.location,
           categories: act.categories,
-          _count: act._count,
+          _count: { views: 0 },
         },
       });
     } else if (f.location) {

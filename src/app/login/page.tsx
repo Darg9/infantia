@@ -21,11 +21,20 @@ function LoginForm() {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent'>('idle')
+  const [cooldown, setCooldown] = useState(0)
   const [isApple, setIsApple] = useState(false)
 
   useEffect(() => {
     setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
   }, [])
+
+  useEffect(() => {
+    if (cooldown <= 0) return
+    const t = setTimeout(() => setCooldown(c => c - 1), 1000)
+    return () => clearTimeout(t)
+  }, [cooldown])
+
+  const startCooldown = () => setCooldown(60)
 
   const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
@@ -66,6 +75,7 @@ function LoginForm() {
 
     logger.info('Magic Link enviado', { action: 'magic_link', result: 'success' })
     setStatus('sent')
+    startCooldown()
   }
 
   const handleEmailPassword = async (e: React.FormEvent) => {
@@ -160,16 +170,37 @@ function LoginForm() {
           <div className="text-4xl">📧</div>
           <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo-e</p>
           <p className="text-[var(--hp-text-secondary)] text-sm">
-            Enviamos un enlace de acceso a <strong>{email}</strong>.<br />
-            Haz clic en él para entrar automáticamente.
+            Enviamos un enlace a <strong>{email}</strong>.<br />
+            Haz clic en él para entrar. Puede tardar unos segundos.
           </p>
+          {/* Email editable por si se equivocó */}
           <button
             type="button"
             onClick={() => { setStatus('idle'); setError(null) }}
-            className="text-sm text-brand-600 hover:underline"
+            className="text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] underline"
           >
-            Reenviar enlace
+            Cambiar correo
           </button>
+          <div className="pt-2">
+            {cooldown > 0 ? (
+              <p className="text-xs text-[var(--hp-text-muted)]">Reenviar en {cooldown}s</p>
+            ) : (
+              <button
+                type="button"
+                onClick={async () => {
+                  const supabase = createSupabaseBrowserClient()
+                  await supabase.auth.signInWithOtp({
+                    email,
+                    options: { emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}` }
+                  })
+                  startCooldown()
+                }}
+                className="text-sm text-brand-600 hover:underline"
+              >
+                Reenviar enlace
+              </button>
+            )}
+          </div>
         </div>
       ) : !showPassword ? (
         /* Magic Link (primario) */
@@ -192,7 +223,7 @@ function LoginForm() {
             loading={status === 'loading'}
             className="w-full"
           >
-            {status === 'loading' ? 'Enviando...' : 'Recibir enlace para entrar'}
+            {status === 'loading' ? 'Enviando...' : 'Enviar enlace por correo-e para entrar'}
           </Button>
           <button
             type="button"

@@ -9,7 +9,6 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('Auth')
 
-// Feature flag — activar cuando tengamos proveedor SMS configurado
 const ENABLE_PHONE_OTP = process.env.NEXT_PUBLIC_ENABLE_PHONE_OTP === 'true'
 
 function LoginForm() {
@@ -20,7 +19,8 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [authMode, setAuthMode] = useState<'options' | 'email' | 'email-password' | 'magic-sent'>('options')
+  const [showPassword, setShowPassword] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'loading' | 'sent'>('idle')
   const [isApple, setIsApple] = useState(false)
 
   useEffect(() => {
@@ -29,6 +29,7 @@ function LoginForm() {
 
   const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
+    setError(null)
     const supabase = createSupabaseBrowserClient()
     const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
@@ -36,7 +37,6 @@ function LoginForm() {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
       }
     })
-
     if (authError) {
       logger.error('Error OAuth', { action: 'oauth', provider, reason: authError.message })
       setError(authError.message)
@@ -47,7 +47,7 @@ function LoginForm() {
   const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
-    setLoading(true)
+    setStatus('loading')
 
     const supabase = createSupabaseBrowserClient()
     const { error: authError } = await supabase.auth.signInWithOtp({
@@ -60,13 +60,12 @@ function LoginForm() {
     if (authError) {
       logger.error('Error Magic Link', { action: 'magic_link', reason: authError.message })
       setError(authError.message)
-      setLoading(false)
+      setStatus('idle')
       return
     }
 
     logger.info('Magic Link enviado', { action: 'magic_link', result: 'success' })
-    setAuthMode('magic-sent')
-    setLoading(false)
+    setStatus('sent')
   }
 
   const handleEmailPassword = async (e: React.FormEvent) => {
@@ -99,151 +98,140 @@ function LoginForm() {
         </p>
       )}
 
-      {/* OPCIONES PRINCIPALES */}
-      {authMode === 'options' && (
-        <div className="space-y-3">
-          <Button
-            variant="secondary"
-            className="w-full justify-center gap-2"
-            onClick={() => handleOAuth('google')}
-            disabled={loading}
-          >
-            Continuar con Google
-          </Button>
+      {/* SSO — Siempre visible */}
+      <div className="space-y-3 mb-6">
+        <Button
+          variant="secondary"
+          className="w-full justify-center gap-2"
+          onClick={() => handleOAuth('google')}
+          disabled={loading || status === 'loading'}
+        >
+          Continuar con Google
+        </Button>
 
-          <Button
-            variant="secondary"
-            className="w-full justify-center gap-2"
-            onClick={() => setAuthMode('email')}
-          >
-            Continuar con Correo-e
-          </Button>
-
-          {ENABLE_PHONE_OTP && (
-            <Button
-              variant="ghost"
-              className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
-              onClick={() => setAuthMode('options')} // placeholder
-            >
-              Continuar con Teléfono
-            </Button>
-          )}
-
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[var(--hp-border)]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">Más opciones</span>
-            </div>
-          </div>
-
+        {ENABLE_PHONE_OTP && (
           <Button
             variant="ghost"
             className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
-            onClick={() => handleOAuth('facebook')}
+            disabled
           >
-            Continuar con Facebook
+            Continuar con Teléfono
+          </Button>
+        )}
+
+        {/* Más opciones colapsadas */}
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="flex-1 justify-center text-[var(--hp-text-muted)]"
+            onClick={() => handleOAuth('facebook')}
+            disabled={loading || status === 'loading'}
+          >
+            Facebook
           </Button>
           {isApple && (
             <Button
               variant="ghost"
-              className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
+              size="sm"
+              className="flex-1 justify-center text-[var(--hp-text-muted)]"
               onClick={() => handleOAuth('apple')}
+              disabled={loading || status === 'loading'}
             >
-              Continuar con Apple
+              Apple
             </Button>
           )}
         </div>
-      )}
+      </div>
 
-      {/* MAGIC LINK (email primario) */}
-      {authMode === 'email' && (
-        <form onSubmit={handleMagicLink} className="space-y-4">
-          <div>
-            <Input
-              id="login-email"
-              label="Correo electrónico"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="tu@correo.com"
-            />
-          </div>
-          <Button type="submit" disabled={loading} loading={loading} className="w-full">
-            {loading ? 'Enviando...' : 'Recibir enlace de acceso por correo-e'}
-          </Button>
-          <button
-            type="button"
-            onClick={() => { setAuthMode('email-password'); setError(null) }}
-            className="w-full text-center text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] mt-1"
-          >
-            ¿Tienes contraseña? Usar contraseña en su lugar
-          </button>
-          <button
-            type="button"
-            onClick={() => { setAuthMode('options'); setError(null) }}
-            className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]"
-          >
-            Volver a opciones
-          </button>
-        </form>
-      )}
+      {/* Divider */}
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-[var(--hp-border)]" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">O usa tu correo-e</span>
+        </div>
+      </div>
 
-      {/* MAGIC LINK ENVIADO */}
-      {authMode === 'magic-sent' && (
-        <div className="text-center py-4 space-y-4">
+      {/* Bloque de correo-e */}
+      {status === 'sent' ? (
+        <div className="text-center space-y-4 py-2">
           <div className="text-4xl">📧</div>
-          <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo</p>
+          <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo-e</p>
           <p className="text-[var(--hp-text-secondary)] text-sm">
             Enviamos un enlace de acceso a <strong>{email}</strong>.<br />
             Haz clic en él para entrar automáticamente.
           </p>
           <button
             type="button"
-            onClick={() => { setAuthMode('email'); setError(null) }}
+            onClick={() => { setStatus('idle'); setError(null) }}
             className="text-sm text-brand-600 hover:underline"
           >
             Reenviar enlace
           </button>
         </div>
-      )}
-
-      {/* EMAIL + CONTRASEÑA (fallback) */}
-      {authMode === 'email-password' && (
-        <form onSubmit={handleEmailPassword} className="space-y-4">
-          <div>
-            <Input
-              id="login-email-pw"
-              label="Correo electrónico"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="tu@correo.com"
-            />
-          </div>
-          <div>
-            <Input
-              id="login-password"
-              label="Contraseña"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-            />
-          </div>
+      ) : !showPassword ? (
+        /* Magic Link (primario) */
+        <form onSubmit={handleMagicLink} className="space-y-3">
+          <Input
+            id="login-email"
+            label="Correo electrónico"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="tu@correo.com"
+          />
+          <p className="text-xs text-[var(--hp-text-muted)]">
+            Te enviaremos un enlace seguro para acceder sin contraseña.
+          </p>
+          <Button
+            type="submit"
+            disabled={status === 'loading'}
+            loading={status === 'loading'}
+            className="w-full"
+          >
+            {status === 'loading' ? 'Enviando...' : 'Recibir enlace para entrar'}
+          </Button>
+          <button
+            type="button"
+            onClick={() => setShowPassword(true)}
+            className="w-full text-center text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] pt-1"
+          >
+            ¿Tienes contraseña? Inicia sesión
+          </button>
+        </form>
+      ) : (
+        /* Contraseña (fallback) */
+        <form onSubmit={handleEmailPassword} className="space-y-3">
+          <Input
+            id="login-email-pw"
+            label="Correo electrónico"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="tu@correo.com"
+          />
+          <Input
+            id="login-password"
+            label="Contraseña"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+          />
           <Button type="submit" disabled={loading} loading={loading} className="w-full">
             {loading ? 'Ingresando...' : 'Ingresar'}
           </Button>
           <button
             type="button"
-            onClick={() => { setAuthMode('email'); setError(null) }}
-            className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]"
+            onClick={() => { setShowPassword(false); setError(null) }}
+            className="w-full text-center text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] pt-1"
           >
-            Volver al enlace mágico
+            Volver al enlace de acceso
           </button>
         </form>
       )}

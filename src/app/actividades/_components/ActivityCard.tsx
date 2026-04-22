@@ -33,7 +33,8 @@ interface Activity {
   sourceDomain: string | null;
   duplicatesCount: number;
   _count?: { views: number };
-  createdAt: Date;
+  /** Acepta Date (Prisma) o ISO string (serializado vía serializeActivity) */
+  createdAt: Date | string;
   provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
   location: {
     name: string;

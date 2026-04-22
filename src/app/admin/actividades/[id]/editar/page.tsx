@@ -1,6 +1,4 @@
 'use client';
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'

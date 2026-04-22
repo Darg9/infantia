@@ -1,6 +1,4 @@
-'use client';;
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+'use client';
 
 // =============================================================================
 // Filters — cabecera de resultados de /actividades

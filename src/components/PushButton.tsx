@@ -1,5 +1,4 @@
 'use client';
-import { Button } from "@/components/ui/button";
 
 // =============================================================================
 // PushButton — solicita permiso de notificaciones push y gestiona suscripción

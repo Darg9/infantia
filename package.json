@@ -18,6 +18,8 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report",
+    "start:test": "next start -p 3000",
+    "test:smoke": "npx playwright test --config=playwright.smoke.config.ts",
     "schema:check": "tsx scripts/check-schema.ts",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

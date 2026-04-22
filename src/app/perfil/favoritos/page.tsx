@@ -218,9 +218,6 @@ export default async function FavoritosPage() {
                 role="button"
                 tabIndex={0}
                 aria-label="Guardar"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') e.preventDefault()
-                }}
                 className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm shadow-sm rounded-full p-2 cursor-pointer hover:scale-110 transition-transform duration-150 ease-out focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2"
               >
                 <svg className="w-5 h-5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 fill-current transition-colors" viewBox="0 0 24 24">
@@ -247,9 +244,6 @@ export default async function FavoritosPage() {
             if (fav.type === 'activity') {
               return (
                 <div key={fav.favId} className="relative group">
-                  <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-brand-600 text-white text-xs font-medium rounded-full shadow-sm border border-brand-500/50 pointer-events-none tracking-wide">
-                    Actividad
-                  </div>
                   {/* fav.item ya es un objeto plano con price=number y createdAt=string */}
                   <ActivityCard activity={fav.item as any} isFavorited={true} />
                 </div>

@@ -22,6 +22,12 @@ export default function RegistroPage() {
     setError(null)
     setLoading(true)
 
+    if (!aceptaTerminos) {
+      setError('Debes aceptar las políticas y términos para continuar.')
+      setLoading(false)
+      return
+    }
+
     if (password.length < 8) {
       logger.warn('Intento de password corto', { action: 'register', result: 'attempt', reason: 'password_too_short' })
       setError('La contraseña debe tener al menos 8 caracteres')
@@ -128,11 +134,21 @@ export default function RegistroPage() {
             />
             <label htmlFor="acepta-terminos" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed">
               Acepto la{' '}
-              <Link href="/seguridad/datos" target="_blank" className="text-brand-600 hover:underline">
+              <Link 
+                href="/seguridad/datos" 
+                target="_blank" 
+                className="text-brand-600 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 rounded-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 Política de Tratamiento de Datos Personales
               </Link>{' '}
               y los{' '}
-              <Link href="/terminos" target="_blank" className="text-brand-600 hover:underline">
+              <Link 
+                href="/terminos" 
+                target="_blank" 
+                className="text-brand-600 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 rounded-sm"
+                onClick={(e) => e.stopPropagation()}
+              >
                 Términos de Uso
               </Link>.
             </label>

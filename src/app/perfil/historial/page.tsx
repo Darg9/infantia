@@ -29,7 +29,7 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function HistorialPage() {
-  const { history, clearHistory, removeFromHistory, mounted } = useActivityHistory();
+  const { history, clearHistory, removeFromHistory, restoreToHistory, mounted } = useActivityHistory();
   const { toast } = useToast();
 
   const handleClearAll = () => {
@@ -37,10 +37,15 @@ export default function HistorialPage() {
     toast.success('Historial borrado completamente');
   };
 
-  const handleRemoveItem = (e: React.MouseEvent, activityId: string, title: string) => {
+  const handleRemoveItem = (e: React.MouseEvent, entry: any) => {
     e.preventDefault(); // Prevenir navegación del Link
-    removeFromHistory(activityId);
-    toast.success('Eliminado del historial');
+    removeFromHistory(entry.activityId);
+    toast.info('Eliminado del historial', {
+      action: {
+        label: 'Deshacer',
+        onClick: () => restoreToHistory(entry),
+      },
+    });
   };
 
   // ── Skeleton durante SSR y primer render ─────────────────────────────────
@@ -134,7 +139,7 @@ export default function HistorialPage() {
                 type="button"
                 className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/50"
                 aria-label="Eliminar del historial"
-                onClick={(e) => handleRemoveItem(e, entry.activityId, entry.title)}
+                onClick={(e) => handleRemoveItem(e, entry)}
               >
                 <Trash2 className="w-4 h-4" />
               </button>

@@ -93,7 +93,7 @@ export function Button({
   const isDisabled = disabled || loading
 
   return (
-    <Button
+    <button
       disabled={isDisabled}
       aria-busy={loading || undefined}
       aria-disabled={isDisabled || undefined}
@@ -106,6 +106,6 @@ export function Button({
         />
       )}
       {children}
-    </Button>
+    </button>
   );
 }

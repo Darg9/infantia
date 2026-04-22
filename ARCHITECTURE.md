@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.13.2 | Actualizado: 2026-04-22
+> Versión: v0.14.0 | Actualizado: 2026-04-22
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---

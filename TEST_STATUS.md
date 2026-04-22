@@ -1,13 +1,13 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-22 | Version: v0.13.2
+Actualizado: 2026-04-22 | Version: v0.14.0
 
-## Resumen Actual (v0.13.2 / Branding Pipeline + SVG-First Architecture)
+## Resumen Actual (v0.14.0 / Zero-Debt Architecture & Auth Refactor)
 - **Archivos de Test:** 75
 - **Tests Totales:** 1215 (1213 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
-- **Cobertura:** >91% Stmts / >85% Branches (umbral dinámico: 85%)
+- **Cobertura:** 82.17% Lines / 80.53% Funcs / 80.72% Stmts / 73.61% Branches (Deuda técnica menor: umbral < 85%)
 
 ## 🛡️ Deuda Técnica UI (Design System Enforcement)
 *Baseline medido al activar el enforcement mecánico (ESLint)*

@@ -209,7 +209,7 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-## Estado actual (v6.8.0 / v0.13.2 — Actualizado 2026-04-22)
+## Estado actual (v0.14.0 — Actualizado 2026-04-22)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **1215 tests** en 75 archivos — `npm test` pasa — 1213 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
@@ -309,6 +309,7 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 | v0.13.0     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
 | v0.13.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
 | v0.13.2     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |
+| v0.14.0     | V28 | Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening |
 
 ## Regla: Serialización de objetos Prisma (OBLIGATORIO)
 

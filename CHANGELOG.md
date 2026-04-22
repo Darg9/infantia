@@ -9,6 +9,18 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.14.0] — 2026-04-22 (Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening)
+
+### Features
+- **Auth Architecture Refactor (SSOT):** Transición completa del sistema de autenticación heredado hacia un flujo primario por *Magic Link* (OTP 6 dígitos) vía Supabase, eliminando la fricción de contraseñas para los padres de familia.
+- **Scraping Pipeline Hardening:** Cambio estructural en los endpoints de recolección de datos institucionales. Reemplazadas las URLs genéricas (`idartes.gov.co`, `biblored.gov.co`) por sus endpoints específicos de agenda y eventos (`/agenda`, `/programacion`), reduciendo drásticamente el ruido extraído y el gasto de cuota NLP.
+- **Resilience Fallback Proofing:** Verificación en producción del sistema de resiliencia. Ante el fallo por cuota de Gemini, el pipeline utiliza el Fallback Parser de Cheerio asignando un confidence = 0.4, lo que provoca que el *Activity Gate* (umbral 0.5) bloquee la entrada de basura institucional a la base de datos, preservando la integridad del portal.
+- **Zero-Debt Documentation:** Reescritura y validación de todos los módulos documentales (`auth.md`, `legal.md`, `product.md`, `scraping.md`, `analytics.md`) para alcanzar una simetría del 100% con la base de código productiva actual.
+
+### Fixes
+- **Cron Scraping Seeds:** Ejecución y permanencia del script de migración `fix-source-urls.ts` que normaliza las bases de datos en producción y actualiza `ingest-sources.ts` y `seed-scraping-sources.ts` para que cualquier re-inicialización mantenga las rutas focalizadas.
+
+---
 ## [v0.13.2] — 2026-04-22 (SVG-First Branding Architecture & Brand Asset Pipeline)
 
 ### Features

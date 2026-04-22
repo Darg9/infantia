@@ -9,6 +9,19 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.13.1] — 2026-04-21 (Search Assist System & Zero-Debt DS Hardening)
+
+### Features
+- **Search Assist System (Producción)**: Implementación completa del algoritmo híbrido de ranking (`Relevancia 50% + Health 25% + CTR 15% + Recency 10%`). Autocompletado inteligente con highlight visual (`.hp-highlight`) activo en UI y con inyección de eventos `search_suggestion_clicked`.
+- **DS Codemod Finalization**: Se completó la migración forzosa al Design System. Se escribieron scripts de remediación para estabilizar imports circulares introducidos por el codemod y corregir directivas `use client` desplazadas.
+
+### Fixes
+- **Build Crash (Maximum Call Stack)**: Solucionado un error crítico de recursión infinita en SSR de Next.js provocado porque el codemod reemplazó el tag nativo `<button>` por el componente recursivo `<Button>` dentro del mismo `button.tsx`.
+- **Form UI Hardening**: Revertido el uso del `<Input />` del DS a un `<input>` nativo en checkboxes y file-uploads ocultos donde la estricta interfaz `InputProps` (`id` y `label` requeridos) causaba roturas de TypeScript. Se hizo el prop `label` opcional de forma retrocompatible.
+- **Strict Linting / Types**: 0 errores de compilación de TypeScript tras el masivo re-arquitectado. Build de producción totalmente verificado y estable.
+
+---
+
 ## [v0.12.2] — 2026-04-20 (Fixed Geographic Mapping & Test Suite Rescue)
 
 ### Features & Bugfixes

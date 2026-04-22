@@ -70,6 +70,89 @@ HabitaPlan utiliza dos variantes oficiales del logo según el contexto visual pa
 - ❌ Cambiar colores fuera de la paleta permitida.
 - ❌ Alterar las proporciones, *viewBox* o layout interno del logo entre ambas versiones.
 
+### Tamaños Mínimos y Legibilidad
+
+**Logo completo (icono + texto)**
+- **Mínimo absoluto:** 120px ancho
+- **Recomendado:** ≥ 160px
+- **Navbar mobile:** 32px alto (`h-8`)
+- **Navbar desktop:** 40px alto (`h-10`)
+
+**Ícono solo (`logo-icon.svg`)**
+- **Mínimo absoluto:** 16px
+- **UI estándar:** 20–24px
+- **Favicon base:** 32px (renderizado downscale a 16px)
+
+**Reglas de Escalado**
+- No escalar por debajo del mínimo → pérdida de legibilidad.
+- No separar icono y texto manualmente.
+- Mantener proporción original (no *stretch*).
+
+### Uso en Navbar
+
+**Objetivo:** Garantizar visibilidad, jerarquía y consistencia en navegación principal.
+
+**Implementación estándar:**
+```tsx
+<img src="/logo.svg" className="dark:hidden h-8 md:h-10 w-auto" alt="HabitaPlan" />
+<img src="/logo-dark.svg" className="hidden dark:block h-8 md:h-10 w-auto" alt="HabitaPlan" />
+```
+
+**Reglas de Navbar:**
+- El logo siempre se ubica en la esquina superior izquierda (o centrado en mobile si es requerido por el grid, aunque se prefiere izquierda).
+- Debe tener suficiente espacio respecto a otros elementos (≥ 16px).
+- No competir visualmente con CTAs (evitar botones del mismo color dominante al lado).
+- No aplicar efectos hover complejos.
+- Comportamiento: Click en logo → navegación a `/` con cursor `pointer`.
+
+### Uso en Favicon
+
+**Fuente oficial:** `/public/logo-icon.svg`
+
+**Implementación recomendada:**
+```html
+<link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
+```
+
+**Alternativa (compatibilidad legacy):** `/public/favicon.ico`
+
+**Reglas de favicon:**
+- Usar solo el ícono (no texto).
+- Debe ser legible en 16px.
+- Sin detalles finos (evitar ruido visual).
+- Mantener contraste alto.
+
+### Uso en Open Graph (Social Preview)
+
+**Archivo:** `/public/og.png` (1200x630)
+
+**Contenido:**
+- Fondo limpio (blanco o color de marca).
+- Logo centrado o alineado.
+- Sin saturación de elementos.
+
+**Implementación en App Router:**
+```tsx
+export const metadata = {
+  openGraph: {
+    images: ["/og.png"],
+  },
+};
+```
+
+### Checklist de Validación (QA)
+
+Antes de hacer un merge que afecte el Header o Layout base, verificar:
+- [ ] Logo visible en light mode
+- [ ] Logo visible en dark mode
+- [ ] Tamaño correcto según contexto
+- [ ] Click navega a `/`
+- [ ] Favicon visible en browser tab
+- [ ] No hay distorsión o blur
+
+### Regla de Enforcement Final
+El logo es la pieza central del sistema de identidad. **Cualquier uso fuera de estas reglas documentadas se considera deuda técnica y debe ser refactorizado.**
+
 ## 🧱 Uso de Primitivos
 
 - ❌ No usar `<button>` nativo

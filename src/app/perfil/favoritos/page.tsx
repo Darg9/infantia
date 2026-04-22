@@ -127,7 +127,7 @@ export default async function FavoritosPage() {
                   <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-brand-600 text-white text-xs font-medium rounded-full shadow-sm border border-brand-500/50 pointer-events-none tracking-wide">
                     Actividad
                   </div>
-                  <ActivityCard activity={fav.item as any} isFavorited={true} />
+                  <ActivityCard activity={JSON.parse(JSON.stringify(fav.item))} isFavorited={true} />
                 </div>
               );
             } else {

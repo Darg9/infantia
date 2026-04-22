@@ -24,8 +24,10 @@ function getSnapshot(): HistoryEntry[] {
   }
 }
 
+const emptyServerSnapshot: HistoryEntry[] = []
+
 function getServerSnapshot(): HistoryEntry[] {
-  return []
+  return emptyServerSnapshot
 }
 
 // Notify listeners when storage changes
@@ -66,7 +68,7 @@ export function useActivityHistory() {
 
   return {
     history,
-    addToHistory: useCallback(addToHistory, []),
-    clearHistory: useCallback(clearHistory, []),
+    addToHistory: useCallback((entry: Omit<HistoryEntry, 'viewedAt'>) => addToHistory(entry), []),
+    clearHistory: useCallback(() => clearHistory(), []),
   }
 }

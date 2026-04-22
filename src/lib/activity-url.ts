@@ -10,6 +10,7 @@
 
 /** Convierte un título en slug URL-friendly (sin acentos, sin caracteres especiales) */
 export function slugifyTitle(title: string): string {
+  if (!title) return ''
   return title
     .toLowerCase()
     .normalize('NFD')

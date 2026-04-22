@@ -386,7 +386,7 @@ export default async function ActividadesPage({
                 {activities.map((activity) => (
                   <ActivityCard
                     key={activity.id}
-                    activity={activity}
+                    activity={JSON.parse(JSON.stringify(activity))}
                     isFavorited={favoriteIds.has(activity.id)}
                     searchQuery={filters.search ?? ''}
                   />

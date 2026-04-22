@@ -1,6 +1,6 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.13.2
+**Versión:** ✅ v0.14.0
 **Última actualización:** 22 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
@@ -61,6 +61,31 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 | Tratamiento de Datos | v1.0 | 11 de abril de 2026 |
 
 Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/datos`) y sus PDF descargables consumen los mismos arrays TypeScript. **Imposible desincronización.**
+
+## 🔑 Cumplimiento Legal SSO y Consentimiento Explícito (v0.14.0)
+
+Con la integración de SSO (Google, Magic Link), se introdujeron mecanismos adicionales de cumplimiento legal:
+
+### `termsAcceptedAt` — Registro Auditable
+- Todos los usuarios (SSO, Magic Link, Email, OTP) deben aceptar los Términos de Uso antes de acceder.
+- La aceptación se registra en `public.users.termsAcceptedAt` (timestamp UTC).
+- El callback centralizado (`/auth/callback`) bloquea el acceso y redirige a `/auth/terminos` si `termsAcceptedAt === null`.
+- La aceptación se persiste exclusivamente desde una **Server Action** (nunca desde el cliente).
+
+### Flujo de Consentimiento
+```
+Nuevo usuario (cualquier proveedor)
+  → /auth/callback detecta termsAcceptedAt === null
+  → /auth/terminos?next=<ruta original>
+  → Usuario lee y acepta explícitamente (checkbox NO pre-marcado)
+  → Server Action actualiza termsAcceptedAt
+  → Redirect a ruta original
+```
+
+### Checkbox de Registro (RGPD / Ley 1581)
+- El formulario de registro por email incluye checkbox explícito NO pre-marcado.
+- Enlaza a `/seguridad/datos` (Política de Tratamiento) y `/terminos` (Términos de Uso).
+- El botón "Crear cuenta" permanece deshabilitado hasta aceptación.
 
 ## Rutas del sistema legal
 

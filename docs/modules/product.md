@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.13.2
+**Versión:** ✅ v0.14.0
 **Última actualización:** 22 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -79,25 +79,28 @@ Desde la capa de producto el UI lanza los siguientes eventos vitales en el ciclo
 - **`activity_view`**: Clics desde listado al Single Detail Page.
 - **`outbound_click`**: Evento final del funnel. (Redirige tráfico pagado o gratis al organizador de la actividad infantil).
 
-## 🔐 Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S54
+## 🔐 Patrón de Autenticación — v0.14.0
 
-Patrón global y reutilizable para preservar la intención del usuario ante cualquier acción protegida, sin acoplar la lógica de negocio al flujo de login.
+Sistema de autenticación unificado multi-proveedor. Ver documentación completa en [`docs/modules/auth.md`](auth.md).
 
-**Flujo:**
+### Proveedores activos
+- **Google SSO** → método principal de registro/login
+- **Magic Link (email OTP)** → método primario de correo (sin contraseña)
+- **Email + Contraseña** → fallback (progressive disclosure en `/login`)
+- **Teléfono OTP** → desactivado vía feature flag (`NEXT_PUBLIC_ENABLE_PHONE_OTP`)
+
+### Flujo Intent Manager (v0.11.0-S54, vigente)
 ```
-1. Click en acción protegida (ej: FavoriteButton)
-2. requireAuth(intent, router)  → verifica sesión async (Supabase)
-3. Sin sesión: IntentManager.save(intent) + router.push('/login')
-4. Login exitoso
-5. IntentResolver (global, layout) → consume intent una sola vez
-6. Ejecuta acción (toggleFavorite) + toast.success + router.replace(returnTo)
+1. Click en acción protegida → requireAuth(intent, router)
+2. Sin sesión: IntentManager.save(intent) + router.push('/login')
+3. Login exitoso → IntentResolver (global) → consume intent una sola vez
+4. Ejecuta acción + toast.success + router.replace(returnTo)
 ```
 
 **Reglas:**
 - Todos los flujos protegidos usan `requireAuth` — nunca redirect manual a `/login`.
-- `IntentManager` usa `localStorage` con TTL 15 min — expire silencioso.
-- `IntentResolver` usa `useEffect([])` — ejecución única al montar, idempotente.
-- Errores se manejan silenciosamente para no romper el login flow.
+- `IntentManager` usa `localStorage` con TTL 15 min.
+- `IntentResolver` usa `useEffect([])` — idempotente.
 
 ## 🔲 Estados de Interfaz (UI States)
 

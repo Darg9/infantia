@@ -68,7 +68,7 @@ function LoginForm() {
 
     if (authError) {
       logger.error('Error Magic Link', { action: 'magic_link', reason: authError.message })
-      setError(authError.message)
+      setError('No pudimos enviar el enlace. Intenta nuevamente.')
       setStatus('idle')
       return
     }
@@ -166,9 +166,13 @@ function LoginForm() {
 
       {/* Bloque de correo-e */}
       {status === 'sent' ? (
-        <div className="text-center space-y-4 py-2">
-          <div className="text-4xl">📧</div>
-          <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo-e</p>
+        <div className="rounded-xl bg-success-50 border border-success-200 text-center space-y-3 py-6 px-4">
+          <div className="flex items-center justify-center w-12 h-12 rounded-full bg-success-100 mx-auto">
+            <svg className="w-6 h-6 text-success-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <p className="text-[var(--hp-text-primary)] font-semibold">Enlace enviado</p>
           <p className="text-[var(--hp-text-secondary)] text-sm">
             Enviamos un enlace a <strong>{email}</strong>.<br />
             Haz clic en él para entrar. Revisa también tu carpeta de Spam.

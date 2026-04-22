@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui';
 
 // =============================================================================
 // MobileNav — Dual Navigation Model (≤768px only)

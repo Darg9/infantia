@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui';
 // =============================================================================
 // ViewToggle — alterna entre vista Lista y Mapa en /actividades
 // =============================================================================

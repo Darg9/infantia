@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui';
 
 // =============================================================================
 // FavoriteButton — corazón toggle para guardar actividades como favoritas

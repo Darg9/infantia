@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui';
 
 // =============================================================================
 // DownloadPDFButton — Botón cliente para descargar documentos legales en PDF

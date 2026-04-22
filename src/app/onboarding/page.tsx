@@ -1,4 +1,5 @@
 'use client';
+import { Button, Input } from '@/components/ui';
 
 // =============================================================================
 // /onboarding — Wizard de configuración inicial

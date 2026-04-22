@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 /**
  * Input — HabitaPlan Design System
  *
@@ -71,7 +70,8 @@ export function Input({
           </div>
         )}
 
-        <Input
+        {/* eslint-disable-next-line no-restricted-syntax -- DS primitive, este ES el elemento nativo */}
+        <input
           id={id}
           required={required}
           disabled={disabled}

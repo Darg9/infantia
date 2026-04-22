@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 /**
  * Button — HabitaPlan Design System
  *

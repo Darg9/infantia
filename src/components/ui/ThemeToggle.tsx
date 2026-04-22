@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 'use client'
 
 // =============================================================================
@@ -10,6 +9,7 @@ import { Button } from "@/components/ui/button";
 // SVG inline: 0 dependencias adicionales, bundle mínimo.
 // =============================================================================
 
+import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 
 export function ThemeToggle() {

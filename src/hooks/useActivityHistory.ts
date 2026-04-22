@@ -111,5 +111,17 @@ export function useActivityHistory() {
     [setHistory]
   );
 
-  return { history, addToHistory: add, clearHistory: clear, removeFromHistory: remove, mounted };
+  const restore = useCallback(
+    (entry: HistoryEntry) => {
+      setHistory((prev) => {
+        const filtered = prev.filter((h) => h.activityId !== entry.activityId);
+        return [...filtered, entry]
+          .sort((a, b) => new Date(b.viewedAt).getTime() - new Date(a.viewedAt).getTime())
+          .slice(0, MAX_ITEMS);
+      });
+    },
+    [setHistory]
+  );
+
+  return { history, addToHistory: add, clearHistory: clear, removeFromHistory: remove, restoreToHistory: restore, mounted };
 }

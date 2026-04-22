@@ -36,15 +36,24 @@ export async function getOrCreateDbUser(authUser: User) {
     authUser.user_metadata?.name ??
     authUser.email?.split('@')[0] ??
     'Usuario'
+    
+  const provider = authUser.app_metadata?.provider ?? 'email'
+  
   return prisma.user.upsert({
     where: { supabaseAuthId: authUser.id },
     create: {
       supabaseAuthId: authUser.id,
-      email: authUser.email ?? '',
+      email: authUser.email ?? null,
+      phone: authUser.phone ?? null,
+      provider: provider,
       name,
       role: 'PARENT',
     },
-    update: {},
+    update: {
+      provider: provider,
+      ...(authUser.email ? { email: authUser.email } : {}),
+      ...(authUser.phone ? { phone: authUser.phone } : {}),
+    },
   })
 }
 

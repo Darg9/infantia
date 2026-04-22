@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react'
+import { Suspense, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Button, Input, Card } from '@/components/ui'
@@ -8,16 +8,84 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('Auth')
 
-export default function RegistroPage() {
+function RegistroForm() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [phone, setPhone] = useState('')
+  const [token, setToken] = useState('')
   const [aceptaTerminos, setAceptaTerminos] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [authMode, setAuthMode] = useState<'options' | 'email' | 'phone' | 'otp'>('options')
+  const [isApple, setIsApple] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
+  useEffect(() => {
+    setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
+  }, [])
+
+  const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
+    setLoading(true)
+    const supabase = createSupabaseBrowserClient()
+    const { error: authError } = await supabase.auth.signInWithOAuth({ 
+      provider,
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      }
+    })
+
+    if (authError) {
+      logger.error('Error OAuth', { action: 'oauth_register', provider, reason: authError.message })
+      setError(authError.message)
+      setLoading(false)
+    }
+  }
+
+  const handleSendOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    // Basic normalization: remove spaces, ensure + prefix
+    let normalizedPhone = phone.trim().replace(/\s/g, '')
+    if (!normalizedPhone.startsWith('+')) {
+      normalizedPhone = `+${normalizedPhone}`
+    }
+
+    const supabase = createSupabaseBrowserClient()
+    const { error: authError } = await supabase.auth.signInWithOtp({ phone: normalizedPhone })
+
+    if (authError) {
+      logger.error('Error OTP', { action: 'send_otp_register', reason: authError.message })
+      setError(authError.message)
+      setLoading(false)
+      return
+    }
+
+    setAuthMode('otp')
+    setLoading(false)
+  }
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+
+    const supabase = createSupabaseBrowserClient()
+    const { error: authError } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
+
+    if (authError) {
+      logger.error('Error verify OTP', { action: 'verify_otp_register', reason: authError.message })
+      setError('Código incorrecto o expirado')
+      setLoading(false)
+      return
+    }
+
+    window.location.href = `/auth/callback`
+  }
+
+  async function handleEmailSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setLoading(true)
@@ -53,39 +121,127 @@ export default function RegistroPage() {
     }
 
     logger.info('Registro exitoso', { action: 'register', result: 'success' })
-
-    // Email de bienvenida se envía en /auth/callback después de confirmar
     setSuccess(true)
   }
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)]">
-        <Card className="w-full max-w-md text-center">
-          <div className="text-4xl mb-4">📧</div>
-          <h1 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Revisa tu correo</h1>
-          <p className="text-[var(--hp-text-secondary)] text-sm">
-            Te enviamos un enlace de confirmación a <strong>{email}</strong>.
-            Haz clic en el enlace para activar tu cuenta.
-          </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-block text-brand-600 text-sm font-medium hover:underline"
-          >
-            Volver a inicio de sesión
-          </Link>
-        </Card>
-      </div>
+      <Card className="w-full max-w-md text-center p-8">
+        <div className="text-4xl mb-4">📧</div>
+        <h1 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Revisa tu correo</h1>
+        <p className="text-[var(--hp-text-secondary)] text-sm">
+          Te enviamos un enlace de confirmación a <strong>{email}</strong>.
+          Haz clic en el enlace para activar tu cuenta.
+        </p>
+        <Link
+          href="/login"
+          className="mt-6 inline-block text-brand-600 text-sm font-medium hover:underline"
+        >
+          Volver a inicio de sesión
+        </Link>
+      </Card>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)] py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Crea tu cuenta</h1>
-        <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
+    <Card className="w-full max-w-md p-8">
+      <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Crea tu cuenta</h1>
+      <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <p className="mb-4 text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
+          {error}
+        </p>
+      )}
+
+      {authMode === 'options' && (
+        <div className="space-y-4">
+          <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleOAuth('google')}>
+            Continuar con Google
+          </Button>
+          <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => setAuthMode('phone')}>
+            Continuar con Teléfono
+          </Button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-[var(--hp-border)]" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">O regístrate con email</span>
+            </div>
+          </div>
+
+          <Button variant="ghost" className="w-full justify-center gap-2 text-brand-600 bg-brand-50 hover:bg-brand-100" onClick={() => setAuthMode('email')}>
+            Registrarse con Email
+          </Button>
+
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-[var(--hp-border)]" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">Más opciones</span>
+            </div>
+          </div>
+
+          <Button variant="ghost" className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]" onClick={() => handleOAuth('facebook')}>
+            Continuar con Facebook
+          </Button>
+          {isApple && (
+            <Button variant="ghost" className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]" onClick={() => handleOAuth('apple')}>
+              Continuar con Apple
+            </Button>
+          )}
+        </div>
+      )}
+
+      {authMode === 'phone' && (
+        <form onSubmit={handleSendOtp} className="space-y-4">
+          <div>
+            <Input
+              id="registro-phone"
+              label="Número de Teléfono (con código de país)"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              required
+              placeholder="+573001234567"
+            />
+          </div>
+          <Button type="submit" disabled={loading} loading={loading} className="w-full">
+            {loading ? 'Enviando...' : 'Enviar código SMS'}
+          </Button>
+          <button type="button" onClick={() => { setAuthMode('options'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
+            Volver a opciones
+          </button>
+        </form>
+      )}
+
+      {authMode === 'otp' && (
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <div>
+            <Input
+              id="registro-otp"
+              label="Código SMS"
+              type="text"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              required
+              placeholder="123456"
+            />
+          </div>
+          <Button type="submit" disabled={loading} loading={loading} className="w-full">
+            {loading ? 'Verificando...' : 'Verificar código'}
+          </Button>
+          <button type="button" onClick={() => { setAuthMode('phone'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
+            Cambiar número
+          </button>
+        </form>
+      )}
+
+      {authMode === 'email' && (
+        <form onSubmit={handleEmailSubmit} className="space-y-4">
           <div>
             <Input
               id="registro-nombre"
@@ -97,7 +253,6 @@ export default function RegistroPage() {
               placeholder="Ej: Mamá de Sofi"
             />
           </div>
-
           <div>
             <Input
               id="registro-email"
@@ -109,7 +264,6 @@ export default function RegistroPage() {
               placeholder="tu@correo.com"
             />
           </div>
-
           <div>
             <Input
               id="registro-password"
@@ -121,8 +275,7 @@ export default function RegistroPage() {
               placeholder="Mínimo 8 caracteres"
             />
           </div>
-
-          {/* Aceptación de políticas — obligatorio por Ley 1581 de 2012 */}
+          
           <div className="flex items-start gap-2">
             <Input
               type="checkbox"
@@ -154,29 +307,31 @@ export default function RegistroPage() {
             </label>
           </div>
 
-          {error && (
-            <p className="text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          <Button
-            type="submit"
-            disabled={loading || !aceptaTerminos}
-            loading={loading}
-            className="w-full"
-          >
+          <Button type="submit" disabled={loading || !aceptaTerminos} loading={loading} className="w-full">
             {loading ? 'Creando cuenta...' : 'Crear cuenta'}
           </Button>
+          <button type="button" onClick={() => { setAuthMode('options'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
+            Volver a opciones
+          </button>
         </form>
+      )}
 
-        <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
-          ¿Ya tienes cuenta?{' '}
-          <Link href="/login" className="text-brand-600 font-medium hover:underline">
-            Inicia sesión
-          </Link>
-        </p>
-      </Card>
+      <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
+        ¿Ya tienes cuenta?{' '}
+        <Link href="/login" className="text-brand-600 font-medium hover:underline">
+          Inicia sesión
+        </Link>
+      </p>
+    </Card>
+  )
+}
+
+export default function RegistroPage() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[var(--hp-bg-page)] py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense>
+        <RegistroForm />
+      </Suspense>
     </div>
-  );
+  )
 }

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { sendWelcomeEmail } from '@/lib/email/resend'
-import { prisma } from '@/lib/db'
+import { getOrCreateDbUser } from '@/lib/auth'
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('auth:callback');
@@ -14,43 +14,37 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = await createSupabaseServerClient()
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) {
-      const user = data?.user
-      if (user) {
-        // Upsert en la tabla users — cubre email/password y Google OAuth
-        const name =
-          user.user_metadata?.full_name ??
-          user.user_metadata?.name ??
-          user.email?.split('@')[0] ??
-          'Usuario'
-        await prisma.user.upsert({
-          where: { supabaseAuthId: user.id },
-          create: {
-            supabaseAuthId: user.id,
-            email: user.email ?? '',
-            name,
-            role: 'PARENT',
-          },
-          update: {},
-        }).catch((err) => log.error('User upsert error', { error: err, userId: user.id }))
-
-        // Enviar email de bienvenida si es la primera confirmación
-        let isNewUser = false
-        if (user.email && user.email_confirmed_at) {
-          isNewUser = new Date(user.email_confirmed_at).getTime() > Date.now() - 60_000
-          if (isNewUser) {
-            sendWelcomeEmail({
-              to: user.email,
-              userName: user.user_metadata?.name,
-            }).catch((err) => log.error('Welcome email error', { error: err, email: user.email }))
-          }
-        }
-
-        // Nuevos usuarios van al onboarding
-        const redirectPath = isNewUser ? '/onboarding' : next
-        return NextResponse.redirect(`${origin}${redirectPath}`)
+    
+    if (!error && data?.user) {
+      const user = data.user
+      let dbUser;
+      
+      try {
+        dbUser = await getOrCreateDbUser(user)
+      } catch (err) {
+        log.error('User upsert error', { error: err, userId: user.id })
+        return NextResponse.redirect(`${origin}/login?error=sync_failed`)
       }
-      return NextResponse.redirect(`${origin}${next}`)
+
+      // Enviar email de bienvenida si es la primera confirmación y tiene email
+      let isNewUser = false
+      if (user.email && user.email_confirmed_at) {
+        isNewUser = new Date(user.email_confirmed_at).getTime() > Date.now() - 60_000
+        if (isNewUser) {
+          sendWelcomeEmail({
+            to: user.email,
+            userName: user.user_metadata?.name,
+          }).catch((err) => log.error('Welcome email error', { error: err, email: user.email }))
+        }
+      }
+
+      if (!dbUser.termsAcceptedAt) {
+        return NextResponse.redirect(`${origin}/auth/terminos?next=${encodeURIComponent(next)}`)
+      }
+
+      // Nuevos usuarios van al onboarding si no van a otra ruta
+      const redirectPath = isNewUser && next === '/' ? '/onboarding' : next
+      return NextResponse.redirect(`${origin}${redirectPath}`)
     }
   }
 

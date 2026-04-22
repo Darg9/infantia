@@ -97,8 +97,11 @@ model Provider {
 model User {
   id                String   @id @default(uuid())
   supabaseAuthId    String   @unique @map("supabase_auth_id") @db.VarChar(255)
-  email             String   @unique @db.VarChar(255)
+  email             String?  @unique @db.VarChar(255)
+  phone             String?  @unique @db.VarChar(50)
   name              String   @db.VarChar(255)
+  termsAcceptedAt   DateTime?
+  provider          String   @default("email") @db.VarChar(50)
   avatarUrl         String?
   cityId            String?
   neighborhood      String?  @db.VarChar(100)

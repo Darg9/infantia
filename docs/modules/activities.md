@@ -131,13 +131,20 @@ Nota: Actualmente otros tipos de orden (date, price, newest) no están expuestos
 
 > **isPremium en relevance:** proveedores con `isPremium=true` tienen sus actividades antes de los estándar sin queries extra — integrado en Prisma orderBy.
 
-## Ranking Híbrido en Memoria (NUEVO v0.11.0-S57)
+## Ranking en Memoria (Base y Búsqueda Híbrida)
 
-`computeActivityScore()` en `src/modules/activities/ranking.ts` inyecta las siguientes métricas al listado y determina el orden absoluto:
+`computeActivityScore()` en `src/modules/activities/ranking.ts` inyecta las métricas base al listado general:
 
 ```typescript
-computeActivityScore(activity, sourceHealthScore, ctrBoost)
-// score = (relevance × 0.5) + (recency × 0.2) + (trust × 0.3) + ctrBoost
+// Ranking Base (Exploración)
+score = (relevance × 0.5) + (recency × 0.2) + (trust × 0.3) + ctrBoost
+```
+
+Cuando hay una búsqueda por texto (`?q=`), `activities.service.ts` emplea el **Search Hybrid Ranking**:
+
+```typescript
+// Ranking Híbrido (Búsqueda Activa)
+hybridScore = (textScore × 0.50) + (healthScore × 0.25) + (ctrBoost × 0.15) + (recency × 0.10)
 ```
 
 **Modificadores (Stack multiplicativo):**

@@ -54,6 +54,19 @@ rankingScore = (relevance × 0.5) + (recency × 0.2) + (trustScore × 0.3) + ctr
   | > 5% | +0.03 |
   | ≤ 5% | 0 |
 
+### Search Hybrid Ranking (Búsqueda Activa)
+
+Cuando un usuario realiza una búsqueda textual explícita (`?q=...`), el algoritmo cambia hacia un **Ranking Híbrido** más dinámico:
+
+```
+hybridScore = (textScore × 0.50) + (healthScore × 0.25) + (ctrBoost × 0.15) + (recency × 0.10)
+```
+
+- **Relevancia Textual (50%)**: Match por trigramas (`pg_trgm`) en título y descripción.
+- **Confianza de Fuente (25%)**: Estabilidad del proveedor.
+- **Interacción CTR (15%)**: Desempeño real de clic frente a impresiones.
+- **Recencia (10%)**: Se le quita peso a la fecha de publicación para dar prioridad absoluta al término buscado.
+
 - **Completeness Boost (+15%)**: Actividades ricas en metadata reciben una bonificación sumatoria sin ocultar las incompletas: `+5%` por Precio estriado, `+5%` por Rango de Edad explícito, y `+5%` por Geolocalización exacta (`locationId`). 
 - **Penalización por Edad Nula (-15%)**: Actividades sin `ageMin`/`ageMax` parseados reciben `score *= 0.85`, garantizando calidad algorítmica en el tope del motor (combinado con el completeness boost, esto genera un delta significativo).
 

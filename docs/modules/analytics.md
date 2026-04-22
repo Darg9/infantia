@@ -21,8 +21,9 @@ Cualquier evento nuevo debe declararse primero ahí para evitar fragmentación. 
 3. **`activity_click`**: Clic a una tarjeta en un listado global.
 4. **`outbound_click`**: Clic al enlace externo hacia un proveedor (Norte comercial).
 5. **`search_applied`**: Input textual de un usuario (para evaluar la pertinencia del NLP).
+6. **`search_suggestion_clicked`**: Evento capturado en el `HeroSearch` (Search Assist System) para medir adopción del autocompletado y de la corrección explícita de intención.
 
-6. **`filter_applied` [CRITICAL - NOT IMPLEMENTED]**:
+7. **`filter_applied` [CRITICAL - NOT IMPLEMENTED]**:
    - El sistema actualmente NO mide interacción con filtros facetados.
    - Esto genera ceguera en navegación no textual.
    - **Impacto**: No se puede entender intención real de exploración ni optimizar UX de filtros.

@@ -30,6 +30,12 @@ Cualquier PR con estilos directos debe ser rechazado.
 - accesibilidad
 - control centralizado
 
+### ⚠️ Regla de Primitivos de Base (Prevención de Maximum Call Stack)
+Dentro de la carpeta `src/components/ui/`, **jamás** se debe reemplazar el tag HTML nativo raíz por su propio componente exportado.
+- ❌ En `button.tsx`: `<Button>` envolviendo a `<Button>` (Causa SSR Crash Infinito).
+- ✔ En `button.tsx`: `<button>` nativo envuelto con React.forwardRef.
+- Los imports de componentes de UI deben hacerse hacia sus archivos individuales para evitar Circular Dependencies en los Barrels (`index.ts`).
+
 ---
 
 ## 2. Tokens Oficiales

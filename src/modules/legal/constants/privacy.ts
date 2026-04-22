@@ -48,6 +48,8 @@ export const PRIVACY_SECTIONS = [
     content: [
       { type: 'text' as const, text: 'Podemos recolectar y tratar las siguientes categorías de datos:' },
       { type: 'bullet' as const, text: 'Datos de identificación (correo electrónico, nombre opcional)' },
+      { type: 'bullet' as const, text: 'Datos provenientes de proveedores de autenticación externa: Podemos recibir datos personales desde proveedores de autenticación externos (como Google, Facebook o Apple) cuando el usuario decide registrarse o iniciar sesión mediante estos servicios. Estos datos pueden incluir nombre, correo electrónico y otros identificadores básicos proporcionados por el proveedor.' },
+      { type: 'bullet' as const, text: 'Datos de autenticación por teléfono: Podemos tratar datos asociados al número de teléfono cuando el usuario opta por autenticarse mediante códigos de verificación (OTP).' },
       { type: 'bullet' as const, text: 'Datos de uso (interacciones dentro de la plataforma)' },
       { type: 'bullet' as const, text: 'Datos técnicos (dirección IP, dispositivo, navegador)' },
       { type: 'bullet' as const, text: 'Datos de configuración (preferencias del usuario)' },

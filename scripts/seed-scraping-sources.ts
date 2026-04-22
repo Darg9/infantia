@@ -48,7 +48,7 @@ const SOURCES = [
   },
   {
     name: 'Cinemateca - Agenda',
-    url: 'https://cinematecadebogota.gov.co/agenda/11',
+    url: 'https://cinematecadebogota.gov.co/cine/11',
     platform: 'WEBSITE' as const,
     scraperType: 'cheerio-batch',
   },

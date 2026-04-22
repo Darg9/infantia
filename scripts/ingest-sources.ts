@@ -96,12 +96,11 @@ const ALL_SOURCES: Source[] = [
   // Antes: sitemap.xml con 1101 URLs históricas (alto errorCount, mucho consumo de cuota)
   // Ahora: /actividades/bogota con ~40 eventos activos directamente
   { name: 'Banrep — Bogotá',                    channel: 'web', url: 'https://www.banrepcultural.org/actividades/bogota',             cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Alcaldía de Bogotá',                 channel: 'web', url: 'https://bogota.gov.co/mi-ciudad/cultura-recreacion-y-deporte',     cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/agenda/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Planetario de Bogotá',               channel: 'web', url: 'https://planetariodebogota.gov.co/programate',                     cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Cinemateca de Bogotá',               channel: 'web', url: 'https://cinematecadebogota.gov.co/cine/11',                      cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'Jardín Botánico (JBB)',              channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'Jardín Botánico',                    channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },
 
   // ── web: Banco de la República (otras ciudades) ───────────────────────────

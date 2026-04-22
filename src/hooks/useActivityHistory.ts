@@ -1,74 +1,98 @@
-'use client'
+'use client';
+// =============================================================================
+// useActivityHistory — Historial de actividades vistas (localStorage)
+//
+// Arquitectura:
+//   - addToHistory / clearHistory: funciones puras testables (export directo)
+//   - useActivityHistory: hook React que usa useLocalStorage (SSR-safe, React 19)
+// =============================================================================
 
-import { useCallback, useSyncExternalStore } from 'react'
+import { useCallback } from 'react';
+import { useLocalStorage } from './useLocalStorage';
 
-const STORAGE_KEY = 'habitaplan:activity-history'
-const MAX_ITEMS = 50
+const STORAGE_KEY = 'habitaplan:activity-history';
+const MAX_ITEMS = 50;
 
 export interface HistoryEntry {
-  activityId: string
-  title: string
-  imageUrl: string | null
-  viewedAt: string // ISO string
+  activityId: string;
+  title: string;
+  imageUrl: string | null;
+  viewedAt: string; // ISO string
 }
 
-function getSnapshot(): HistoryEntry[] {
-  if (typeof window === 'undefined') return []
+// ─── Funciones puras (testables sin React) ────────────────────────────────────
+
+function readHistory(): HistoryEntry[] {
+  if (typeof window === 'undefined') return [];
   try {
-    const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return []
-    const parsed = JSON.parse(raw)
-    return Array.isArray(parsed) ? parsed : []
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
   } catch {
-    return []
+    return [];
   }
 }
 
-const emptyServerSnapshot: HistoryEntry[] = []
-
-function getServerSnapshot(): HistoryEntry[] {
-  return emptyServerSnapshot
-}
-
-// Notify listeners when storage changes
-let listeners: Array<() => void> = []
-function emitChange() {
-  for (const listener of listeners) listener()
-}
-
-function subscribe(listener: () => void): () => void {
-  listeners = [...listeners, listener]
-  return () => {
-    listeners = listeners.filter((l) => l !== listener)
-  }
-}
-
-export function addToHistory(entry: Omit<HistoryEntry, 'viewedAt'>) {
-  if (typeof window === 'undefined') return
+function writeHistory(entries: HistoryEntry[]): void {
   try {
-    const history = getSnapshot()
-    const filtered = history.filter((h) => h.activityId !== entry.activityId)
-    const newEntry: HistoryEntry = { ...entry, viewedAt: new Date().toISOString() }
-    const updated = [newEntry, ...filtered].slice(0, MAX_ITEMS)
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
-    emitChange()
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
   } catch {
-    // Storage full or unavailable
+    // localStorage lleno o no disponible
   }
 }
 
-export function clearHistory() {
-  if (typeof window === 'undefined') return
-  localStorage.removeItem(STORAGE_KEY)
-  emitChange()
+/**
+ * Añade una actividad al historial de vistas.
+ * - Deduplica por activityId (mueve al frente si ya existe)
+ * - Limita a MAX_ITEMS con política FIFO
+ * - Asigna viewedAt = ahora
+ */
+export function addToHistory(entry: Omit<HistoryEntry, 'viewedAt'>): void {
+  if (typeof window === 'undefined') return;
+  const history = readHistory();
+  const filtered = history.filter((h) => h.activityId !== entry.activityId);
+  const newEntry: HistoryEntry = { ...entry, viewedAt: new Date().toISOString() };
+  writeHistory([newEntry, ...filtered].slice(0, MAX_ITEMS));
 }
 
+/**
+ * Elimina todo el historial de localStorage.
+ */
+export function clearHistory(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // localStorage no disponible
+  }
+}
+
+// ─── Hook React (SSR-safe con patrón mounted, React 19) ───────────────────────
+
+/**
+ * Hook para acceder y gestionar el historial de actividades.
+ * Usa useLocalStorage (patrón mounted) para evitar hydration mismatches en React 19.
+ *
+ * Retorna `mounted=false` durante SSR → muestra skeleton antes de leer localStorage.
+ */
 export function useActivityHistory() {
-  const history = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+  const [history, setHistory, mounted] = useLocalStorage<HistoryEntry[]>(STORAGE_KEY, []);
 
-  return {
-    history,
-    addToHistory: useCallback((entry: Omit<HistoryEntry, 'viewedAt'>) => addToHistory(entry), []),
-    clearHistory: useCallback(() => clearHistory(), []),
-  }
+  const add = useCallback(
+    (entry: Omit<HistoryEntry, 'viewedAt'>) => {
+      setHistory((prev) => {
+        const filtered = prev.filter((h) => h.activityId !== entry.activityId);
+        const newEntry: HistoryEntry = { ...entry, viewedAt: new Date().toISOString() };
+        return [newEntry, ...filtered].slice(0, MAX_ITEMS);
+      });
+    },
+    [setHistory]
+  );
+
+  const clear = useCallback(() => {
+    setHistory([]);
+  }, [setHistory]);
+
+  return { history, addToHistory: add, clearHistory: clear, mounted };
 }

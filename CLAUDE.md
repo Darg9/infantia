@@ -355,3 +355,53 @@ return <ActivityCard activity={JSON.parse(JSON.stringify(activity))} />
 2. ¿Hay campos Decimal en el include/select? → 	oNumber() antes de pasar
 3. ¿Hay campos Date? → 	oISOString() antes de pasar
 | v0.13.3 | V27 | Perfil Zero-Crash: prisma-serialize.ts, error boundary /perfil, fix Decimal/Date |
+
+## Regla: localStorage en Client Components (OBLIGATORIO)
+
+> **NUNCA** uses useSyncExternalStore para leer localStorage en React 19.
+> Causa hydration mismatch fatal cuando el servidor renderiza vacío y el cliente tiene datos.
+
+### Siempre usa useLocalStorage<T> de @/hooks/useLocalStorage`n
+\\\	sx
+// ✅ CORRECTO — SSR-safe, React 19-safe
+import { useLocalStorage } from '@/hooks/useLocalStorage'
+
+const [items, setItems, mounted] = useLocalStorage<string[]>('mi-key', [])
+if (!mounted) return <Skeleton />  // SSR y primer render
+
+// ❌ INCORRECTO — rompe en React 19 cuando server != client
+import { useSyncExternalStore } from 'react'
+const value = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+\\\`n
+## Regla: Prisma _count en queries (OBLIGATORIO)
+
+> **NUNCA** uses _count dentro de un select anidado de relación en Prisma 7.
+> Solo funciona en include directo. En select anidado lanza error en runtime.
+
+\\\	s
+// ✅ CORRECTO — _count en include directo
+prisma.activity.findMany({
+  include: { _count: { select: { views: true } } }
+})
+
+// ✅ CORRECTO — si necesitas select y _count, usa include en la relación
+prisma.favorite.findMany({
+  select: {
+    id: true,
+    activity: {
+      include: { _count: { select: { views: true } } }  // include dentro de select
+    }
+  }
+})
+
+// ❌ INCORRECTO — _count dentro de select anidado de relación
+prisma.favorite.findMany({
+  select: {
+    activity: {
+      select: {
+        _count: { select: { views: true } }  // FALLA en runtime Prisma 7
+      }
+    }
+  }
+})
+\\\`n| v0.13.3 | V27 | useLocalStorage hook, useActivityHistory refactor, Prisma _count rule |

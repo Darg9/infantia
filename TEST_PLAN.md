@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.11.0-S48 | **Fecha:** 2026-04-15
+**Version:** v0.13.2 | **Fecha:** 2026-04-22
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
 
@@ -70,7 +70,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.11.0-S48: >91% stmts / >85% branches / 69 archivos | 1056 tests**
+**Total v0.13.2: >91% stmts / >85% branches / 75 archivos | 1213 tests (2 skipped)**
 
 ---
 
@@ -116,7 +116,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 ## Comandos
 
 ```bash
-npm test                  # Suite rapida sin cobertura (916 tests)
+npm test                  # Suite rapida sin cobertura (1213 tests)
 npm run test:coverage     # Con reporte (verifica threshold 85%)
 npx vitest run <archivo>  # Test especifico
 ```
@@ -155,8 +155,20 @@ npx vitest run <archivo>  # Test especifico
 
 ## Checklist por PR
 
-- [ ] `npm test` pasa (1056+ tests) — `npm run lint` sin errores nuevos (ESLint freeze S45)
+- [ ] `npm test` pasa (1213+ tests) — `npm run lint` sin errores nuevos (ESLint freeze S45)
 - [ ] `npm run test:coverage` supera 85% branches
 - [ ] Sin skip/todo sin justificacion
 - [ ] Happy path + al menos 1 caso de error por funcion publica
 - [ ] Docs del modulo actualizados si aplica
+
+---
+
+## Historial de actualizaciones del Plan de Pruebas
+
+| Version | Archivos | Tests | Notas |
+|---|---|---|---|
+| v0.11.0-S48 | 69 | 1056 | Date Preflight, Parser Resiliente |
+| v0.12.0 | 73 | 1203 | Activity Gate, Geographic backfill |
+| v0.13.0 | 73 | 1215 | Design System Enforcement, Chromatic |
+| v0.13.1 | 75 | 1215 | Search Assist System E2E |
+| **v0.13.2** | **75** | **1213+2skip** | **Branding Pipeline; fix searchLog mock en suggestions.test.ts; fix createdAt exacto en ranking.test.ts** |

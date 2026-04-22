@@ -1,5 +1,5 @@
-# HABITAPLAN — DOCUMENTO FUNDACIONAL V26
-> Generado por el script V26. Actualizado: 2026-04-20.
+# HABITAPLAN — DOCUMENTO FUNDACIONAL V27
+> Generado por el script V27. Actualizado: 2026-04-22.
 
 
 # 1. VISION Y PROBLEMA
@@ -417,7 +417,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | --- | --- |
 | Actividades en BD | ~300+ actividades activas (con cobertura de ciudad > 86%) |
 | Locations geocodificadas | 29/29 con coordenadas reales |
-| Tests | 1203 tests en 73 archivos — todos verdes |
+| Tests | 1213 pasando / 1215 totales (2 skipped) en 75 archivos — todos verdes |
 | Cobertura | >91% stmts / >85% branches / >88% funcs |
 | TypeScript | 0 errores (tsc --noEmit) |
 | npm audit | 3 moderate dev-only aceptables |
@@ -435,6 +435,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | UptimeRobot | ACTIVO — monitoreando /api/health |
 | Analytics | window.__hp_analytics + CTR Feedback Loop |
 | Legal Center | /legal — PDFs react-pdf desde SSOT |
+| **Branding SSOT** | **logo.svg + logo-dark.svg + logo-icon.svg — Brand Asset Pipeline en build (V27)** |
 
 
 ## 16.1 Historial de versiones (S33-S54)
@@ -464,6 +465,9 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | S54 — 2542178 | V24 | Fix fallback-mapper HTML completo. Design System Zero Debt (erradicación alert). FUGA + IG Medellín. 1157 tests. |
 | S55 | V25 | Pipeline Optimization. Scheduler Inteligente. Honest Facets UX. Deduplication Engine. 1203 tests. |
 | S58 — d958311 | **V26** | **Activity Gate v0.12.0**: fail-safe LLM estricto (`isActivity` sin default), Gate heurístico, logging diferencial `[discard:llm]/[discard:gate]`, backfill ubicaciones 86%. |
+| v0.13.0 | V26 | Design System Zero-Debt. Semantic hp-tokens. Chromatic VRT. Storybook Vite. |
+| v0.13.1 | V26 | Search Assist System E2E. Hybrid Ranking. Zero-Debt DS Hardening. 1215 tests. |
+| **v0.13.2** | **V27** | **SVG-First Branding SSOT. logo.svg + logo-dark.svg + logo-icon.svg. Brand Asset Pipeline (og.png, favicon, apple-touch). Mobile Header fix. Test repair. Docs full sync.** |
 
 
 # 17. TESTING
@@ -471,12 +475,12 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Metrica | Valor |
 | --- | --- |
 | Framework | Vitest + @vitest/coverage-v8 |
-| Tests totales | 1157 en 73 archivos (+ 2 skipped) |
+| Tests totales | 1213 en 75 archivos (+ 2 skipped) |
 | Threshold | 85% branches — cap fijo |
 | Statements | >91% |
 | Branches | >85% |
 | Functions | >88% |
-| Tiempo ejecucion | ~20s |
+| Tiempo ejecucion | ~26s |
 
 
 ## Tests nuevos V24 (S34-S54 — seleccion)
@@ -525,8 +529,10 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 
 | Comando | Descripcion |
 | --- | --- |
-| npm test | Correr todos los tests (1157 tests, ~20s) |
+| npm test | Correr todos los tests (1213 tests, ~26s) |
 | npm run test:coverage | Tests + reporte de cobertura (threshold 85%) |
+| npm run generate:brand | Generar og.png, favicon.png, apple-touch-icon.png desde SVG (V27) |
+| npm run validate:logo | Validar que SVGs no tengan fondos falsos (pre-commit hook, V27) |
 | npx tsx scripts/ingest-sources.ts --list | Ver inventario de fuentes por canal |
 | npx tsx scripts/ingest-sources.ts --save-db | Ingest completo a BD (todas las fuentes) |
 | npx tsx scripts/ingest-sources.ts --source=banrep --save-db | Solo Banrep — ahorra cuota Gemini |
@@ -543,5 +549,5 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | npx tsx scripts/source-ranking.ts [--weeks=4] | Ranking de fuentes por produccion/volumen |
 | npx tsx scripts/source-pause-manager.ts | Calcular scores y pausar fuentes bajas (NUEVO V24) |
 | npx tsx scripts/test-instagram.ts <URL> --count-new | Contar posts nuevos sin consumir Gemini |
-| node scripts/generate_v26.mjs | Generar Documento Fundacional V26 (actual) |
+| node scripts/generate_v27.mjs | Generar Documento Fundacional V27 (actual) |
 

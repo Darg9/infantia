@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.11.0-S54 | **Status:** Production | **Tests:** 1157 passing / 73 files | **Coverage:** >91% stmts / >85% branches | **Quality Metrics:** ✅ Active
+**Version:** v0.13.2 | **Status:** Production | **Tests:** 1213 passing / 75 files (2 skipped) | **Coverage:** >91% stmts / >85% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 
@@ -72,15 +72,18 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** Native Analytics UI, logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 916 unit tests (>91% stmts / >85% branches), E2E tests
+- 🧪 **Well-tested:** 1213 unit tests (>91% stmts / >85% branches), E2E tests
+- 🎨 **SVG-First Branding:** Logo vectorial SSOT + dark mode + brand asset pipeline (og.png, favicon, apple-touch auto-generados en cada build)
 
 ## Commands
 
 ```bash
 npm run dev                    # Start development server
-npm run build                  # Build for production
-npm test                       # Run all tests (916 tests)
+npm run build                  # Build for production (includes brand asset generation)
+npm test                       # Run all tests (1213 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
+npm run generate:brand         # Generate og.png, favicon.png, apple-touch-icon.png from SVG
+npm run validate:logo          # Validate SVG assets (no fake backgrounds)
 
 # Scraping
 npx tsx scripts/ingest-sources.ts --list                       # Ver fuentes por canal

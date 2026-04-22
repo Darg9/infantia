@@ -7,7 +7,7 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.11.0-S48 — 2026-04-15):**
+**Estado Actual (v0.13.2 — 2026-04-22):**
 - ~275 actividades en DB
 - Protección automática integrada en `ScrapingStorage`
 - 20 web + 12 Instagram (10 Bogotá + 2 Medellín) + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
@@ -303,4 +303,7 @@ A: Sí, basta comentar la lógica en `storage.ts` para Nivel 1, o desactivar el 
 - **2026-03-31 (v0.9.0)**: 277 actividades. Nuevas fuentes: Cinemateca (+13), JBB (+3), Banrep Cartagena (+1). Sistema de canales en ingest-sources.ts. Pre-filtro de binarios en Gemini (ahorra cuota). 0 duplicados exactos.
 - **2026-04-13 (v0.11.0-S43/S44)**: Filtro Adaptativo activo en `storage.ts` — `saveActivity()` descarta actividades con descripción bajo `Math.max(adaptive, source)` threshold. CTR Feedback Loop activo — events → ranking → crawler priority. 916 tests verdes.
 - **2026-04-14 (v0.11.0-S45)**: ESLint freeze DEBT-02 — `no-explicit-any: error` global, 31 archivos legacy → `warn`. Boy Scout Rule activa. Privacy SSOT unificada (interacción + IP/UA + "no identificación directa"). SPF actualizado a `resend.com`.
+- **2026-04-19 (v0.12.0)**: Activity Gate doble capa (LLM + Heurístico). Backfill geográfico 86% cobertura. 1203 tests.
+- **2026-04-21 (v0.13.1)**: Search Assist System E2E. Hybrid Ranking documentado. Design System Zero-Debt. 1215 tests.
+- **2026-04-22 (v0.13.2)**: SVG-First Branding SSOT. Brand Asset Pipeline en build. Mobile Header fix. Test suite repair (suggestions mock + ranking). 1213/1215 tests (2 skip).
 - **[Futuro]**: Reportes semanales, alertas automáticas, dashboard web.

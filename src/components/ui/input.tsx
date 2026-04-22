@@ -19,7 +19,7 @@ import { clsx } from 'clsx'
 
 interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'id'> {
   id: string
-  label: string
+  label?: string
   /** Mensaje de error inline. También cambia el estilo del borde. */
   error?: string | null
   /** Permite esconder el label visualmente pero mantiene accesibilidad */
@@ -46,19 +46,21 @@ export function Input({
   return (
     <div className="space-y-1.5">
       {/* Label */}
-      <label
-        htmlFor={id}
-        className={clsx(
-          hideLabel ? 'sr-only' : 'block text-sm font-medium text-hp-text-primary'
-        )}
-      >
-        {label}
-        {required && (
-          <span className="text-error-500 ml-0.5" aria-hidden="true">
-            *
-          </span>
-        )}
-      </label>
+      {label && (
+        <label
+          htmlFor={id}
+          className={clsx(
+            hideLabel ? 'sr-only' : 'block text-sm font-medium text-hp-text-primary'
+          )}
+        >
+          {label}
+          {required && (
+            <span className="text-error-500 ml-0.5" aria-hidden="true">
+              *
+            </span>
+          )}
+        </label>
+      )}
       {hint && (
         <p className="text-xs text-hp-text-secondary -mt-1">{hint}</p>
       )}

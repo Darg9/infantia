@@ -560,7 +560,7 @@ export default function EditarPerfilPage() {
             </div>
 
             {/* Input file oculto — tabIndex=-1, aria-hidden: accesible solo via div[role=button] */}
-            <Input
+            <input
               ref={fileInputRef}
               id="avatar-input"
               type="file"

@@ -31,6 +31,10 @@ export const metadata: Metadata = {
     'campamentos',
     'cursos para niños',
   ],
+  icons: {
+    icon: '/favicon.png',
+    apple: '/apple-touch-icon.png',
+  },
   openGraph: {
     type: 'website',
     locale: 'es_CO',
@@ -38,12 +42,14 @@ export const metadata: Metadata = {
     title: 'HabitaPlan — Actividades para niños en Colombia',
     description:
       'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
+    images: ['/og.png'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HabitaPlan — Actividades para niños en Colombia',
     description:
       'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia.',
+    images: ['/og.png'],
   },
   robots: {
     index: true,
@@ -68,7 +74,9 @@ export default function RootLayout({
           Prioridad: localStorage.theme > prefers-color-scheme del sistema.
           El fallback hardened evita valores corruptos en localStorage. */}
       <head>
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
         <link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

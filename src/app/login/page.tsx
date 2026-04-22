@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Button, Input, Card } from '@/components/ui'
@@ -9,18 +9,18 @@ import { createLogger } from '@/lib/logger'
 
 const logger = createLogger('Auth')
 
+// Feature flag — activar cuando tengamos proveedor SMS configurado
+const ENABLE_PHONE_OTP = process.env.NEXT_PUBLIC_ENABLE_PHONE_OTP === 'true'
+
 function LoginForm() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') || '/'
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [phone, setPhone] = useState('')
-  const [token, setToken] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [authMode, setAuthMode] = useState<'options' | 'email' | 'phone' | 'otp'>('options')
+  const [authMode, setAuthMode] = useState<'options' | 'email' | 'email-password' | 'magic-sent'>('options')
   const [isApple, setIsApple] = useState(false)
 
   useEffect(() => {
@@ -30,7 +30,7 @@ function LoginForm() {
   const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
     const supabase = createSupabaseBrowserClient()
-    const { error: authError } = await supabase.auth.signInWithOAuth({ 
+    const { error: authError } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
@@ -44,51 +44,32 @@ function LoginForm() {
     }
   }
 
-  const handleSendOtp = async (e: React.FormEvent) => {
+  const handleMagicLink = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
 
-    // Basic normalization: remove spaces, ensure + prefix
-    let normalizedPhone = phone.trim().replace(/\s/g, '')
-    if (!normalizedPhone.startsWith('+')) {
-      normalizedPhone = `+${normalizedPhone}`
-    }
-
     const supabase = createSupabaseBrowserClient()
-    const { error: authError } = await supabase.auth.signInWithOtp({ phone: normalizedPhone })
+    const { error: authError } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectTo)}`,
+      }
+    })
 
     if (authError) {
-      logger.error('Error OTP', { action: 'send_otp', reason: authError.message })
+      logger.error('Error Magic Link', { action: 'magic_link', reason: authError.message })
       setError(authError.message)
       setLoading(false)
       return
     }
 
-    setAuthMode('otp')
+    logger.info('Magic Link enviado', { action: 'magic_link', result: 'success' })
+    setAuthMode('magic-sent')
     setLoading(false)
   }
 
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    setLoading(true)
-
-    const supabase = createSupabaseBrowserClient()
-    const { error: authError } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' })
-
-    if (authError) {
-      logger.error('Error verify OTP', { action: 'verify_otp', reason: authError.message })
-      setError('Código incorrecto o expirado')
-      setLoading(false)
-      return
-    }
-
-    // On verify, supabase logs the user in. We redirect to callback.
-    window.location.href = `/auth/callback?next=${encodeURIComponent(redirectTo)}`
-  }
-
-  async function handleEmailSubmit(e: React.FormEvent) {
+  const handleEmailPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
@@ -97,14 +78,13 @@ function LoginForm() {
     const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
 
     if (authError) {
-      logger.error('Error de credenciales', { action: 'login', result: 'error', reason: authError.message })
+      logger.error('Error credenciales', { action: 'login', result: 'error', reason: authError.message })
       setError('Correo o contraseña incorrectos')
       setLoading(false)
       return
     }
 
     logger.info('Login exitoso', { action: 'login', result: 'success' })
-
     window.location.href = `/auth/callback?next=${encodeURIComponent(redirectTo)}`
   }
 
@@ -119,16 +99,37 @@ function LoginForm() {
         </p>
       )}
 
+      {/* OPCIONES PRINCIPALES */}
       {authMode === 'options' && (
-        <div className="space-y-4">
-          <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => handleOAuth('google')}>
+        <div className="space-y-3">
+          <Button
+            variant="secondary"
+            className="w-full justify-center gap-2"
+            onClick={() => handleOAuth('google')}
+            disabled={loading}
+          >
             Continuar con Google
           </Button>
-          <Button variant="secondary" className="w-full justify-center gap-2" onClick={() => setAuthMode('phone')}>
-            Continuar con Teléfono
+
+          <Button
+            variant="secondary"
+            className="w-full justify-center gap-2"
+            onClick={() => setAuthMode('email')}
+          >
+            Continuar con Email
           </Button>
 
-          <div className="relative my-6">
+          {ENABLE_PHONE_OTP && (
+            <Button
+              variant="ghost"
+              className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
+              onClick={() => setAuthMode('options')} // placeholder
+            >
+              Continuar con Teléfono
+            </Button>
+          )}
+
+          <div className="relative my-4">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-[var(--hp-border)]" />
             </div>
@@ -137,79 +138,84 @@ function LoginForm() {
             </div>
           </div>
 
-          <Button variant="ghost" className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]" onClick={() => handleOAuth('facebook')}>
+          <Button
+            variant="ghost"
+            className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
+            onClick={() => handleOAuth('facebook')}
+          >
             Continuar con Facebook
           </Button>
           {isApple && (
-            <Button variant="ghost" className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]" onClick={() => handleOAuth('apple')}>
+            <Button
+              variant="ghost"
+              className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
+              onClick={() => handleOAuth('apple')}
+            >
               Continuar con Apple
             </Button>
           )}
-
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[var(--hp-border)]" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">O usa tu correo</span>
-            </div>
-          </div>
-
-          <Button variant="ghost" className="w-full justify-center gap-2 text-brand-600 bg-brand-50 hover:bg-brand-100" onClick={() => setAuthMode('email')}>
-            Iniciar sesión con Email
-          </Button>
         </div>
       )}
 
-      {authMode === 'phone' && (
-        <form onSubmit={handleSendOtp} className="space-y-4">
+      {/* MAGIC LINK (email primario) */}
+      {authMode === 'email' && (
+        <form onSubmit={handleMagicLink} className="space-y-4">
           <div>
             <Input
-              id="login-phone"
-              label="Número de Teléfono (con código de país)"
-              type="tel"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              id="login-email"
+              label="Correo electrónico"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
-              placeholder="+573001234567"
+              placeholder="tu@correo.com"
             />
           </div>
           <Button type="submit" disabled={loading} loading={loading} className="w-full">
-            {loading ? 'Enviando...' : 'Enviar código SMS'}
+            {loading ? 'Enviando...' : 'Recibir enlace de acceso'}
           </Button>
-          <button type="button" onClick={() => { setAuthMode('options'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
+          <button
+            type="button"
+            onClick={() => { setAuthMode('email-password'); setError(null) }}
+            className="w-full text-center text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] mt-1"
+          >
+            ¿Tienes contraseña? Usar contraseña
+          </button>
+          <button
+            type="button"
+            onClick={() => { setAuthMode('options'); setError(null) }}
+            className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]"
+          >
             Volver a opciones
           </button>
         </form>
       )}
 
-      {authMode === 'otp' && (
-        <form onSubmit={handleVerifyOtp} className="space-y-4">
-          <div>
-            <Input
-              id="login-otp"
-              label="Código SMS"
-              type="text"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              required
-              placeholder="123456"
-            />
-          </div>
-          <Button type="submit" disabled={loading} loading={loading} className="w-full">
-            {loading ? 'Verificando...' : 'Verificar código'}
-          </Button>
-          <button type="button" onClick={() => { setAuthMode('phone'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
-            Cambiar número
+      {/* MAGIC LINK ENVIADO */}
+      {authMode === 'magic-sent' && (
+        <div className="text-center py-4 space-y-4">
+          <div className="text-4xl">📧</div>
+          <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo</p>
+          <p className="text-[var(--hp-text-secondary)] text-sm">
+            Enviamos un enlace de acceso a <strong>{email}</strong>.<br />
+            Haz clic en él para entrar automáticamente.
+          </p>
+          <button
+            type="button"
+            onClick={() => { setAuthMode('email'); setError(null) }}
+            className="text-sm text-brand-600 hover:underline"
+          >
+            Reenviar enlace
           </button>
-        </form>
+        </div>
       )}
 
-      {authMode === 'email' && (
-        <form onSubmit={handleEmailSubmit} className="space-y-4">
+      {/* EMAIL + CONTRASEÑA (fallback) */}
+      {authMode === 'email-password' && (
+        <form onSubmit={handleEmailPassword} className="space-y-4">
           <div>
             <Input
-              id="login-email"
+              id="login-email-pw"
               label="Correo electrónico"
               type="email"
               value={email}
@@ -232,8 +238,12 @@ function LoginForm() {
           <Button type="submit" disabled={loading} loading={loading} className="w-full">
             {loading ? 'Ingresando...' : 'Ingresar'}
           </Button>
-          <button type="button" onClick={() => { setAuthMode('options'); setError(null) }} className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] mt-2">
-            Volver a opciones
+          <button
+            type="button"
+            onClick={() => { setAuthMode('email'); setError(null) }}
+            className="w-full text-center text-sm text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]"
+          >
+            Volver al enlace mágico
           </button>
         </form>
       )}

@@ -68,6 +68,16 @@ export function clearHistory(): void {
   }
 }
 
+/**
+ * Elimina una actividad específica del historial.
+ */
+export function removeFromHistory(activityId: string): void {
+  if (typeof window === 'undefined') return;
+  const history = readHistory();
+  const filtered = history.filter((h) => h.activityId !== activityId);
+  writeHistory(filtered);
+}
+
 // ─── Hook React (SSR-safe con patrón mounted, React 19) ───────────────────────
 
 /**
@@ -94,5 +104,12 @@ export function useActivityHistory() {
     setHistory([]);
   }, [setHistory]);
 
-  return { history, addToHistory: add, clearHistory: clear, mounted };
+  const remove = useCallback(
+    (activityId: string) => {
+      setHistory((prev) => prev.filter((h) => h.activityId !== activityId));
+    },
+    [setHistory]
+  );
+
+  return { history, addToHistory: add, clearHistory: clear, removeFromHistory: remove, mounted };
 }

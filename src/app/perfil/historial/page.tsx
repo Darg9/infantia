@@ -6,30 +6,12 @@
 // Después del mount, lee localStorage. Esto evita conflictos con React 19.
 // =============================================================================
 
-import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui';
 import { activityPath } from '@/lib/activity-url';
-
-const STORAGE_KEY = 'habitaplan:activity-history';
-
-interface HistoryEntry {
-  activityId: string;
-  title: string;
-  imageUrl: string | null;
-  viewedAt: string;
-}
-
-function readHistory(): HistoryEntry[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
-  } catch {
-    return [];
-  }
-}
+import { useActivityHistory } from '@/hooks/useActivityHistory';
+import { useToast } from '@/components/ui/toast';
+import { Trash2 } from 'lucide-react';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -47,25 +29,19 @@ function timeAgo(dateStr: string): string {
 }
 
 export default function HistorialPage() {
-  // ── Patrón mounted: evita hydration mismatch en React 19 ─────────────────
-  // SSR → mounted=false → renderiza vacío (sin acceso a localStorage)
-  // Client → mounted=true → lee localStorage y muestra el historial real
-  const [mounted, setMounted] = useState(false);
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const { history, clearHistory, removeFromHistory, mounted } = useActivityHistory();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    setHistory(readHistory());
-    setMounted(true);
-  }, []);
+  const handleClearAll = () => {
+    clearHistory();
+    toast.success('Historial borrado completamente');
+  };
 
-  const clearHistory = useCallback(() => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // Storage no disponible
-    }
-    setHistory([]);
-  }, []);
+  const handleRemoveItem = (e: React.MouseEvent, activityId: string, title: string) => {
+    e.preventDefault(); // Prevenir navegación del Link
+    removeFromHistory(activityId);
+    toast.success('Eliminado del historial');
+  };
 
   // ── Skeleton durante SSR y primer render ─────────────────────────────────
   if (!mounted) {
@@ -107,7 +83,7 @@ export default function HistorialPage() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearHistory}
+            onClick={handleClearAll}
           >
             Borrar historial
           </Button>
@@ -148,12 +124,20 @@ export default function HistorialPage() {
                   🎨
                 </div>
               )}
-              <div className="flex-1 min-w-0">
+              <div className="flex-1 min-w-0 pr-4">
                 <p className="text-sm font-medium text-[var(--hp-text-primary)] group-hover:text-brand-600 transition-colors truncate">
                   {entry.title}
                 </p>
                 <p className="text-xs text-[var(--hp-text-muted)]">{timeAgo(entry.viewedAt)}</p>
               </div>
+              <button
+                type="button"
+                className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                aria-label="Eliminar del historial"
+                onClick={(e) => handleRemoveItem(e, entry.activityId, entry.title)}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             </Link>
           ))}
         </div>

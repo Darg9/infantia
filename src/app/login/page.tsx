@@ -171,7 +171,7 @@ function LoginForm() {
           <p className="text-[var(--hp-text-primary)] font-semibold">Revisa tu correo-e</p>
           <p className="text-[var(--hp-text-secondary)] text-sm">
             Enviamos un enlace a <strong>{email}</strong>.<br />
-            Haz clic en él para entrar. Puede tardar unos segundos.
+            Haz clic en él para entrar. Revisa también tu carpeta de Spam.
           </p>
           {/* Email editable por si se equivocó */}
           <button
@@ -212,6 +212,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            autoFocus
             placeholder="tu@correo.com"
           />
           <p className="text-xs text-[var(--hp-text-muted)]">
@@ -223,7 +224,7 @@ function LoginForm() {
             loading={status === 'loading'}
             className="w-full"
           >
-            {status === 'loading' ? 'Enviando...' : 'Enviar enlace por correo-e para entrar'}
+            {status === 'loading' ? 'Enviando...' : 'Enviarme enlace de acceso'}
           </Button>
           <button
             type="button"

@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.13.0
-**Última actualización:** 21 de abril de 2026
+**Versión:** ✅ v0.13.2
+**Última actualización:** 22 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -79,3 +79,6 @@ Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/
 - *Nunca hardcodear* textos legales directamente en los componentes de React, UI, `Layout`, o modales.
 - Para cambiar cualquier texto legal: modificar el archivo `.ts` correspondiente en `src/modules/legal/constants/` → compila la app → web y PDF se actualizan simultáneamente.
 - Cambios en datos recolectados → actualizar `privacy.ts` **y** `data-treatment.ts` para mantener coherencia.
+
+## 🎨 Identidad Visual y Branding (v0.13.2)
+Los assets de marca (logo, og.png, favicon) están completamente desacoplados del sistema legal. Los textos de disclaimer se mantienen en `src/modules/legal/constants/legal-disclaimers.ts` y son consumidos por `ActivityCard.tsx` y las páginas de detalle. El pipeline de branding (`scripts/generate-brand-assets.mjs`) no afecta ni altera los textos legales. **SSOT legal preservado.**

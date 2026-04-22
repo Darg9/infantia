@@ -1,7 +1,7 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.13.0
-**Última actualización:** 21 de abril de 2026
+**Versión:** ✅ v0.13.2
+**Última actualización:** 22 de abril de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
 
@@ -29,6 +29,9 @@ Cualquier evento nuevo debe declararse primero ahí para evitar fragmentación. 
    - **Impacto**: No se puede entender intención real de exploración ni optimizar UX de filtros.
    - **Prioridad**: HIGH (bloquea decisiones de producto).
    - **Recomendación**: Instrumentar evento en cambios de categoría, rango de edad, precio, ubicación.
+   - **Backlog ID**: FEAT-6.8-3
+
+> **Nota v0.13.2:** El script `scripts/generate-brand-assets.mjs` no emite eventos de analytics — opera exclusivamente en build-time. Los únicos eventos de producción son los 6 definidos arriba más el pendiente `filter_applied`.
 
 ## 👤 Identidad de Usuario (Tracking)
 

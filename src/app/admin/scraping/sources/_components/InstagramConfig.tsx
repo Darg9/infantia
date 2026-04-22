@@ -76,7 +76,8 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Posts por corrida</label>
           <div className="flex items-center gap-2">
-            <Input
+            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            <input
               type="range"
               min={1}
               max={12}

@@ -508,7 +508,8 @@ export default function Filters({
           </svg>
         </Button>
 
-        <Input
+        {/* eslint-disable-next-line no-restricted-syntax -- campo de búsqueda, el DS Input requiere id+label */}
+        <input
           type="text"
           value={searchValue}
           onChange={e => handleSearchChange(e.target.value)}

@@ -85,7 +85,8 @@ export default function QualityDashboardClient() {
       <div className="bg-[var(--hp-bg-surface)] p-4 rounded-xl border border-[var(--hp-border)] shadow-sm mb-8 flex flex-wrap gap-4 items-end">
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Desde</label>
-          <Input 
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.from}
@@ -94,7 +95,8 @@ export default function QualityDashboardClient() {
         </div>
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Hasta</label>
-          <Input 
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
             value={filters.to}

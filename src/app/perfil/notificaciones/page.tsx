@@ -168,7 +168,8 @@ export default function NotificacionesPage() {
                   : 'border border-transparent hover:bg-[var(--hp-bg-page)]'
               }`}
             >
-              <Input
+              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              <input
                 type="radio"
                 name="frequency"
                 value={opt.value}

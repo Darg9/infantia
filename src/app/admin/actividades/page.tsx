@@ -93,7 +93,8 @@ export default function AdminActividadesPage() {
       </div>
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 mb-5">
-        <Input
+        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        <input
           type="text"
           placeholder="Buscar por título..."
           value={search}

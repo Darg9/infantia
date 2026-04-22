@@ -138,7 +138,8 @@ export default function EditarActividadPage() {
         {/* Título */}
         <div>
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Título</label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -191,7 +192,8 @@ export default function EditarActividadPage() {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Precio (COP)</label>
-            <Input
+            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            <input
               type="number"
               min="0"
               value={price}
@@ -202,7 +204,8 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad mín.</label>
-            <Input
+            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            <input
               type="number"
               min="0"
               max="120"
@@ -213,7 +216,8 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad máx.</label>
-            <Input
+            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            <input
               type="number"
               min="0"
               max="120"

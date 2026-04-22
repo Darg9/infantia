@@ -141,7 +141,8 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre completo <span className="text-error-500">*</span>
           </label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
@@ -156,7 +157,8 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Correo electrónico <span className="text-error-500">*</span>
           </label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
@@ -172,7 +174,8 @@ export default function ContactoPage() {
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
               URL de la actividad en HabitaPlan {isTakedown && <span className="text-error-500">*</span>}
             </label>
-            <Input
+            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            <input
               type="url"
               value={actividadUrl}
               onChange={(e) => setActividadUrl(e.target.value)}

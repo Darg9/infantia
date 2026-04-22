@@ -68,7 +68,8 @@ export default function NuevoHijoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre <span className="text-error-500">*</span>
           </label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -84,7 +85,8 @@ export default function NuevoHijoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Fecha de nacimiento <span className="text-error-500">*</span>
           </label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}

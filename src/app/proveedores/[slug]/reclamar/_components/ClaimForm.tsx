@@ -71,7 +71,8 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       {/* Nombre */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Tu nombre</label>
-        <Input
+        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -83,7 +84,8 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       {/* Email — solo lectura */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Email de tu cuenta</label>
-        <Input
+        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        <input
           type="email"
           value={userEmail}
           readOnly

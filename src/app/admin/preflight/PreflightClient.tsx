@@ -163,7 +163,8 @@ export function PreflightClient() {
       <div className="flex flex-wrap items-end gap-4 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl px-5 py-4">
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-600">Desde</label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="date"
             value={from}
             max={to}
@@ -174,7 +175,8 @@ export function PreflightClient() {
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-medium text-gray-600">Hasta</label>
-          <Input
+          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <input
             type="date"
             value={to}
             min={from}

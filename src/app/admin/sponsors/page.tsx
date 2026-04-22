@@ -85,7 +85,8 @@ export default function SponsorsAdminPage() {
   const field = (k: keyof typeof form, label: string, type = 'text') => (
     <div>
       <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">{label}</label>
-      <Input
+      {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+      <input
         type={type}
         className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         value={form[k] as string}

@@ -6,3 +6,4 @@ export { ToastProvider, useToast, type ToastType, type ToastItem, type ToastAPI 
 export { Avatar } from './avatar'
 export { Dropdown } from './dropdown'
 export { Modal, type ModalProps } from './modal'
+export { ActionCard, type ActionCardProps } from './action-card'

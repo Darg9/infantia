@@ -1,5 +1,5 @@
 'use client';
-import { Button, Input } from '@/components/ui';
+import { Button, Input, ActionCard } from '@/components/ui';
 
 import { useState } from 'react'
 import Link from 'next/link'
@@ -44,9 +44,7 @@ export default function ContribuirPage() {
         {!tipo ? (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Card: Sugerir actividad */}
-            <button type="button" onClick={() => setTipo('actividad')}
-              className="group relative flex flex-col items-start w-full rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
-            >
+            <ActionCard onClick={() => setTipo('actividad')}>
               <div className="absolute top-4 right-4 text-2xl">📝</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una actividad</h2>
               <p className="text-sm text-gray-600 mb-4">
@@ -55,12 +53,9 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </button>
+            </ActionCard>
 
-            {/* Card: Sugerir institución */}
-            <button type="button" onClick={() => setTipo('institucion')}
-              className="group relative flex flex-col items-start w-full rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
-            >
+            <ActionCard onClick={() => setTipo('institucion')}>
               <div className="absolute top-4 right-4 text-2xl">🏢</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una institución</h2>
               <p className="text-sm text-gray-600 mb-4">
@@ -69,7 +64,7 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </button>
+            </ActionCard>
           </div>
         ) : (
           <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-8">

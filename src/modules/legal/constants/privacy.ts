@@ -70,6 +70,7 @@ export const PRIVACY_SECTIONS = [
     content: [
       { type: 'text' as const, text: 'Los datos personales son utilizados para:' },
       { type: 'bullet' as const, text: 'Crear y gestionar cuentas de usuario' },
+      { type: 'bullet' as const, text: 'Autenticación sin contraseña (Magic Link): Podemos utilizar enlaces de acceso enviados al correo electrónico del usuario para permitir el inicio de sesión seguro sin necesidad de contraseña.' },
       { type: 'bullet' as const, text: 'Permitir el uso de la plataforma' },
       { type: 'bullet' as const, text: 'Personalizar la experiencia' },
       { type: 'bullet' as const, text: 'Garantizar la seguridad del servicio' },

@@ -1,9 +1,10 @@
 // =============================================================================
-// /perfil/favoritos — Lista de actividades favoritas del usuario autenticado
-// Server Component
+// /perfil/favoritos — Lista de actividades y lugares favoritos del usuario
+// Server Component — usa select explícito para evitar Decimal no serializable
 // =============================================================================
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { requireAuth, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
@@ -16,16 +17,39 @@ export const metadata: Metadata = {
 
 export default async function FavoritosPage() {
   const user = await requireAuth();
-
   const dbUser = await getOrCreateDbUser(user);
 
+  // ── Select explícito — NO incluir Decimal (latitude/longitude, price).
+  // Decimal es un tipo de clase de Prisma; Next.js no puede serializar clases
+  // al cruzar la frontera Server→Client. Seleccionamos solo campos primitivos.
   const favorites = await prisma.favorite.findMany({
     where: { userId: dbUser.id },
     orderBy: { createdAt: 'desc' },
-    include: {
+    select: {
+      id: true,
+      // ── Actividad favorita ──
       activity: {
-        include: {
-          provider: { select: { name: true, isVerified: true, isPremium: true } },
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          type: true,
+          status: true,
+          audience: true,
+          ageMin: true,
+          ageMax: true,
+          // price es Decimal → convertimos a number en el map
+          price: true,
+          priceCurrency: true,
+          pricePeriod: true,
+          imageUrl: true,
+          sourceUrl: true,
+          sourceDomain: true,
+          duplicatesCount: true,
+          createdAt: true,
+          provider: {
+            select: { name: true, isVerified: true, isPremium: true },
+          },
           location: {
             select: {
               name: true,
@@ -34,26 +58,125 @@ export default async function FavoritosPage() {
             },
           },
           categories: {
-            include: { category: { select: { id: true, name: true, slug: true } } },
+            select: { category: { select: { id: true, name: true, slug: true } } },
           },
+          _count: { select: { views: true } },
         },
       },
+      // ── Lugar favorito ──
       location: {
-        include: {
-          city: { select: { name: true } }
-        }
-      }
+        select: {
+          id: true,
+          name: true,
+          address: true,
+          neighborhood: true,
+          // latitude y longitude son Decimal → NO seleccionamos para evitar crash
+          city: { select: { name: true } },
+        },
+      },
     },
   });
 
-  const mixedFavorites = favorites.map((f) => {
-    if (f.activity) return { type: 'activity' as const, item: f.activity, favId: f.id };
-    if (f.location) return { type: 'place' as const, item: f.location, favId: f.id };
-    return null;
-  }).filter(Boolean);
+  // ── Normalizar datos a objetos planos serializables ──────────────────────
+  type ActivityFav = {
+    type: 'activity';
+    favId: string;
+    item: {
+      id: string;
+      title: string;
+      description: string;
+      type: string;
+      status: string;
+      audience: string;
+      ageMin: number | null;
+      ageMax: number | null;
+      price: number | null;
+      priceCurrency: string;
+      pricePeriod: string | null;
+      imageUrl: string | null;
+      sourceUrl: string | null;
+      sourceDomain: string | null;
+      duplicatesCount: number;
+      createdAt: string; // ISO string — Date no es serializable
+      provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
+      location: { name: string; neighborhood: string | null; city: { name: string } | null } | null;
+      categories: { category: { id: string; name: string; slug: string } }[];
+      _count: { views: number };
+    };
+  };
 
-  const activeCount = mixedFavorites.filter((f) => f?.type === 'activity' && f.item.status === 'ACTIVE').length;
-  const expiredCount = mixedFavorites.filter((f) => f?.type === 'activity' && f.item.status === 'EXPIRED').length;
+  type PlaceFav = {
+    type: 'place';
+    favId: string;
+    item: {
+      id: string;
+      name: string;
+      address: string;
+      neighborhood: string | null;
+      city: { name: string } | null;
+    };
+  };
+
+  const mixedFavorites: (ActivityFav | PlaceFav)[] = [];
+
+  for (const f of favorites) {
+    if (f.activity) {
+      const act = f.activity;
+      mixedFavorites.push({
+        type: 'activity',
+        favId: f.id,
+        item: {
+          id: act.id,
+          title: act.title,
+          description: act.description,
+          type: act.type,
+          status: act.status,
+          audience: act.audience,
+          ageMin: act.ageMin,
+          ageMax: act.ageMax,
+          // Convertir Decimal a number explícitamente
+          price: act.price !== null && act.price !== undefined
+            ? (typeof (act.price as any).toNumber === 'function'
+                ? (act.price as any).toNumber()
+                : Number(act.price))
+            : null,
+          priceCurrency: act.priceCurrency,
+          pricePeriod: act.pricePeriod,
+          imageUrl: act.imageUrl,
+          sourceUrl: act.sourceUrl,
+          sourceDomain: act.sourceDomain,
+          duplicatesCount: act.duplicatesCount,
+          // Convertir Date a ISO string
+          createdAt: act.createdAt instanceof Date
+            ? act.createdAt.toISOString()
+            : String(act.createdAt),
+          provider: act.provider,
+          location: act.location,
+          categories: act.categories,
+          _count: act._count,
+        },
+      });
+    } else if (f.location) {
+      mixedFavorites.push({
+        type: 'place',
+        favId: f.id,
+        item: {
+          id: f.location.id,
+          name: f.location.name,
+          address: f.location.address,
+          neighborhood: f.location.neighborhood,
+          city: f.location.city,
+        },
+      });
+    }
+  }
+
+  const activeCount = mixedFavorites.filter(
+    (f) => f.type === 'activity' && f.item.status === 'ACTIVE'
+  ).length;
+  const expiredCount = mixedFavorites.filter(
+    (f) => f.type === 'activity' && f.item.status === 'EXPIRED'
+  ).length;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col gap-6">
@@ -76,7 +199,7 @@ export default async function FavoritosPage() {
         </div>
       )}
 
-      {/* Grid or empty state */}
+      {/* Grid o empty state */}
       {mixedFavorites.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 gap-6 text-center px-4">
           <div className="space-y-1.5 max-w-[320px]">
@@ -90,7 +213,7 @@ export default async function FavoritosPage() {
 
           <div className="w-full max-w-[260px] rounded-2xl border border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 shadow-sm overflow-hidden select-none">
             <div className="aspect-[4/3] bg-gray-100 dark:bg-gray-800 relative" aria-hidden="true">
-              <div 
+              <div
                 role="button"
                 tabIndex={0}
                 aria-label="Guardar"
@@ -110,28 +233,27 @@ export default async function FavoritosPage() {
             </div>
           </div>
 
-          <a
+          <Link
             href="/actividades"
             className="mt-2 inline-flex items-center justify-center px-6 py-2.5 text-sm font-semibold text-white bg-brand-500 hover:bg-brand-600 active:bg-brand-700 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 w-full sm:w-auto"
           >
             Ver actividades
-          </a>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {mixedFavorites.map((fav) => {
-            if (!fav) return null;
             if (fav.type === 'activity') {
               return (
                 <div key={fav.favId} className="relative group">
                   <div className="absolute z-10 top-2.5 left-2.5 px-2 py-0.5 bg-brand-600 text-white text-xs font-medium rounded-full shadow-sm border border-brand-500/50 pointer-events-none tracking-wide">
                     Actividad
                   </div>
-                  <ActivityCard activity={JSON.parse(JSON.stringify(fav.item))} isFavorited={true} />
+                  {/* fav.item ya es un objeto plano con price=number y createdAt=string */}
+                  <ActivityCard activity={fav.item as any} isFavorited={true} />
                 </div>
               );
             } else {
-              // LocationCard minificada renderizada inline para evitar dependencias
               const loc = fav.item;
               return (
                 <div key={fav.favId} className="relative group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full min-h-[280px]">

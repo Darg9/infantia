@@ -1,27 +1,27 @@
 'use client';
-import { Button } from '@/components/ui';
 
-import Link from 'next/link'
-import { useActivityHistory } from '@/hooks/useActivityHistory'
-import { activityPath } from '@/lib/activity-url'
+import Link from 'next/link';
+import { Button } from '@/components/ui';
+import { useActivityHistory } from '@/hooks/useActivityHistory';
+import { activityPath } from '@/lib/activity-url';
 
 function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime()
-  const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return 'Ahora mismo'
-  if (minutes < 60) return `Hace ${minutes} min`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `Hace ${hours}h`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `Hace ${days}d`
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return 'Ahora mismo';
+  if (minutes < 60) return `Hace ${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `Hace ${hours}h`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `Hace ${days}d`;
   return new Date(dateStr).toLocaleDateString('es-CO', {
     day: 'numeric',
     month: 'short',
-  })
+  });
 }
 
 export default function HistorialPage() {
-  const { history, clearHistory } = useActivityHistory()
+  const { history, clearHistory } = useActivityHistory();
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
@@ -36,6 +36,8 @@ export default function HistorialPage() {
         </div>
         {history.length > 0 && (
           <Button
+            variant="ghost"
+            size="sm"
             onClick={clearHistory}
             className="text-xs text-[var(--hp-text-muted)] hover:text-error-500 transition-colors"
           >
@@ -43,16 +45,17 @@ export default function HistorialPage() {
           </Button>
         )}
       </div>
+
       {history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">🕐</span>
           <p className="text-gray-600 font-medium text-lg">No has visto actividades recientemente</p>
           <p className="text-sm text-[var(--hp-text-muted)] max-w-sm">
-            Cuando visites una actividad, aparecera aqui para que puedas volver a encontrarla.
+            Cuando visites una actividad, aparecerá aquí para que puedas volver a encontrarla.
           </p>
           <Link
             href="/actividades"
-            className="mt-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            className="mt-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
           >
             Explorar actividades
           </Link>
@@ -66,6 +69,7 @@ export default function HistorialPage() {
               className="flex items-center gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-3 hover:border-brand-300 transition-colors group"
             >
               {entry.imageUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={entry.imageUrl}
                   alt=""

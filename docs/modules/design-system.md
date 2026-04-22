@@ -19,6 +19,28 @@ El Design System de HabitaPlan es la fuente única de la verdad para la interfaz
 ### Enforcement
 Cualquier PR con estilos directos debe ser rechazado.
 
+## 🖼️ Logo Asset Rules
+
+Todo asset de marca (logo, isologo, isotipo) debe pasar validación automatizada (`npm run validate:logo`) y cumplir estrictamente esta jerarquía arquitectónica:
+
+- **Source of Truth:** SVG
+- **Derivados Aprobados:** PNG optimizado
+- **Rol de la IA:** Solo referencia y conceptualización (no productiva).
+
+### Restricciones para Derivados (PNG)
+- **Transparencia:** Debe tener canal Alpha real comprobable.
+- **Prohibiciones Absolutas:**
+  - Sombras o drop-shadows incorporados.
+  - Brillos / glow effects.
+  - Fondos falsos blancos/negros o cuadrículas quemadas.
+  - Transparencias parciales masivas (halos, mal blending).
+- **Resoluciones Aprobadas:**
+  - Base exportado: 512x512
+  - Versión optimizada: 256x256
+  - Favicon: 128x128
+
+Estas directrices previenen assets defectuosos, asegurando la consistencia limpia sobre múltiples temas (`light`, `dark` y *high-contrast*). No se confía en inputs externos: ni humanos, ni de Inteligencia Artificial. Todo asset es verificado programáticamente.
+
 ## 🧱 Uso de Primitivos
 
 - ❌ No usar `<button>` nativo

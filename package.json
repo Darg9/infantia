@@ -21,7 +21,8 @@
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "chromatic": "chromatic",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "validate:logo": "node scripts/validate-logo.mjs"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
@@ -83,6 +84,7 @@
     "jsdom": "^29.0.1",
     "lint-staged": "^16.4.0",
     "node-fetch": "^3.3.2",
+    "sharp": "^0.33.5",
     "storybook": "^8.6.18",
     "storybook-addon-pseudo-states": "^3.1.1",
     "tailwindcss": "^4",
@@ -94,6 +96,9 @@
   "lint-staged": {
     "*.{ts,tsx}": [
       "eslint --fix"
+    ],
+    "public/logo*.{png,svg}": [
+      "npm run validate:logo"
     ]
   }
 }

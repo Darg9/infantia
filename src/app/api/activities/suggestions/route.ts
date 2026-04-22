@@ -48,8 +48,8 @@ export async function GET(req: NextRequest) {
         a.title,
         (
           SELECT c2.name
-          FROM "ActivityCategory" ac2
-          JOIN "Category" c2 ON c2.id = ac2."categoryId"
+          FROM activity_categories ac2
+          JOIN categories c2 ON c2.id = ac2."categoryId"
           WHERE ac2."activityId" = a.id
           LIMIT 1
         ) AS cat_name,

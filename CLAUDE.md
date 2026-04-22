@@ -207,11 +207,11 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-## Estado actual (v0.13.0-S56 — Actualizado Hoy)
+## Estado actual (v6.7.1 — Actualizado Hoy)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **1215 tests** en 73 archivos — `npm test` pasa — 0 errores TypeScript
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
-- GitHub Actions CI/CD: tests + build automático en cada push a master
+- GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram
@@ -237,16 +237,19 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 - **Date Preflight v2 (S55):** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget). Skip predictivo por URL y por atributos HTML + fallback a Regex.
 - **Favorites XOR CHECK constraint:** `favorites_xor_check` garantiza exactamente uno de `activityId`/`locationId` a nivel BD. Script: `npx tsx scripts/migrate-favorites-xor.ts`. Tests de tipo inválido añadidos (`v0.11.0-S51`).
 - **Parser Resiliente y Scheduler Inteligente (S52-S55):** `discoverWithFallback()` y `parseActivity()`. Fallback Cheerio marca `needsReparse=true` en caché si score < 0.5. El Scheduler omite el Preflight en `runPipeline(opts)` para IDs conocidos y reprioriza URLs usando `Set<string>`. `[FUNNEL:SUMMARY]` consolidado por todo batch.
+- **Search Assist System (V6.7.1):** Autocomplete interactivo bloqueado por Playwright E2E. Ranking Híbrido documentado. Tracking Payload validado.
 
-### Known Technical Debt
+### Known Technical Debt / Backlog (v6.8.0)
 
 | ID | Área | Descripción | Mitigación | Plan |
 |---|---|---|---|---|
-| DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright y falsa confianza. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP limitando la IA. UI con atribución exacta para asumir rol de "Agregador". Content Quality Dashboard midiendo degradación. | - |
-| DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`; archivos legacy → `warn`. Boy Scout Rule activa. `src/lib/track.ts` ya corregido. | Reducir progresivamente al tocar cada archivo |
-| DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` (breaking change 6→7) |
-| DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado y linting estricto (no .toNumber()), sumado a pre-validador `schema:check`. | - |
-| DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`: `prefer-const` (1), `@ts-ignore` (2), `no-require-imports` (1), `react/no-unescaped-entities` (6), `@next/next/no-html-link-for-pages` (5), `setState-in-effect` (4), `no-restricted-syntax/.toNumber()` (1), otros (5). Ninguno es `no-explicit-any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
+| DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP. | - |
+| DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`. | Reducir progresivamente al tocar cada archivo |
+| DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` |
+| DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
+| DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
+| **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | - | **Issue V6.8.0:** Modelo 2 capas. Mantener persistencia raw (para análisis de unmet-demand) pero aplicar filtro en `/api/suggestions`: `q.count > MIN_FREQ && q.ctr > MIN_CTR`. |
+| **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | - | **Issue V6.8.0:** Clasificación de Query. Implementar `normalizeQuery()` con NFD (sin tildes) que haga split de palabras `>3` letras y retenga máximo 3 tokens fuertes para mantener la consistencia en el motor `pg_trgm`. |
 
 ### Features v0.9.0 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

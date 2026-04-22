@@ -47,19 +47,19 @@ export async function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="HabitaPlan Logo"
-              width={160}
+              width={150}
               height={40}
-              className="h-8 w-auto object-contain dark:hidden"
+              className="h-10 w-auto object-contain dark:hidden"
               priority
             />
             <Image
-              src="/logo.png"
+              src="/logo-dark.svg"
               alt="HabitaPlan Logo"
-              width={160}
+              width={150}
               height={40}
-              className="h-8 w-auto object-contain hidden dark:block"
+              className="h-10 w-auto object-contain hidden dark:block"
               priority
             />
           </Link>

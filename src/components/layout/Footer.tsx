@@ -44,14 +44,14 @@ export function Footer() {
           {/* Columna 1 — Brand */}
           <div className="col-span-2 sm:col-span-1">
             <Image 
-              src="/logo.png" 
+              src="/logo.svg" 
               alt="HabitaPlan Logo" 
               width={160} 
               height={40} 
               className="h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity dark:hidden"
             />
             <Image 
-              src="/logo.png" 
+              src="/logo-dark.svg" 
               alt="HabitaPlan Logo" 
               width={160} 
               height={40} 

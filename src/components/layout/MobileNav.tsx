@@ -262,14 +262,14 @@ function MobileDrawer({
         <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--hp-border)]">
           <Link href="/" onClick={onClose} className="flex items-center gap-2">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="HabitaPlan"
               width={130}
               height={32}
               className="h-7 w-auto object-contain dark:hidden"
             />
             <Image
-              src="/logo.png"
+              src="/logo-dark.svg"
               alt="HabitaPlan"
               width={130}
               height={32}
@@ -466,7 +466,7 @@ function MobileHeader({
           className="absolute left-1/2 -translate-x-1/2 flex items-center"
         >
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt="HabitaPlan"
             width={140}
             height={36}
@@ -474,7 +474,7 @@ function MobileHeader({
             priority
           />
           <Image
-            src="/logo.png"
+            src="/logo-dark.svg"
             alt="HabitaPlan"
             width={140}
             height={36}

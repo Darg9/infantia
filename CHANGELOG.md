@@ -9,6 +9,30 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.13.2] — 2026-04-22 (SVG-First Branding Architecture & Brand Asset Pipeline)
+
+### Features
+- **SVG-First Branding (SSOT):** Logo vectorial completo de HabitaPlan implementado desde código puro en `/public/logo.svg`. El SVG es la única fuente de verdad — ninguna IA genera assets de producción.
+- **Logo Dark Mode (`/public/logo-dark.svg`):** Variante oficial para fondos oscuros. Única diferencia permitida: texto "Habita" en blanco (`#FFFFFF`). Regla formalizada en Design System.
+- **Logo Icono (`/public/logo-icon.svg`):** Isotipo compacto (solo pin + calendario + checkmark), sin texto. Para favicon, navbar mobile compacta y PWA.
+- **Brand Asset Pipeline (Automático):** Script `scripts/generate-brand-assets.mjs` genera en cada build: `public/og.png` (1200×630), `public/favicon.png` (32×32), `public/apple-touch-icon.png` (180×180). Anclado como precondición de `npm run build`.
+- **Logo Validation Pre-commit:** Script `scripts/validate-logo.mjs` (husky + lint-staged) bloquea el commit si algún asset `public/logo*.{png,svg}` carece de transparencia real o incluye fondos falsos.
+- **Design System — Asset Theming Rules:** Nuevas secciones formales en `docs/modules/design-system.md`: tamaños mínimos, uso en navbar, favicon, Open Graph, QA checklist y regla de enforcement final.
+- **Metadata Next.js Actualizada:** `src/app/layout.tsx` ahora declara explícitamente `icons.icon`, `icons.apple`, `openGraph.images` y `twitter.images` apuntando a los assets generados.
+
+### Fixes
+- **Mobile Header Layout:** `MobileHeader` refactorizado para alinear el logo a la izquierda (no centrado). Botones de menú y tema agrupados a la derecha con `variant="ghost"` — eliminando los botones naranja gigantes en desktop.
+- **Desktop Header:** Logo actualizado de `/logo.png` a `/logo.svg` / `/logo-dark.svg` con `h-10 w-auto` para mejor presencia visual en pantallas amplias.
+- **Footer & MobileDrawer:** Migrados de `/logo.png` a la arquitectura SVG dual con dark mode correcto.
+- **Suggestions API (route.ts):** Restaurado el umbral correcto de mínimo 3 caracteres (`q.length < 3`) para evitar consultas de baja señal.
+- **Test Suite Repair:** Corregidos 9 tests fallidos en `suggestions.test.ts` por mock faltante de `prisma.searchLog.groupBy`. Fix en `ranking.test.ts` para test de score base con `createdAt` exacto.
+
+### Infrastructure
+- `package.json`: Script `generate:brand` añadido. Build ahora ejecuta `npm run generate:brand && prisma generate && next build`.
+- `src/app/layout.tsx`: Añadidos tags `<link>` para favicon.png, logo-icon.svg (SVG modern) y apple-touch-icon.
+
+---
+
 ## [v0.13.1] — 2026-04-21 (Search Assist System & Zero-Debt DS Hardening)
 
 ### Features

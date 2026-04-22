@@ -22,8 +22,11 @@ describe('Activity Ranking Engine - Curaduría y Pruebas Exhaustivas', () => {
   describe('Algoritmo Base (Relevancia + Recency + Health + CTR)', () => {
     it('debería calcular score casi perfecto para fuentes confiables y actividades recientes', () => {
       // Relevance (0.7 * 0.5 = 0.35) + Recency (1.0 * 0.2 = 0.20) + Health (1.0 * 0.3 = 0.30)
-      // Base score = 0.85
-      const score = computeActivityScore(baseActivity, 1.0);
+      // Base score = 0.85 con recency 1.0 (≤3 días)
+      // Note: createdAt = exact "now" → daysSince = ceil(0ms/86400000ms) = 0 days
+      // 0 days ≤ 3 → recency = 1.0 → score = 0.35 + 0.20 + 0.30 = 0.85
+      const actJustCreated = { ...baseActivity, createdAt: new Date('2026-04-19T12:00:00Z') };
+      const score = computeActivityScore(actJustCreated, 1.0);
       expect(score).toBeCloseTo(0.85, 2);
     });
 

@@ -12,12 +12,14 @@ import { NextRequest } from 'next/server';
 const mockQueryRaw         = vi.hoisted(() => vi.fn());
 const mockCategoryFindMany = vi.hoisted(() => vi.fn());
 const mockCityFindMany     = vi.hoisted(() => vi.fn());
+const mockSearchLogGroupBy = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/db', () => ({
   prisma: {
     $queryRaw:         mockQueryRaw,
     category: { findMany: mockCategoryFindMany },
     city:     { findMany: mockCityFindMany     },
+    searchLog:{ groupBy: mockSearchLogGroupBy  },
   },
 }));
 
@@ -49,6 +51,7 @@ describe('GET /api/activities/suggestions', () => {
     mockQueryRaw.mockResolvedValue(SAMPLE_ACT_ROWS);
     mockCategoryFindMany.mockResolvedValue(SAMPLE_CATEGORIES);
     mockCityFindMany.mockResolvedValue([]);
+    mockSearchLogGroupBy.mockResolvedValue([]);
   });
 
   // ── Validación de longitud mínima ─────────────────────────────────────────

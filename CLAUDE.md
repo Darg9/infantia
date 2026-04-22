@@ -60,6 +60,8 @@ src/
 - `npm test` — Correr tests (una vez)
 - `npm run test:watch` — Correr tests en modo watch
 - `npm run test:coverage` — Tests + reporte de cobertura con threshold dinámico
+- `npm run generate:brand` — Generar assets derivados (og.png, favicon.png, apple-touch-icon.png) desde SVG fuente
+- `npm run validate:logo` — Validar que los SVGs no tengan fondos falsos
 
 ## ⚠️ REGLA DE DOCUMENTACIÓN OBLIGATORIA — ACERVO COMPLETO
 
@@ -207,9 +209,9 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-## Estado actual (v6.7.1 — Actualizado Hoy)
+## Estado actual (v6.8.0 / v0.13.2 — Actualizado 2026-04-22)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1215 tests** en 73 archivos — `npm test` pasa — 0 errores TypeScript
+- **1215 tests** en 75 archivos — `npm test` pasa — 1213 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -231,13 +233,12 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 - **CTR Feedback Loop** activo — events → ranking (ctrBoost) → crawler (CTR priority en BullMQ)
 - **SEO landings:** 4 nuevas rutas dinámicas (categoria, publico, precio, ciudad) + breadcrumbs JSON-LD (S33)
 - **Expiración configurable:** por location/source con fallback default 3h (S33)
-- **Data Pipeline v1:** Eliminación de `validation.ts` legacy a favor de `data-pipeline.ts` Atómico (Filtrado de Spam + 10 Categorías Estrictas).
+- **Data Pipeline v1:** Eliminación de `validation.ts` legacy a favor de `data-pipeline.ts` Atómico.
 - **Search Engine v1:** Motor de Relevancia que penaliza falta de metadatos críticos como edad (`*= 0.85`).
-- **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK) y renderer híbrido (`v0.11.0-S49`).
-- **Date Preflight v2 (S55):** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget). Skip predictivo por URL y por atributos HTML + fallback a Regex.
-- **Favorites XOR CHECK constraint:** `favorites_xor_check` garantiza exactamente uno de `activityId`/`locationId` a nivel BD. Script: `npx tsx scripts/migrate-favorites-xor.ts`. Tests de tipo inválido añadidos (`v0.11.0-S51`).
-- **Parser Resiliente y Scheduler Inteligente (S52-S55):** `discoverWithFallback()` y `parseActivity()`. Fallback Cheerio marca `needsReparse=true` en caché si score < 0.5. El Scheduler omite el Preflight en `runPipeline(opts)` para IDs conocidos y reprioriza URLs usando `Set<string>`. `[FUNNEL:SUMMARY]` consolidado por todo batch.
-- **Search Assist System (V6.7.1):** Autocomplete interactivo bloqueado por Playwright E2E. Ranking Híbrido documentado. Tracking Payload validado.
+- **Favoritos Mixtos:** Sistema polimórfico (Actividades + Lugares) con integridad fuerte (XOR FK).
+- **Date Preflight v2 (S55):** `date_preflight_logs` table + `preflight-db.ts` (fire-and-forget).
+- **Search Assist System (V6.7.1):** Autocomplete interactivo bloqueado por Playwright E2E.
+- **SVG-First Branding (V6.8.0):** Logo vectorial SSOT + pipeline de derivación automática en build.
 
 ### Known Technical Debt / Backlog (v6.8.0)
 
@@ -306,3 +307,5 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 | v0.11.0-S54 | V26 | Streaming Save de actividades post-parse, SPI filter por Lastmod |
 | v0.11.0-S55 | V26 | Scheduler Inteligente, NFD string mapping, Threshold diferenciado de confianza, Fixes Banrep |
 | v0.13.0     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
+| v0.13.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
+| v0.13.2     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |

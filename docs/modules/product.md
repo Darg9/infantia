@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.13.0
-**Última actualización:** 21 de abril de 2026
+**Versión:** ✅ v0.13.2
+**Última actualización:** 22 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -132,3 +132,29 @@ Patrón global y reutilizable para preservar la intención del usuario ante cual
 
 ### Enforcement
 - Cualquier PR que introduzca terminología distinta debe ser rechazado.
+
+## 🎨 Identidad Visual y Branding (v0.13.2)
+
+HabitaPlan cuenta con un sistema de branding completamente controlado por código, con reglas que son parte del Design System oficial.
+
+### Assets Oficiales
+- `/public/logo.svg` — Logo completo (light mode). Source of Truth.
+- `/public/logo-dark.svg` — Logo completo (dark mode). Solo cambia el texto "Habita" a blanco.
+- `/public/logo-icon.svg` — Ícono solo (sin texto), para favicons y navbar compacta.
+- `/public/favicon.png` — 32×32, generado automáticamente desde `logo-icon.svg`.
+- `/public/apple-touch-icon.png` — 180×180, generado automáticamente.
+- `/public/og.png` — 1200×630, Open Graph para previews sociales.
+
+### Pipeline de Generación Automática
+Los assets derivados (favicon, apple-touch, og) **se regeneran en cada build** vía `npm run generate:brand` (precondición del `npm run build`). Nadie los edita a mano.
+
+```bash
+npm run generate:brand  # genera public/og.png, public/favicon.png, public/apple-touch-icon.png
+npm run validate:logo   # valida que los SVGs no tengan fondos falsos (pre-commit hook)
+```
+
+### Reglas de Uso en UI
+- Logo siempre en esquina superior izquierda del header.
+- Cambio de tema: reemplazo de asset, **nunca filtros CSS** (`invert`, `brightness`).
+- Mínimo: 120px de ancho para el logo completo, 16px para el ícono.
+- Consultar `docs/modules/design-system.md` para el contrato completo.

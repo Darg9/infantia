@@ -10,6 +10,7 @@ import { prisma } from '@/lib/db';
 import { getCategoryEmoji, getCategoryGradient } from '@/lib/category-utils';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 import HeroSearch from '@/app/_components/HeroSearch';
+import { serializeActivity } from '@/lib/prisma-serialize';
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
@@ -170,7 +171,7 @@ export default async function HomePage() {
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {displayActivities.map((activity) => (
-                  <ActivityCard key={activity.id} activity={activity} compact />
+                  <ActivityCard key={activity.id} activity={serializeActivity(activity)} compact />
                 ))}
               </div>
               <div className="mt-5 text-center">

@@ -309,3 +309,49 @@ Comando: `node scripts/generate_v27.mjs` (V27 es la versión actual)
 | v0.13.0     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
 | v0.13.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
 | v0.13.2     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |
+
+## Regla: Serialización de objetos Prisma (OBLIGATORIO)
+
+> **NUNCA** pases un objeto Prisma directamente a un Client Component ('use client').
+> Prisma devuelve tipos de clase (Decimal, Date) que Next.js App Router no puede serializar
+> al cruzar la frontera Server → Client. El resultado es un Fatal Server Error en producción.
+
+### Siempre usa el módulo @/lib/prisma-serialize`n
+\\\	sx
+// ✅ CORRECTO
+import { serializeActivity, serializeLocation } from '@/lib/prisma-serialize'
+
+const activity = await prisma.activity.findUnique({ ... })
+return <ActivityCard activity={serializeActivity(activity)} />
+
+// ❌ INCORRECTO — puede crashear en producción
+return <ActivityCard activity={activity} />
+
+// ❌ INCORRECTO — JSON.parse/JSON.stringify no convierte Decimal correctamente
+return <ActivityCard activity={JSON.parse(JSON.stringify(activity))} />
+\\\`n
+### Helpers disponibles
+
+| Helper | Uso |
+|---|---|
+| serializeActivity(act) | Activity de Prisma → SerializedActivity (price: number, createdAt: string) |
+| serializeLocation(loc) | Location de Prisma → SerializedLocation (sin lat/lon Decimal) |
+| 	oNumber(decimal) | Cualquier Decimal → number \| null |
+| 	oISOString(date) | Cualquier Date → ISO string \| null |
+| 	oPlainObject(obj) | Escape hatch genérico para tipos sin serializer propio |
+
+### Campos problemáticos en el schema actual
+
+| Modelo | Campo | Tipo Prisma |
+|---|---|---|
+| Activity | price | Decimal? |
+| Location | latitude | Decimal |
+| Location | longitude | Decimal |
+| Todos | createdAt, updatedAt, startDate, endDate | DateTime |
+
+### Verifica con este patrón antes de cada PR
+
+1. ¿Este Server Component pasa datos a un 'use client'? → usa un serializer
+2. ¿Hay campos Decimal en el include/select? → 	oNumber() antes de pasar
+3. ¿Hay campos Date? → 	oISOString() antes de pasar
+| v0.13.3 | V27 | Perfil Zero-Crash: prisma-serialize.ts, error boundary /perfil, fix Decimal/Date |

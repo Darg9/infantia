@@ -16,6 +16,7 @@ import { EmptyState } from './_components/EmptyState';
 import { MapView } from './_components/MapView';
 import { ViewToggle } from './_components/ViewToggle';
 import { ACTIVITY_DISCLAIMER_SHORT } from '@/modules/legal/constants/legal-disclaimers';
+import { serializeActivity } from '@/lib/prisma-serialize';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -386,7 +387,7 @@ export default async function ActividadesPage({
                 {activities.map((activity) => (
                   <ActivityCard
                     key={activity.id}
-                    activity={JSON.parse(JSON.stringify(activity))}
+                    activity={serializeActivity(activity)}
                     isFavorited={favoriteIds.has(activity.id)}
                     searchQuery={filters.search ?? ''}
                   />

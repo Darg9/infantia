@@ -1,3 +1,4 @@
+'use client';
 /**
  * Toast — HabitaPlan Design System
  *
@@ -25,7 +26,6 @@
  *   toast.show({ type: 'warning', text: 'Archivo grande', duration: 4000 })
  */
 
-'use client';
 
 import { createContext, useCallback, useContext, useReducer, useRef } from 'react'
 import { clsx } from 'clsx'

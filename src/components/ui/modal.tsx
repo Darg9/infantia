@@ -1,3 +1,4 @@
+'use client';
 import { Button } from '@/components/ui';
 /**
  * Modal — HabitaPlan Design System
@@ -31,7 +32,6 @@ import { Button } from '@/components/ui';
  *   - Scroll del body bloqueado mientras el modal está abierto
  */
 
-'use client';
 
 import {
   useEffect,

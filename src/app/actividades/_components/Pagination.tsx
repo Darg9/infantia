@@ -1,10 +1,10 @@
+'use client';
 // =============================================================================
 // Pagination — controles de paginación para /actividades
 // Usa <a> nativas en lugar de router.push para evitar desfase entre el
 // estado del cliente y lo que el Server Component recibe como searchParams.
 // =============================================================================
 
-'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
 

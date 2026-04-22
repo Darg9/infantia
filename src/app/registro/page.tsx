@@ -128,7 +128,7 @@ function RegistroForm() {
             className="w-full justify-center gap-2"
             onClick={() => setAuthMode('email')}
           >
-            Registrarse con Email
+            Registrarse con Correo-e
           </Button>
 
           {ENABLE_PHONE_OTP && (

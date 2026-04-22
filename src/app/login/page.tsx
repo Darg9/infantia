@@ -116,7 +116,7 @@ function LoginForm() {
             className="w-full justify-center gap-2"
             onClick={() => setAuthMode('email')}
           >
-            Continuar con Email
+            Continuar con Correo-e
           </Button>
 
           {ENABLE_PHONE_OTP && (
@@ -172,14 +172,14 @@ function LoginForm() {
             />
           </div>
           <Button type="submit" disabled={loading} loading={loading} className="w-full">
-            {loading ? 'Enviando...' : 'Recibir enlace de acceso'}
+            {loading ? 'Enviando...' : 'Recibir enlace de acceso por correo-e'}
           </Button>
           <button
             type="button"
             onClick={() => { setAuthMode('email-password'); setError(null) }}
             className="w-full text-center text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] mt-1"
           >
-            ¿Tienes contraseña? Usar contraseña
+            ¿Tienes contraseña? Usar contraseña en su lugar
           </button>
           <button
             type="button"

@@ -44,9 +44,8 @@ export default function ContribuirPage() {
         {!tipo ? (
           <div className="grid gap-6 md:grid-cols-2">
             {/* Card: Sugerir actividad */}
-            <Button
-              onClick={() => setTipo('actividad')}
-              className="group relative rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
+            <button type="button" onClick={() => setTipo('actividad')}
+              className="group relative flex flex-col items-start w-full rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
             >
               <div className="absolute top-4 right-4 text-2xl">📝</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una actividad</h2>
@@ -56,12 +55,11 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </Button>
+            </button>
 
             {/* Card: Sugerir institución */}
-            <Button
-              onClick={() => setTipo('institucion')}
-              className="group relative rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all"
+            <button type="button" onClick={() => setTipo('institucion')}
+              className="group relative flex flex-col items-start w-full rounded-2xl border-2 border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-6 text-left hover:border-brand-300 hover:bg-brand-50 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
             >
               <div className="absolute top-4 right-4 text-2xl">🏢</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una institución</h2>
@@ -71,7 +69,7 @@ export default function ContribuirPage() {
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
                 Continuar →
               </span>
-            </Button>
+            </button>
           </div>
         ) : (
           <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-8">
@@ -99,7 +97,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Nombre de la actividad *
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="text"
                       placeholder="Ej: Taller de programación infantil"
@@ -112,7 +110,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Institución o proveedor *
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="text"
                       placeholder="Ej: Academia Tech Kids"
@@ -125,7 +123,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       URL o fuente de información *
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="url"
                       placeholder="https://..."
@@ -159,7 +157,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Nombre de la institución *
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="text"
                       placeholder="Ej: Centro Deportivo Municipal"
@@ -172,7 +170,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Tipo de actividades
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="text"
                       placeholder="Ej: Deportes, arte, música"
@@ -184,7 +182,7 @@ export default function ContribuirPage() {
                     <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
                       Sitio web
                     </label>
-                    {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+                    { }
                     <input
                       type="url"
                       placeholder="https://..."

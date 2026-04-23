@@ -44,7 +44,9 @@ export async function getOrCreateDbUser(authUser: User) {
     create: {
       supabaseAuthId: authUser.id,
       email: authUser.email ?? null,
-      phone: authUser.phone ?? null,
+      // phone se omite intencionalmente: puede causar colisión P2002 cuando el mismo
+      // número está vinculado a múltiples providers en Supabase Auth.
+      // El teléfono se actualiza exclusivamente desde el perfil del usuario.
       provider: provider,
       name,
       role: 'PARENT',
@@ -52,7 +54,7 @@ export async function getOrCreateDbUser(authUser: User) {
     update: {
       provider: provider,
       ...(authUser.email ? { email: authUser.email } : {}),
-      ...(authUser.phone ? { phone: authUser.phone } : {}),
+      // phone excluido del update por la misma razón (constraint @unique)
     },
   })
 }

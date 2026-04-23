@@ -45,8 +45,15 @@ describe('GET /api/activities/map', () => {
     mockFindMany.mockResolvedValue(SAMPLE);
   });
 
+  it('retorna 400 si no se provee cityId', async () => {
+    const res  = await GET(makeReq()); // sin cityId
+    expect(res.status).toBe(400);
+    const data = await res.json();
+    expect(data.error).toMatch(/cityId is required/);
+  });
+
   it('retorna markers correctamente formateados', async () => {
-    const res  = await GET(makeReq());
+    const res  = await GET(makeReq('cityId=bogota-id'));
     const data = await res.json();
     expect(res.status).toBe(200);
     // La actividad sin location queda filtrada
@@ -66,38 +73,38 @@ describe('GET /api/activities/map', () => {
   });
 
   it('filtra actividades sin location (location=null)', async () => {
-    const res  = await GET(makeReq());
+    const res  = await GET(makeReq('cityId=bogota-id'));
     const data = await res.json();
     expect(data.markers.find((m: any) => m.id === '3')).toBeUndefined();
   });
 
   it('llama a prisma con status=ACTIVE y take=500', async () => {
-    await GET(makeReq());
+    await GET(makeReq('cityId=bogota-id'));
     const args = mockFindMany.mock.calls[0][0];
     expect(args.where.status).toBe('ACTIVE');
     expect(args.take).toBe(500);
   });
 
   it('aplica filtro type cuando es válido', async () => {
-    await GET(makeReq('type=WORKSHOP'));
+    await GET(makeReq('cityId=bogota-id&type=WORKSHOP'));
     const args = mockFindMany.mock.calls[0][0];
     expect(args.where.type).toBe('WORKSHOP');
   });
 
   it('ignora type inválido', async () => {
-    await GET(makeReq('type=MALO'));
+    await GET(makeReq('cityId=bogota-id&type=MALO'));
     const args = mockFindMany.mock.calls[0][0];
     expect(args.where.type).toBeUndefined();
   });
 
   it('aplica filtro audience KIDS incluyendo ALL', async () => {
-    await GET(makeReq('audience=KIDS'));
+    await GET(makeReq('cityId=bogota-id&audience=KIDS'));
     const args = mockFindMany.mock.calls[0][0];
     expect(args.where.audience.in).toEqual(expect.arrayContaining(['KIDS', 'ALL']));
   });
 
   it('aplica filtro de búsqueda en title y description', async () => {
-    await GET(makeReq('search=yoga'));
+    await GET(makeReq('cityId=bogota-id&search=yoga'));
     const args = mockFindMany.mock.calls[0][0];
     const searchCond = args.where.AND.find((c: any) => c.OR);
     expect(searchCond.OR[0].title.contains).toBe('yoga');
@@ -105,7 +112,7 @@ describe('GET /api/activities/map', () => {
 
   it('retorna 500 si prisma falla', async () => {
     mockFindMany.mockRejectedValue(new Error('DB error'));
-    const res = await GET(makeReq());
+    const res = await GET(makeReq('cityId=bogota-id'));
     expect(res.status).toBe(500);
     const data = await res.json();
     expect(data.error).toBe('DB error');

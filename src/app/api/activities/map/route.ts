@@ -32,24 +32,35 @@ function audienceIn(audience: string): string[] {
 
 export async function GET(req: NextRequest) {
   const sp       = req.nextUrl.searchParams;
-  const search   = sp.get('search')?.trim()  || undefined;
-  const ageMin   = parseInt(sp.get('ageMin') ?? '', 10);
-  const ageMax   = parseInt(sp.get('ageMax') ?? '', 10);
+  const cityId   = sp.get('cityId') || undefined;
+
+  // ─── Contract: cityId es OBLIGATORIO ─────────────────────────────────────
+  // El backend no decide la ciudad. Esa responsabilidad es del frontend
+  // (URL > CityContext > localStorage). Nunca fallback implícito.
+  if (!cityId) {
+    return NextResponse.json(
+      { error: 'cityId is required. El mapa requiere una ciudad explícita.' },
+      { status: 400 }
+    );
+  }
+
+  const search     = sp.get('search')?.trim()  || undefined;
+  const ageMin     = parseInt(sp.get('ageMin') ?? '', 10);
+  const ageMax     = parseInt(sp.get('ageMax') ?? '', 10);
   const categoryId = sp.get('categoryId') || undefined;
-  const cityId     = sp.get('cityId')     || undefined;
   const type       = sp.get('type')       || undefined;
   const audience   = sp.get('audience')   || undefined;
   const price      = sp.get('price')      || undefined;
 
   const and: Prisma.ActivityWhereInput[] = [];
 
-  // Solo actividades con coordenadas reales — cityId también va aquí
-  // para evitar conflicto con la key "location" en el WHERE raíz
+  // Filtro de ubicación: cityId obligatorio + coords válidas (≠ 0)
+  // Las 68 actividades sin geocodificación quedan excluidas por diseño.
   const locationFilter: Record<string, unknown> = {
+    cityId,
     latitude:  { not: 0 },
     longitude: { not: 0 },
   };
-  if (cityId) locationFilter.cityId = cityId;
   and.push({ location: locationFilter as Prisma.LocationWhereInput });
 
   if (search) {

@@ -95,26 +95,26 @@ model Provider {
 }
 
 model User {
-  id                String   @id @default(uuid())
-  supabaseAuthId    String   @unique @map("supabase_auth_id") @db.VarChar(255)
+  id                String    @id @default(uuid())
+  supabaseAuthId    String    @unique @map("supabase_auth_id") @db.VarChar(255)
   // email y phone NO son @unique: Supabase Auth es la fuente de verdad de identidad.
   // Imponer unicidad aquí rompe multi-provider (Google + Magic Link + OTP).
-  email             String?  @db.VarChar(255)
-  phone             String?  @db.VarChar(50)
-  name              String   @db.VarChar(255)
+  email             String?   @db.VarChar(255)
+  phone             String?   @db.VarChar(50)
+  name              String    @db.VarChar(255)
   termsAcceptedAt   DateTime?
-  provider          String   @default("email") @db.VarChar(50)
+  provider          String    @default("email") @db.VarChar(50)
   avatarUrl         String?
   cityId            String?
-  neighborhood      String?  @db.VarChar(100)
-  notificationPrefs Json     @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
-  onboardingDone    Boolean  @default(false)
-  role              UserRole @default(PARENT)
+  neighborhood      String?   @db.VarChar(100)
+  notificationPrefs Json      @default("{\"email\":true,\"push\":true,\"frequency\":\"daily\"}")
+  onboardingDone    Boolean   @default(false)
+  role              UserRole  @default(PARENT)
   // Preparado para Escenario B (menores con cuenta propia) — sin lógica activa en MVP
-  accountType       String   @default("adult") @db.VarChar(20) // 'adult' | 'minor'
+  accountType       String    @default("adult") @db.VarChar(20) // 'adult' | 'minor'
   guardianId        String? // userId del tutor si accountType = 'minor'
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
 
   city              City?              @relation(fields: [cityId], references: [id])
   children          Child[]
@@ -158,6 +158,10 @@ model City {
   timezone    String  @db.VarChar(50)
   currency    String  @default("COP") @db.VarChar(3)
   isActive    Boolean @default(true)
+
+  defaultLat  Decimal @db.Decimal(10, 8)
+  defaultLng  Decimal @db.Decimal(11, 8)
+  defaultZoom Int
 
   users           User[]
   locations       Location[]

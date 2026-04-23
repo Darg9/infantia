@@ -8,9 +8,9 @@ import Link from 'next/link';
 // =============================================================================
 
 export const metadata: Metadata = {
-  title: 'Centro de Seguridad | HabitaPlan',
+  title: 'Centro de Confianza | HabitaPlan',
   description:
-    'Centro de Seguridad de HabitaPlan. Protección de datos, transparencia, infraestructura segura y mecanismos de autorización parental para menores.',
+    'Centro de Confianza de HabitaPlan. Información sobre privacidad, uso de datos y funcionamiento de la plataforma.',
 };
 
 // ── Data ─────────────────────────────────────────────────────────────────────
@@ -60,9 +60,9 @@ const CARDS = [
 ] as const;
 
 const LEGAL_LINKS = [
-  { href: '/seguridad/privacidad', label: 'Privacidad'           },
-  { href: '/seguridad/terminos',   label: 'Términos'             },
-  { href: '/seguridad/datos',      label: 'Tratamiento de datos' },
+  { href: '/centro-de-confianza/privacidad', label: 'Privacidad'           },
+  { href: '/centro-de-confianza/terminos',   label: 'Términos'             },
+  { href: '/centro-de-confianza/datos',      label: 'Tratamiento de datos' },
 ] as const;
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ export default function SeguridadPage() {
           ← Volver a HabitaPlan
         </Link>
         <span className="text-xs text-gray-600 hidden sm:block tracking-widest uppercase">
-          Centro de Seguridad
+          Centro de Confianza
         </span>
       </nav>
 
@@ -100,17 +100,11 @@ export default function SeguridadPage() {
           </p>
 
           <h1 className="text-4xl font-semibold mt-3 mb-5 flex items-center gap-3 text-white">
-            🛡️ Centro de Seguridad
+            🛡️ Centro de Confianza
           </h1>
 
           <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed">
-            Trabajamos para ofrecer una experiencia transparente y segura, basada en buenas
-            prácticas y uso responsable de la información.
-          </p>
-          <p className="text-[var(--hp-text-muted)] max-w-2xl leading-relaxed mt-3">
-            HabitaPlan implementa medidas de protección de datos alineadas con la normativa
-            colombiana y buenas prácticas internacionales, incluyendo mecanismos de
-            autorización parental para el registro de menores.
+            Información sobre privacidad, uso de datos y funcionamiento de la plataforma
           </p>
         </header>
 

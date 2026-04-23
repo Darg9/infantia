@@ -25,10 +25,10 @@ const NAV_COLUMNS = [
   {
     title: 'Legal',
     links: [
-      { label: 'Centro de Seguridad',              href: '/seguridad'         },
-      { label: 'Términos de uso',                  href: '/terminos'          },
-      { label: 'Política de privacidad',           href: '/privacidad'        },
-      { label: 'Política de tratamiento de datos', href: '/seguridad/datos' },
+      { label: 'Centro de Confianza',              href: '/centro-de-confianza'       },
+      { label: 'Términos de uso',                  href: '/terminos'                  },
+      { label: 'Política de privacidad',           href: '/privacidad'                },
+      { label: 'Política de tratamiento de datos', href: '/centro-de-confianza/datos' },
     ],
   },
 ] as const;

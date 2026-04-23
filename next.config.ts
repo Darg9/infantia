@@ -8,8 +8,18 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/tratamiento-datos',
-        destination: '/seguridad/datos',
+        destination: '/centro-de-confianza/datos',
         permanent: true, // 308 redirect
+      },
+      {
+        source: '/seguridad/:path*',
+        destination: '/centro-de-confianza/:path*',
+        permanent: true, // 308 redirect (301)
+      },
+      {
+        source: '/seguridad',
+        destination: '/centro-de-confianza',
+        permanent: true,
       },
     ];
   },

@@ -97,8 +97,10 @@ model Provider {
 model User {
   id                String   @id @default(uuid())
   supabaseAuthId    String   @unique @map("supabase_auth_id") @db.VarChar(255)
-  email             String?  @unique @db.VarChar(255)
-  phone             String?  @unique @db.VarChar(50)
+  // email y phone NO son @unique: Supabase Auth es la fuente de verdad de identidad.
+  // Imponer unicidad aquí rompe multi-provider (Google + Magic Link + OTP).
+  email             String?  @db.VarChar(255)
+  phone             String?  @db.VarChar(50)
   name              String   @db.VarChar(255)
   termsAcceptedAt   DateTime?
   provider          String   @default("email") @db.VarChar(50)

@@ -36,28 +36,40 @@ export async function getOrCreateDbUser(authUser: User) {
     authUser.user_metadata?.name ??
     authUser.email?.split('@')[0] ??
     'Usuario'
-    
+
   const provider = authUser.app_metadata?.provider ?? 'email'
-  
-  return prisma.user.upsert({
-    where: { supabaseAuthId: authUser.id },
-    create: {
-      supabaseAuthId: authUser.id,
-      email: authUser.email ?? null,
-      // phone se omite intencionalmente: puede causar colisión P2002 cuando el mismo
-      // número está vinculado a múltiples providers en Supabase Auth.
-      // El teléfono se actualiza exclusivamente desde el perfil del usuario.
-      provider: provider,
-      name,
-      role: 'PARENT',
-    },
-    update: {
-      provider: provider,
-      ...(authUser.email ? { email: authUser.email } : {}),
-      // phone excluido del update por la misma razón (constraint @unique)
-    },
-  })
+
+  try {
+    return await prisma.user.upsert({
+      where: { supabaseAuthId: authUser.id },
+      create: {
+        supabaseAuthId: authUser.id,
+        email: authUser.email ?? null,
+        phone: authUser.phone ?? null,
+        provider,
+        name,
+        role: 'PARENT',
+      },
+      update: {
+        provider,
+        ...(authUser.email ? { email: authUser.email } : {}),
+        ...(authUser.phone ? { phone: authUser.phone } : {}),
+      },
+    })
+  } catch (err: any) {
+    // Safety net: si hay P2002 por constraints aún no migradas en DB,
+    // retornar el usuario existente para no romper el login.
+    // Con el schema correcto (sin @unique en phone/email), este bloque nunca debe ejecutarse.
+    if (err.code === 'P2002') {
+      const existing = await prisma.user.findUnique({
+        where: { supabaseAuthId: authUser.id },
+      })
+      if (existing) return existing
+    }
+    throw err
+  }
 }
+
 
 export async function requireAuth() {
   const user = await getSession()

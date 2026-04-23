@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.14.0
+**Versión actual:** v0.14.1
 **Última actualización:** 22 de abril de 2026
 
 ## ¿Qué hace?

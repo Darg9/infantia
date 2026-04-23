@@ -1,6 +1,6 @@
 # Módulo: Autenticación y Gestión de Identidad
 
-**Versión:** ✅ v0.14.0
+**Versión:** ✅ v0.14.1
 **Última actualización:** 22 de abril de 2026
 
 Este módulo centraliza toda la lógica de autenticación multi-proveedor de HabitaPlan, la sincronización de identidades y el cumplimiento legal de términos obligatorios.
@@ -21,7 +21,7 @@ Este módulo centraliza toda la lógica de autenticación multi-proveedor de Hab
 |---|---|---|
 | Google | ✅ Activo | Requiere credenciales Google Cloud OAuth 2.0 |
 | Email + Contraseña | ✅ Activo | Fallback tradicional |
-| Magic Link (email OTP) | ✅ Activo | Método primario de email desde v0.14.0 |
+| Magic Link (email OTP) | ✅ Activo | Método primario de email desde v0.14.1 |
 | Teléfono (SMS OTP) | 🔜 Feature flag | `NEXT_PUBLIC_ENABLE_PHONE_OTP=true` para activar |
 | Facebook | ✅ Habilitado | Requiere App ID y Secret de Meta |
 | Apple | ✅ Habilitado | Solo visible en dispositivos iOS/Mac |
@@ -65,8 +65,8 @@ Este módulo centraliza toda la lógica de autenticación multi-proveedor de Hab
 model User {
   id                String    @id @default(uuid())
   supabaseAuthId    String    @unique @map("supabase_auth_id")
-  email             String?   @unique   // Opcional — usuarios OTP pueden no tener email
-  phone             String?   @unique   // Para futura activación de SMS OTP
+  email             String?             // NO unique: Opcional — usuarios OTP pueden no tener email
+  phone             String?             // NO unique: Para futura activación de SMS OTP
   name              String
   role              UserRole  @default(PARENT)
   termsAcceptedAt   DateTime?           // Auditoría legal. null = no ha aceptado
@@ -92,15 +92,23 @@ export async function getOrCreateDbUser(authUser: User) {
   const name = authUser.user_metadata?.full_name ?? authUser.email?.split('@')[0] ?? 'Usuario'
   const provider = authUser.app_metadata?.provider ?? 'email'
 
-  return prisma.user.upsert({
-    where: { supabaseAuthId: authUser.id },
-    create: { supabaseAuthId, email, phone, provider, name, role: 'PARENT' },
-    update: {
-      provider,                                    // actualiza en cada login
-      ...(authUser.email ? { email } : {}),       // actualiza si viene nuevo email
-      ...(authUser.phone ? { phone } : {}),       // actualiza si viene nuevo teléfono
-    },
-  })
+  try {
+    return await prisma.user.upsert({
+      where: { supabaseAuthId: authUser.id },
+      create: { supabaseAuthId: authUser.id, email: authUser.email ?? null, phone: authUser.phone ?? null, provider, name, role: 'PARENT' },
+      update: {
+        provider,
+        ...(authUser.email ? { email: authUser.email } : {}),
+        ...(authUser.phone ? { phone: authUser.phone } : {}),
+      },
+    })
+  } catch (err: any) {
+    if (err.code === 'P2002') {
+      const existing = await prisma.user.findUnique({ where: { supabaseAuthId: authUser.id } })
+      if (existing) return existing
+    }
+    throw err
+  }
 }
 ```
 

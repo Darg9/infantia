@@ -9,6 +9,15 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.14.1] — 2026-04-22 (Multi-Provider Identity Model & P2002 Safety Net)
+
+### Features & Fixes
+- **Identity Model Refactor:** Se eliminó la restricción `@unique` de `phone` y `email` en la base de datos local (Prisma) para alinear el diseño con el concepto "Supabase Auth es la única fuente de verdad". Esto permite vincular múltiples proveedores (Google, Magic Link, etc.) que comparten el mismo teléfono/correo sin generar colisiones `P2002 Unique constraint failed`.
+- **Robust Auth Sync:** Actualización de `getOrCreateDbUser` para incluir un safety net (red de seguridad) ante posibles desajustes de schema transitorios (`catch P2002` fallback), logrando un modelo de identidad Multi-Provider Zero-Debt que no rompe la experiencia de usuario.
+- **Documentation Complete:** Actualización general de manuales, CHANGELOG, ARCHITECTURE y módulos a versión estable v0.14.1. Suite de pruebas ejecutada con éxito (1213/1213).
+
+---
+
 ## [v0.14.0] — 2026-04-22 (Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening)
 
 ### Features

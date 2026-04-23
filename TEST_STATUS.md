@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-22 | Version: v0.14.0
+Actualizado: 2026-04-22 | Version: v0.14.1
 
-## Resumen Actual (v0.14.0 / Zero-Debt Architecture & Auth Refactor)
+## Resumen Actual (v0.14.1 / Zero-Debt Architecture & Auth Refactor)
 - **Archivos de Test:** 75
 - **Tests Totales:** 1215 (1213 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅

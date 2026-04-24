@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-24 | Version: v0.16.1
+Actualizado: 2026-04-24 | Version: v0.16.4-beta
 
-## Resumen Actual (v0.16.1 / Multi-City Map Architecture)
+## Resumen Actual (v0.16.4-beta / Trust Layer & Discover Fallback)
 - **Archivos de Test:** 76
 - **Tests Totales:** 1220 (1218 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅

@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.16.1
+**Versión:** ✅ v0.16.4-beta
 **Última actualización:** 24 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -12,6 +12,7 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 3. **Listado de Actividades y Filtros**: Experiencia de filtros facetados en tiempo real. 
    - **Desktop (`>= md`)**: Filtros persistentes (sidebar o topbar). Actualización en tiempo real (sin CTA explícito).
    - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).
+   - **Trust Layer / Cuarentenas**: Las actividades clasificadas con baja confianza o caducidad leve por el guardián editorial se marcan como `PAUSED` (Cuarentena) y son 100% invisibles en la UI pública. Solo se listan actividades en estado `ACTIVE`.
 4. **Detalle de la Actividad**: Resumen unificado por la IA de NLP, protegiendo sobre cargas cognitivas o fotos gigantes cuando el texto es la metadata esencial. Enlaza siempre hacia la ruta saliente `outbound_click`.
 5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) estructurado por la base de datos de manera tipo-segura (XOR foreign keys). Agrupa el inventario en una única vista unificada (`/perfil/favoritos`) con tarjetas visuales polimórficas (identificación visual Actividad/Lugar) sin incurrir en deudas de integridad.
 

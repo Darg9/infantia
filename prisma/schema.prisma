@@ -103,6 +103,9 @@ model User {
   phone             String?   @db.VarChar(50)
   name              String    @db.VarChar(255)
   termsAcceptedAt   DateTime?
+  termsVersion      String?   @db.VarChar(50)
+  privacyAcceptedAt DateTime?
+  privacyVersion    String?   @db.VarChar(50)
   provider          String    @default("email") @db.VarChar(50)
   avatarUrl         String?
   cityId            String?
@@ -584,7 +587,10 @@ model ContactRequest {
   dataRightType   String?  @map("data_right_type") @db.VarChar(50)
 
   // Estado interno
-  status          String   @default("received") @db.VarChar(50)
+  status          String    @default("received") @db.VarChar(50)
+  statusChangedAt DateTime? @map("status_changed_at")
+  resolvedAt      DateTime? @map("resolved_at")
+  resolvedBy      String?   @map("resolved_by_user_id") @db.VarChar(255)
 
   // Auditoría y Envío
   emailStatus     String   @default("pending") @map("email_status") @db.VarChar(50)

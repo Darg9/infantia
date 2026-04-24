@@ -7,7 +7,7 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.16.1 — 2026-04-24):**
+**Estado Actual (v0.16.4-beta — 2026-04-24):**
 - ~275 actividades en DB
 - Protección automática integrada en `ScrapingStorage`
 - 20 web + 12 Instagram (10 Bogotá + 2 Medellín) + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)

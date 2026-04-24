@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.16.1 | Actualizado: 2026-04-24
+> Versión: v0.16.4-beta | Actualizado: 2026-04-24
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -55,12 +55,13 @@ flowchart TD
        NLP --> |"source=gemini score>=0.3"| DataPipeline
        CheerioFallback --> |"source=fallback score>=0.5"| DataPipeline
 
-       %% Data Pipeline System V1
+       %% Data Pipeline System V1 & Trust Layer (v0.16.3)
        DataPipeline[Data Pipeline Core v1]
        DataPipeline --> |"Normalizar, Limpiar (Spam)"| DPValidator[Validar Reglas Críticas]
        DPValidator --> |"Bucketing Categorías + Age Penalty"| Enriquecimiento[Enriquecer Environment/Price]
        Enriquecimiento --> AdaptiveFilter[Adaptive Quality Filter]
-       AdaptiveFilter --> |"minLength = max(global, source)"| StorageLayer[Storage + Deduplication]
+       AdaptiveFilter --> |"minLength = max(global, source)"| TrustLayer[Trust Layer / Publish Validator]
+       TrustLayer --> |"REJECT (Discard) / QUARANTINE (PAUSED) / PUBLISH (ACTIVE)"| StorageLayer[Storage + Deduplication]
     end
 
     StorageLayer --> DB

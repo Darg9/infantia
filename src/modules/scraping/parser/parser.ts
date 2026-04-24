@@ -20,8 +20,36 @@ import { fallbackFromCheerio } from './fallback-mapper';
 import { isRetryableError, _incrementMetric } from './parser.types';
 import type { ParseResult } from './parser.types';
 import { createLogger } from '../../../lib/logger';
+import { preFilterUrls } from '../../../lib/url-classifier';
 
 const log = createLogger('scraping:parser');
+
+// Extensiones binarias — mismo criterio que Stage 1 en gemini.analyzer.ts
+const IMAGE_OR_BINARY_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|pdf|mp4|mp3|zip|doc[x]?|xls[x]?|ppt[x]?)$/i;
+
+/**
+ * Aplica los mismos filtros determinísticos que Stage 1 + Stage 2 de discoverActivityLinks.
+ * Usado en el fallback cuando Gemini no está disponible para no mandar basura a Fase 3.
+ */
+function applyDiscoverPreFilters(links: DiscoveredLink[]): string[] {
+  // Stage 1: query params + extensiones binarias + fragmentos puros + protocolos no-http
+  const stage1 = links.filter((l) => {
+    try {
+      const u = new URL(l.url);
+      if (!['http:', 'https:'].includes(u.protocol)) return false; // mailto:, tel:, javascript:
+      if (u.search.length > 0) return false;                        // query params
+      if (u.hash && u.pathname === '/' || u.hash.length > 0 && u.pathname === u.hash) return false; // hash-only
+      if (IMAGE_OR_BINARY_EXT.test(u.pathname)) return false;       // archivos binarios
+      return true;
+    } catch {
+      return false; // URL inválida → descartar
+    }
+  });
+
+  // Stage 2: url-classifier score (threshold 45 — mismo que el analyze normal)
+  const stage2 = preFilterUrls(stage1.map((l) => l.url), 45);
+  return stage2.kept;
+}
 
 // ── Fase 3: parseActivity ─────────────────────────────────────────────────────
 
@@ -82,13 +110,15 @@ export async function discoverWithFallback(
     return filtered;
   } catch (err: unknown) {
     if (isRetryableError(err)) {
-      const allUrls = links.map((l) => l.url);
+      // Aplicar los mismos pre-filtros determinísticos (Stage 1 + Stage 2) que usa discoverActivityLinks.
+      // Sin esto el fallback manda TODOS los links brutos (fragmentos, imágenes, wp-uploads) a Fase 3.
+      const safeUrls = applyDiscoverPreFilters(links);
       log.warn(
         `[parser] Gemini no disponible para discover en ${sourceUrl} (retryable). ` +
-        `Pasando todos los ${allUrls.length} URLs como fallback.`,
+        `Fallback conservador: ${safeUrls.length}/${links.length} URLs tras pre-filtros.`,
       );
       _incrementMetric('discoverFallback');
-      return allUrls;
+      return safeUrls;
     }
     // Error no retryable → propagar
     throw err;

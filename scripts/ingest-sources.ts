@@ -101,7 +101,9 @@ const ALL_SOURCES: Source[] = [
   { name: 'Idartes',                            channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',                             cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Maloka',                             channel: 'web', url: 'https://maloka.org/programacion/',                                 cityName: 'Bogotá', verticalSlug: 'kids' },
   { name: 'Jardín Botánico',                    channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',            cityName: 'Bogotá', verticalSlug: 'kids' },
-  { name: 'FCE Colombia',                       channel: 'web', url: 'https://www.fce.com.co/filbo/agenda/',                             cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FCE — Programación Cultural',        channel: 'web', url: 'https://www.fce.com.co/programacion-cultural/',                    cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FCE — Talleres a Fondo',             channel: 'web', url: 'https://www.fce.com.co/talleres-a-fondo/',                         cityName: 'Bogotá', verticalSlug: 'kids' },
+  { name: 'FCE — Concursos',                    channel: 'web', url: 'https://www.fce.com.co/concursos/',                                cityName: 'Bogotá', verticalSlug: 'kids' },
 
   // ── web: Banco de la República (otras ciudades) ───────────────────────────
   ...BANREP_CITIES.filter((c) => c.cityName !== 'Bogotá').map(({ cityName, slug }): Source => ({

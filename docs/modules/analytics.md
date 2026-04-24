@@ -1,6 +1,6 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.16.1
+**Versión:** ✅ v0.16.4-beta
 **Última actualización:** 24 de abril de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 

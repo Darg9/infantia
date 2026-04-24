@@ -3,6 +3,8 @@ import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { Button, Card } from '@/components/ui'
 import Link from 'next/link'
+import { TERMS_META } from '@/modules/legal/constants/terms'
+import { DATA_TREATMENT_META } from '@/modules/legal/constants/data-treatment'
 
 export default async function TerminosPage({ searchParams }: { searchParams: { next?: string } }) {
   const session = await getSession()
@@ -26,7 +28,12 @@ export default async function TerminosPage({ searchParams }: { searchParams: { n
     
     await prisma.user.update({
       where: { supabaseAuthId: currentSession.id },
-      data: { termsAcceptedAt: new Date() }
+      data: { 
+        termsAcceptedAt: new Date(),
+        termsVersion: TERMS_META.version,
+        privacyAcceptedAt: new Date(),
+        privacyVersion: DATA_TREATMENT_META.version
+      }
     })
     
     redirect(nextUrl)

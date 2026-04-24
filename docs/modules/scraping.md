@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.16.1
+**Versión actual:** v0.16.4-beta
 **Última actualización:** 24 de abril de 2026
 
 ## ¿Qué hace?
@@ -52,10 +52,10 @@ URL semilla / sitemap XML
     │
     ▼
 discoverWithFallback(links, sourceUrl, analyzer)   [NUEVO S52]
-    ├─ Heurísticas pre-fetch: descarta años pasados en paths y pre-filtra binarios. [Activo S55]
+    ├─ Heurísticas pre-fetch: descarta años pasados en paths y pre-filtra binarios/hashes puros [Activo S55]
     ├─ Si PARSER_FALLBACK_ENABLED=true:
     │   ├─ Intenta GeminiAnalyzer.discoverActivityLinks(links)
-    │   │   └─ Si 429/503/timeout → pasa TODOS los URLs (cero pérdida de actividades)
+    │   │   └─ Si 429/503/timeout → Fallback determinista (aplica filtros Stage 1 & 2 sin Gemini) para enviar URLs limpias a Fase 3
     └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini, propaga error)
     │
     ▼
@@ -381,6 +381,31 @@ Parámetros a monitorear desde PM2/Vercel (evento `adaptive_filter_summary`):
 
 Esta lógica descansa de forma determinista en `adaptive-rules.ts`.
 
+## Trust Layer — Guardián Editorial Automático (NUEVO v0.16.3)
+
+El **Trust Layer** es la última aduana antes de que una actividad validada por el pipeline se persista en la base de datos de producción (`storage.ts`).
+Su objetivo es erradicar el "ruido corporativo" (PQRS, términos legales, productos) y manejar de forma segura las actividades con fechas caducadas o baja confianza, usando un patrón reversible de cuarentena en lugar de descartes definitivos.
+
+### Tres Niveles de Decisión (`publish-validator.ts`)
+
+1. **REJECT (Descarte Definitivo - No persiste):**
+   - Ruido global (ej. "pqrs", "tratamiento de datos", "términos y condiciones").
+   - Ruido de dominio específico (ej. `/producto/` en el FCE, `/tramites/` en Bogotá.gov).
+   - Fechas alucinadas (> 540 días en el futuro).
+   - Fechas extremadamente pasadas (> 180 días en el pasado).
+   - Contenido vacío (Título corto + sin descripción + sin fecha).
+2. **QUARANTINE (Cuarentena Reversible - Guarda como `status: PAUSED`):**
+   - Eventos caducados levemente, con tolerancias definidas por dominio en `domain-noise-rules.ts` (ej. Cinemateca tolera 7 días de vencimiento para las películas en temporada; museos 14 días; por defecto 3 días).
+   - Actividades sin fecha que tienen baja confianza (`< 0.65`).
+   - Actividades con baja/media confianza global (`< 0.40`).
+3. **PUBLISH (Sólido - Guarda como `status: ACTIVE`):**
+   - Todo lo que pasa los filtros anteriores sin alarmas. Es público inmediatamente en el Frontend.
+
+### Resiliencia y Observabilidad
+- Si una actividad existente tiene estado humano de `DRAFT` o `DUPLICATE`, el Trust Layer **no lo sobrescribe**.
+- Los logs del Trust Layer están agrupados bajo la etiqueta `[PUBLISH_VALIDATOR]`.
+- Las actualizaciones donde el Trust Layer saca una actividad de Cuarentena (de `PAUSED` a `ACTIVE` debido a una mejor pasada del scraper) se registran como `[TRUST_LAYER] Transición: PAUSED -> ACTIVE`.
+
 ## Diccionario Maestro de Categorías (Data Pipeline V1)
 Todo flujo de Ingesta, posterior al scraping NLP, está obligado a cruzar el `data-pipeline.ts`, el cual sanitiza el vector crudo de categorías que exporta Gemini hacia **10 Buckets Estrictos**:
 1. `Arte`
@@ -406,15 +431,13 @@ Cualquier variante externa (ej. "Taller de pintura al óleo") colapsará atómic
 | 2 — Cron | Diario | Auto-clean de duplicados exactos |
 | 3 — Manual | Ad-hoc | Review 70-90% similitud |
 
-## Pre-filtro de URLs binarias (NUEVO v0.16.1)
+## Pre-filtro y Fallback Determinista (NUEVO v0.16.4-beta)
 
-`GeminiAnalyzer.discoverActivityLinks()` excluye automáticamente antes de enviar a Gemini:
-- Imágenes: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.bmp`, `.tiff`
-- Documentos: `.pdf`, `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`
-- Media: `.mp4`, `.mp3`, `.zip`
+`GeminiAnalyzer.discoverActivityLinks()` y el fallback de `discoverWithFallback` en `parser.ts` excluyen automáticamente ruido garantizado para no enviar a Gemini (ahorrando cuota) y para no ensuciar la Fase 3:
+- **Stage 1:** query params de búsqueda/navegación, anclas puras (`#`), protocolos como `mailto:`, `javascript:`, `tel:`, imágenes (`.jpg`, `.png`, `.webp` incl. `?bwg=`), archivos binarios (`.pdf`, `.mp4`, `.zip`).
+- **Stage 2:** clasificador heurístico que bloquea dominios basura, URLs institucionales (`/contacto`, `/login`), URLs de WordPress (`/wp-content/uploads/`) y lightboxes (`#elementor-action`).
 
-Esto evita consumir cuota del free tier (20 RPD) en archivos que nunca son actividades.
-**Caso real que motivó el fix:** JBB publica su agenda como imágenes JPG — eran 4 requests perdidos por ejecución.
+Los resultados de esta retención emiten el log estructurado `[DISCOVER_FILTER]`, permitiendo monitorear el ahorro real de cuota (ROI) por fuente.
 
 ## Caché dual disco + BD (NUEVO S31)
 

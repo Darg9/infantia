@@ -9,6 +9,57 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.16.4-beta] — 2026-04-24 (Discover Fallback & Pre-Filters)
+
+### Features
+
+- **Filtros Deterministas Pre-Gemini (`src/lib/url-classifier.ts`):** Inclusión de patrones estrictos de descarte para evitar procesar basuras de SPA y plugins de CMS (`#elementor-action`, `/wp-content/uploads/`, `.jpg?bwg=`).
+- **Sanitización del Fallback (`src/modules/scraping/parser/parser.ts`):** Se corrigió un bug donde, al quedarse sin cuota de Gemini (Error 429), el pipeline pasaba *todos* los links en crudo a la siguiente fase. Ahora, el fallback aplica los filtros estrictos del Stage 1 y Stage 2 localmente.
+- **Observabilidad de Cuota (`src/modules/scraping/nlp/gemini.analyzer.ts`):** Nuevo log estructurado `[DISCOVER_FILTER]` que reporta `raw`, `accepted`, `rejected`, el % de reducción y una muestra de URLs rechazadas para analizar el ROI.
+
+---
+
+## [v0.16.3] — 2026-04-24 (Trust Layer — Guardián Editorial Automático)
+
+### Features
+
+#### Trust Layer — Control Editorial Automático Pre-Persistencia
+
+- **`src/modules/scraping/quality/domain-noise-rules.ts` [NUEVO]:** Reglas de ruido centralizadas por dominio. Mapeo de paths inaceptables por fuente (`fce.com.co`: `/producto/`, `/pqrs/`, `/tratamiento-de-datos`, `/terminos-y-condiciones`; `bogota.gov.co`: `/tramites/`, `/secretarias/`). Función `isDomainSpecificNoise(url, title)` con regex global para keywords corporativos universales (`pqrs`, `tratamiento de datos`, `términos y condiciones`, etc.).
+
+- **`src/modules/scraping/quality/publish-validator.ts` [NUEVO]:** Validador editorial final con tres niveles de decisión:
+  - **REJECT (Descarte definitivo — no persiste):** Ruido corporativo global/por dominio, fechas alucinadas (> 540 días en el futuro), fechas extremadamente pasadas (> 180 días), contenido vacío (título < 15 chars + sin descripción + sin fecha).
+  - **QUARANTINE (Cuarentena reversible → `status: PAUSED`):** Evento expirado con tolerancia por dominio (cinemateca: 7d, museos: 14d, default: 3d), sin fecha + baja confianza (< 0.65), confianza media (< 0.4).
+  - **PUBLISH (Sólido → `status: ACTIVE`):** Pasa todas las reglas de validez.
+  - Logging estructurado `[PUBLISH_VALIDATOR]` con `source`, `title`, `reason`, `startDate`, `score`, `action` en cada decisión.
+
+- **`src/modules/scraping/storage.ts` [MODIFICADO]:** Integración del Trust Layer en `saveActivity()`:
+  - `validateForPublish()` ejecutado antes de cualquier operación de BD.
+  - `QUARANTINE` → guarda con `status: PAUSED` (cuarentena, no visible en portal público).
+  - `REJECT` → retorna `DISCARDED_QUALITY`, sin persistencia.
+  - **Guarda de status manual:** Si una actividad ya existe con `DRAFT` o `DUPLICATE`, el pipeline no sobreescribe el status. Las decisiones editoriales humanas son respetadas.
+  - **Log de transición de status:** Si el pipeline cambia el status de un registro existente (ej. `PAUSED` → `ACTIVE` tras segunda pasada con mejor fecha), se registra explícitamente en los logs `[TRUST_LAYER] Transición: PAUSED → ACTIVE`.
+
+### Audit
+
+- **Riesgo 1 verificado:** `listActivities()` en `activities.service.ts` tiene `where.status = 'ACTIVE'` como default hardcodeado. Las actividades `PAUSED` nunca aparecen en el portal público.
+- **Riesgo 2 verificado:** El flujo de update permite que una actividad en cuarentena (`PAUSED`) sea promovida automáticamente a `ACTIVE` si en un run posterior el validator evalúa `PUBLISH`. Los inactivos son inventario valioso, no basura definitiva.
+
+### Tests
+
+- **`scripts/temp-trust-layer-dryrun.ts`:** Suite de 12 casos de prueba operativos (dry-run, sin DB). Resultado: 12/12 ✅.
+  - FCE ruido corporativo (4 casos) → todos REJECT.
+  - Cinemateca evento 2024 → REJECT (extreme_past_date).
+  - Cinemateca evento hace 15 días → QUARANTINE.
+  - Cinemateca evento vigente → PUBLISH.
+  - Bogotá.gov evento hace semanas → QUARANTINE.
+  - Bogotá.gov taller vigente → PUBLISH.
+  - Sin fecha + baja confianza → QUARANTINE.
+  - Contenido vacío → REJECT.
+  - Fecha alucinada 2029 → REJECT.
+
+---
+
 ## [v0.16.1] — 2026-04-24 (Multi-City Map Architecture — Geo-Data Isolation Completo)
 
 ### Features

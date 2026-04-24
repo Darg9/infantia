@@ -1,6 +1,6 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.16.1
+**Versión:** ✅ v0.16.4-beta
 **Última actualización:** 24 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.

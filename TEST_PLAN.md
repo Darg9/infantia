@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.16.1 | **Fecha:** 2026-04-24
+**Version:** v0.16.4-beta | **Fecha:** 2026-04-24
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-04-24)
 

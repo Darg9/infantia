@@ -318,11 +318,13 @@ export class GeminiAnalyzer {
     const stage1Filtered = links.filter((l) => {
       try {
         const u = new URL(l.url);
-        if (u.search.length > 0) return false;          // query params → navegación/filtro
-        if (IMAGE_OR_BINARY_EXT.test(u.pathname)) return false; // imágenes y archivos binarios
+        if (!['http:', 'https:'].includes(u.protocol)) return false; // mailto:, tel:, javascript:
+        if (u.search.length > 0) return false;                        // query params
+        if (u.hash && u.pathname === '/' || u.hash.length > 0 && u.pathname === u.hash) return false; // hash-only
+        if (IMAGE_OR_BINARY_EXT.test(u.pathname)) return false;       // archivos binarios
         return true;
       } catch {
-        return true;
+        return false;
       }
     });
     const stage1Excluded = links.length - stage1Filtered.length;
@@ -351,7 +353,15 @@ export class GeminiAnalyzer {
     const filtered = links.filter((l) => urlClassifierResult.kept.includes(l.url));
     const totalExcluded = links.length - filtered.length;
     if (totalExcluded > 0) {
-      log.info(`Pre-filtros combinados: ${totalExcluded}/${links.length} URLs excluidas (${Math.round((totalExcluded / links.length) * 100)}% reducción). Enviando ${filtered.length} a Gemini.`);
+      const rejectedUrls = links.filter((l) => !filtered.some((f) => f.url === l.url)).map((l) => l.url);
+      const sample = rejectedUrls.slice(0, 5);
+      log.info(`[DISCOVER_FILTER]`, {
+        raw: links.length,
+        accepted: filtered.length,
+        rejected: totalExcluded,
+        reductionPct: `${Math.round((totalExcluded / links.length) * 100)}%`,
+        sample_rejected: sample,
+      });
     }
 
     // 100 URLs por lote (benchmark S34: chunk=100 reduce riesgo por quota-429)

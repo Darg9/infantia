@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
-import { Prisma, PrismaClient } from '../../generated/prisma/client';
+import { Prisma, PrismaClient, ActivityStatus } from '../../generated/prisma/client';
 import { ActivityNLPResult, BatchPipelineResult } from './types';
 import { calculateSimilarity, normalizeString } from './deduplication';
 import { geocodeAddress } from '../../lib/geocoding';
@@ -10,6 +10,7 @@ import { getAdaptiveRules, getSourceRules } from './adaptive-rules';
 import { runDataPipeline } from './data-pipeline';
 import { matchCity } from '../../modules/geo/city-matcher';
 import { queueCityReview } from '../../modules/geo/city-review';
+import { validateForPublish } from './quality/publish-validator';
 
 const log = createLogger('scraping:storage');
 
@@ -150,7 +151,29 @@ export class ScrapingStorage {
         }
       }
 
-      // 1. Obtener vertical
+      // 1. Trust Layer: Guardián Editorial Final
+      const validation = validateForPublish(data, sourceUrl);
+
+      let sourceDomain: string | null = null;
+      try { sourceDomain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { /* url inválida */ }
+
+      log.info('[PUBLISH_VALIDATOR]', {
+        source: sourceDomain,
+        title: data.title,
+        reason: validation.reason,
+        startDate: data.schedules?.[0]?.startDate,
+        score: data.confidenceScore,
+        url: sourceUrl,
+        action: validation.action
+      });
+
+      if (validation.action === 'REJECT') {
+        return 'DISCARDED_QUALITY';
+      }
+
+      const finalStatus = validation.action === 'QUARANTINE' ? ActivityStatus.PAUSED : ActivityStatus.ACTIVE;
+
+      // 2. Obtener vertical
       const vertical = await prisma.vertical.findUnique({ where: { slug: verticalSlug } });
       if (!vertical) {
         log.error(`Vertical "${verticalSlug}" no encontrada. Ejecuta el seed primero.`);
@@ -194,15 +217,13 @@ export class ScrapingStorage {
         where: { sourceUrl },
       });
 
-      // Derivar sourceDomain desde la URL (necesario para health score + diversificación en portal)
-      let sourceDomain: string | null = null;
-      try { sourceDomain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { /* url inválida */ }
+      // Derivar sourceDomain desde la URL (ya obtenido arriba en el Trust Layer, pero lo dejamos por si acaso)
 
       const activityData = {
         title: data.title.substring(0, 255),
         description: data.description || '',
         type: this.mapActivityType(data.categories, data.title),
-        status: 'ACTIVE' as const,
+        status: finalStatus as ActivityStatus,
         startDate: data.schedules?.[0]?.startDate ? new Date(data.schedules[0].startDate) : null,
         endDate: data.schedules?.[0]?.endDate ? new Date(data.schedules[0].endDate) : null,
         schedule: data.schedules ? { items: data.schedules } : Prisma.JsonNull,
@@ -248,10 +269,24 @@ export class ScrapingStorage {
       let activityId: string;
 
       if (existing) {
-        // No sobreescribir imageUrl si ya existe (puede haber sido enriquecida por backfill)
-        const updateData = existing.imageUrl
+        // Guarda 1: No sobreescribir imageUrl si ya existe (puede haber sido enriquecida por backfill)
+        let updateData = existing.imageUrl
           ? { ...activityData, imageUrl: existing.imageUrl }
           : activityData;
+
+        // Guarda 2: Preservar status si fue DRAFT (edición manual en admin).
+        // El pipeline no debe sobreescribir decisiones editoriales humanas.
+        // ACTIVE/PAUSED sí pueden ser reescribibles por el validator (cuarentena reversible).
+        const manualStatuses: ActivityStatus[] = [ActivityStatus.DRAFT, ActivityStatus.DUPLICATE];
+        if (existing.status && manualStatuses.includes(existing.status as ActivityStatus)) {
+          updateData = { ...updateData, status: existing.status as ActivityStatus };
+        }
+
+        // Log de transición de status (visibilidad operativa)
+        if (existing.status !== updateData.status) {
+          log.info(`[TRUST_LAYER] Transición de status: ${existing.status} → ${updateData.status} | "${data.title}"`, { url: sourceUrl });
+        }
+
         const updated = await prisma.activity.update({
           where: { id: existing.id },
           data: updateData,

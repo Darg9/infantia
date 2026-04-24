@@ -40,6 +40,14 @@ const BLOCKED_DOMAINS = new Set([
  * (no contiene información de actividad)
  */
 const NON_PRODUCTIVE_PATTERNS = [
+  // WordPress assets y lightboxes (nunca son actividades)
+  /\/wp-content\/uploads\//i,
+  /\/wp-json\//i,
+  /elementor-action/i,      // lightboxes y popups de Elementor (#elementor-action%3A...)
+
+  // Archivos con query params de galería (ej: ?bwg=, ?ver=)
+  /\.(jpe?g|png|gif|webp)\?/i,
+
   // Categorías y filtros (con y sin acento)
   /\/categor[ií]?[ao]\//i,
   /\/category\//i,

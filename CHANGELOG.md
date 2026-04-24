@@ -9,6 +9,64 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.15.0] — 2026-04-23 (Multi-City Map Architecture — Geo-Data Isolation Completo)
+
+### Features
+
+#### Fase 1 — Backend (ya en commit 391d839)
+- **City.defaultLat/Lng/Zoom:** Migración de campos nullable → NOT NULL con backfill de 11 ciudades con coordenadas reales (Bogotá, Medellín y 9 más).
+- **Endpoint estricto:** `GET /api/activities/map` ahora exige `?cityId=` obligatorio. Sin él → `HTTP 400` con mensaje explícito. El backend nunca decide la ciudad — responsabilidad 100% del frontend (URL > Context > localStorage).
+- **Filtro de coords inválidas:** Actividades con `lat=0, lng=0` excluidas del mapa por diseño (`locationFilter: { latitude: { not: 0 }, longitude: { not: 0 } }`). Las ~68 actividades sin geocodificación no contaminan el mapa.
+- **Índice BD:** `idx_location_city_coords` creado para queries espaciales por ciudad.
+
+#### Fase 2 — CityProvider (SSOT URL > localStorage > default)
+- **`src/lib/city/resolveCity.ts` [NUEVO]:** Helper SSOT `resolveCityId({ urlCityId, storedCityId, defaultCityId })`. Jerarquía estricta: URL > localStorage > default. El backend nunca toma esta decisión.
+- **`src/components/providers/CityProvider.tsx` [NUEVO]:** Provider cliente completo. Expone `{ cityId, city, cities, setCityId }`. Mount effect: URL > localStorage > default → normaliza URL si falta cityId (router.replace). Persistencia: localStorage `hp_city_id`. setCityId: actualiza URL primero (router.push) → dispara SSR/data reload. URL-watch effect (nuevo): sincroniza estado interno cuando Filters navega via router.push → localStorage siempre actualizado sin acoplar Filters al Provider.
+
+#### Fase 3 — Mapa (hardcode eliminado)
+- **`MapInner.tsx` [MODIFICADO]:** Eliminado `DEFAULT_CENTER` hardcodeado (Bogotá lat 4.711, lng -74.07). Reemplazado por `city.defaultLat/Lng/Zoom` del CityProvider. Constante renombrada `EMERGENCY_CENTER` (solo si CityProvider no está montado — no debería ocurrir en runtime normal). fitBounds correcto: 1 pin → setView, N pins → fitBounds, 0 pins + city → city.defaultCenter.
+- **`ActivityMap.tsx` [PREVIO]:** Ya tenía fitBounds + defaultCenter prop desde sesión anterior. Sin cambios.
+
+#### Fase 4 — Integración UX (scope /actividades)
+- **`src/app/actividades/layout.tsx` [NUEVO]:** Segment layout Server Component. DB queries: ciudades activas + ciudad con más locations (default determinístico). Serialización Prisma Decimal → number. Envuelve en `<Suspense>` (requerido por useSearchParams en CityProvider). Scope limitado a `/actividades/*` — no contamina rutas globales.
+- **`CityProvider.tsx` URL-watch effect [NUEVO]:** `useEffect([urlCityId])` — cuando Filters.handleCity → navigate → router.push cambia la URL, useSearchParams detecta el cambio → setCityIdState → localStorage sync automático. Sin modificar Filters.tsx (mantiene setIsPending, reset de paginación, navigate con todos los params).
+
+### Arquitectura Multi-Ciudad — Estado Final
+
+| Capa | Fuente de verdad | Estado |
+|---|---|---|
+| DB | City.defaultLat/Lng/Zoom NOT NULL | ✅ |
+| Backend | cityId obligatorio (HTTP 400 sin él) | ✅ |
+| Routing | URL (?cityId) canónica siempre | ✅ |
+| Provider | Sincronizador URL → localStorage | ✅ |
+| Mapa | fitBounds + City coords (no Bogotá hardcoded) | ✅ |
+| Listado | cityId desde URL/props (SSR) | ✅ |
+| Persistencia | localStorage hp_city_id (secundario) | ✅ |
+
+### TypeScript
+- 0 errores `tsc --noEmit` ✅
+
+### Tests
+- **1214 passed | 2 skipped** — 75 archivos — exit 0 ✅
+- Sin cambios en suite (nuevos archivos son Server/Client Components UI-only, sin lógica testeable unitariamente)
+
+### Archivos creados/modificados
+| Archivo | Tipo | Cambio |
+|---|---|---|
+| `src/app/actividades/layout.tsx` | NEW | Segment layout con CityProvider |
+| `src/components/providers/CityProvider.tsx` | NEW | Provider completo URL > LS > default |
+| `src/lib/city/resolveCity.ts` | NEW | Helper SSOT resolveCityId |
+| `src/app/actividades/_components/MapInner.tsx` | MODIFIED | Elimina DEFAULT_CENTER hardcoded, usa city.defaultLat/Lng/Zoom |
+| `src/app/mapa/page.tsx` | MODIFIED | Ajustes relacionados multi-ciudad |
+| `src/components/ActivityMap.tsx` | MODIFIED | fitBounds + defaultCenter desde Fase 1 |
+
+### Rama y Deploy
+- **Rama:** `master`
+- **Estado:** Cambios locales pendientes de commit (ver sección Despliegue)
+- **Versión:** v0.15.0
+
+---
+
 ## [v0.14.1] — 2026-04-22 (Multi-Provider Identity Model & P2002 Safety Net)
 
 ### Features & Fixes

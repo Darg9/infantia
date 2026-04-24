@@ -19,6 +19,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
 import { Icon } from "@/components/ui/icon"
+import { CitySwitcher } from '@/components/layout/CitySwitcher'
+import type { CityOption } from '@/components/providers/CityProvider'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,6 +32,8 @@ interface MobileNavProps {
     isAdmin?: boolean
     providerSlug?: string | null
   } | null
+  /** Ciudades activas para el CitySwitcher del drawer */
+  cities: CityOption[]
 }
 
 // ─── Icons (inline SVG, no extra deps) ───────────────────────────────────────
@@ -192,10 +196,12 @@ function MobileDrawer({
   open,
   onClose,
   session,
+  cities,
 }: {
   open: boolean
   onClose: () => void
   session: MobileNavProps['session']
+  cities: CityOption[]
 }) {
   const router = useRouter()
   const drawerRef = useRef<HTMLDivElement>(null)
@@ -296,6 +302,9 @@ function MobileDrawer({
 
         {/* Nav sections */}
         <nav aria-label="Menú lateral" className="flex-1 overflow-y-auto px-4 py-4 space-y-6">
+          {/* Selector de ciudad — solo visible cuando hay 2+ ciudades activas */}
+          <CitySwitcher cities={cities} variant="drawer" />
+
           {/* Admin / Provider quick links */}
           {(session?.isAdmin || session?.providerSlug) && (
             <div>
@@ -494,7 +503,7 @@ function MobileHeader({
 
 // ─── Root export ──────────────────────────────────────────────────────────────
 
-export function MobileNav({ session }: MobileNavProps) {
+export function MobileNav({ session, cities }: MobileNavProps) {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
@@ -507,6 +516,7 @@ export function MobileNav({ session }: MobileNavProps) {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         session={session}
+        cities={cities}
       />
       <BottomNav session={session} />
     </>

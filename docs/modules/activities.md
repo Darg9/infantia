@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.14.1
-**Última actualización:** 22 de abril de 2026
+**Versión actual:** v0.15.0
+**Última actualización:** 23 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -17,7 +17,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |
 | DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.9.0) |
 | GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.14.1). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
-| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500) |
+| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.15.0)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |
 
@@ -260,3 +260,45 @@ IntentResolver.tsx (global en layout, useEffect[])
 - `GENERIC_ACTION` — hook genérico para acciones futuras
 
 **toggleFavorite service:** `src/modules/favorites/toggle-favorite.ts` — servicio HTTP reutilizado por `FavoriteButton` e `IntentResolver`. Cero duplicación de lógica.
+
+## Arquitectura Multi-Ciudad (NUEVO v0.15.0)
+
+El sistema está diseñado para aislar datos geográficamente por ciudad. No existe ningún fallback geográfico implícito en el backend.
+
+### Jerarquía de resolución de ciudad
+```
+URL (?cityId=) → [SSOT — gobierna SSR y fetch]
+    ↓
+CityProvider context → [sincronizador]
+    ↓
+localStorage (hp_city_id) → [persistencia secundaria]
+    ↓
+DB default city (más locations) → [último recurso]
+```
+
+### Componentes clave
+| Archivo | Rol |
+|---|---|
+| `src/lib/city/resolveCity.ts` | Helper SSOT `resolveCityId()` — jerarquía pura sin side-effects |
+| `src/components/providers/CityProvider.tsx` | Provider cliente: expone `{ cityId, city, cities, setCityId }`. URL-watch effect. Persistencia localStorage. |
+| `src/app/actividades/layout.tsx` | Segment layout server: monta CityProvider con DB query (ciudades activas + default). |
+| `src/app/actividades/_components/MapInner.tsx` | Mapa Leaflet: usa `city.defaultLat/Lng/Zoom` del contexto como centro cuando no hay pines. |
+
+### Contrato del endpoint `/api/activities/map`
+- `?cityId=` es **obligatorio**. Sin él → `HTTP 400 Bad Request`.
+- Coordenadas (0,0) excluidas automáticamente.
+- Filtro estricto `location: { cityId }` — nunca mezcla actividades de otras ciudades.
+- Máx 500 actividades por respuesta.
+
+### Flujo completo de cambio de ciudad
+```
+Filters.handleCity(cityId)
+  ↓ navigate({ ...params, cityId })
+  ↓ router.push(?...&cityId=xxx)
+  ↓ URL cambia → SSR re-render (page.tsx)
+  ↓ CityProvider URL-watch effect detecta urlCityId nuevo
+  ↓ setCityIdState(nuevo) → localStorage sync
+  ↓ MapInner refetch /api/activities/map?cityId=xxx
+  ↓ fitBounds sobre pines de la nueva ciudad
+```
+

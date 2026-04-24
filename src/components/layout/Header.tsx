@@ -6,6 +6,8 @@ import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { MobileNav } from '@/components/layout/MobileNav'
+import { CitySwitcher } from '@/components/layout/CitySwitcher'
+import type { CityOption } from '@/components/providers/CityProvider'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -19,6 +21,20 @@ export async function Header() {
     })
     providerSlug = provider?.slug ?? null
   }
+
+  // Cargar ciudades activas para el selector (solo si hay 2+)
+  const rawCities = await prisma.city.findMany({
+    where: { isActive: true },
+    select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
+    orderBy: { name: 'asc' },
+  })
+  const cities: CityOption[] = rawCities.map((c) => ({
+    id:          c.id,
+    name:        c.name,
+    defaultLat:  Number(c.defaultLat),
+    defaultLng:  Number(c.defaultLng),
+    defaultZoom: c.defaultZoom,
+  }))
 
   // Props forwarded to the mobile client component
   const mobileSession = session
@@ -35,7 +51,7 @@ export async function Header() {
       {/* ── Mobile navigation (≤ md): header + drawer + bottom nav ──────────
           Hidden on md+ via `md:hidden` wrapper inside MobileNav              */}
       <div className="md:hidden">
-        <MobileNav session={mobileSession} />
+        <MobileNav session={mobileSession} cities={cities} />
       </div>
 
       {/* ── Desktop header (≥ md): unchanged ─────────────────────────────── */}
@@ -72,6 +88,9 @@ export async function Header() {
             <Link href="/mapa" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] transition-colors">
               Mapa
             </Link>
+
+            {/* Selector de ciudad — solo visible cuando hay 2+ ciudades activas */}
+            <CitySwitcher cities={cities} variant="desktop" />
 
             <ThemeToggle />
 

@@ -1,13 +1,13 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-22 | Version: v0.14.1
+Actualizado: 2026-04-23 | Version: v0.15.0
 
-## Resumen Actual (v0.14.1 / Zero-Debt Architecture & Auth Refactor)
+## Resumen Actual (v0.15.0 / Multi-City Map Architecture)
 - **Archivos de Test:** 75
-- **Tests Totales:** 1215 (1213 pasan ✅, 2 skipped)
+- **Tests Totales:** 1216 (1214 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
-- **Cobertura:** 82.17% Lines / 80.53% Funcs / 80.72% Stmts / 73.61% Branches (Deuda técnica menor: umbral < 85%)
+- **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
 
 ## 🛡️ Deuda Técnica UI (Design System Enforcement)
 *Baseline medido al activar el enforcement mecánico (ESLint)*
@@ -27,8 +27,9 @@ Actualizado: 2026-04-22 | Version: v0.14.1
 | Metrica | Valor |
 |---------|-------|
 | Archivos de test | 75 |
-| Tests totales | 1215 |
-| Pasados | 1215 |
+| Tests totales | 1216 |
+| Pasados | 1214 |
+| Skipped | 2 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 33) |
 | Statements | >91% ✅ |
@@ -238,6 +239,18 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S53** | **1155** | **73** | **>91%** | **>85%** |
 | **v0.11.0-S54** | **1191** | **73** | **>91%** | **>85%** |
 | **v0.11.0-S55** | **1203** | **73** | **>91%** | **>85%** |
+| **v0.12.x** | **1215** | **75** | **>91%** | **>85%** |
+| **v0.14.1** | **1214** | **75** | **>91%** | **>85%** |
+| **v0.15.0** | **1214** | **75** | **>91%** | **>85%** |
+
+## Cambios en v0.15.0 (Multi-City Map Architecture)
+
+- **Sin tests nuevos** — nuevos archivos son Server/Client Components UI-only:
+  - `src/app/actividades/layout.tsx` (Server Component, no lógica testeable unitariamente)
+  - `src/components/providers/CityProvider.tsx` (Client Component con useSearchParams — requiere browser env)
+  - `src/lib/city/resolveCity.ts` — **candidato a test futuro** (función pura `resolveCityId`)
+- `MapInner.tsx` modificado: `useCity()` + ramas `markers.length === 0 && city` — cubierta por render paths existentes
+- TypeScript: 0 errores ✅ | `tsc --noEmit` clean ✅
 
 ## Cambios en S54 y S55 (v0.11.0-S55 / Pipeline Optimization)
 

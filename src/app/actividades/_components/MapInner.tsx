@@ -1,10 +1,15 @@
 'use client';
 // =============================================================================
 // MapInner — componente Leaflet real (importado sin SSR desde MapView)
+// Centro dinámico:
+//   1. fitBounds sobre todos los pines (si existen)
+//   2. city.defaultLat/Lng/Zoom del CityProvider (si ciudad seleccionada)
+//   3. DEFAULT_CENTER como último recurso defensivo
 // =============================================================================
 
 import { useEffect, useRef, useState } from 'react';
 import { activityPath } from '@/lib/activity-url';
+import { useCity } from '@/components/providers/CityProvider';
 
 export interface MapMarker {
   id:           string;
@@ -21,14 +26,16 @@ interface Props {
   height?: string;
 }
 
-// Centro por defecto: Bogotá
-const DEFAULT_CENTER: [number, number] = [4.711, -74.0721];
-const DEFAULT_ZOOM = 11;
+// Último recurso defensivo (jambás debería usarse si CityProvider está montado)
+const EMERGENCY_CENTER: [number, number] = [4.711, -74.0721];
+const EMERGENCY_ZOOM = 11;
 
 export default function MapInner({ searchParams, height = '520px' }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
   const mapRef        = useRef<any>(null);        // instancia L.Map
   const layerGroupRef = useRef<any>(null);        // L.LayerGroup para los pines
+
+  const { city } = useCity();
 
   const [markers,  setMarkers]  = useState<MapMarker[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -65,8 +72,11 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       document.head.appendChild(link);
 
       const map = L.map(containerRef.current!, {
-        center: DEFAULT_CENTER,
-        zoom:   DEFAULT_ZOOM,
+        // Centro inicial neutro: será sobreescrito por fitBounds o city.defaultCenter
+        center: city
+          ? [city.defaultLat, city.defaultLng] as [number, number]
+          : EMERGENCY_CENTER,
+        zoom: city ? city.defaultZoom : EMERGENCY_ZOOM,
         zoomControl: true,
       });
 
@@ -143,12 +153,16 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       // Ajustar vista para mostrar todos los pines
       if (markers.length === 1) {
         mapRef.current.setView([markers[0].lat, markers[0].lng], 14);
-      } else {
+      } else if (markers.length > 1) {
         const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng] as [number, number]));
         mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+      } else if (city) {
+        // Sin pines pero con ciudad seleccionada: centrar en coordenadas de la ciudad
+        mapRef.current.setView([city.defaultLat, city.defaultLng], city.defaultZoom);
       }
+      // Sin pines ni ciudad: el map quedó en el centro inicial (EMERGENCY_CENTER)
     });
-  }, [markers]);
+  }, [markers, city]);
 
   const isEmpty = !loading && !error && markers.length === 0;
 

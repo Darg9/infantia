@@ -16,17 +16,40 @@ async function main() {
   // =========================================================================
   // Cities - Colombia
   // =========================================================================
-  const cityNames = [
-    'Bogotá', 'Medellín', 'Cali', 'Barranquilla', 'Cartagena',
-    'Bucaramanga', 'Pereira', 'Manizales', 'Santa Marta', 'Ibagué',
+  const CITY_DATA: Array<{
+    name: string
+    defaultLat: number
+    defaultLng: number
+    defaultZoom: number
+  }> = [
+    { name: 'Bogotá',       defaultLat: 4.7110,  defaultLng: -74.0721, defaultZoom: 12 },
+    { name: 'Medellín',     defaultLat: 6.2442,  defaultLng: -75.5812, defaultZoom: 12 },
+    { name: 'Cali',         defaultLat: 3.4372,  defaultLng: -76.5225, defaultZoom: 12 },
+    { name: 'Barranquilla', defaultLat: 10.9654, defaultLng: -74.7819, defaultZoom: 12 },
+    { name: 'Cartagena',    defaultLat: 10.3910, defaultLng: -75.4797, defaultZoom: 12 },
+    { name: 'Bucaramanga',  defaultLat: 7.1198,  defaultLng: -73.1127, defaultZoom: 12 },
+    { name: 'Pereira',      defaultLat: 4.8133,  defaultLng: -75.6942, defaultZoom: 12 },
+    { name: 'Manizales',    defaultLat: 5.0689,  defaultLng: -75.5174, defaultZoom: 12 },
+    { name: 'Santa Marta',  defaultLat: 11.2408, defaultLng: -74.2010, defaultZoom: 12 },
+    { name: 'Ibagué',       defaultLat: 4.4389,  defaultLng: -75.2322, defaultZoom: 12 },
+    { name: 'Pasto',        defaultLat: 1.2136,  defaultLng: -77.2811, defaultZoom: 12 },
   ];
 
   const cities = await Promise.all(
-    cityNames.map((name) =>
+    CITY_DATA.map(({ name, defaultLat, defaultLng, defaultZoom }) =>
       prisma.city.upsert({
         where: { name_countryCode: { name, countryCode: 'CO' } },
-        update: {},
-        create: { name, countryCode: 'CO', countryName: 'Colombia', timezone: 'America/Bogota', currency: 'COP' },
+        update: { defaultLat, defaultLng, defaultZoom },
+        create: {
+          name,
+          countryCode: 'CO',
+          countryName: 'Colombia',
+          timezone: 'America/Bogota',
+          currency: 'COP',
+          defaultLat,
+          defaultLng,
+          defaultZoom,
+        },
       })
     )
   );

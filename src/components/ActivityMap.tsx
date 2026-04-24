@@ -2,6 +2,8 @@
 
 // =============================================================================
 // ActivityMap — Mapa Leaflet de actividades (client-only, ssr: false)
+// Centro dinámico: fitBounds sobre pines reales.
+// Si no hay pines (ciudad sin actividades geocodificadas), usa city.defaultCenter.
 // =============================================================================
 
 import 'leaflet/dist/leaflet.css'
@@ -21,6 +23,8 @@ export interface MapPoint {
 
 interface Props {
   points: MapPoint[]
+  /** Coordenadas por defecto de la ciudad seleccionada (de City.defaultLat/Lng/Zoom) */
+  defaultCenter?: { lat: number; lng: number; zoom: number }
 }
 
 // Colores por categoría (primer char del nombre → hash simple)
@@ -30,14 +34,13 @@ function markerColor(category: string | null): string {
   return colors[category.charCodeAt(0) % colors.length]
 }
 
-export default function ActivityMap({ points }: Props) {
+export default function ActivityMap({ points, defaultCenter }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<any>(null)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
-    // Import dinámico para evitar SSR (CSS ya importado arriba)
     import('leaflet').then((L) => {
       if (!containerRef.current || mapRef.current) return
 
@@ -50,6 +53,7 @@ export default function ActivityMap({ points }: Props) {
         shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
       })
 
+      // Centro inicial neutro — será sobreescrito por fitBounds o defaultCenter
       const map = L.map(containerRef.current).setView([4.7110, -74.0721], 12)
       mapRef.current = map
 
@@ -60,6 +64,7 @@ export default function ActivityMap({ points }: Props) {
       }).addTo(map)
 
       // Pins de actividades
+      const markers: any[] = []
       points.forEach((point) => {
         const color = markerColor(point.category)
 
@@ -87,10 +92,22 @@ export default function ActivityMap({ points }: Props) {
             <a href="${path}" style="display:block;margin-top:8px;text-align:center;background:#f97316;color:white;padding:4px 0;border-radius:6px;font-size:12px;font-weight:600;text-decoration:none">Ver actividad →</a>
           </div>`
 
-        L.marker([point.lat, point.lng], { icon })
+        const marker = L.marker([point.lat, point.lng], { icon })
           .addTo(map)
           .bindPopup(popup, { maxWidth: 200 })
+        markers.push(marker)
       })
+
+      // ── Centro dinámico ───────────────────────────────────────────────────
+      // fitBounds si hay pines reales (evita fitBounds([]) que rompe Leaflet)
+      if (markers.length > 0) {
+        const group = L.featureGroup(markers)
+        map.fitBounds(group.getBounds(), { padding: [40, 40], maxZoom: 15 })
+      } else if (defaultCenter) {
+        // Ciudad sin pines geocodificados → coordenadas base de la ciudad en DB
+        map.setView([defaultCenter.lat, defaultCenter.lng], defaultCenter.zoom)
+      }
+      // Sin pines ni defaultCenter → el setView inicial queda como último recurso
     })
 
     return () => {
@@ -99,7 +116,7 @@ export default function ActivityMap({ points }: Props) {
         mapRef.current = null
       }
     }
-  }, [points])
+  }, [points, defaultCenter])
 
   return (
     <div

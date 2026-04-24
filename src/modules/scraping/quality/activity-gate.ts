@@ -92,14 +92,30 @@ const NOISE_URL_FRAGMENTS = [
 
 // ─── Paths de fuentes problemáticas que solo se aceptan por ruta específica ──
 // formato: { domain, allowedPaths[] }
+// NOTA: el dominio se compara con igualdad exacta o sufijo (.domain) para evitar
+// falsos positivos por substring (ej: cinematecadebogota.gov.co ≠ bogota.gov.co)
 const SOURCE_PATH_ALLOWLIST: { domain: string; allowed: string[] }[] = [
   {
     domain: 'bogota.gov.co',
-    allowed: ['/que-hacer/agenda-cultural', '/programate', '/cultura', '/parques'],
+    allowed: [
+      '/que-hacer/agenda-cultural',
+      '/mi-ciudad/cultura-recreacion-y-deporte',
+      '/programate',
+      '/cultura',
+      '/parques',
+    ],
   },
   {
     domain: 'fce.com.co',
-    allowed: ['/eventos', '/conferencias', '/presentaciones', '/lanzamiento'],
+    allowed: [
+      '/programacion-cultural',
+      '/talleres-a-fondo',
+      '/concursos',
+      '/eventos',
+      '/conferencias',
+      '/presentaciones',
+      '/lanzamiento',
+    ],
   },
 ];
 
@@ -112,12 +128,20 @@ function matchesAny(text: string, patterns: (string | RegExp)[]): boolean {
 }
 
 // ─── Verificar restricción por path de fuente ────────────────────────────────
+//
+// BUG HISTÓRICO (corregido): se usaba hostname.includes(domain) que causaba
+// falsos positivos — ej: 'cinematecadebogota.gov.co'.includes('bogota.gov.co') === true
+// FIX: comparación exacta (hostname === domain) o sufijo legítimo (.domain).
+// Así 'sub.bogota.gov.co' matchea pero 'cinematecadebogota.gov.co' no.
+//
 function isBlockedBySourcePath(url: string): boolean {
   try {
     const parsed = new URL(url);
     const hostname = parsed.hostname.replace('www.', '');
     const path = parsed.pathname;
-    const rule = SOURCE_PATH_ALLOWLIST.find(r => hostname.includes(r.domain));
+    const rule = SOURCE_PATH_ALLOWLIST.find(
+      r => hostname === r.domain || hostname.endsWith('.' + r.domain),
+    );
     if (!rule) return false; // dominio no restringido → no bloqueado
     // El dominio está en la lista restringida: solo pasa si coincide con un path permitido
     return !rule.allowed.some(allowed => path.startsWith(allowed));

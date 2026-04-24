@@ -29,8 +29,11 @@ export function pickMode(s: SourceStats): Mode {
   // Conversión pura probada por usuarios
   if (s.ctr7d >= 0.20 && s.health >= 0.7) return 'DEEP';
 
-  // Fuentes problemáticas o restrictivas (Gov) mitigadas a PING
-  if (s.health < 0.4 || s.saveRate < 0.05 || s.isGov) return 'PING';
+  // Fuentes problemáticas mitigadas a PING.
+  // NOTA isGov eliminado de esta condición: muchas de nuestras mejores fuentes son
+  // gubernamentales (BibloRed, Idartes, Banrep). Antes `|| s.isGov` las mandaba a
+  // PING independientemente de su rendimiento. Ahora solo penaliza health o saveRate.
+  if (s.health < 0.4 || s.saveRate < 0.05) return 'PING';
 
   return 'SURFACE';
 }

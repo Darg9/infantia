@@ -40,6 +40,18 @@ vi.mock('@prisma/adapter-pg', () => ({
 // Mockeamos PrismaClient — misma razón, debe ser función regular
 vi.mock('../../../generated/prisma/client', () => ({
   Prisma: { JsonNull: '__JSON_NULL__' },
+  // ActivityStatus debe estar en el mock: storage.ts lo importa para
+  // asignar status ACTIVE / PAUSED según la decisión del publish-validator.
+  // Sin esto, ActivityStatus.PAUSED = undefined.PAUSED → TypeError silencioso
+  // que impide que prisma.activity.create se llame y rompe todos los tests.
+  ActivityStatus: {
+    ACTIVE: 'ACTIVE',
+    PAUSED: 'PAUSED',
+    DRAFT: 'DRAFT',
+    DUPLICATE: 'DUPLICATE',
+    EXPIRED: 'EXPIRED',
+    DISCARDED_QUALITY: 'DISCARDED_QUALITY',
+  },
   PrismaClient: vi.fn().mockImplementation(function () {
     return {
       vertical: { findUnique: mocks.mockVerticalFindUnique },

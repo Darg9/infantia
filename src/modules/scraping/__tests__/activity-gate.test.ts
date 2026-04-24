@@ -15,17 +15,16 @@ function makeActivity(overrides: Partial<ActivityNLPResult> = {}): ActivityNLPRe
   return {
     title: 'Taller de pintura para niños',
     description: 'Taller presencial en Bogotá todos los sábados de abril. Cupos limitados.',
-    startDate: '2026-05-03',
-    endDate: null,
-    schedules: [{ date: '2026-05-03', time: '10:00', description: 'Sesión inicial' }],
-    location: 'Biblioteca El Tintal',
-    price: 0,
-    isFree: true,
+    isActivity: true,
     categories: ['talleres'],
-    ageMin: 5,
-    ageMax: 12,
+    currency: 'COP',
+    audience: 'ALL',
     confidenceScore: 0.85,
-    sourceUrl: 'https://www.biblored.gov.co/eventos/taller-pintura',
+    schedules: [{ startDate: '2026-05-03', endDate: undefined, notes: 'Sesión inicial' }],
+    location: { address: 'Biblioteca El Tintal', city: 'Bogotá' },
+    price: 0,
+    minAge: 5,
+    maxAge: 12,
     ...overrides,
   };
 }
@@ -76,7 +75,7 @@ describe('Activity Gate — allowlists FCE actualizadas', () => {
   const fceActivity = makeActivity({
     title: 'Lanzamiento de novela',
     description: 'Presentación presencial. Miércoles 8 de mayo 2026 a las 6pm.',
-    schedules: [{ date: '2026-05-08', time: '18:00', description: 'Lanzamiento' }],
+    schedules: [{ startDate: '2026-05-08', endDate: undefined, notes: 'Lanzamiento' }],
   });
 
   it('fce.com.co/programacion-cultural debe pasar', () => {

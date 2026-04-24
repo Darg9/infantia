@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/db';
 import { createLogger } from '@/lib/logger';
+import { PQRS_SLA } from '@/lib/pqrs';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -32,10 +33,7 @@ function getBusinessDays(startDate: Date, endDate: Date): number {
 }
 
 // ---------------------------------------------------------------------------
-// SLA por categoría (días hábiles, Ley 1581 / Circular SIC)
-//   data_access  → alerta D8, límite D10
-//   data_claim   → alerta D13, límite D15
-//   general      → alerta D3,  límite D5  (SLA interno)
+// Clasificación por SLA — fuente de verdad: src/lib/pqrs.ts › PQRS_SLA
 // ---------------------------------------------------------------------------
 type AlertLevel = 'WARNING' | 'DUE_TODAY' | 'OVERDUE';
 
@@ -54,20 +52,12 @@ function classify(
   businessDays: number,
   category: string,
 ): { level: AlertLevel | null; limit: number } {
-  let alertAt: number;
-  let limit: number;
+  const sla = PQRS_SLA[category as keyof typeof PQRS_SLA] ?? PQRS_SLA.general;
+  const { alertAt, limit } = sla;
 
-  if (category === 'data_access') {
-    alertAt = 8; limit = 10;
-  } else if (category === 'data_claim') {
-    alertAt = 13; limit = 15;
-  } else {
-    alertAt = 3; limit = 5;
-  }
-
-  if (businessDays > limit)  return { level: 'OVERDUE',   limit };
-  if (businessDays === limit) return { level: 'DUE_TODAY', limit };
-  if (businessDays >= alertAt) return { level: 'WARNING',  limit };
+  if (businessDays > limit)    return { level: 'OVERDUE',   limit };
+  if (businessDays === limit)  return { level: 'DUE_TODAY', limit };
+  if (businessDays >= alertAt) return { level: 'WARNING',   limit };
   return { level: null, limit };
 }
 

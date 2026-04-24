@@ -3,8 +3,8 @@
 Actualizado: 2026-04-23 | Version: v0.15.0
 
 ## Resumen Actual (v0.15.0 / Multi-City Map Architecture)
-- **Archivos de Test:** 75
-- **Tests Totales:** 1216 (1214 pasan ✅, 2 skipped)
+- **Archivos de Test:** 76
+- **Tests Totales:** 1220 (1218 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
@@ -26,9 +26,9 @@ Actualizado: 2026-04-23 | Version: v0.15.0
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 75 |
-| Tests totales | 1216 |
-| Pasados | 1214 |
+| Archivos de test | 76 |
+| Tests totales | 1220 |
+| Pasados | 1218 |
 | Skipped | 2 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 33) |
@@ -37,7 +37,7 @@ Actualizado: 2026-04-23 | Version: v0.15.0
 | Functions | >88% ✅ |
 | Lines | >91% ✅ |
 
-## Archivos de test (69 total)
+## Archivos de test (76 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |

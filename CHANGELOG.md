@@ -47,7 +47,7 @@ Relación con Documento Fundacional:
 - 0 errores `tsc --noEmit` ✅
 
 ### Tests
-- **1214 passed | 2 skipped** — 75 archivos — exit 0 ✅
+- **1218 passed | 2 skipped** — 76 archivos — exit 0 ✅
 - Sin cambios en suite (nuevos archivos son Server/Client Components UI-only, sin lógica testeable unitariamente)
 
 ### Archivos creados/modificados

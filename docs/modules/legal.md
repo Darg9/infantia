@@ -52,7 +52,12 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 - Esto se refuerza mediante un Umbral Diferenciado: si una actividad fue ingestada sin IA (Fallback Cheerio), se le exige **confianza superior (0.5 vs 0.3)** y una re-evaluación prioritaria posterior (Scheduler Inteligente).
 - Esto garantiza que solo la metadata validada (ejemplo: categorización mediante 10 buckets estrictos y evaluación del SourceHealth) sea almacenada limpiamente en la Base de Datos PostgreSQL, cuidando los Principios de Calidad del Tratamiento de Datos.
 
-### 5. Coherencia UI ↔ PDF ↔ SSOT (estado actual)
+### 5. Auditoría SIC en Peticiones de Contacto (NUEVO v0.16.1)
+- Para cumplir rigurosamente con los artículos 14 y 15 de la Ley 1581 (tiempos de respuesta de 10 y 15 días hábiles), el formulario de contacto clasifica las solicitudes obligatoriamente en tipos de derechos (Acceso, Rectificación, etc.).
+- Toda solicitud de contacto se guarda primero en la tabla `ContactRequest` en Base de Datos capturando IP y User Agent **antes** de despachar cualquier correo electrónico, garantizando trazabilidad y registro forense de recepción aún frente a fallos del proveedor de correo.
+- Se lleva un registro estricto del estado de envío del correo (`emailStatus: 'sent' | 'failed'`).
+
+### 6. Coherencia UI ↔ PDF ↔ SSOT (estado actual)
 
 | Documento | Versión | Última actualización |
 |---|---|---|

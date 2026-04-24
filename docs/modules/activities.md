@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.15.0
-**Última actualización:** 23 de abril de 2026
+**Versión actual:** v0.16.0
+**Última actualización:** 24 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -16,8 +16,8 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |
 | DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.9.0) |
-| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.15.0). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
-| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.15.0)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
+| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.16.0). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
+| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.16.0)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |
 
@@ -261,7 +261,7 @@ IntentResolver.tsx (global en layout, useEffect[])
 
 **toggleFavorite service:** `src/modules/favorites/toggle-favorite.ts` — servicio HTTP reutilizado por `FavoriteButton` e `IntentResolver`. Cero duplicación de lógica.
 
-## Arquitectura Multi-Ciudad (NUEVO v0.15.0)
+## Arquitectura Multi-Ciudad (NUEVO v0.16.0)
 
 El sistema está diseñado para aislar datos geográficamente por ciudad. No existe ningún fallback geográfico implícito en el backend.
 

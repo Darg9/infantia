@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.15.0 | Actualizado: 2026-04-23
+> Versión: v0.16.0 | Actualizado: 2026-04-24
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -104,7 +104,7 @@ habitaplan/
 │   │   ├── _components/
 │   │   │   └── HeroSearch.tsx      # Client Component: buscador mixto (actividades+cats+ciudades), cache, AbortController, historial (S40)
 │   │   ├── actividades/            # Listado con filtros facetados
-│   │   │   └── layout.tsx          # [NUEVO v0.15.0] Segment layout: CityProvider + Suspense (DB server-side)
+│   │   │   └── layout.tsx          # [NUEVO v0.16.0] Segment layout: CityProvider + Suspense (DB server-side)
 │   │   ├── login/                  # Autenticación (Supabase Auth — redirige a /onboarding si nuevo)
 │   │   ├── registro/               # Registro con email de bienvenida
 │   │   ├── onboarding/             # Wizard 3 pasos: Ciudad → Hijos → Listo (NUEVO v0.9.1)
@@ -185,7 +185,7 @@ habitaplan/
 │   │   ├── geocoding.ts            # venue-dictionary → Nominatim → cityFallback → null
 │   │   ├── push.ts                 # Web Push VAPID — sendPushNotification, sendPushToMany
 │   │   ├── expire-activities.ts    # Lógica de expiración de actividades
-│   │   ├── city/                   # [NUEVO v0.15.0]
+│   │   ├── city/                   # [NUEVO v0.16.0]
 │   │   │   └── resolveCity.ts      # resolveCityId() — SSOT URL > localStorage > default
 │   │   ├── email/                  # Templates react-email con UTM tracking + bloque sponsor
 │   │   └── supabase/               # Clientes SSR de Supabase
@@ -688,7 +688,7 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 1214 tests, 75 archivos, 0 fallos (v0.15.0)
+- **Estado actual:** 1214 tests, 75 archivos, 0 fallos (v0.16.0)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`, `activities/ranking`, `analytics/metrics`
@@ -782,9 +782,9 @@ Reglas fundamentales:
 | Parser resiliente en módulo separado (S52) | `parser/` desacoplado de `pipeline.ts` y `gemini.analyzer.ts` — usa `Pick<GeminiAnalyzer, 'analyze'>` para no acoplar al constructor. `isRetryableError` centralizado en `parser.types.ts`. Fallback no modifica `ActivityNLPResult` (schema Zod inmutable) — usa wrapper `ParseResult`. |
 | Feature flag `PARSER_FALLBACK_ENABLED` (S52) | Control de activación en `src/config/feature-flags.ts`. Default: `true`. Override: `PARSER_FALLBACK=false` en Vercel env vars. Rollback sin redeploy en ~2 min. Flag vive solo en el punto de orquestación (`pipeline.ts`) — no contamina módulos internos. |
 | Unificación Legal SSOT | No duplicar rutas legales. Un solo namespace: `/seguridad`. Todas las rutas legales deben vivir bajo `/seguridad/*`. Las rutas legacy no se reutilizan: se redirigen (308) y se deprecán. |
-| CityProvider en segment layout (v0.15.0) | `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
-| URL como SSOT de ciudad (v0.15.0) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
-| EMERGENCY_CENTER vs DEFAULT_CENTER (v0.15.0) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |
+| CityProvider en segment layout (v0.16.0) | `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
+| URL como SSOT de ciudad (v0.16.0) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
+| EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.0) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |
 
 ---
 

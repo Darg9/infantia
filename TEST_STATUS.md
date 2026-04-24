@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-23 | Version: v0.15.0
+Actualizado: 2026-04-24 | Version: v0.16.0
 
-## Resumen Actual (v0.15.0 / Multi-City Map Architecture)
+## Resumen Actual (v0.16.0 / Multi-City Map Architecture)
 - **Archivos de Test:** 76
 - **Tests Totales:** 1220 (1218 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
@@ -241,9 +241,9 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.11.0-S55** | **1203** | **73** | **>91%** | **>85%** |
 | **v0.12.x** | **1215** | **75** | **>91%** | **>85%** |
 | **v0.14.1** | **1214** | **75** | **>91%** | **>85%** |
-| **v0.15.0** | **1214** | **75** | **>91%** | **>85%** |
+| **v0.16.0** | **1214** | **75** | **>91%** | **>85%** |
 
-## Cambios en v0.15.0 (Multi-City Map Architecture)
+## Cambios en v0.16.0 (Multi-City Map Architecture)
 
 - **Sin tests nuevos** — nuevos archivos son Server/Client Components UI-only:
   - `src/app/actividades/layout.tsx` (Server Component, no lógica testeable unitariamente)

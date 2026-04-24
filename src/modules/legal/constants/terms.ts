@@ -4,7 +4,7 @@
 
 export const TERMS_META = {
   title: "Términos y Condiciones",
-  lastUpdated: "23 de abril de 2026",
+  lastUpdated: "24 de abril de 2026",
   version: "v1.0",
   filename: "terminos-habitaplan.pdf",
   brand: "HabitaPlan",

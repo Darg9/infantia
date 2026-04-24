@@ -1,7 +1,7 @@
 # Módulo: Autenticación y Gestión de Identidad
 
-**Versión:** ✅ v0.15.0
-**Última actualización:** 23 de abril de 2026
+**Versión:** ✅ v0.16.0
+**Última actualización:** 24 de abril de 2026
 
 Este módulo centraliza toda la lógica de autenticación multi-proveedor de HabitaPlan, la sincronización de identidades y el cumplimiento legal de términos obligatorios.
 
@@ -21,7 +21,7 @@ Este módulo centraliza toda la lógica de autenticación multi-proveedor de Hab
 |---|---|---|
 | Google | ✅ Activo | Requiere credenciales Google Cloud OAuth 2.0 |
 | Email + Contraseña | ✅ Activo | Fallback tradicional |
-| Magic Link (email OTP) | ✅ Activo | Método primario de email desde v0.15.0 |
+| Magic Link (email OTP) | ✅ Activo | Método primario de email desde v0.16.0 |
 | Teléfono (SMS OTP) | 🔜 Feature flag | `NEXT_PUBLIC_ENABLE_PHONE_OTP=true` para activar |
 | Facebook | ❌ Oculto | Desactivado temporalmente por UX y revisión |
 | Apple | ❌ Oculto | Desactivado temporalmente por revisión |

@@ -4,7 +4,7 @@
 // =============================================================================
 
 export const PRIVACY_META = {
-  lastUpdated: '23 de abril de 2026',
+  lastUpdated: '24 de abril de 2026',
   version: 'v1.0',
   title: 'Política de Privacidad',
   brand: 'HabitaPlan',

@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.15.0
-**Última actualización:** 23 de abril de 2026
+**Versión:** ✅ v0.16.0
+**Última actualización:** 24 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -79,7 +79,7 @@ Desde la capa de producto el UI lanza los siguientes eventos vitales en el ciclo
 - **`activity_view`**: Clics desde listado al Single Detail Page.
 - **`outbound_click`**: Evento final del funnel. (Redirige tráfico pagado o gratis al organizador de la actividad infantil).
 
-## 🔐 Patrón de Autenticación — v0.15.0
+## 🔐 Patrón de Autenticación — v0.16.0
 
 Sistema de autenticación unificado multi-proveedor. Ver documentación completa en [`docs/modules/auth.md`](auth.md).
 

@@ -9,7 +9,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.15.0] — 2026-04-23 (Multi-City Map Architecture — Geo-Data Isolation Completo)
+## [v0.16.0] — 2026-04-24 (Multi-City Map Architecture — Geo-Data Isolation Completo)
 
 ### Features
 
@@ -63,7 +63,7 @@ Relación con Documento Fundacional:
 ### Rama y Deploy
 - **Rama:** `master`
 - **Estado:** Cambios locales pendientes de commit (ver sección Despliegue)
-- **Versión:** v0.15.0
+- **Versión:** v0.16.0
 
 ---
 

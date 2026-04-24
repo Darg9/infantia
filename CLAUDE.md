@@ -209,10 +209,10 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-- **Multi-City SSOT (v0.15.0):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
-- **CityProvider scoped (v0.15.0):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
-- **EMERGENCY_CENTER (v0.15.0):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.15.0 — Actualizado 2026-04-23)
+- **Multi-City SSOT (v0.16.0):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
+- **CityProvider scoped (v0.16.0):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
+- **EMERGENCY_CENTER (v0.16.0):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
+## Estado actual (v0.16.1 — Actualizado 2026-04-24)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **1214 tests** en 75 archivos — `npm test` pasa — 1212 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
@@ -313,7 +313,8 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | v0.13.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
 | v0.13.2     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |
 | v0.14.1     | V28 | Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening |
-| v0.15.0     | V28 | Multi-City Map Fase 1+2: CityProvider, resolveCity.ts SSOT, CitySwitcher en Header global |
+| v0.16.0     | V28 | Multi-City Map Fase 1+2: CityProvider, resolveCity.ts SSOT, CitySwitcher en Header global |
+| v0.16.1     | V28 | Hardening Auth (Facebook/Apple ocultos) & Formulario Contacto SIC (Ley 1581) con trazabilidad DB |
 
 ## Regla: Serialización de objetos Prisma (OBLIGATORIO)
 

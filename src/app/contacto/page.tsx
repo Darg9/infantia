@@ -5,21 +5,33 @@ import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import type { Metadata } from 'next'
 
-const MOTIVOS = [
-  'Consulta general',
-  'Reportar error en una actividad',
-  'Solicitud de remoción de contenido',
-  'Ejercer derechos de datos personales (acceso, rectificación, cancelación)',
-  'Sugerir una fuente de actividades',
-  'Otro',
-] as const
+type ContactCategory = 'general' | 'content_removal' | 'data_access' | 'data_claim' | 'report_error' | 'other';
+type DataRightType = 'access' | 'update' | 'rectification' | 'deletion' | 'revocation';
+
+const CONTACT_CATEGORIES: { value: ContactCategory; label: string }[] = [
+  { value: 'general', label: 'Consulta general' },
+  { value: 'content_removal', label: 'Solicitud de remoción de contenido' },
+  { value: 'data_access', label: 'Derechos de datos personales (consulta)' },
+  { value: 'data_claim', label: 'Derechos de datos personales (reclamo)' },
+  { value: 'report_error', label: 'Reportar información incorrecta' },
+  { value: 'other', label: 'Otro' },
+];
+
+const DATA_RIGHT_TYPES: { value: DataRightType; label: string }[] = [
+  { value: 'access', label: 'Acceso' },
+  { value: 'update', label: 'Actualización' },
+  { value: 'rectification', label: 'Rectificación' },
+  { value: 'deletion', label: 'Supresión' },
+  { value: 'revocation', label: 'Revocatoria' },
+];
 
 // Metadata must be in a separate layout or generated via generateMetadata for client components
 // We use a page-level title via document.title as fallback
 
 export default function ContactoPage() {
   const searchParams = useSearchParams()
-  const [motivo, setMotivo] = useState('')
+  const [category, setCategory] = useState<ContactCategory | ''>('')
+  const [tipoDerecho, setTipoDerecho] = useState<DataRightType | ''>('')
   const [nombre, setNombre] = useState('')
   const [email, setEmail] = useState('')
   const [mensaje, setMensaje] = useState('')
@@ -32,7 +44,7 @@ export default function ContactoPage() {
   useEffect(() => {
     const motivoParam = searchParams?.get('motivo')
     if (motivoParam === 'reportar') {
-      setMotivo('Reportar error en una actividad')
+      setCategory('report_error')
     }
     const urlParam = searchParams?.get('url')
     if (urlParam) {
@@ -41,9 +53,9 @@ export default function ContactoPage() {
     }
   }, [searchParams])
 
-  const isTakedown = motivo === 'Solicitud de remoción de contenido'
-  const isDerechos = motivo === 'Ejercer derechos de datos personales (acceso, rectificación, cancelación)'
-  const isReporte = motivo === 'Reportar error en una actividad'
+  const isTakedown = category === 'content_removal'
+  const isDerechos = category === 'data_access' || category === 'data_claim'
+  const isReporte = category === 'report_error'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -54,7 +66,7 @@ export default function ContactoPage() {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ motivo, nombre, email, mensaje, actividadUrl }),
+        body: JSON.stringify({ category, tipoDerecho, nombre, email, mensaje, actividadUrl }),
       })
 
       const data = await res.json()
@@ -84,14 +96,10 @@ export default function ContactoPage() {
             Si no llega en unos minutos, revisa la carpeta de spam.
           </p>
           <p className="text-sm text-[var(--hp-text-secondary)] mt-4">
-            {isTakedown
-              ? 'Responderemos a solicitudes de remoción en un máximo de 5 días hábiles.'
-              : isDerechos
-              ? 'Responderemos a solicitudes de datos personales en un máximo de 10 días hábiles.'
-              : 'Responderemos a la brevedad posible.'}
+            Hemos recibido tu solicitud. Te responderemos dentro de los plazos establecidos según el tipo de solicitud.
           </p>
           <Button
-            onClick={() => { setEnviado(false); setMotivo(''); setNombre(''); setEmail(''); setMensaje(''); setActividadUrl(''); }}
+            onClick={() => { setEnviado(false); setCategory(''); setTipoDerecho(''); setNombre(''); setEmail(''); setMensaje(''); setActividadUrl(''); }}
             className="mt-6 text-sm text-brand-600 hover:underline"
           >
             Enviar otra solicitud
@@ -124,29 +132,48 @@ export default function ContactoPage() {
             Motivo de contacto <span className="text-error-500">*</span>
           </label>
           <select
-            value={motivo}
-            onChange={(e) => setMotivo(e.target.value)}
+            value={category}
+            onChange={(e) => setCategory(e.target.value as ContactCategory)}
             required
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value="">Seleccione un motivo</option>
-            {MOTIVOS.map((m) => (
-              <option key={m} value={m}>{m}</option>
+            {CONTACT_CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
             ))}
           </select>
         </div>
 
+        {/* Tipo de derecho (Condicional) */}
+        {isDerechos && (
+          <div>
+            <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
+              Descripción detallada de la solicitud <span className="text-error-500">*</span>
+            </label>
+            <select
+              value={tipoDerecho}
+              onChange={(e) => setTipoDerecho(e.target.value as DataRightType)}
+              required
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            >
+              <option value="">Seleccione el tipo de derecho</option>
+              {DATA_RIGHT_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         {/* Nombre */}
         <div>
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
-            Nombre completo <span className="text-error-500">*</span>
+            Nombre completo (Opcional)
           </label>
           {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
           <input
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            required
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="Tu nombre"
           />
@@ -234,6 +261,10 @@ export default function ContactoPage() {
           </p>
         )}
 
+        <p className="text-xs text-[var(--hp-text-muted)] text-center pb-2">
+          Al enviar esta solicitud, autorizas el tratamiento de tus datos para gestionar tu requerimiento conforme a nuestra Política de Privacidad.
+        </p>
+
         <Button
           type="submit"
           disabled={loading}
@@ -243,12 +274,15 @@ export default function ContactoPage() {
         </Button>
       </form>
       {/* Plazos legales */}
-      <div className="mt-8 rounded-xl border border-[var(--hp-border)] p-4 text-xs text-[var(--hp-text-muted)] space-y-1">
+      <div className="mt-8 rounded-xl border border-[var(--hp-border)] p-4 text-xs text-[var(--hp-text-muted)] space-y-2">
         <p><strong className="text-[var(--hp-text-secondary)]">Plazos de respuesta:</strong></p>
-        <p>Consultas generales: a la brevedad posible</p>
-        <p>Remoción de contenido: máximo 5 días hábiles</p>
-        <p>Derechos de datos personales (consulta): máximo 10 días hábiles</p>
-        <p>Derechos de datos personales (reclamo): máximo 15 días hábiles</p>
+        <ul className="list-disc pl-4 space-y-1">
+          <li><strong>Consultas generales:</strong> en el menor tiempo posible según la naturaleza de la solicitud.</li>
+          <li><strong>Remoción de contenido:</strong> máximo 5 días hábiles desde la recepción de la solicitud completa.</li>
+          <li><strong>Consultas sobre datos personales:</strong> máximo 10 días hábiles, conforme al artículo 14 de la Ley 1581 de 2012.</li>
+          <li><strong>Reclamos sobre datos personales:</strong> máximo 15 días hábiles, conforme al artículo 15 de la Ley 1581 de 2012.</li>
+        </ul>
+        <p className="pt-2">En caso de no ser posible atender la consulta o reclamo dentro de los plazos señalados, se informará al titular antes de su vencimiento, indicando los motivos de la demora y la fecha en que se atenderá, la cual no superará los plazos legales adicionales establecidos.</p>
       </div>
     </div>
   );

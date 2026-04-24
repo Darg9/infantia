@@ -15,6 +15,10 @@
     {
       "path": "/api/admin/retention-policy",
       "schedule": "0 0 * * 0"
+    },
+    {
+      "path": "/api/admin/check-overdue-pqrs",
+      "schedule": "0 8 * * 1-5"
     }
   ]
 }

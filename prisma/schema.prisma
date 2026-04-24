@@ -592,6 +592,12 @@ model ContactRequest {
   resolvedAt      DateTime? @map("resolved_at")
   resolvedBy      String?   @map("resolved_by_user_id") @db.VarChar(255)
 
+  // Trazabilidad de respuesta (Ley 1581 — demostrar primera respuesta ante SIC)
+  // firstRespondedAt: momento en que el equipo dio la primera respuesta al usuario
+  // responseChannel: canal usado (email | phone | whatsapp | manual | platform)
+  firstRespondedAt DateTime? @map("first_responded_at")
+  responseChannel  String?   @map("response_channel") @db.VarChar(50)
+
   // Auditoría y Envío
   emailStatus     String   @default("pending") @map("email_status") @db.VarChar(50)
   emailError      String?  @map("email_error") @db.Text

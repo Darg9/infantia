@@ -30,7 +30,10 @@ export async function GET(request: Request) {
     const anonymizedEvents = await prisma.event.updateMany({
       where: { 
         createdAt: { lt: eventCutoff },
-        ip: { not: null, not: '[ANONYMIZED]' }
+        AND: [
+          { ip: { not: null } },
+          { ip: { not: '[ANONYMIZED]' } }
+        ]
       },
       data: { 
         ip: '[ANONYMIZED]',
@@ -42,7 +45,10 @@ export async function GET(request: Request) {
     const anonymizedContactRequests = await prisma.contactRequest.updateMany({
       where: {
         createdAt: { lt: eventCutoff },
-        ip: { not: null, not: '[ANONYMIZED]' }
+        AND: [
+          { ip: { not: null } },
+          { ip: { not: '[ANONYMIZED]' } }
+        ]
       },
       data: {
         ip: '[ANONYMIZED]',

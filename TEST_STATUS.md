@@ -1,8 +1,8 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-24 | Version: v0.16.0
+Actualizado: 2026-04-24 | Version: v0.16.1
 
-## Resumen Actual (v0.16.0 / Multi-City Map Architecture)
+## Resumen Actual (v0.16.1 / Multi-City Map Architecture)
 - **Archivos de Test:** 76
 - **Tests Totales:** 1220 (1218 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
@@ -51,9 +51,9 @@ Actualizado: 2026-04-24 | Version: v0.16.0
 | activity-url.test.ts | 12 | OK |
 | category-utils.test.ts | — | OK |
 | venue-dictionary.test.ts | 26 | OK |
-| geocoding.test.ts | 19 | OK ← NUEVO v0.9.0 (venue dict, Nominatim, fallbacks, rate limit) |
-| push.test.ts | 16 | OK ← NUEVO v0.9.0 (sendPushNotification, sendPushToMany, 410/404/500) |
-| ratings.test.ts | 3 | OK ← NUEVO v0.9.2 (recalcProviderRating, null avg, error propagation) |
+| geocoding.test.ts | 19 | OK ← NUEVO v0.16.1 (venue dict, Nominatim, fallbacks, rate limit) |
+| push.test.ts | 16 | OK ← NUEVO v0.16.1 (sendPushNotification, sendPushToMany, 410/404/500) |
+| ratings.test.ts | 3 | OK ← NUEVO v0.16.1 (recalcProviderRating, null avg, error propagation) |
 | source-scoring.test.ts | 22 | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
 ### lib/supabase/__tests__/
@@ -63,7 +63,7 @@ Actualizado: 2026-04-24 | Version: v0.16.0
 | server.test.ts | 4 | OK |
 | middleware.test.ts | 5 | OK |
 
-### lib/email/templates/__tests__/ (NUEVO v0.8.1+)
+### lib/email/templates/__tests__/ (NUEVO v0.16.1+)
 | Archivo | Tests | Estado |
 |---------|-------|--------|
 | activity-digest.test.tsx | 11 | OK — UTM tracking, bloque sponsor, contenido base |
@@ -129,8 +129,8 @@ Actualizado: 2026-04-24 | Version: v0.16.0
 | search/log/__tests__/ | — | OK |
 | admin/queue/__tests__/ | — | OK |
 | admin/send-notifications/__tests__/ | 21 | OK |
-| admin/sponsors/__tests__/sponsors.test.ts | 16 | OK — GET/POST/PATCH/DELETE (NUEVO v0.8.1+) |
-| ratings/__tests__/ratings.test.ts | 15 | OK — GET/POST list+detail, DELETE, upsert, validaciones (ACTUALIZADO v0.9.1+) |
+| admin/sponsors/__tests__/sponsors.test.ts | 16 | OK — GET/POST/PATCH/DELETE (NUEVO v0.16.1+) |
+| ratings/__tests__/ratings.test.ts | 15 | OK — GET/POST list+detail, DELETE, upsert, validaciones (ACTUALIZADO v0.16.1+) |
 
 ### components/__tests__/
 | Archivo | Tests | Estado |
@@ -142,7 +142,7 @@ Actualizado: 2026-04-24 | Version: v0.16.0
 |---------|-------|--------|
 | useActivityHistory.test.ts | — | OK |
 
-## Cobertura por módulo clave (v0.9.2)
+## Cobertura por módulo clave (v0.16.1)
 
 | Archivo | Stmts | Branch | Funcs | Lines |
 |---------|-------|--------|-------|-------|
@@ -201,49 +201,49 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 
 | Version | Tests | Archivos | Stmts | Branch |
 |---------|-------|----------|-------|--------|
-| v0.3.0 | 236 | 16 | ~85% | ~76% |
-| v0.4.0 | 294 | 20 | ~88% | ~79% |
-| v0.5.0 | 314 | 21 | ~95% | ~88% |
-| v0.6.1 | 473 | 35 | 86.85% | 78.57% |
-| v0.7.0 | 531 | 36 | 90.53% | 82.9% |
-| v0.7.1 | 581 | 38 | 98.32% | 93.07% |
-| v0.7.3 | 636 | 40 | 97.41% | 92.5% |
-| v0.8.0 | 695 | 46 | ~97% | ~93% |
-| v0.8.1 | 721 | 47 | ~97% | ~93% |
-| v0.8.1+ | 748 | 49 | ~97% | ~93% |
-| **v0.9.0** | **783** | **51** | **91.76%** | **86.98%** |
-| **v0.9.1** | **792** | **52** | **91.73%** | **86.70%** |
-| **v0.9.2** | **795** | **53** | **90.66%** | **85.18%** |
-| **v0.9.3** | **795** | **53** | **90.66%** | **85.18%** |
-| **v0.9.3-S31** | **797** | **53** | **90.66%** | **85.18%** |
-| **v0.9.3-S32** | **832** | **54** | **90.95%** | **85.69%** |
-| **v0.9.3-S33** | **838** | **54** | **90.95%** | **85.69%** |
-| **v0.9.3-S34** | **835** | **55** | **90.95%** | **85.69%** |
-| **v0.9.4-S35** | **876** | **56** | **91.39%** | **85.90%** |
-| **v0.9.5-S37** | **876** | **56** | **91.39%** | **85.90%** |
-| **v0.9.6-S38** | **876** | **56** | **91.39%** | **85.90%** |
-| **v0.9.7-S39** | **876** | **56** | **91.39%** | **85.90%** |
-| **v0.9.8-S40** | **882** | **56** | **91.39%** | **85.90%** |
-| **v0.10.0-S41** | **882** | **56** | **91.39%** | **85.90%** |
-| **v0.11.0-S42** | **889** | **58** | **91.39%** | **85.90%** |
-| **v0.11.0-S43** | **898** | **59** | **>91%** | **>85%** |
-| **v0.11.0-S44** | **916** | **60** | **>91%** | **>85%** |
-| **v0.11.0-S45** | **916** | **60** | **>91%** | **>85%** |
-| **v0.11.0-S47** | **1039** | **68** | **>91%** | **>85%** |
-| **v0.11.0-S48** | **1056** | **69** | **>91%** | **>85%** |
-| **v0.11.0-S48b** | **1070** | **69** | **>91%** | **>85%** |
-| **v0.11.0-S49** | **1082** | **69** | **>91%** | **>85%** |
-| **v0.11.0-S50** | **1101** | **70** | **>91%** | **>85%** |
-| **v0.11.0-S51** | **1105** | **70** | **>91%** | **>85%** |
-| **v0.11.0-S52** | **1123** | **71** | **>91%** | **>85%** |
-| **v0.11.0-S53** | **1155** | **73** | **>91%** | **>85%** |
-| **v0.11.0-S54** | **1191** | **73** | **>91%** | **>85%** |
-| **v0.11.0-S55** | **1203** | **73** | **>91%** | **>85%** |
+| v0.16.1 | 236 | 16 | ~85% | ~76% |
+| v0.16.1 | 294 | 20 | ~88% | ~79% |
+| v0.16.1 | 314 | 21 | ~95% | ~88% |
+| v0.16.1 | 473 | 35 | 86.85% | 78.57% |
+| v0.16.1 | 531 | 36 | 90.53% | 82.9% |
+| v0.16.1 | 581 | 38 | 98.32% | 93.07% |
+| v0.16.1 | 636 | 40 | 97.41% | 92.5% |
+| v0.16.1 | 695 | 46 | ~97% | ~93% |
+| v0.16.1 | 721 | 47 | ~97% | ~93% |
+| v0.16.1+ | 748 | 49 | ~97% | ~93% |
+| **v0.16.1** | **783** | **51** | **91.76%** | **86.98%** |
+| **v0.16.1** | **792** | **52** | **91.73%** | **86.70%** |
+| **v0.16.1** | **795** | **53** | **90.66%** | **85.18%** |
+| **v0.16.1** | **795** | **53** | **90.66%** | **85.18%** |
+| **v0.16.1-S31** | **797** | **53** | **90.66%** | **85.18%** |
+| **v0.16.1-S32** | **832** | **54** | **90.95%** | **85.69%** |
+| **v0.16.1-S33** | **838** | **54** | **90.95%** | **85.69%** |
+| **v0.16.1-S34** | **835** | **55** | **90.95%** | **85.69%** |
+| **v0.16.1-S35** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S37** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S38** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S39** | **876** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S40** | **882** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S41** | **882** | **56** | **91.39%** | **85.90%** |
+| **v0.16.1-S42** | **889** | **58** | **91.39%** | **85.90%** |
+| **v0.16.1-S43** | **898** | **59** | **>91%** | **>85%** |
+| **v0.16.1-S44** | **916** | **60** | **>91%** | **>85%** |
+| **v0.16.1-S45** | **916** | **60** | **>91%** | **>85%** |
+| **v0.16.1-S47** | **1039** | **68** | **>91%** | **>85%** |
+| **v0.16.1-S48** | **1056** | **69** | **>91%** | **>85%** |
+| **v0.16.1-S48b** | **1070** | **69** | **>91%** | **>85%** |
+| **v0.16.1-S49** | **1082** | **69** | **>91%** | **>85%** |
+| **v0.16.1-S50** | **1101** | **70** | **>91%** | **>85%** |
+| **v0.16.1-S51** | **1105** | **70** | **>91%** | **>85%** |
+| **v0.16.1-S52** | **1123** | **71** | **>91%** | **>85%** |
+| **v0.16.1-S53** | **1155** | **73** | **>91%** | **>85%** |
+| **v0.16.1-S54** | **1191** | **73** | **>91%** | **>85%** |
+| **v0.16.1-S55** | **1203** | **73** | **>91%** | **>85%** |
 | **v0.12.x** | **1215** | **75** | **>91%** | **>85%** |
-| **v0.14.1** | **1214** | **75** | **>91%** | **>85%** |
-| **v0.16.0** | **1214** | **75** | **>91%** | **>85%** |
+| **v0.16.1** | **1214** | **75** | **>91%** | **>85%** |
+| **v0.16.1** | **1214** | **75** | **>91%** | **>85%** |
 
-## Cambios en v0.16.0 (Multi-City Map Architecture)
+## Cambios en v0.16.1 (Multi-City Map Architecture)
 
 - **Sin tests nuevos** — nuevos archivos son Server/Client Components UI-only:
   - `src/app/actividades/layout.tsx` (Server Component, no lógica testeable unitariamente)
@@ -252,14 +252,14 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 - `MapInner.tsx` modificado: `useCity()` + ramas `markers.length === 0 && city` — cubierta por render paths existentes
 - TypeScript: 0 errores ✅ | `tsc --noEmit` clean ✅
 
-## Cambios en S54 y S55 (v0.11.0-S55 / Pipeline Optimization)
+## Cambios en S54 y S55 (v0.16.1-S55 / Pipeline Optimization)
 
 - **+48 tests** (1155 → 1203):
   - **S54**: `cache.test.ts` +7 tests por el nuevo filtro SPI (Sitemap Pre-Index) basado en lastmod.
   - **S55**: `cache.test.ts` +9 tests de cobertura completa para `needsReparse`, `isMarkedForReparse` y `getReparseUrls` en el Scheduler Inteligente. `pipeline.test.ts` con mock de reparseUrls.
 - TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
-## Cambios en S48 (v0.11.0-S48 / Observabilidad Confiable v2)
+## Cambios en S48 (v0.16.1-S48 / Observabilidad Confiable v2)
 
 - **+17 tests** (1039 → 1056): date preflight filter + nuevos archivos de test
   - **S48** +17: `date-preflight.test.ts` NUEVO — `isPastEventContent`, 3 formatos fecha, buffer 14d, fecha fija REF
@@ -267,12 +267,12 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 - Nuevo archivo E2E: `e2e/health.spec.ts` (Playwright, 5 tests `/api/health`)
 - TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
-## Cambios en S47 (v0.11.0-S47 / Sources CRUD · pg_trgm · Scheduler)
+## Cambios en S47 (v0.16.1-S47 / Sources CRUD · pg_trgm · Scheduler)
 
 - **+123 tests** (916 → 1039): suites existentes ampliadas, nuevos archivos
 - Nuevos archivos: `suggestions.test.ts` ampliado, `queue/producer.test.ts`, varios módulos admin
 
-## Cambios en S43-S44 (v0.11.0-S43 / v0.11.0-S44)
+## Cambios en S43-S44 (v0.16.1-S43 / v0.16.1-S44)
 
 - **+27 tests** (889 → 916): filtro adaptativo + CTR feedback loop
   - **S43** +6: `storage.test.ts` — carga batch única, descartes globales/fuente, Math.max, neutral default
@@ -281,24 +281,24 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 - Nuevos archivos de test: `src/modules/analytics/__tests__/metrics.test.ts`
 - TypeScript: 0 errores ✅ | Coverage: >85% branches ✅
 
-## Cambios en S40 (v0.9.8-S40)
+## Cambios en S40 (v0.16.1-S40)
 
 - **+6 tests** (876 → 882): `suggestions/__tests__/suggestions.test.ts` actualizado
   - Mocks añadidos: `mockCategoryFindMany`, `mockCityFindMany`
   - Nuevos tests: formato actividad (type/id/label/sublabel), formato categoría, formato ciudad, max 5, orden tipos, sublabel null
 
-## Cambios en S38-S39 (v0.9.6/v0.9.7)
+## Cambios en S38-S39 (v0.16.1/v0.16.1)
 
 - **Sin nuevos tests** — cambios UI (Client Components sin lógica testeable en unit tests)
 - TypeScript: 0 errores ✅ | Branches: 85.90% ✅
 
-## Cambios en S37 (v0.9.5-S37)
+## Cambios en S37 (v0.16.1-S37)
 
 - **Sin nuevos tests** — cambios UI-only (Server Components + un Client Component sin lógica testeable adicional)
 - `ActivityCard` prop `compact` compatible con todos los 876 tests existentes (default `false`)
 - TypeScript: 0 errores ✅ | Branches: 85.90% ✅ (sobre umbral 85%)
 
-## Cambios en S35 (v0.9.4-S35)
+## Cambios en S35 (v0.16.1-S35)
 
 - **+41 tests** (835 → 876): +13 `source-pause-manager.test.ts` (nuevo) + 28 `url-classifier.test.ts` (S34, contabilizados en S35)
 - **2 archivos nuevos de test:** `source-pause-manager.test.ts` + `url-classifier.test.ts`
@@ -311,7 +311,7 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | lib/__tests__/url-classifier.test.ts | 28 | OK ← NUEVO S34 (100% cobertura) |
 | lib/__tests__/source-pause-manager.test.ts | 13 | OK ← NUEVO S35 (auto-pause logic) |
 
-## Cambios en S32 (v0.9.3-S32)
+## Cambios en S32 (v0.16.1-S32)
 
 - **+35 tests** (797 → 832): corrección de cobertura
   - `cache.test.ts` +11 tests: `syncFromDb()` (4 tests) + `saveToDb()` (4 tests) + `load()` (2) + refactor con `vi.hoisted()`
@@ -319,7 +319,7 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 - `cache.ts`: imports estáticos (antes dinámicos `await import()`) — requerido para que `vi.mock()` los intercepte en Vitest 4
 - Coverage branches: 85.18% → 85.69% ✅
 
-## Cambios en S31 (v0.9.3-S31)
+## Cambios en S31 (v0.16.1-S31)
 
 - **+2 tests** (795 → 797): `types.test.ts` — 4 nuevos tests de normalización (reemplazan 2 existentes que cambiaron semántica)
   - `title null` → normaliza a `'Sin título'`
@@ -328,12 +328,12 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
   - `categories []` → normaliza a `['General']`
 - `ScrapingCache`: nuevos métodos `syncFromDb()` y `saveToDb()` — mockeados en pipeline.test.ts
 
-## Cambios respecto a v0.9.2 (v0.9.3)
+## Cambios respecto a v0.16.1 (v0.16.1)
 
 - Sin cambios en tests — mismos 795/53 archivos
 - npm audit fix: Vite vuln (high) → 0 vulnerabilidades
 
-## Cambios respecto a v0.9.1
+## Cambios respecto a v0.16.1
 
 - **+3 tests** (792 → 795)
 - **+1 archivo de test** (52 → 53):

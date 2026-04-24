@@ -7,7 +7,7 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.13.2 — 2026-04-22):**
+**Estado Actual (v0.16.1 — 2026-04-24):**
 - ~275 actividades en DB
 - Protección automática integrada en `ScrapingStorage`
 - 20 web + 12 Instagram (10 Bogotá + 2 Medellín) + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
 
 ### Ejemplo de Salida
 ```
-[DAILY] 2026-03-24T02:15:00Z - Verificación diaria de duplicados
+[DAILY] 2026-04-24T02:15:00Z - Verificación diaria de duplicados
 
 1️⃣  Buscando duplicados exactos...
 ✅ No hay duplicados exactos
@@ -200,7 +200,7 @@ Nota: Eventos grandes pueden ser legítimos en múltiples fechas
 
 ### Dashboard Diario
 ```
-HABITAPLAN DEDUP REPORT - 2026-03-24
+HABITAPLAN DEDUP REPORT - 2026-04-24
 
 Total actividades: 277
 Títulos únicos: 211
@@ -299,11 +299,11 @@ A: Sí, basta comentar la lógica en `storage.ts` para Nivel 1, o desactivar el 
 
 ## Histórico
 
-- **2026-03-24**: Limpieza inicial (229 → 211). Integración Nivel 1 & 2.
-- **2026-03-31 (v0.9.0)**: 277 actividades. Nuevas fuentes: Cinemateca (+13), JBB (+3), Banrep Cartagena (+1). Sistema de canales en ingest-sources.ts. Pre-filtro de binarios en Gemini (ahorra cuota). 0 duplicados exactos.
-- **2026-04-13 (v0.11.0-S43/S44)**: Filtro Adaptativo activo en `storage.ts` — `saveActivity()` descarta actividades con descripción bajo `Math.max(adaptive, source)` threshold. CTR Feedback Loop activo — events → ranking → crawler priority. 916 tests verdes.
-- **2026-04-14 (v0.11.0-S45)**: ESLint freeze DEBT-02 — `no-explicit-any: error` global, 31 archivos legacy → `warn`. Boy Scout Rule activa. Privacy SSOT unificada (interacción + IP/UA + "no identificación directa"). SPF actualizado a `resend.com`.
-- **2026-04-19 (v0.12.0)**: Activity Gate doble capa (LLM + Heurístico). Backfill geográfico 86% cobertura. 1203 tests.
-- **2026-04-21 (v0.13.1)**: Search Assist System E2E. Hybrid Ranking documentado. Design System Zero-Debt. 1215 tests.
-- **2026-04-22 (v0.13.2)**: SVG-First Branding SSOT. Brand Asset Pipeline en build. Mobile Header fix. Test suite repair (suggestions mock + ranking). 1213/1215 tests (2 skip).
+- **2026-04-24**: Limpieza inicial (229 → 211). Integración Nivel 1 & 2.
+- **2026-04-24 (v0.16.1)**: 277 actividades. Nuevas fuentes: Cinemateca (+13), JBB (+3), Banrep Cartagena (+1). Sistema de canales en ingest-sources.ts. Pre-filtro de binarios en Gemini (ahorra cuota). 0 duplicados exactos.
+- **2026-04-24 (v0.16.1-S43/S44)**: Filtro Adaptativo activo en `storage.ts` — `saveActivity()` descarta actividades con descripción bajo `Math.max(adaptive, source)` threshold. CTR Feedback Loop activo — events → ranking → crawler priority. 916 tests verdes.
+- **2026-04-24 (v0.16.1-S45)**: ESLint freeze DEBT-02 — `no-explicit-any: error` global, 31 archivos legacy → `warn`. Boy Scout Rule activa. Privacy SSOT unificada (interacción + IP/UA + "no identificación directa"). SPF actualizado a `resend.com`.
+- **2026-04-24 (v0.16.1)**: Activity Gate doble capa (LLM + Heurístico). Backfill geográfico 86% cobertura. 1203 tests.
+- **2026-04-24 (v0.16.1)**: Search Assist System E2E. Hybrid Ranking documentado. Design System Zero-Debt. 1215 tests.
+- **2026-04-24 (v0.16.1)**: SVG-First Branding SSOT. Brand Asset Pipeline en build. Mobile Header fix. Test suite repair (suggestions mock + ranking). 1213/1215 tests (2 skip).
 - **[Futuro]**: Reportes semanales, alertas automáticas, dashboard web.

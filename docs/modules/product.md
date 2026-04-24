@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.16.0
+**Versión:** ✅ v0.16.1
 **Última actualización:** 24 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -79,7 +79,7 @@ Desde la capa de producto el UI lanza los siguientes eventos vitales en el ciclo
 - **`activity_view`**: Clics desde listado al Single Detail Page.
 - **`outbound_click`**: Evento final del funnel. (Redirige tráfico pagado o gratis al organizador de la actividad infantil).
 
-## 🔐 Patrón de Autenticación — v0.16.0
+## 🔐 Patrón de Autenticación — v0.16.1
 
 Sistema de autenticación unificado multi-proveedor. Ver documentación completa en [`docs/modules/auth.md`](auth.md).
 
@@ -89,7 +89,7 @@ Sistema de autenticación unificado multi-proveedor. Ver documentación completa
 - **Email + Contraseña** → fallback (progressive disclosure en `/login`)
 - **Teléfono OTP** → desactivado vía feature flag (`NEXT_PUBLIC_ENABLE_PHONE_OTP`)
 
-### Flujo Intent Manager (v0.11.0-S54, vigente)
+### Flujo Intent Manager (v0.16.1-S54, vigente)
 ```
 1. Click en acción protegida → requireAuth(intent, router)
 2. Sin sesión: IntentManager.save(intent) + router.push('/login')
@@ -136,7 +136,7 @@ Sistema de autenticación unificado multi-proveedor. Ver documentación completa
 ### Enforcement
 - Cualquier PR que introduzca terminología distinta debe ser rechazado.
 
-## 🎨 Identidad Visual y Branding (v0.13.2)
+## 🎨 Identidad Visual y Branding (v0.16.1)
 
 HabitaPlan cuenta con un sistema de branding completamente controlado por código, con reglas que son parte del Design System oficial.
 

@@ -1,6 +1,6 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.16.0
+**Versión actual:** v0.16.1
 **Última actualización:** 24 de abril de 2026
 
 ## ¿Qué hace?
@@ -70,7 +70,7 @@ parseActivity(html, url, raw, analyzer, skipPreflight)   [NUEVO S55 — Schedule
     └─ Si PARSER_FALLBACK_ENABLED=false → comportamiento legacy (solo Gemini)
     │
     ▼
-evaluateActivityGate(data, url)   [NUEVO v0.12.0 — Doble capa semántica + heurística]
+evaluateActivityGate(data, url)   [NUEVO v0.16.1 — Doble capa semántica + heurística]
     ├─ **Capa 1 — LLM Priority Gate (fail-safe estricto):** Si Gemini no retornó `isActivity === true` de forma explícita, descarta inmediatamente con `[discard:llm]`. Cero default positivos.
     ├─ **Capa 2 — Heuristic Gate:** Valida señales de intención de evento (taller, festival, función, concierto…) y señal temporal (dateStart, dateEnd, schedule).
     ├─ Palabras negativas eliminan (gestión, noticias, comunicado, directorio, PQRS, boletín).
@@ -128,7 +128,7 @@ ingest-sources.ts --queue
    → 3 reintentos con backoff exponencial (5s)
 ```
 
-**CTR Priority (NUEVO v0.11.0-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
+**CTR Priority (NUEVO v0.16.1-S44):** fuentes con CTR > 0.15 reciben prioridad 1 (alta), combinado con `healthPriority` via `Math.min()`. Log `ctr_priority_applied` por fuente cuando aplica.
 
 ## Date Preflight Filter y Heurísticas pre-fetch — conservación de cuota Gemini (S48 → S55)
 
@@ -177,8 +177,8 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 | `pipeline.ts` | Orquesta la lógica e invoca al pipeline a través de resiliencia |
 | `utils/date-preflight.ts` | Gate pre-NLP: detecta eventos pasados y omite Gemini. `evaluatePreflight()` devuelve `{ skip, reason, datesFound, matchedText }` |
 | `utils/preflight-db.ts` | **(NUEVO S50)** Persiste resultados en `date_preflight_logs` (fire-and-forget). Incluye queries de métricas embebidas. |
-| `data-pipeline.ts` | **(NUEVO v0.9.3)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
-| `resilience.ts` | **(NUEVO v0.11.0)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
+| `data-pipeline.ts` | **(NUEVO v0.16.1)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
+| `resilience.ts` | **(NUEVO v0.16.1)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |
 | `types.ts` | Tipos y schemas Zod de validación |
 | `storage.ts` | Guarda actividades + deduplicación Nivel 1 (Jaccard >75%) |
@@ -195,7 +195,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 | `queue/producer.ts` | `enqueueBatchJob()` + `enqueueInstagramJob()` |
 | `queue/types.ts` | Tipos TypeScript para jobs |
 
-## Proxy residencial (NUEVO v0.8.1+)
+## Proxy residencial (NUEVO v0.16.1+)
 
 `PlaywrightExtractor` soporta proxy residencial para evitar bloqueos en Instagram, TikTok y Facebook.
 
@@ -303,7 +303,7 @@ El pipeline de ingesta cuenta con un flujo estricto de **mitigación legal/copyr
 
 Para mantener total monitoreo sobre las fuentes, cada bloque ingestado se inserta temporalmente en la BD como un reporte de degradación (`ContentQualityMetric`) visible en `/admin/quality`. Evalúa % Cortas, % Ruido y % Promo de los strings.
 
-## Activity Gate — Semántica de Evento (NUEVO v0.12.0)
+## Activity Gate — Semántica de Evento (NUEVO v0.16.1)
 
 El Gate es la primera defensa **de calidad ontológica** del pipeline. Responde a la pregunta "¿Es esto un evento al que una persona puede asistir?" antes de tocar la BD.
 
@@ -352,7 +352,7 @@ Be conservative: if unsure → FALSE
 | `src/modules/scraping/nlp/gemini.analyzer.ts` | Prompt conservador + fail-safe en `analyze()` |
 | `src/modules/scraping/pipeline.ts` | Jerarquía LLM → Gate → DB + logging diferencial |
 
-## Curaduría Adaptativa (NUEVO v0.11.0-S43)
+## Curaduría Adaptativa (NUEVO v0.16.1-S43)
 El Pipeline cuenta con un **Filtro Adaptativo Inteligente** que evalúa dinámicamente si debe descartar una actividad antes de guardarla.
 Cruza la Calidad Global del sistema con la métrica de Salud de la Fuente (`SourceHealth`).
 
@@ -406,7 +406,7 @@ Cualquier variante externa (ej. "Taller de pintura al óleo") colapsará atómic
 | 2 — Cron | Diario | Auto-clean de duplicados exactos |
 | 3 — Manual | Ad-hoc | Review 70-90% similitud |
 
-## Pre-filtro de URLs binarias (NUEVO v0.9.0)
+## Pre-filtro de URLs binarias (NUEVO v0.16.1)
 
 `GeminiAnalyzer.discoverActivityLinks()` excluye automáticamente antes de enviar a Gemini:
 - Imágenes: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.svg`, `.bmp`, `.tiff`

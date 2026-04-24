@@ -1,6 +1,6 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.16.0
+**Versión:** ✅ v0.16.1
 **Última actualización:** 24 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
@@ -42,7 +42,7 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 - La información vinculada al perfil del "Niño/Acudiente" en la app carece de vinculaciones peligrosas, rigiéndose estrictamente por el Interés Superior del Niño.
 - Ver `data-treatment.ts` — sección "Menores": autorización parental previa requerida, datos sin vínculo directo riesgoso.
 
-### 3. Datos de Interacción y Analytics (NUEVO v0.11.0-S44)
+### 3. Datos de Interacción y Analytics (NUEVO v0.16.1-S44)
 - **Declarado en `privacy.ts`**: "La Plataforma podrá recolectar y utilizar datos de interacción (como clics y navegación) y datos técnicos (como dirección IP, tipo de dispositivo y navegador) con fines de mejorar la relevancia del contenido, analizar el uso del servicio, y prevenir abusos o usos indebidos. Esta información se utiliza de forma agregada y **no para identificación personal directa**."
 - Esto cubre explícitamente el CTR Feedback Loop (S44): clics → ranking → crawler.
 - IP y User-Agent se almacenan en tabla `Event` (`ip VARCHAR(50)`, `userAgent TEXT`) — declarados en privacidad y tratamiento de datos.
@@ -61,13 +61,13 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 
 | Documento | Versión | Última actualización |
 |---|---|---|
-| Política de Privacidad | v1.0 | 11 de abril de 2026 |
-| Términos y Condiciones | v1.0 | 11 de abril de 2026 |
-| Tratamiento de Datos | v1.0 | 11 de abril de 2026 |
+| Política de Privacidad | v1.0 | 24 de abril de 2026 |
+| Términos y Condiciones | v1.0 | 24 de abril de 2026 |
+| Tratamiento de Datos | v1.0 | 24 de abril de 2026 |
 
 Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/datos`) y sus PDF descargables consumen los mismos arrays TypeScript. **Imposible desincronización.**
 
-## 🔑 Cumplimiento Legal SSO y Consentimiento Explícito (v0.16.0)
+## 🔑 Cumplimiento Legal SSO y Consentimiento Explícito (v0.16.1)
 
 Con la integración de SSO (Google, Magic Link), se introdujeron mecanismos adicionales de cumplimiento legal:
 
@@ -110,5 +110,5 @@ Nuevo usuario (cualquier proveedor)
 - Para cambiar cualquier texto legal: modificar el archivo `.ts` correspondiente en `src/modules/legal/constants/` → compila la app → web y PDF se actualizan simultáneamente.
 - Cambios en datos recolectados → actualizar `privacy.ts` **y** `data-treatment.ts` para mantener coherencia.
 
-## 🎨 Identidad Visual y Branding (v0.13.2)
+## 🎨 Identidad Visual y Branding (v0.16.1)
 Los assets de marca (logo, og.png, favicon) están completamente desacoplados del sistema legal. Los textos de disclaimer se mantienen en `src/modules/legal/constants/legal-disclaimers.ts` y son consumidos por `ActivityCard.tsx` y las páginas de detalle. El pipeline de branding (`scripts/generate-brand-assets.mjs`) no afecta ni altera los textos legales. **SSOT legal preservado.**

@@ -1,6 +1,6 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.16.0
+**Versión:** ✅ v0.16.1
 **Última actualización:** 24 de abril de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
@@ -31,7 +31,7 @@ Cualquier evento nuevo debe declararse primero ahí para evitar fragmentación. 
    - **Recomendación**: Instrumentar evento en cambios de categoría, rango de edad, precio, ubicación.
    - **Backlog ID**: FEAT-6.8-3
 
-> **Nota v0.16.0:** El script `scripts/generate-brand-assets.mjs` no emite eventos de analytics — opera exclusivamente en build-time. Los únicos eventos de producción son los 6 definidos arriba más el pendiente `filter_applied`.
+> **Nota v0.16.1:** El script `scripts/generate-brand-assets.mjs` no emite eventos de analytics — opera exclusivamente en build-time. Los únicos eventos de producción son los 6 definidos arriba más el pendiente `filter_applied`.
 
 ## 👤 Identidad de Usuario (Tracking)
 
@@ -113,7 +113,7 @@ El dashboard es un Client Component (`page.tsx`) que consume `GET /api/admin/ana
 
 **Tabla raw:** todos los eventos ordenados por volumen descendente — útil para detectar anomalías (spike en `page_view` sin `activity_click` = contenido no resonando).
 
-## 🔄 CTR Feedback Loop (NUEVO v0.11.0-S44)
+## 🔄 CTR Feedback Loop (NUEVO v0.16.1-S44)
 
 Los eventos acumulados en la BD se convierten en señales activas que gobiernan el sistema.
 

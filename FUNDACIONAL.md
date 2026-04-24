@@ -1,5 +1,5 @@
 # HABITAPLAN — DOCUMENTO FUNDACIONAL V27
-> Generado por el script V27. Actualizado: 2026-04-22.
+> Generado por el script V27. Actualizado: 2026-04-24.
 
 
 # 1. VISION Y PROBLEMA
@@ -8,13 +8,13 @@ Las familias con ninos pasan horas buscando actividades en fuentes fragmentadas:
 
 **La Solucion**: HabitaPlan es un agregador multi-fuente con normalizacion inteligente que centraliza actividades y eventos para ninos, jovenes y familias en ciudades colombianas, con expansion a LATAM.
 
-**Nombre**: HabitaPlan (rebrand desde Infantia, 2026-04-07)
+**Nombre**: HabitaPlan (rebrand desde Infantia, 2026-04-24)
 
 **Dominio**: habitaplan.com — DNS apuntado a Vercel, activo en produccion
 
 **Owner**: Denys Reyes (padre de una hija de 10 anos)
 
-**Inicio del proyecto**: 15 de marzo de 2026
+**Inicio del proyecto**: 24 de abril de 2026
 
 
 # 2. PROPUESTA DE VALOR
@@ -171,7 +171,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 ## 6.1 Logger estructurado — createLogger(ctx)
 
 - Archivo: src/lib/logger.ts — reemplaza todos los console.* en produccion.
-- Formato: 2026-04-17T20:00:00Z INFO  [ctx] mensaje {"meta":"json"}
+- Formato: 2026-04-24T20:00:00Z INFO  [ctx] mensaje {"meta":"json"}
 - log.error() captura a Sentry si SENTRY_DSN configurado — import dinamico, no bloquea el request.
 
 ## 6.2 Sentry + UptimeRobot
@@ -256,7 +256,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 ## 8.2 Date Preflight — 3 capas (NUEVO V24 — S48b/c)
 
 - Capa 1 (datetime HTML): busca <time datetime='...'> — maxima precision.
-- Capa 2 (texto plano): patrones regex — '15 de marzo de 2026', '15/03/2026'. Compara vs fecha actual.
+- Capa 2 (texto plano): patrones regex — '24 de abril de 2026', '15/03/2026'. Compara vs fecha actual.
 - Capa 3 (keywords/anos): ano < 2026 junto a palabras clave ('taller 2024', 'conferencia 2023').
 - skip=true: NLP omitido — ahorra 1 request Gemini por URL. matchedText guardado para auditoria.
 - Metricas persisten en date_preflight_logs (fire-and-forget, no bloquea pipeline).
@@ -269,7 +269,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Fix S54: pipeline.ts pasa HTML completo (no texto plano) a rawForFallback.html — extractTitle() funciona.
 - Feature flag PARSER_FALLBACK_ENABLED — desactivable sin deploy.
 
-## 8.4 Fuentes activas (2026-04-17)
+## 8.4 Fuentes activas (2026-04-24)
 
 | Fuente | Ciudad / Tipo / Estado |
 | --- | --- |
@@ -304,7 +304,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | 3. cityFallback | Si la direccion falla, geocodifica solo la ciudad |
 | 4. Fallback null | Ultimo recurso — actividad sin pin en el mapa |
 
-- Estado al 2026-04-17: 29/29 locations en BD con coordenadas reales (lat/lng != 0).
+- Estado al 2026-04-24: 29/29 locations en BD con coordenadas reales (lat/lng != 0).
 
 # 10. DESIGN SYSTEM E INTENT MANAGER (NUEVO V24)
 
@@ -411,7 +411,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Cron Vercel: 9am UTC diario → POST /api/admin/send-notifications (CRON_SECRET).
 - Web Push VAPID: public/sw.js + API /api/push/subscribe. sendPushToMany() limpia endpoints expirados.
 
-# 16. ESTADO ACTUAL — v0.12.0 (2026-04-20)
+# 16. ESTADO ACTUAL — v0.16.1 (2026-04-24)
 
 | Metrica | Valor |
 | --- | --- |
@@ -427,7 +427,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Cola | BullMQ + Upstash Redis OPERATIVO — Cron 6h activo |
 | Fuentes activas | 10 web Bogotá + 2 web Medellín + 10 Instagram + 1 Telegram |
 | Search engine | pg_trgm activo — similarity + GIN indexes |
-| Activity Gate | ACTIVO (v0.12.0) — doble capa semántica + heurística. Logging diferencial. |
+| Activity Gate | ACTIVO (v0.16.1) — doble capa semántica + heurística. Logging diferencial. |
 | Date Preflight | Activo — date_preflight_logs. 3 capas. |
 | Parser Resiliente | Activo — PARSER_FALLBACK_ENABLED. Cheerio fallback cuando Gemini 429/503. |
 | Intent Manager | Activo — hp_intent localStorage TTL 15min |
@@ -446,16 +446,16 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | S34 — fc7c1aa..168a465 | V23 | URL classifier (28 tests, 100% cov). Auto-pause dashboard. Banrep Ibague pausado. |
 | S35 — 08f8a8d..ce060ff | V23 | Multi-ciudad Medellin (Parque Explora + Bib. Piloto web + IG). Admin toggle fuentes. habitaplan.com DNS. |
 | S36 — 6418fda | V23 | Rebrand masivo 71 archivos, CLAUDE.md rutas fisicas. 876 tests. |
-| S37 — f30addd (v0.9.5) | V23 | Home UX: HeroSearch, chips, ActivityCard compact, Footer 4 columnas. |
+| S37 — f30addd (v0.16.1) | V23 | Home UX: HeroSearch, chips, ActivityCard compact, Footer 4 columnas. |
 | S38 — 871512e | V23 | Filters.tsx: barra unica desktop, modal mobile, chips activos con X. |
-| S39 — 67ecb2e (v0.9.7) | V23 | Header /actividades, loading+spinner, FiltersSkeleton, mobile ordenar. |
-| S40 — c5efce5 (v0.9.8) | V23 | Buscador mixto: SuggestionItem, LRU cache, AbortController, debounce. 882 tests. |
-| S41 — v0.10.0 | V24 | Legal SSOT + react-pdf. /legal con PDFs. 882 tests. |
+| S39 — 67ecb2e (v0.16.1) | V23 | Header /actividades, loading+spinner, FiltersSkeleton, mobile ordenar. |
+| S40 — c5efce5 (v0.16.1) | V23 | Buscador mixto: SuggestionItem, LRU cache, AbortController, debounce. 882 tests. |
+| S41 — v0.16.1 | V24 | Legal SSOT + react-pdf. /legal con PDFs. 882 tests. |
 | S42 | V24 | Analytics zero-dep window.__hp_analytics. Hybrid Ranking boostScore + recency. |
 | S44 | V24 | CTR Feedback Loop. ctrToBoost tiers. Adaptive Quality Filter. |
 | S45 | V24 | ESLint Freeze: no-alert, no-restricted-imports. Legal SSOT auditoria. |
 | S46 | V24 | UI Hardening: Toast global, AbortController uploads, A11y, Performance. |
-| S47 — v0.11.0 | V24 | Sources CRUD en BD. pg_trgm search engine. Vercel Cron → BullMQ 6h. |
+| S47 — v0.16.1 | V24 | Sources CRUD en BD. pg_trgm search engine. Vercel Cron → BullMQ 6h. |
 | S48/b/c | V24 | Date Preflight v2: 3 capas. Health by_city. Smoke CI. 1082 tests. |
 | S49 | V24 | Favoritos Mixtos (actvidades+lugares). FavoriteButton polimorfco. 1082 tests. |
 | S50 | V24 | Date Preflight metricas BD. date_preflight_logs. matchedText. 1101 tests. |
@@ -464,10 +464,10 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | S53 — 043aa3e | V24 | Design System ESLint. Intent Manager. toggle-favorite.ts. requireAuth. 1155 tests. |
 | S54 — 2542178 | V24 | Fix fallback-mapper HTML completo. Design System Zero Debt (erradicación alert). FUGA + IG Medellín. 1157 tests. |
 | S55 | V25 | Pipeline Optimization. Scheduler Inteligente. Honest Facets UX. Deduplication Engine. 1203 tests. |
-| S58 — d958311 | **V26** | **Activity Gate v0.12.0**: fail-safe LLM estricto (`isActivity` sin default), Gate heurístico, logging diferencial `[discard:llm]/[discard:gate]`, backfill ubicaciones 86%. |
-| v0.13.0 | V26 | Design System Zero-Debt. Semantic hp-tokens. Chromatic VRT. Storybook Vite. |
-| v0.13.1 | V26 | Search Assist System E2E. Hybrid Ranking. Zero-Debt DS Hardening. 1215 tests. |
-| **v0.13.2** | **V27** | **SVG-First Branding SSOT. logo.svg + logo-dark.svg + logo-icon.svg. Brand Asset Pipeline (og.png, favicon, apple-touch). Mobile Header fix. Test repair. Docs full sync.** |
+| S58 — d958311 | **V26** | **Activity Gate v0.16.1**: fail-safe LLM estricto (`isActivity` sin default), Gate heurístico, logging diferencial `[discard:llm]/[discard:gate]`, backfill ubicaciones 86%. |
+| v0.16.1 | V26 | Design System Zero-Debt. Semantic hp-tokens. Chromatic VRT. Storybook Vite. |
+| v0.16.1 | V26 | Search Assist System E2E. Hybrid Ranking. Zero-Debt DS Hardening. 1215 tests. |
+| **v0.16.1** | **V27** | **SVG-First Branding SSOT. logo.svg + logo-dark.svg + logo-icon.svg. Brand Asset Pipeline (og.png, favicon, apple-touch). Mobile Header fix. Test repair. Docs full sync.** |
 
 
 # 17. TESTING

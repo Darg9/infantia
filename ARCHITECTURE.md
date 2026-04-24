@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.16.0 | Actualizado: 2026-04-24
+> Versión: v0.16.1 | Actualizado: 2026-04-24
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -104,16 +104,16 @@ habitaplan/
 │   │   ├── _components/
 │   │   │   └── HeroSearch.tsx      # Client Component: buscador mixto (actividades+cats+ciudades), cache, AbortController, historial (S40)
 │   │   ├── actividades/            # Listado con filtros facetados
-│   │   │   └── layout.tsx          # [NUEVO v0.16.0] Segment layout: CityProvider + Suspense (DB server-side)
+│   │   │   └── layout.tsx          # [NUEVO v0.16.1] Segment layout: CityProvider + Suspense (DB server-side)
 │   │   ├── login/                  # Autenticación (Supabase Auth — redirige a /onboarding si nuevo)
 │   │   ├── registro/               # Registro con email de bienvenida
-│   │   ├── onboarding/             # Wizard 3 pasos: Ciudad → Hijos → Listo (NUEVO v0.9.1)
+│   │   ├── onboarding/             # Wizard 3 pasos: Ciudad → Hijos → Listo (NUEVO v0.16.1)
 │   │   ├── perfil/                 # Perfil de usuario, hijos, favoritos, notificaciones, historial
 │   │   ├── admin/                  # Panel interno (logs de scraping, fuentes, claims)
-│   │   │   └── claims/             # Lista y gestión de solicitudes de reclamación (NUEVO v0.9.1)
+│   │   │   └── claims/             # Lista y gestión de solicitudes de reclamación (NUEVO v0.16.1)
 │   │   ├── proveedores/
 │   │   │   └── [slug]/
-│   │   │       └── reclamar/       # Formulario de reclamación de provider (NUEVO v0.9.1)
+│   │   │       └── reclamar/       # Formulario de reclamación de provider (NUEVO v0.16.1)
 │   │   ├── contacto/               # Formulario de contacto
 │   │   ├── contribuir/             # Página para proveedores
 │   │   ├── privacidad/             # Política de privacidad
@@ -129,14 +129,14 @@ habitaplan/
 │   │       │   └── [activityId]/
 │   │       ├── children/           # Hijos/perfiles de menores
 │   │       │   └── [id]/
-│   │       ├── cities/             # Lista de ciudades para onboarding (NUEVO v0.9.1)
+│   │       ├── cities/             # Lista de ciudades para onboarding (NUEVO v0.16.1)
 │   │       ├── providers/
 │   │       │   └── [slug]/
-│   │       │       └── claim/      # POST — solicitud de reclamación de provider (NUEVO v0.9.1)
+│   │       │       └── claim/      # POST — solicitud de reclamación de provider (NUEVO v0.16.1)
 │   │       ├── profile/            # Perfil del usuario autenticado
 │   │       │   ├── avatar/
-│   │       │   ├── me/             # GET — id, name, cityId, onboardingDone (NUEVO v0.9.1)
-│   │       │   ├── onboarding/     # PATCH — guarda cityId + onboardingDone=true (NUEVO v0.9.1)
+│   │       │   ├── me/             # GET — id, name, cityId, onboardingDone (NUEVO v0.16.1)
+│   │       │   ├── onboarding/     # PATCH — guarda cityId + onboardingDone=true (NUEVO v0.16.1)
 │   │       │   └── notifications/
 │   │       ├── auth/
 │   │       │   └── send-welcome/   # Email de bienvenida post-registro
@@ -148,11 +148,11 @@ habitaplan/
 │   │           ├── send-notifications/    # Envío masivo de notificaciones (cron 9AM UTC)
 │   │           ├── sponsors/              # CRUD de sponsors newsletter
 │   │           │   └── [id]/             # PATCH / DELETE por id
-│   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.9.1)
+│   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.16.1)
 │   │           │   └── [id]/             # PATCH approve / reject
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
 │   │           ├── analytics/             # Endpoint POST para ingestar eventos de Product Analytics (page_view, clics)
-│   │           ├── quality/               # Content Quality Dashboard — UI/UX Métricas de ingesta (NUEVO v0.10.0)
+│   │           ├── quality/               # Content Quality Dashboard — UI/UX Métricas de ingesta (NUEVO v0.16.1)
 │   │           └── scraping/
 │   │               ├── sources/           # CRUD de fuentes de scraping
 │   │               └── logs/              # Historial de ejecuciones
@@ -173,9 +173,9 @@ habitaplan/
 │   lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
 │   │   ├── auth.ts                 # Helpers de Supabase Auth (getSession, requireRole)
-│   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.9.0)
-│   │   ├── track.ts                # Motor de Analytics In-House con throttle (NUEVO v0.11.0)
-│   │   ├── ratings.ts              # recalcProviderRating() — agrega ratingAvg/Count en Provider (NUEVO v0.9.1)
+│   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.16.1)
+│   │   ├── track.ts                # Motor de Analytics In-House con throttle (NUEVO v0.16.1)
+│   │   ├── ratings.ts              # recalcProviderRating() — agrega ratingAvg/Count en Provider (NUEVO v0.16.1)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
 │   │   ├── utils.ts                # Utilidades generales
@@ -185,7 +185,7 @@ habitaplan/
 │   │   ├── geocoding.ts            # venue-dictionary → Nominatim → cityFallback → null
 │   │   ├── push.ts                 # Web Push VAPID — sendPushNotification, sendPushToMany
 │   │   ├── expire-activities.ts    # Lógica de expiración de actividades
-│   │   ├── city/                   # [NUEVO v0.16.0]
+│   │   ├── city/                   # [NUEVO v0.16.1]
 │   │   │   └── resolveCity.ts      # resolveCityId() — SSOT URL > localStorage > default
 │   │   ├── email/                  # Templates react-email con UTM tracking + bloque sponsor
 │   │   └── supabase/               # Clientes SSR de Supabase
@@ -195,27 +195,27 @@ habitaplan/
 │   │
 │   └── types/                      # Tipos globales de TypeScript
 │
-├── middleware.ts                    # Middleware global Next.js — protege /api/admin/* (NUEVO v0.9.0)
+├── middleware.ts                    # Middleware global Next.js — protege /api/admin/* (NUEVO v0.16.1)
 │                                   #   Sin sesión → 401 | sin ADMIN → 403 | cron paths → CRON_SECRET
-├── sentry.server.config.ts         # Sentry server-side (activo si SENTRY_DSN en env) (NUEVO v0.9.0)
-├── sentry.client.config.ts         # Sentry client-side (activo si NEXT_PUBLIC_SENTRY_DSN) (NUEVO v0.9.0)
+├── sentry.server.config.ts         # Sentry server-side (activo si SENTRY_DSN en env) (NUEVO v0.16.1)
+├── sentry.client.config.ts         # Sentry client-side (activo si NEXT_PUBLIC_SENTRY_DSN) (NUEVO v0.16.1)
 ├── .env.example                    # Documentación de las 14+ variables de entorno requeridas
 ├── scripts/                        # Scripts de mantenimiento y scraping
-│   ├── ingest-sources.ts           # Ingesta multi-fuente con canales (NUEVO v0.9.0)
+│   ├── ingest-sources.ts           # Ingesta multi-fuente con canales (NUEVO v0.16.1)
 │   │                               #   --list | --channel=web|social|instagram | --source=banrep
 │   │                               #   --save-db | --queue | --dry-run | --max-pages=N
 │   ├── run-worker.ts               # Worker BullMQ (procesa jobs de scraping)
 │   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
-│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts, --validate-only) (NUEVO v0.9.2)
+│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts, --validate-only) (NUEVO v0.16.1)
 │   ├── ig-login.ts                 # Login manual Instagram → genera ig-session.json
-│   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0 (NUEVO v0.8.1)
+│   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0 (NUEVO v0.16.1)
 │   ├── backfill-images.ts          # Extrae og:image de sourceUrl para actividades sin imagen
 │   ├── migrate-premium.ts          # DDL: isPremium/premiumSince en Provider (raw SQL)
 │   ├── migrate-sponsors.ts         # DDL: tabla sponsors (raw SQL)
-│   ├── migrate-provider-claims.ts  # DDL: tabla provider_claims + enum ClaimStatus (NUEVO v0.9.1)
-│   ├── migrate-onboarding.ts       # DDL: onboardingDone en User, existing users → true (NUEVO v0.9.1)
-│   ├── telegram-auth.ts            # Autenticación MTProto one-time → genera TELEGRAM_SESSION (NUEVO v0.9.1)
-│   ├── ingest-telegram.ts          # Ingesta canales Telegram con Gemini + guardado en BD (NUEVO v0.9.1)
+│   ├── migrate-provider-claims.ts  # DDL: tabla provider_claims + enum ClaimStatus (NUEVO v0.16.1)
+│   ├── migrate-onboarding.ts       # DDL: onboardingDone en User, existing users → true (NUEVO v0.16.1)
+│   ├── telegram-auth.ts            # Autenticación MTProto one-time → genera TELEGRAM_SESSION (NUEVO v0.16.1)
+│   ├── ingest-telegram.ts          # Ingesta canales Telegram con Gemini + guardado en BD (NUEVO v0.16.1)
 │   ├── promote-admin.ts            # Da rol ADMIN a un usuario
 │   ├── verify-db.ts                # Reporte de estado de la BD
 │   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
@@ -271,7 +271,7 @@ City ── Location ───────────────────�
 | `ActivityCategory` | Relación N:M actividad ↔ categoría |
 | `Favorite` | Actividades o lugares físicos guardados por un usuario (FK opcionals XOR) |
 | `Rating` | Calificación 1-5 + comentario (una por usuario por actividad) |
-| `ProviderClaim` | Solicitud de reclamación de provider por usuario autenticado (NUEVO v0.9.1) |
+| `ProviderClaim` | Solicitud de reclamación de provider por usuario autenticado (NUEVO v0.16.1) |
 | `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
 | `ScrapingLog` | Registro histórico de cada ejecución de scraping |
 | `ContentQualityMetric` | Métricas puras observadas del texto post-scraping: longitud, ruido y stopwords (NUEVO v0.10.x) |
@@ -287,10 +287,10 @@ PricePeriod       → PER_SESSION | MONTHLY | TOTAL | FREE
 ScrapingPlatform  → WEBSITE | INSTAGRAM | FACEBOOK | TELEGRAM | TIKTOK | X | WHATSAPP
 UserRole          → PARENT | PROVIDER | MODERATOR | ADMIN
 ProviderType      → ACADEMY | INDEPENDENT | INSTITUTION | GOVERNMENT
-ClaimStatus       → PENDING | APPROVED | REJECTED   (NUEVO v0.9.1)
+ClaimStatus       → PENDING | APPROVED | REJECTED   (NUEVO v0.16.1)
 ```
 
-### Campos nuevos en v0.9.1
+### Campos nuevos en v0.16.1
 
 | Modelo | Campo | Tipo | Propósito |
 |--------|-------|------|-----------|
@@ -321,7 +321,7 @@ src/modules/scraping/
 ├── extractors/
 │   ├── cheerio.extractor.ts    # Sitios estáticos + paginación + textFromHtml() estático (S52)
 │   ├── playwright.extractor.ts # Instagram con Chromium headless + sesión persistente
-│   └── telegram.extractor.ts   # Canales públicos via gramjs MTProto (NUEVO v0.9.1)
+│   └── telegram.extractor.ts   # Canales públicos via gramjs MTProto (NUEVO v0.16.1)
 ├── nlp/
 │   ├── gemini.analyzer.ts      # Motor NLP activo (Gemini 2.5 Flash) — retry x3 backoff
 │   └── claude.analyzer.ts      # Alternativa futura (API Anthropic — no activo)
@@ -423,7 +423,7 @@ ScrapingStorage.saveActivity()
 1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
 2. Busca `<a href>` con parámetro `?page=N+1`
 
-### Fuentes activas (al 2026-04-09 — S40)
+### Fuentes activas (al 2026-04-24 — S40)
 
 #### Bogotá — Web (Cheerio + Gemini)
 | Fuente | Actividades aprox. |
@@ -689,7 +689,7 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 1214 tests, 75 archivos, 0 fallos (v0.16.0)
+- **Estado actual:** 1214 tests, 75 archivos, 0 fallos (v0.16.1)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
 - **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`, `activities/ranking`, `analytics/metrics`
@@ -783,9 +783,9 @@ Reglas fundamentales:
 | Parser resiliente en módulo separado (S52) | `parser/` desacoplado de `pipeline.ts` y `gemini.analyzer.ts` — usa `Pick<GeminiAnalyzer, 'analyze'>` para no acoplar al constructor. `isRetryableError` centralizado en `parser.types.ts`. Fallback no modifica `ActivityNLPResult` (schema Zod inmutable) — usa wrapper `ParseResult`. |
 | Feature flag `PARSER_FALLBACK_ENABLED` (S52) | Control de activación en `src/config/feature-flags.ts`. Default: `true`. Override: `PARSER_FALLBACK=false` en Vercel env vars. Rollback sin redeploy en ~2 min. Flag vive solo en el punto de orquestación (`pipeline.ts`) — no contamina módulos internos. |
 | Unificación Legal SSOT | No duplicar rutas legales. Un solo namespace: `/seguridad`. Todas las rutas legales deben vivir bajo `/seguridad/*`. Las rutas legacy no se reutilizan: se redirigen (308) y se deprecán. |
-| CityProvider en segment layout (v0.16.0) | `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
-| URL como SSOT de ciudad (v0.16.0) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
-| EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.0) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |
+| CityProvider en segment layout (v0.16.1) | `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
+| URL como SSOT de ciudad (v0.16.1) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
+| EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.1) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |
 
 ---
 

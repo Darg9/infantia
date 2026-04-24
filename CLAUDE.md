@@ -107,7 +107,7 @@ find . -name "*.md" -not -path "*/node_modules/*" -not -path "*/.git/*"
 3. Si existe → agrégale tests para la funcionalidad nueva/modificada
 4. Corre `npm test` antes de hacer commit — si falla, no hagas commit
 
-**Threshold de cobertura:** sube +10% por día desde el inicio del proyecto (2026-03-16).
+**Threshold de cobertura:** sube +10% por día desde el inicio del proyecto (2026-04-24).
 El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 
 ## Workflow de versionamiento
@@ -148,24 +148,24 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 
 | Git tag | Doc Fundacional | Descripción |
 |---|---|---|
-| v0.0.1 | V02 | Stack, arquitectura, modelo de datos |
-| v0.1.0 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
-| v0.2.0 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
-| v0.3.0 | V08 | Instagram scraping (Playwright, ig-session.json) |
-| v0.4.0 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
-| v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
-| v0.6.1 | V12 | Auth SSR, admin, SEO, Web Push, /proveedores |
-| v0.7.3 | V15 | BullMQ + Redis, 14 fuentes, 636 tests |
-| v0.8.0 | V18 | Geocoding, mapa, autocompletado, ordenamiento, métricas |
-| v0.8.1 | V19 | Mini-mapa detalle, venue-dictionary, backfill-geocoding |
-| v0.8.1+ | V20 | Monetización A-G, proxy IPRoyal, dashboard proveedor |
-| v0.9.0 | V21 | Seguridad (C-01/C-02/npm), observabilidad (logger/Sentry/health), scraping canales |
-| v0.9.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
-| v0.9.2 | V21 | Instagram 10 fuentes activas, --validate-only, ratings.test.ts, branches ✅ |
-| v0.9.3 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
-| v0.11.0 | V25 | Pipeline Scheduler, Deduplication Engine, Observability |
-| v0.12.0 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
-| v0.13.0 | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
+| v0.16.1 | V02 | Stack, arquitectura, modelo de datos |
+| v0.16.1 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
+| v0.16.1 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
+| v0.16.1 | V08 | Instagram scraping (Playwright, ig-session.json) |
+| v0.16.1 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
+| v0.16.1 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
+| v0.16.1 | V12 | Auth SSR, admin, SEO, Web Push, /proveedores |
+| v0.16.1 | V15 | BullMQ + Redis, 14 fuentes, 636 tests |
+| v0.16.1 | V18 | Geocoding, mapa, autocompletado, ordenamiento, métricas |
+| v0.16.1 | V19 | Mini-mapa detalle, venue-dictionary, backfill-geocoding |
+| v0.16.1+ | V20 | Monetización A-G, proxy IPRoyal, dashboard proveedor |
+| v0.16.1 | V21 | Seguridad (C-01/C-02/npm), observabilidad (logger/Sentry/health), scraping canales |
+| v0.16.1 | V21 | Telegram operativo, provider claim flow, onboarding wizard, ratings aggregation |
+| v0.16.1 | V21 | Instagram 10 fuentes activas, --validate-only, ratings.test.ts, branches ✅ |
+| v0.16.1 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
+| v0.16.1 | V25 | Pipeline Scheduler, Deduplication Engine, Observability |
+| v0.16.1 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
+| v0.16.1 | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:
@@ -209,9 +209,9 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Adaptive Quality Filter (S43):** `saveActivity()` acepta `ctx: AdaptiveContext` opcional (default vacío). `saveBatchResults()` carga `ContentQualityMetric` + `SourceHealth` UNA sola vez antes del loop. `Math.max(adaptive, source)` define `minDescriptionLength` por actividad. Log `activity_discarded_adaptive`.
 - **CTR Feedback Loop (S44):** `src/modules/analytics/metrics.ts` — `getCTRByDomain()` agrega `outbound_click/activity_view` via join `Event→Activity.sourceUrl`. Cache TTL 5min. `ctrToBoost()` tiers: `>0.3→0.15 / >0.15→0.08 / >0.05→0.03`. `computeActivityScore()` acepta `ctrBoost=0` opcional. `ingest-sources.ts` combina CTR priority con health priority via `Math.min()`. **Cold start safe**: sin datos = boost 0, comportamiento original.
 - **Honest but Invisible Facets System (S57):** Default = universo completo (incluye null). Filtros = subconjuntos explícitos. NUNCA ocultar o normalizar `null` a valores falsos (ej. price ?? 0) por UX, para proteger la integridad de los datos (`price === null` significa que desconocemos el precio, no que es gratuito). En frontend, ocultar la incompletitud cambiando Componentes 'Pill/Badge' de selección mutuamente excluyente por Dropdowns (`<select>`) que asumen "Cualquier valor" por defecto, eliminando la expectativa aritmética del usuario (Gestalt mismatch).
-- **Multi-City SSOT (v0.16.0):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
-- **CityProvider scoped (v0.16.0):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
-- **EMERGENCY_CENTER (v0.16.0):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
+- **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
+- **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
+- **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
 ## Estado actual (v0.16.1 — Actualizado 2026-04-24)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **1214 tests** en 75 archivos — `npm test` pasa — 1212 passed, 2 skipped, 0 errores
@@ -255,7 +255,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | - | **Issue V6.8.0:** Modelo 2 capas. Mantener persistencia raw (para análisis de unmet-demand) pero aplicar filtro en `/api/suggestions`: `q.count > MIN_FREQ && q.ctr > MIN_CTR`. |
 | **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | - | **Issue V6.8.0:** Clasificación de Query. Implementar `normalizeQuery()` con NFD (sin tildes) que haga split de palabras `>3` letras y retenga máximo 3 tokens fuertes para mantener la consistencia en el motor `pg_trgm`. |
 
-### Features v0.9.0 (seguridad + observabilidad + scraping)
+### Features v0.16.1 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)
 - **Health check:** `GET /api/health` — estado DB + Redis en tiempo real (listo para UptimeRobot)
 - **Logger estructurado:** `createLogger(ctx)` en `src/lib/logger.ts` — reemplaza todos los console.*
@@ -266,7 +266,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **ingest-sources.ts:** sistema de canales (`--channel`, `--source`, `--list`) + Banrep primero
 - **Bug fix scraping:** pre-filtro excluye imágenes/binarios antes de Gemini (ahorra cuota)
 
-### Features v0.8.1+ (monetización + proxy)
+### Features v0.16.1+ (monetización + proxy)
 - **isPremium Provider:** badge "⭐ Destacado" en ActivityCard + ordering preferencial en relevance sort
 - **Sponsor model:** CRUD en `/admin/sponsors` + bloque en email digest + UTM tracking
 - **Página /anunciate:** landing de monetización con stats y precios orientativos
@@ -275,7 +275,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **UTM tracking email:** todos los links del digest con `?utm_source=habitaplan&utm_medium=email&utm_campaign=...`
 - **Proxy Playwright:** `PLAYWRIGHT_PROXY_SERVER/USER/PASS` — sin vars = sin proxy (backward compatible)
 
-### Features v0.8.0 – v0.8.1
+### Features v0.16.1 – v0.16.1
 - **Geocoding Nominatim:** coords reales para locations, venue-dictionary 40+ venues Bogotá
 - **Mini-mapa Leaflet:** en sidebar de `/actividades/[id]`
 - **Autocompletado búsqueda:** sugerencias con debounce 300ms + navegación teclado
@@ -290,30 +290,30 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 
 | Git tag | Doc Fundacional | Descripción |
 |---|---|---|
-| v0.0.1 | V02 | Stack, arquitectura, modelo de datos |
-| v0.1.0 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
-| v0.2.0 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
-| v0.3.0 | V08 | Instagram scraping (Playwright, ig-session.json) |
-| v0.4.0 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
-| v0.5.0 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
-| v0.6.0 | V12 | robots.txt, sitemap.xml, EmptyState, 404, skeletons, CI/CD, Vercel |
-| v0.6.1 | V12 | Certificación: Supabase URLs corregidas, auth email verificado |
-| v0.7.0 | V13 | Tests mejorados: 531 tests (90.53% coverage), deduplication.ts + send-notifications |
-| v0.7.1 | V14 | Deuda técnica tests: 581 tests, 98.32% stmts, playwright 97.22% funcs |
-| v0.7.2 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |
-| v0.7.3 | V15 | Deuda técnica queue tests: 636 tests, 97.41% stmts, queue/* 100% cobertura |
-| v0.7.4 | V16 | BullMQ + Upstash Redis operativo, Banrep multi-ciudad (10 ciudades), fix sitemapPatterns |
-| v0.7.5 | V16 | URLs canónicas, backfill imágenes, reportar error, filtro precio, API queue |
-| v0.7.6 | V16 | Mapa Leaflet, actividades similares, og:image pipeline, filtro ciudad, gradientes |
-| v0.7.7 | V17 | Web Push, admin actividades, página proveedor /proveedores/[slug] |
-| v0.11.0-S53 | V26 | Centralización Legal SSOT, Intent Manager y Rebranding Color Primitives |
-| v0.11.0-S54 | V26 | Streaming Save de actividades post-parse, SPI filter por Lastmod |
-| v0.11.0-S55 | V26 | Scheduler Inteligente, NFD string mapping, Threshold diferenciado de confianza, Fixes Banrep |
-| v0.13.0     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
-| v0.13.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
-| v0.13.2     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |
-| v0.14.1     | V28 | Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening |
-| v0.16.0     | V28 | Multi-City Map Fase 1+2: CityProvider, resolveCity.ts SSOT, CitySwitcher en Header global |
+| v0.16.1 | V02 | Stack, arquitectura, modelo de datos |
+| v0.16.1 | V05 | Pipeline scraping completo, 167 actividades BibloRed |
+| v0.16.1 | V07 | /actividades UI, bogota.gov.co (21 acts), 193 tests |
+| v0.16.1 | V08 | Instagram scraping (Playwright, ig-session.json) |
+| v0.16.1 | V09 | Auth SSR, admin panel, hijos, legal Ley 1581, 294 tests |
+| v0.16.1 | V10 | Deduplicación 3 niveles, 211 actividades, 314 tests |
+| v0.16.1 | V12 | robots.txt, sitemap.xml, EmptyState, 404, skeletons, CI/CD, Vercel |
+| v0.16.1 | V12 | Certificación: Supabase URLs corregidas, auth email verificado |
+| v0.16.1 | V13 | Tests mejorados: 531 tests (90.53% coverage), deduplication.ts + send-notifications |
+| v0.16.1 | V14 | Deuda técnica tests: 581 tests, 98.32% stmts, playwright 97.22% funcs |
+| v0.16.1 | — | Scraping multi-fuente: sitemap extractor, Banrep, logger FK fix, cityName configurable |
+| v0.16.1 | V15 | Deuda técnica queue tests: 636 tests, 97.41% stmts, queue/* 100% cobertura |
+| v0.16.1 | V16 | BullMQ + Upstash Redis operativo, Banrep multi-ciudad (10 ciudades), fix sitemapPatterns |
+| v0.16.1 | V16 | URLs canónicas, backfill imágenes, reportar error, filtro precio, API queue |
+| v0.16.1 | V16 | Mapa Leaflet, actividades similares, og:image pipeline, filtro ciudad, gradientes |
+| v0.16.1 | V17 | Web Push, admin actividades, página proveedor /proveedores/[slug] |
+| v0.16.1-S53 | V26 | Centralización Legal SSOT, Intent Manager y Rebranding Color Primitives |
+| v0.16.1-S54 | V26 | Streaming Save de actividades post-parse, SPI filter por Lastmod |
+| v0.16.1-S55 | V26 | Scheduler Inteligente, NFD string mapping, Threshold diferenciado de confianza, Fixes Banrep |
+| v0.16.1     | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
+| v0.16.1     | V27 | Search Assist System, Hybrid Ranking E2E, Zero-Debt DS Hardening |
+| v0.16.1     | V27 | SVG-First Branding SSOT, Brand Asset Pipeline, Mobile Header Fix, Test Suite Repair |
+| v0.16.1     | V28 | Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening |
+| v0.16.1     | V28 | Multi-City Map Fase 1+2: CityProvider, resolveCity.ts SSOT, CitySwitcher en Header global |
 | v0.16.1     | V28 | Hardening Auth (Facebook/Apple ocultos) & Formulario Contacto SIC (Ley 1581) con trazabilidad DB |
 
 ## Regla: Serialización de objetos Prisma (OBLIGATORIO)
@@ -360,7 +360,7 @@ return <ActivityCard activity={JSON.parse(JSON.stringify(activity))} />
 1. ¿Este Server Component pasa datos a un 'use client'? → usa un serializer
 2. ¿Hay campos Decimal en el include/select? → 	oNumber() antes de pasar
 3. ¿Hay campos Date? → 	oISOString() antes de pasar
-| v0.13.3 | V27 | Perfil Zero-Crash: prisma-serialize.ts, error boundary /perfil, fix Decimal/Date |
+| v0.16.1 | V27 | Perfil Zero-Crash: prisma-serialize.ts, error boundary /perfil, fix Decimal/Date |
 
 ## Regla: localStorage en Client Components (OBLIGATORIO)
 
@@ -410,4 +410,4 @@ prisma.favorite.findMany({
     }
   }
 })
-\\\`n| v0.13.3 | V27 | useLocalStorage hook, useActivityHistory refactor, Prisma _count rule |
+\\\`n| v0.16.1 | V27 | useLocalStorage hook, useActivityHistory refactor, Prisma _count rule |

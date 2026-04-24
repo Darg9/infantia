@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión actual:** v0.16.0
+**Versión actual:** v0.16.1
 **Última actualización:** 24 de abril de 2026
 
 ## ¿Qué hace?
@@ -14,10 +14,10 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities` | No | Lista actividades con filtros y paginación. **Usa Node TTL Cache (getCachedCount)** para no sobrecargar DB con conteos. |
 | POST | `/api/activities` | No | Crea una actividad |
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
-| PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.9.0) |
-| DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.9.0) |
-| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.16.0). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
-| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.16.0)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
+| PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.16.1) |
+| DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.16.1) |
+| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.16.1). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
+| GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.16.1)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |
 
@@ -35,20 +35,20 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 |---|---|---|---|
 | GET/PUT | `/api/profile` | Sí | Perfil del usuario autenticado (upsert) |
 | PUT | `/api/profile/avatar` | Sí | Sube avatar a Supabase Storage |
-| **GET** | **`/api/profile/me`** | **Sí** | **id, name, cityId, onboardingDone (NUEVO v0.9.1)** |
-| **PATCH** | **`/api/profile/onboarding`** | **Sí** | **Guarda cityId + onboardingDone=true (NUEVO v0.9.1)** |
+| **GET** | **`/api/profile/me`** | **Sí** | **id, name, cityId, onboardingDone (NUEVO v0.16.1)** |
+| **PATCH** | **`/api/profile/onboarding`** | **Sí** | **Guarda cityId + onboardingDone=true (NUEVO v0.16.1)** |
 | GET/PUT | `/api/profile/notifications` | Sí | Preferencias de notificaciones |
 | GET/POST | `/api/children` | Sí | Lista/crea perfiles de hijos |
 | DELETE | `/api/children/:id` | Sí | Elimina perfil de hijo |
-| **GET** | **`/api/cities`** | **No** | **Lista ciudades para onboarding (NUEVO v0.9.1)** |
+| **GET** | **`/api/cities`** | **No** | **Lista ciudades para onboarding (NUEVO v0.16.1)** |
 
 ## Endpoints de providers / claims
 
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
-| **POST** | **`/api/providers/:slug/claim`** | **Sí** | **Solicita reclamación de proveedor + email admin (NUEVO v0.9.1)** |
-| **GET** | **`/api/admin/claims`** | **Admin** | **Lista claims por status (NUEVO v0.9.1)** |
-| **PATCH** | **`/api/admin/claims/:id`** | **Admin** | **Aprobar (isClaimed=true, rol PROVIDER) o rechazar (NUEVO v0.9.1)** |
+| **POST** | **`/api/providers/:slug/claim`** | **Sí** | **Solicita reclamación de proveedor + email admin (NUEVO v0.16.1)** |
+| **GET** | **`/api/admin/claims`** | **Admin** | **Lista claims por status (NUEVO v0.16.1)** |
+| **PATCH** | **`/api/admin/claims/:id`** | **Admin** | **Aprobar (isClaimed=true, rol PROVIDER) o rechazar (NUEVO v0.16.1)** |
 
 ## Endpoints de administración
 
@@ -157,7 +157,7 @@ hybridScore = (textScore × 0.50) + (healthScore × 0.25) + (ctrBoost × 0.15) +
 El boost de CTR (+0.15 de máx), se maneja via pre-integración auditando dominios orgánicos:
 **Cold start safe**: sin eventos acumulados, `ctr = 0` → comportamiento idéntico al sistema previo.
 
-## Modelo Sponsor (NUEVO v0.8.1)
+## Modelo Sponsor (NUEVO v0.16.1)
 
 Gestiona patrocinadores del newsletter. Un sponsor activo (`isActive=true`) se muestra en el email digest entre la lista de actividades y el CTA final.
 
@@ -179,7 +179,7 @@ interface Sponsor {
 **Tabla:** `sponsors` — creada via `scripts/migrate-sponsors.ts` (raw SQL).
 **CRUD:** `/admin/sponsors` (UI) + `/api/admin/sponsors` (API).
 
-## isPremium en Provider (NUEVO v0.8.1)
+## isPremium en Provider (NUEVO v0.16.1)
 
 ```typescript
 // Provider model additions
@@ -238,7 +238,7 @@ Para proteger al proyecto como "Agregador de Información", la página de detall
 2.  Desmiente mediante disclaimers cualquier adjudicación sobre ser autor original del contenido.
 3.  Protege a la marca eliminando certificaciones de viabilidad como sellos estáticos de "Evento Verificado" o "100% Confianza".
 
-## Patrón de Autenticación (Intent Manager) — NUEVO v0.11.0-S55
+## Patrón de Autenticación (Intent Manager) — NUEVO v0.16.1-S55
 
 Todo flujo protegido (favoritos, acciones futuras) usa `requireAuth` del `src/lib/require-auth.ts` como único punto de entrada de auth. No se hacen redirects manuales a `/login`.
 
@@ -261,7 +261,7 @@ IntentResolver.tsx (global en layout, useEffect[])
 
 **toggleFavorite service:** `src/modules/favorites/toggle-favorite.ts` — servicio HTTP reutilizado por `FavoriteButton` e `IntentResolver`. Cero duplicación de lógica.
 
-## Arquitectura Multi-Ciudad (NUEVO v0.16.0)
+## Arquitectura Multi-Ciudad (NUEVO v0.16.1)
 
 El sistema está diseñado para aislar datos geográficamente por ciudad. No existe ningún fallback geográfico implícito en el backend.
 

@@ -1,8 +1,8 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.13.2 | **Fecha:** 2026-04-22
+**Version:** v0.16.1 | **Fecha:** 2026-04-24
 **Framework:** Vitest + @vitest/coverage-v8
-**Threshold:** 85% (cap desde dia 16 del proyecto — 2026-03-31)
+**Threshold:** 85% (cap desde dia 16 del proyecto — 2026-04-24)
 
 ---
 
@@ -18,16 +18,16 @@ Se usan scripts `migrate-*.ts` con `$executeRawUnsafe()` para DDL — sin tests 
 
 | Dia | Fecha | Threshold |
 |-----|-------|-----------|
-| 1 | 2026-03-16 | 30% |
-| 5 | 2026-03-20 | 70% |
-| 7 | 2026-03-22 | 85% (cap) |
-| 16+ | 2026-03-31+ | 85% (mantenido) |
+| 1 | 2026-04-24 | 30% |
+| 5 | 2026-04-24 | 70% |
+| 7 | 2026-04-24 | 85% (cap) |
+| 16+ | 2026-04-24+ | 85% (mantenido) |
 
 Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar bloqueos por gaps estructurales.
 
 ---
 
-## Cobertura actual (v0.11.0-S44)
+## Cobertura actual (v0.16.1-S44)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -40,8 +40,8 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | lib/category-utils | category-utils.test.ts | 100% | 100% | OK |
 | lib/venue-dictionary | venue-dictionary.test.ts | 100% | 100% | OK |
 | lib/expire-activities | expire-activities.test.ts | 100% | 100% | OK |
-| lib/geocoding | geocoding.test.ts | 95% | 95% | OK ← NUEVO v0.9.0 |
-| lib/push | push.test.ts | 94% | 94% | OK ← NUEVO v0.9.0 |
+| lib/geocoding | geocoding.test.ts | 95% | 95% | OK ← NUEVO v0.16.1 |
+| lib/push | push.test.ts | 94% | 94% | OK ← NUEVO v0.16.1 |
 | lib/logger | — | ~85% | ~85% | Sin tests dedicados (Sentry dynamic import dificulta mock) |
 | lib/email/templates/activity-digest | activity-digest.test.tsx | ~95% | 100% | OK |
 | lib/supabase/client | client.test.ts | 100% | 100% | OK |
@@ -67,16 +67,16 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | analytics/metrics | metrics.test.ts | 100% | 100% | OK ← NUEVO S44 (getCTRByDomain, ctrToBoost, cache, fail-safe) |
 | api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK |
 | lib/ratings | — | Sin test dedicado (testeado via ratings API) | — | OK |
-| api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.9.1 (recalcProviderRating mock) |
+| api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.16.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.13.2: >91% stmts / >85% branches / 75 archivos | 1213 tests (2 skipped)**
+**Total v0.16.1: >91% stmts / >85% branches / 75 archivos | 1213 tests (2 skipped)**
 
 ---
 
 ## Escenarios cubiertos por modulo
 
-### lib/email/templates/activity-digest (11 tests — NUEVO v0.8.1+)
+### lib/email/templates/activity-digest (11 tests — NUEVO v0.16.1+)
 - UTM tracking links "Ver detalles": `utm_campaign=digest_daily` y `digest_weekly`
 - UTM tracking CTA "Ver todas las actividades"
 - Link actividad apunta a URL correcta con UTM
@@ -87,14 +87,14 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 - Contenido base: nombre de usuario, cantidad actividades, "hoy" vs "esta semana"
 - Truncado de descripcion a 120 caracteres
 
-### api/admin/sponsors (16 tests — NUEVO v0.8.1+)
+### api/admin/sponsors (16 tests — NUEVO v0.16.1+)
 - GET: retorna lista, ordena por createdAt desc, retorna 401 si no admin
 - POST: crea con datos validos (201), retorna 400 sin campos requeridos, 400 URL invalida, 401 sin admin
 - POST: pasa campaignStart como Date si se proporciona
 - PATCH: actualiza parcialmente, retorna 400 si URL invalida, retorna 401 sin admin
 - DELETE: elimina y retorna ok:true, retorna 401 sin admin
 
-### activities/service (32 tests — actualizado v0.8.1+)
+### activities/service (32 tests — actualizado v0.16.1+)
 - Relevance orderBy: `[{ status: 'asc' }, { provider: { isPremium: 'desc' } }, { sourceConfidence: 'desc' }, { createdAt: 'desc' }]`
 - Resto de filtros: vertical, city, price, age, type, category, audience, search, pagination
 
@@ -125,18 +125,18 @@ npx vitest run <archivo>  # Test especifico
 
 ## Roadmap de pruebas
 
-### Completado hasta v0.11.0-S48
+### Completado hasta v0.16.1-S48
 - ✅ 1056 tests, 69 archivos, todos verdes
 - ✅ date-preflight.test.ts: 17 tests (isPastEventContent, 3 formatos, buffer 14d, conservador)
 - ✅ e2e/health.spec.ts: 5 Playwright tests (/api/health, by_city shape, latencia < 3s)
 
-### Completado hasta v0.11.0-S45
+### Completado hasta v0.16.1-S45
 - ✅ 916 tests, 60 archivos, todos verdes
 - ✅ analytics/metrics.test.ts: 11 tests (getCTRByDomain, ctrToBoost tiers, cache TTL, fail-safe, domain join)
 - ✅ activities/ranking.test.ts +7: ctrBoost default/addition/tiers (S44)
 - ✅ scraping/storage.test.ts +6: adaptive filter batch context, global rule, source rule, Math.max, passing case (S43)
 
-### Completado hasta v0.9.0
+### Completado hasta v0.16.1
 - ✅ 783 tests, 51 archivos, todos verdes
 - ✅ geocoding.ts: 19 tests (venue dict, Nominatim, rate limit, fallbacks, HTTP/network errors)
 - ✅ push.ts: 16 tests (sendPushNotification: success/410/404/500/400/network, sendPushToMany: mixed expiry)
@@ -167,8 +167,8 @@ npx vitest run <archivo>  # Test especifico
 
 | Version | Archivos | Tests | Notas |
 |---|---|---|---|
-| v0.11.0-S48 | 69 | 1056 | Date Preflight, Parser Resiliente |
-| v0.12.0 | 73 | 1203 | Activity Gate, Geographic backfill |
-| v0.13.0 | 73 | 1215 | Design System Enforcement, Chromatic |
-| v0.13.1 | 75 | 1215 | Search Assist System E2E |
-| **v0.13.2** | **75** | **1213+2skip** | **Branding Pipeline; fix searchLog mock en suggestions.test.ts; fix createdAt exacto en ranking.test.ts** |
+| v0.16.1-S48 | 69 | 1056 | Date Preflight, Parser Resiliente |
+| v0.16.1 | 73 | 1203 | Activity Gate, Geographic backfill |
+| v0.16.1 | 73 | 1215 | Design System Enforcement, Chromatic |
+| v0.16.1 | 75 | 1215 | Search Assist System E2E |
+| **v0.16.1** | **75** | **1213+2skip** | **Branding Pipeline; fix searchLog mock en suggestions.test.ts; fix createdAt exacto en ranking.test.ts** |

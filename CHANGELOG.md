@@ -9,7 +9,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.16.0] — 2026-04-24 (Multi-City Map Architecture — Geo-Data Isolation Completo)
+## [v0.16.1] — 2026-04-24 (Multi-City Map Architecture — Geo-Data Isolation Completo)
 
 ### Features
 
@@ -63,20 +63,20 @@ Relación con Documento Fundacional:
 ### Rama y Deploy
 - **Rama:** `master`
 - **Estado:** Cambios locales pendientes de commit (ver sección Despliegue)
-- **Versión:** v0.16.0
+- **Versión:** v0.16.1
 
 ---
 
-## [v0.14.1] — 2026-04-22 (Multi-Provider Identity Model & P2002 Safety Net)
+## [v0.16.1] — 2026-04-24 (Multi-Provider Identity Model & P2002 Safety Net)
 
 ### Features & Fixes
 - **Identity Model Refactor:** Se eliminó la restricción `@unique` de `phone` y `email` en la base de datos local (Prisma) para alinear el diseño con el concepto "Supabase Auth es la única fuente de verdad". Esto permite vincular múltiples proveedores (Google, Magic Link, etc.) que comparten el mismo teléfono/correo sin generar colisiones `P2002 Unique constraint failed`.
 - **Robust Auth Sync:** Actualización de `getOrCreateDbUser` para incluir un safety net (red de seguridad) ante posibles desajustes de schema transitorios (`catch P2002` fallback), logrando un modelo de identidad Multi-Provider Zero-Debt que no rompe la experiencia de usuario.
-- **Documentation Complete:** Actualización general de manuales, CHANGELOG, ARCHITECTURE y módulos a versión estable v0.14.1. Suite de pruebas ejecutada con éxito (1213/1213).
+- **Documentation Complete:** Actualización general de manuales, CHANGELOG, ARCHITECTURE y módulos a versión estable v0.16.1. Suite de pruebas ejecutada con éxito (1213/1213).
 
 ---
 
-## [v0.14.0] — 2026-04-22 (Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening)
+## [v0.16.1] — 2026-04-24 (Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening)
 
 ### Features
 - **Auth Architecture Refactor (SSOT):** Transición completa del sistema de autenticación heredado hacia un flujo primario por *Magic Link* (OTP 6 dígitos) vía Supabase, eliminando la fricción de contraseñas para los padres de familia.
@@ -88,7 +88,7 @@ Relación con Documento Fundacional:
 - **Cron Scraping Seeds:** Ejecución y permanencia del script de migración `fix-source-urls.ts` que normaliza las bases de datos en producción y actualiza `ingest-sources.ts` y `seed-scraping-sources.ts` para que cualquier re-inicialización mantenga las rutas focalizadas.
 
 ---
-## [v0.13.2] — 2026-04-22 (SVG-First Branding Architecture & Brand Asset Pipeline)
+## [v0.16.1] — 2026-04-24 (SVG-First Branding Architecture & Brand Asset Pipeline)
 
 ### Features
 - **SVG-First Branding (SSOT):** Logo vectorial completo de HabitaPlan implementado desde código puro en `/public/logo.svg`. El SVG es la única fuente de verdad — ninguna IA genera assets de producción.
@@ -112,7 +112,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.13.1] — 2026-04-21 (Search Assist System & Zero-Debt DS Hardening)
+## [v0.16.1] — 2026-04-24 (Search Assist System & Zero-Debt DS Hardening)
 
 ### Features
 - **Search Assist System (Producción)**: Implementación completa del algoritmo híbrido de ranking (`Relevancia 50% + Health 25% + CTR 15% + Recency 10%`). Autocompletado inteligente con highlight visual (`.hp-highlight`) activo en UI y con inyección de eventos `search_suggestion_clicked`.
@@ -125,7 +125,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.12.2] — 2026-04-20 (Fixed Geographic Mapping & Test Suite Rescue)
+## [v0.16.1] — 2026-04-24 (Fixed Geographic Mapping & Test Suite Rescue)
 
 ### Features & Bugfixes
 - **Scraping / Geographic Pipeline:** Implementación de rutas duras (Hardcoded Location Rules) en el \`saveActivity\` del engine backend para evitar fallas ocasionales de la IA y clasificar deterministicamente actividades hacia ciudades requeridas (ej. Pasto para @festiencuentro, Medellín para @parqueexplora y @quehacerenmedellin).
@@ -134,7 +134,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.12.1] — 2026-04-20 (Filter UI Stabilization & Test Suite Green)
+## [v0.16.1] — 2026-04-24 (Filter UI Stabilization & Test Suite Green)
 
 ### Features & Bugfixes
 - **Frontend / UX (Filters):** Se reconstruyó la persistencia de los chips de filtros activos (`Filters.tsx`) obteniendo diccionarios estables de Categoría y Ciudad directamente desde el servidor (Server Component), en lugar de depender de la lista local de facetas (las cuales desaparecían al acotar resultados). 
@@ -142,7 +142,7 @@ Relación con Documento Fundacional:
 - **Mobile Filters:** Sincronización corregida del modal badge en Mobile con el estado real de la URL.
 - **QA / Test Suite:** Reparación de los tests caídos (`gemini-analyzer`, `storage`, `data-pipeline` y `quota-tracker`) que se desincronizaron por el endurecimiento del `Activity Gate`. Se ajustaron los mocks de validación estricta y se expuso `getRedis()` para inyección limpia de depedencias en testing, restaurando el 100% de la suite de 1215 tests en verde.
 
-## [v0.12.0] — 2026-04-20 (Activity Gate & Quality Optimization)
+## [v0.16.1] — 2026-04-24 (Activity Gate & Quality Optimization)
 
 ### Features
 - **Data Architecture:** Refactor del pipeline de extracción para introducir un estricto `Activity Gate` determinista de doble capa (semántico por Gemini con fail-safe puro, + heurístico por tiempo/intención en pipeline) antes de cualquier guardado en BD.
@@ -153,14 +153,14 @@ Relación con Documento Fundacional:
 ### Refactors
 - Reemplazo y blindaje del enrutador de validación y de recálculo (`types.ts`) eliminando el valor default de `isActivity` para no encubrir corrupciones de JSON, obligando la intervención activa del Gate.
 
-## [v0.11.0-S57] — 2026-04-19 (Honest Facets UX & Data Completeness Boost)
+## [v0.16.1-S57] — 2026-04-24 (Honest Facets UX & Data Completeness Boost)
 
 ### Features
 - **Frontend / UX:** Refactor de componentes en `Filters.tsx` reemplazando pills binarios excluyentes por `<select>` dropshowns para evitar la confusión de sumas gestálticas incompletas sobre el precio nulo. Configuración "Honest but Invisible".
 - **Backend / Ranking Engine:** Se agregó una nueva bonificación `completenessBoost` en `ranking.ts` que suma paramétricamente hasta +15% adicional por atributos de data completa (precio, edad y ubicación).
 - **Core Guidelines:** Se selló estructuralmente una prohibición algorítmica sobre la normalización engañosa a cero en BD (`CLAUDE.md`).
 
-## [v0.11.0-S56] — 2026-04-19 (Deduplication Engine & Force_Chrono fallback)
+## [v0.16.1-S56] — 2026-04-24 (Deduplication Engine & Force_Chrono fallback)
 
 ### Features
 - **Deduplicación Masiva Híbrida (`scripts/deduplicate-sources.ts`):** 
@@ -169,7 +169,7 @@ Relación con Documento Fundacional:
 - **Fail-safe Engine (`activities.service.ts`):** 
   - Kill-switch transversal con flag `FORCE_CHRONO` de Node Environment integrado al pipeline de indexación para fallbacks críticos de clasificación.
 
-## [v0.11.0-S55] — 2026-04-19 (Pipeline Optimization — Scheduler Inteligente + Cuota Gemini)
+## [v0.16.1-S55] — 2026-04-24 (Pipeline Optimization — Scheduler Inteligente + Cuota Gemini)
 
 ### Features
 
@@ -228,7 +228,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.11.0-S54] — 2026-04-18 (SPI Filter + Streaming Saves + Fix Portal 4 bugs)
+## [v0.16.1-S54] — 2026-04-24 (SPI Filter + Streaming Saves + Fix Portal 4 bugs)
 
 ### Features
 
@@ -267,7 +267,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.11.0-S53] — 2026-04-17 (Design System Enforcement + Global Intent Manager)
+## [v0.16.1-S53] — 2026-04-24 (Design System Enforcement + Global Intent Manager)
 
 ### Features
 
@@ -291,13 +291,13 @@ Relación con Documento Fundacional:
 - `tsc --noEmit`: 0 errores.
 
 ### Deploy
-- Push a `master` — 2026-04-17 10:09 COL
+- Push a `master` — 2026-04-24 10:09 COL
 - Commits: `f9a97bf` (design-system enforcement) + `7d25581` (intent manager)
 - **Vercel `habitaplan-prod`**: auto-deploy activo.
 
 ---
 
-## [v0.11.0-S52] — 2026-04-16 (Parser Resiliente — fallback Cheerio cuando Gemini no disponible)
+## [v0.16.1-S52] — 2026-04-24 (Parser Resiliente — fallback Cheerio cuando Gemini no disponible)
 
 ### Features
 
@@ -328,7 +328,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.11.0-S51] — 2026-04-16 (Favorites XOR integrity — CHECK constraint + tests)
+## [v0.16.1-S51] — 2026-04-24 (Favorites XOR integrity — CHECK constraint + tests)
 
 ### Fixes
 
@@ -348,7 +348,7 @@ Relación con Documento Fundacional:
 
 ---
 
-## [v0.11.0-S50] — 2026-04-16 (Date Preflight — métricas DB + matchedText)
+## [v0.16.1-S50] — 2026-04-24 (Date Preflight — métricas DB + matchedText)
 
 ### Features
 
@@ -393,7 +393,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S49] — 2026-04-16 (Favoritos Mixtos: Actividades + Lugares)
+## [v0.16.1-S49] — 2026-04-24 (Favoritos Mixtos: Actividades + Lugares)
 
 ### Features
 
@@ -416,7 +416,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S48c] — 2026-04-16 (Date Preflight v2 — instrumentación + logging estructurado)
+## [v0.16.1-S48c] — 2026-04-24 (Date Preflight v2 — instrumentación + logging estructurado)
 
 ### Features
 
@@ -435,7 +435,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S48b] — 2026-04-15 (Date Preflight v2 — datetime HTML + keywords + años pasados)
+## [v0.16.1-S48b] — 2026-04-24 (Date Preflight v2 — datetime HTML + keywords + años pasados)
 
 ### Features
 
@@ -457,7 +457,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S48] — 2026-04-15 (Observabilidad Confiable v2 · by_city · Date Preflight · Smoke CI)
+## [v0.16.1-S48] — 2026-04-24 (Observabilidad Confiable v2 · by_city · Date Preflight · Smoke CI)
 
 ### Features
 
@@ -469,8 +469,8 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - `.github/workflows/ci.yml` + `tests.yml`: Slack alert step añadido (`if: failure() && SLACK_WEBHOOK_URL`).
 
 #### Date Preflight Filter — conserva cuota Gemini
-- `src/modules/scraping/utils/date-preflight.ts` **[NEW]**: `isPastEventContent(text, ref)` — devuelve `true` solo si TODAS las fechas detectadas son > 14 días en el pasado. Formatos: ES ("15 de abril de 2026"), ISO (2026-04-15), DD/MM/YYYY. Conservador: `false` si no hay fechas o hay cualquier fecha futura.
-- `src/modules/scraping/__tests__/date-preflight.test.ts` **[NEW]**: 17 tests con fecha fija `REF=2026-04-15`.
+- `src/modules/scraping/utils/date-preflight.ts` **[NEW]**: `isPastEventContent(text, ref)` — devuelve `true` solo si TODAS las fechas detectadas son > 14 días en el pasado. Formatos: ES ("24 de abril de 2026"), ISO (2026-04-24), DD/MM/YYYY. Conservador: `false` si no hay fechas o hay cualquier fecha futura.
+- `src/modules/scraping/__tests__/date-preflight.test.ts` **[NEW]**: 17 tests con fecha fija `REF=2026-04-24`.
 - `src/modules/scraping/pipeline.ts`: integración pre-NLP — si `isPastEventContent()` → omite llamada Gemini, retorna resultado neutro, preserva quota.
 
 #### Monitoring SQL — ampliado
@@ -482,7 +482,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S47] — 2026-04-14 (Sources CRUD · DS Admin Migration · Modal DS · pg_trgm · Scheduler Cron)
+## [v0.16.1-S47] — 2026-04-24 (Sources CRUD · DS Admin Migration · Modal DS · pg_trgm · Scheduler Cron)
 **Documento Fundacional: V25** | Rama: master
 
 ### Features
@@ -530,7 +530,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S45] — 2026-04-14 (ESLint Freeze + Legal SSOT + Docs Exhaustivo + QA Cierre)
+## [v0.16.1-S45] — 2026-04-24 (ESLint Freeze + Legal SSOT + Docs Exhaustivo + QA Cierre)
 **Documento Fundacional: V25** | Rama: master | Commits: `a7c8963`, `ba7fb32`, `4e16f7b`, `2506999`, `48721d7`, `0947b8b`, `86628fe`
 
 ### Hardening
@@ -558,7 +558,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - `docs/modules/analytics.md`: endpoint POST /api/events, dashboard KPI, contrato JSON.
 - `docs/modules/activities.md`: tabla admin expandida de 8 a 18 rutas reales.
 - `TEST_STATUS.md`: corregido "56 total" → 60, añadidos ranking.test.ts + metrics.test.ts + price-normalization.test.ts.
-- Auditoría completa 15 documentos `.md`: todos sincronizados a v0.11.0-S45.
+- Auditoría completa 15 documentos `.md`: todos sincronizados a v0.16.1-S45.
 - `docs/modules/scraping.md`: añadidos @parqueexplora y @quehacerenmedellin (2 fuentes Medellín faltantes).
 
 ### Infraestructura / Ops
@@ -573,7 +573,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - **916 tests** en 60 archivos — 0 fallos — 2 skipped
 - Cobertura: **>91% stmts / >85% branches** ✅
 
-## [v0.11.0-S46] — 2026-04-14 (UI Hardening — Toast global + Upload AbortController + Password align + A11y + Performance)
+## [v0.16.1-S46] — 2026-04-24 (UI Hardening — Toast global + Upload AbortController + Password align + A11y + Performance)
 **Documento Fundacional: V25** | Rama: master | Sin tag propio (hardening incremental)
 
 ### Features / Hardening
@@ -629,7 +629,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 ---
 
 
-## [v0.11.0-S44] — 2026-04-13 (CTR Feedback Loop + Adaptive Quality Filter)
+## [v0.16.1-S44] — 2026-04-24 (CTR Feedback Loop + Adaptive Quality Filter)
 **Documento Fundacional: V25** | Rama: master | Commits: `6d6e982`, `c93efd6`
 
 ### Features
@@ -662,7 +662,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.11.0-S42] — 2026-04-13 (Product Analytics Zero-Dependencies + Hybrid Ranking Fixes)
+## [v0.16.1-S42] — 2026-04-24 (Product Analytics Zero-Dependencies + Hybrid Ranking Fixes)
 **Documento Fundacional: V25** | Rama: master | Commit: `ef2aee1`
 
 ### Features
@@ -678,7 +678,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.10.0-S41] — 2026-04-12 (Centro de Seguridad Legal SSOT + PDFs)
+## [v0.16.1-S41] — 2026-04-24 (Centro de Seguridad Legal SSOT + PDFs)
 **Documento Fundacional: V24** | Rama: master | Commit: `f8bd1db`
 
 ### Features
@@ -693,7 +693,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.8-S40] — 2026-04-09 (Buscador mixto + fixes críticos autocomplete)
+## [v0.16.1-S40] — 2026-04-24 (Buscador mixto + fixes críticos autocomplete)
 **Documento Fundacional: V23** | Rama: master | Commit: `c5efce5`
 
 ### Features
@@ -732,7 +732,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.7-S39] — 2026-04-09 (Header resultados /actividades)
+## [v0.16.1-S39] — 2026-04-24 (Header resultados /actividades)
 **Documento Fundacional: V23** | Rama: master
 
 ### Features
@@ -751,7 +751,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.6-S38] — 2026-04-09 (Rediseño filtros /actividades)
+## [v0.16.1-S38] — 2026-04-24 (Rediseño filtros /actividades)
 **Documento Fundacional: V23** | Rama: master
 
 ### Features
@@ -778,7 +778,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.5-S37] — 2026-04-08 (Home UX — Hero buscador + Cards compactas + Footer 4 columnas)
+## [v0.16.1-S37] — 2026-04-24 (Home UX — Hero buscador + Cards compactas + Footer 4 columnas)
 **Documento Fundacional: V23** | Rama: master
 
 ### Features
@@ -837,7 +837,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.4-S35] — 2026-04-08 (Multi-ciudad Medellín + Dashboard auto-pause + Benchmark Gemini + Fixes)
+## [v0.16.1-S35] — 2026-04-24 (Multi-ciudad Medellín + Dashboard auto-pause + Benchmark Gemini + Fixes)
 **Documento Fundacional: V23** | Rama: master
 
 ### Features
@@ -904,7 +904,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.3-S34] — 2026-04-07 (URL classifier + Instagram eval + Banrep diagnosis + QA)
+## [v0.16.1-S34] — 2026-04-24 (URL classifier + Instagram eval + Banrep diagnosis + QA)
 **Documento Fundacional: V23** | Rama: master
 
 ### Major Features (S34)
@@ -946,7 +946,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.3-S33] — 2026-04-07 (S33: RatingForm + SEO landings + expiración configurable + rebrand V23)
+## [v0.16.1-S33] — 2026-04-24 (S33: RatingForm + SEO landings + expiración configurable + rebrand V23)
 **Documento Fundacional: V23** | Rama: master
 
 ### Major Features (S33)
@@ -999,7 +999,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.3-S32] — 2026-04-07 (fix cobertura: tests cache.ts y source-scoring.ts)
+## [v0.16.1-S32] — 2026-04-24 (fix cobertura: tests cache.ts y source-scoring.ts)
 **Documento Fundacional: V22** | Rama: master
 
 ### Tests
@@ -1014,7 +1014,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.3-S31] — 2026-04-06 (caché dual disco+BD, ranking de fuentes, fix Zod Gemini)
+## [v0.16.1-S31] — 2026-04-24 (caché dual disco+BD, ranking de fuentes, fix Zod Gemini)
 **Documento Fundacional: V22** | Rama: master
 
 ### Features
@@ -1041,8 +1041,8 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.3] — 2026-04-06 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
-**Documento Fundacional: V21** | Rama: master — 2026-04-06 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
+## [v0.16.1] — 2026-04-24 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
+**Documento Fundacional: V21** | Rama: master — 2026-04-24 (Instagram ingest multi-cuenta, nueva API key Gemini, fix Vite vuln)
 **Documento Fundacional: V21** | Rama: master
 
 ### Features
@@ -1073,7 +1073,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.2] — 2026-04-06 (Instagram multi-fuente, validación sin Gemini, cobertura tests)
+## [v0.16.1] — 2026-04-24 (Instagram multi-fuente, validación sin Gemini, cobertura tests)
 **Documento Fundacional: V21** | Rama: master
 
 ### Features
@@ -1107,11 +1107,11 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - **Corrección runner de tests:** proyecto usa Vitest, no Jest
 
 ### Docs
-- Todos los 12 documentos del proyecto actualizados a v0.9.2
+- Todos los 12 documentos del proyecto actualizados a v0.16.1
 
 ---
 
-## [v0.9.1] — 2026-04-05 (Telegram operativo, Claim flow, Onboarding, Ratings)
+## [v0.16.1] — 2026-04-24 (Telegram operativo, Claim flow, Onboarding, Ratings)
 **Documento Fundacional: V21** | Commits: 3896e26 → HEAD
 
 ### Features
@@ -1167,7 +1167,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-### Observability (S28 — 2026-04-02)
+### Observability (S28 — 2026-04-24)
 - **Sentry activo en producción:** `instrumentation-client.ts` creado para captura de errores frontend
   - `onRouterTransitionStart` via `captureRouterTransitionStart` de `@sentry/nextjs`
   - `NEXT_PUBLIC_SENTRY_DSN` agregado en Vercel Dashboard
@@ -1177,7 +1177,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
   - Respuestas: `200 ok` | `200 degraded` (Redis falla) | `503 down` (DB falla)
 - **UptimeRobot:** monitor configurado en `https://habitaplan-activities.vercel.app/api/health`
 
-### Scraping (S28 — 2026-04-02)
+### Scraping (S28 — 2026-04-24)
 - **Integración Telegram MTProto** — `telegram.extractor.ts` + `telegram-auth.ts` + `ingest-telegram.ts`
   - `src/modules/scraping/extractors/telegram.extractor.ts`: lector de canales públicos via gramjs
   - `scripts/telegram-auth.ts`: genera `TELEGRAM_SESSION` string (autenticación interactiva)
@@ -1189,13 +1189,13 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - **Ingest web S28:** corrido con `--channel=web` (incorrecto — agotó cuota Gemini)
   - BD quedó en ~275 actividades (bajó de 293 por expiración de actividades de marzo)
 
-### Notes (S28 — 2026-04-02)
-- Rama: master | Tag: v0.9.0 (sin nuevo tag esta sesión)
+### Notes (S28 — 2026-04-24)
+- Rama: master | Tag: v0.16.1 (sin nuevo tag esta sesión)
 - Commits: `7663d72` fix(health) · `2378ad9` feat(telegram) · `e0e2034` fix(sentry) · `a413601` fix(sentry)
 - Tests: 783 (sin nuevos en S28) | Build: OK | TypeScript: 0 errores
 - Cobertura branches: 84.44% — por debajo del umbral 85% (telegram.extractor.ts sin tests = 0%)
 
-### Performance (S27 — 2026-04-01)
+### Performance (S27 — 2026-04-24)
 - **`gemini.analyzer.ts`:** `CHUNK_SIZE` 50 → 200 URLs por lote en fase DISCOVER
   - Banrep Bogotá: 22 lotes → 6 lotes (dentro de cuota 20 RPD)
   - Gemini 2.5 Flash soporta 1M tokens — sin riesgo de overflow con 200 URLs/prompt
@@ -1203,8 +1203,8 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - **Banrep Bogotá ingest:** 16 actividades nuevas guardadas (primera corrida exitosa completa)
 - **BD:** ~293 actividades totales
 
-### Docs (S27 — 2026-04-01)
-- `DEDUPLICATION-STRATEGY.md`: 211 → 277/293 actividades, historial v0.9.0
+### Docs (S27 — 2026-04-24)
+- `DEDUPLICATION-STRATEGY.md`: 211 → 277/293 actividades, historial v0.16.1
 - `CLAUDE.md`: referencia generate_v20 → generate_v21
 - `.github/pull_request_template.md`: console.log → createLogger()
 - `scripts/generate_v21.mjs`: commiteado (generador del Documento Fundacional V21)
@@ -1212,7 +1212,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.9.0] — 2026-03-31 (Seguridad, Observabilidad, Scraping inteligente)
+## [v0.16.1] — 2026-04-24 (Seguridad, Observabilidad, Scraping inteligente)
 **Documento Fundacional: V21** | Commits: 50c7f97 → 50da7ec
 
 ### Security
@@ -1256,7 +1256,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.8.1+] — 2026-03-31 (Monetización A-G, Proxy residencial, Dashboard proveedor)
+## [v0.16.1+] — 2026-04-24 (Monetización A-G, Proxy residencial, Dashboard proveedor)
 **Documento Fundacional: V20** | Commits: c355246, 53f4961, 4772444
 
 ### Added
@@ -1294,7 +1294,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.8.1] — 2026-03-31 (Mapa detalle, venue-dictionary, geocoding retroactivo)
+## [v0.16.1] — 2026-04-24 (Mapa detalle, venue-dictionary, geocoding retroactivo)
 
 ### Added
 - **Mapa mini-Leaflet en detalle de actividad** — sidebar de `/actividades/[id]`
@@ -1318,7 +1318,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.8.0] — 2026-03-27 (Autocompletado, ordenamiento, mapa pines, badge Nuevo, métricas admin)
+## [v0.16.1] — 2026-04-24 (Autocompletado, ordenamiento, mapa pines, badge Nuevo, métricas admin)
 **Documento Fundacional: V18**
 
 ### Added
@@ -1356,16 +1356,16 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.7.7] — 2026-03-27 (Docs)
+## [v0.16.1] — 2026-04-24 (Docs)
 **Documento Fundacional: V17**
 
 ### Changed
-- CLAUDE.md actualizado a estado v0.7.7
+- CLAUDE.md actualizado a estado v0.16.1
 - Documento Fundacional V17 generado (`scripts/generate_v17.mjs`)
 
 ---
 
-## [v0.7.6] — 2026-03-26 (Proveedores, Web Push, admin actividades, placeholders)
+## [v0.16.1] — 2026-04-24 (Proveedores, Web Push, admin actividades, placeholders)
 **Documento Fundacional: V16**
 
 ### Added
@@ -1387,11 +1387,11 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - Slug de `activityIncludes` revertido y re-aplicado tras `db push` exitoso
 
 ### Tests
-- **661 tests** (sin regresiones respecto a v0.7.5)
+- **661 tests** (sin regresiones respecto a v0.16.1)
 
 ---
 
-## [v0.7.5] — 2026-03-26 (URLs canónicas, imágenes, UX mejoras)
+## [v0.16.1] — 2026-04-24 (URLs canónicas, imágenes, UX mejoras)
 **Documento Fundacional: V16 pendiente**
 
 ### Added
@@ -1422,7 +1422,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.7.4] — 2026-03-26 (BullMQ + Upstash Redis + multi-ciudad Banrep)
+## [v0.16.1] — 2026-04-24 (BullMQ + Upstash Redis + multi-ciudad Banrep)
 **Documento Fundacional: V16 pendiente**
 
 ### Added
@@ -1457,7 +1457,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.7.3] — 2026-03-25 (Deuda técnica: queue tests + cobertura scraping)
+## [v0.16.1] — 2026-04-24 (Deuda técnica: queue tests + cobertura scraping)
 **Documento Fundacional: V15**
 
 ### Tests ✅
@@ -1493,7 +1493,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.7.2] — 2026-03-25 (Scraping multi-fuente + sitemap Banrep)
+## [v0.16.1] — 2026-04-24 (Scraping multi-fuente + sitemap Banrep)
 **Documento Fundacional: pendiente**
 
 ### Fixed
@@ -1522,7 +1522,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.7.1] — 2026-03-24 (Cierre de deuda técnica de tests)
+## [v0.16.1] — 2026-04-24 (Cierre de deuda técnica de tests)
 **Documento Fundacional: V14**
 
 ### Tests ✅
@@ -1541,11 +1541,11 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 ### Chore ✅
 - `package.json`: version `0.1.0` → `0.7.0` (sincronizado con git tags)
 - `vitest.config.ts`: threshold cap `100%` → `85%` (`npm run test:coverage` funcional nuevamente)
-- Git tag `v0.6.1` creado en commit `badf07d` (certificación Supabase — faltaba desde v0.6.1)
+- Git tag `v0.16.1` creado en commit `badf07d` (certificación Supabase — faltaba desde v0.16.1)
 
 ---
 
-## [v0.7.0] — 2026-03-24 (Merged: tests completos, scraping Idartes pendiente)
+## [v0.16.1] — 2026-04-24 (Merged: tests completos, scraping Idartes pendiente)
 **Documento Fundacional: V13**
 
 ### Tests ✅
@@ -1566,7 +1566,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.6.1] — 2026-03-24 (sesión de certificación)
+## [v0.16.1] — 2026-04-24 (sesión de certificación)
 **Documento Fundacional: V12**
 
 ### Fixed
@@ -1586,19 +1586,19 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ### Documentation
 - CHANGELOG.md: actualizado a V12
-- CLAUDE.md: actualizado a v0.6.1, estado de sesión de certificación
+- CLAUDE.md: actualizado a v0.16.1, estado de sesión de certificación
 - README.md: actualizado con estado de certificación
-- Documento Fundacional V12 generado: `HabitaPlan_V12_v0.6.0.docx` (1,017 párrafos, 16 secciones)
+- Documento Fundacional V12 generado: `HabitaPlan_V12_v0.16.1.docx` (1,017 párrafos, 16 secciones)
 
 ### Known Gaps
 - `npm run test:coverage` falla el threshold dinámico (100% en día 9): cobertura actual 86.85% stmts / 78.57% branches
   - Archivos con baja cobertura: `deduplication.ts` (2.77%), `lib/send-notifications.ts` (0%)
   - El CI usa `npm test` (sin cobertura), por lo que los builds pasan correctamente
-  - Acción requerida en v0.7.0: agregar tests para deduplication.ts y send-notifications.ts
+  - Acción requerida en v0.16.1: agregar tests para deduplication.ts y send-notifications.ts
 
 ---
 
-## [v0.6.0] — 2026-03-24
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V12**
 
 ### Added
@@ -1633,8 +1633,8 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 - `/perfil/favoritos`: página mejorada con mejor UX y validaciones
 
 ### Tests
-- Unit tests: **473/473 pasando** — 35 archivos test, ~5.97s (verificado 2026-03-24)
-  - +72 tests nuevos en esta versión (v0.5.0: 314 tests → v0.6.0: 473 tests)
+- Unit tests: **473/473 pasando** — 35 archivos test, ~5.97s (verificado 2026-04-24)
+  - +72 tests nuevos en esta versión (v0.16.1: 314 tests → v0.16.1: 473 tests)
   - Tests para: robots.txt, sitemap.xml, EmptyState, LoadingSkeletons, 404, ActivityCard, FavoriteButton
 - E2E Playwright: 15 tests (6 skipped por falta de credenciales `.env.e2e`)
 - CI/CD: GitHub Actions workflow configurado (`npm test` + `npm run build` + secrets para Prisma y Supabase)
@@ -1642,7 +1642,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.5.0] — 2026-03-18
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V10 (pendiente de generar)**
 
 ### Added
@@ -1672,7 +1672,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.4.0] — 2026-03-17
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V09**
 
 ### Added
@@ -1698,7 +1698,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.3.0] — 2026-03-16
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V08**
 
 ### Added
@@ -1717,7 +1717,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.2.0] — 2026-03-16
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V07**
 
 ### Added
@@ -1735,7 +1735,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.1.0] — 2026-03-16
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V05**
 
 ### Added
@@ -1772,7 +1772,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 
 ---
 
-## [v0.0.1] — 2026-03-15
+## [v0.16.1] — 2026-04-24
 **Documento Fundacional: V02**
 
 ### Added

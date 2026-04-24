@@ -10,6 +10,8 @@ import { createLogger } from '@/lib/logger'
 const logger = createLogger('Auth')
 
 const ENABLE_PHONE_OTP = process.env.NEXT_PUBLIC_ENABLE_PHONE_OTP === 'true'
+const ENABLE_FACEBOOK = process.env.NEXT_PUBLIC_ENABLE_FACEBOOK === 'true'
+const ENABLE_APPLE = process.env.NEXT_PUBLIC_ENABLE_APPLE === 'true'
 
 function LoginForm() {
   const searchParams = useSearchParams()
@@ -36,7 +38,7 @@ function LoginForm() {
 
   const startCooldown = () => setCooldown(60)
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
     setError(null)
     const supabase = createSupabaseBrowserClient()
@@ -130,16 +132,31 @@ function LoginForm() {
         )}
 
         {/* Más opciones colapsadas */}
-        {isApple && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-center text-[var(--hp-text-muted)]"
-            onClick={() => handleOAuth('apple')}
-            disabled={loading || status === 'loading'}
-          >
-            Apple
-          </Button>
+        {(ENABLE_FACEBOOK || (ENABLE_APPLE && isApple)) && (
+          <div className="flex gap-2">
+            {ENABLE_FACEBOOK && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 justify-center text-[var(--hp-text-muted)]"
+                onClick={() => handleOAuth('facebook')}
+                disabled={loading || status === 'loading'}
+              >
+                Facebook
+              </Button>
+            )}
+            {ENABLE_APPLE && isApple && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 justify-center text-[var(--hp-text-muted)]"
+                onClick={() => handleOAuth('apple')}
+                disabled={loading || status === 'loading'}
+              >
+                Apple
+              </Button>
+            )}
+          </div>
         )}
       </div>
 

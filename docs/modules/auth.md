@@ -24,7 +24,7 @@ Este módulo centraliza toda la lógica de autenticación multi-proveedor de Hab
 | Magic Link (email OTP) | ✅ Activo | Método primario de email desde v0.15.0 |
 | Teléfono (SMS OTP) | 🔜 Feature flag | `NEXT_PUBLIC_ENABLE_PHONE_OTP=true` para activar |
 | Facebook | ❌ Oculto | Desactivado temporalmente por UX y revisión |
-| Apple | ✅ Habilitado | Solo visible en dispositivos iOS/Mac |
+| Apple | ❌ Oculto | Desactivado temporalmente por revisión |
 
 ---
 

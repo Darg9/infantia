@@ -10,6 +10,8 @@ const logger = createLogger('Auth')
 
 // Feature flag — activar cuando tengamos proveedor SMS configurado
 const ENABLE_PHONE_OTP = process.env.NEXT_PUBLIC_ENABLE_PHONE_OTP === 'true'
+const ENABLE_FACEBOOK = process.env.NEXT_PUBLIC_ENABLE_FACEBOOK === 'true'
+const ENABLE_APPLE = process.env.NEXT_PUBLIC_ENABLE_APPLE === 'true'
 
 function RegistroForm() {
   const [name, setName] = useState('')
@@ -26,7 +28,7 @@ function RegistroForm() {
     setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
   }, [])
 
-  const handleOAuth = async (provider: 'google' | 'apple') => {
+  const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
     const supabase = createSupabaseBrowserClient()
     const { error: authError } = await supabase.auth.signInWithOAuth({
@@ -141,17 +143,28 @@ function RegistroForm() {
             </Button>
           )}
 
-          <div className="relative my-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[var(--hp-border)]" />
+          {(ENABLE_FACEBOOK || (ENABLE_APPLE && isApple)) && (
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-[var(--hp-border)]" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">Más opciones</span>
+              </div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">Más opciones</span>
-            </div>
-          </div>
+          )}
 
+          {ENABLE_FACEBOOK && (
+            <Button
+              variant="ghost"
+              className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
+              onClick={() => handleOAuth('facebook')}
+            >
+              Continuar con Facebook
+            </Button>
+          )}
 
-          {isApple && (
+          {ENABLE_APPLE && isApple && (
             <Button
               variant="ghost"
               className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"

@@ -4,7 +4,7 @@
 
 export const DATA_TREATMENT_META = {
   title: "Política de Tratamiento de Datos Personales",
-  lastUpdated: "11 de abril de 2026",
+  lastUpdated: "23 de abril de 2026",
   version: "v1.0",
   filename: "tratamiento-datos-habitaplan.pdf",
   brand: "HabitaPlan",

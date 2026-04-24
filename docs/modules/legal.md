@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.14.1
-**Última actualización:** 22 de abril de 2026
+**Versión:** ✅ v0.15.0
+**Última actualización:** 23 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -62,7 +62,7 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 
 Las tres rutas web (`/seguridad/privacidad`, `/seguridad/terminos`, `/seguridad/datos`) y sus PDF descargables consumen los mismos arrays TypeScript. **Imposible desincronización.**
 
-## 🔑 Cumplimiento Legal SSO y Consentimiento Explícito (v0.14.1)
+## 🔑 Cumplimiento Legal SSO y Consentimiento Explícito (v0.15.0)
 
 Con la integración de SSO (Google, Magic Link), se introdujeron mecanismos adicionales de cumplimiento legal:
 

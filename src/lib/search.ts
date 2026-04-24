@@ -14,8 +14,12 @@ const STOPWORDS = new Set([
 export function normalizeSearchQuery(q: string): string {
   if (!q) return '';
   
-  // 1. Lowercase y eliminación de caracteres sueltos conflictivos
-  const raw = q.toLowerCase().replace(/[.,!?;:()]/g, ' ').trim();
+  // 1. Lowercase, NFD normalization para quitar tildes/diacríticos, y eliminación de puntuación
+  const raw = q.toLowerCase()
+               .normalize('NFD')
+               .replace(/[\u0300-\u036f]/g, '')
+               .replace(/[.,!?;:()]/g, ' ')
+               .trim();
   
   // 2. Tokenizar colapsando espacios múltiples
   const tokens = raw.split(/\s+/);

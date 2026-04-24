@@ -17,12 +17,16 @@ describe('normalizeSearchQuery', () => {
   });
 
   it('elimina puntuación conflictiva', () => {
-    expect(normalizeSearchQuery('arte, música!')).toBe('arte música');
+    expect(normalizeSearchQuery('arte, música!')).toBe('arte musica');
   });
 
-  it('elimina stopwords conocidas', () => {
+  it('elimina stopwords conocidas y normaliza NFD', () => {
     expect(normalizeSearchQuery('el taller de arte')).toBe('taller arte');
-    expect(normalizeSearchQuery('los niños y las niñas')).toBe('niños niñas');
+    expect(normalizeSearchQuery('los niños y las niñas')).toBe('ninos ninas');
+  });
+
+  it('normaliza caracteres con tildes y diacríticos (NFD)', () => {
+    expect(normalizeSearchQuery('Bogotá Medellín canción pingüino')).toBe('bogota medellin cancion pinguino');
   });
 
   it('conserva números en los tokens', () => {

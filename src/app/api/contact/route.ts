@@ -1,11 +1,11 @@
 // =============================================================================
-// POST /api/contact — Formulario de contacto
-// Envía el mensaje a info@habitaplan.com via Resend
-// + auto-respuesta al usuario confirmando recepción
+// POST /api/contact — Formulario de contacto (Auditoría SIC)
+// Envía el mensaje a info@habitaplan.com via Resend y guarda log en DB
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
+import { prisma } from '@/lib/db';
 import { createLogger } from '@/lib/logger';
 
 const log    = createLogger('api:contact');
@@ -64,6 +64,34 @@ export async function POST(req: NextRequest) {
   const emailClean   = email.trim().toLowerCase();
   const mensajeClean = mensaje.trim();
   const urlClean     = actividadUrl?.trim() || '';
+
+  // Capturar métricas de auditoría
+  const ip = req.headers.get('x-forwarded-for') || req.ip || '';
+  const userAgent = req.headers.get('user-agent') || '';
+
+  // 1. Guardar SIEMPRE en Base de Datos (Auditoría y Resiliencia)
+  let recordId: string | null = null;
+  try {
+    const record = await prisma.contactRequest.create({
+      data: {
+        name: nombreClean,
+        email: emailClean,
+        category,
+        message: mensajeClean,
+        dataRightType: tipoDerecho || null,
+        status: 'received',
+        emailStatus: 'pending',
+        ip,
+        userAgent,
+      }
+    });
+    recordId = record.id;
+  } catch (err: unknown) {
+    log.error('Fallo al guardar en DB', { error: err instanceof Error ? err.message : String(err) });
+    // Seguimos adelante intentando enviar el email aunque falle DB,
+    // pero idealmente deberíamos fallar si la DB es prioritaria.
+    // Como es auditoría SIC, es mejor intentar que el flujo no bloquee al usuario.
+  }
 
   const motivoLegible = CATEGORY_LABELS[category];
   const derechoLegible = tipoDerecho ? DATA_RIGHT_LABELS[tipoDerecho] || tipoDerecho : null;
@@ -133,8 +161,8 @@ export async function POST(req: NextRequest) {
     </div>
   `;
 
+  // 2. Intentar enviar los emails
   try {
-    // Enviar ambos emails en paralelo
     const [resEquipo, resUser] = await Promise.all([
       resend.emails.send({
         from:     FROM_EMAIL,
@@ -152,15 +180,39 @@ export async function POST(req: NextRequest) {
     ]);
 
     if (resEquipo.error) {
-      log.error('Error enviando email equipo', { error: resEquipo.error, category });
-      return NextResponse.json({ error: 'Error al enviar. Intenta de nuevo o escríbenos a info@habitaplan.com' }, { status: 500 });
+      throw new Error(resEquipo.error.message || 'Error en envío Resend');
     }
 
-    log.info('Contacto recibido', { category, email: emailClean, tipoDerecho });
+    // 3A. Éxito: Actualizar status en DB
+    if (recordId) {
+      await prisma.contactRequest.update({
+        where: { id: recordId },
+        data: { emailStatus: 'sent' }
+      });
+    }
+
+    log.info('Contacto recibido y procesado exitosamente', { category, email: emailClean });
     return NextResponse.json({ ok: true });
+    
   } catch (err: unknown) {
-    const msg = err instanceof Error ? err.message : 'Error desconocido';
-    log.error('Exception en /api/contact', { error: msg });
-    return NextResponse.json({ error: 'Error al enviar. Intenta de nuevo.' }, { status: 500 });
+    const errorMessage = err instanceof Error ? err.message : String(err);
+    log.error('Exception en /api/contact al enviar correo', { error: errorMessage });
+    
+    // 3B. Fallo: Actualizar status en DB con el error
+    if (recordId) {
+      await prisma.contactRequest.update({
+        where: { id: recordId },
+        data: { 
+          emailStatus: 'failed',
+          emailError: errorMessage
+        }
+      }).catch(e => log.error('Fallo al actualizar DB tras error de correo', { error: e }));
+    }
+
+    // Si falló el correo pero se guardó en DB, el usuario no debe quedarse bloqueado,
+    // o al menos podemos responder que hubo un error de envío pero lo recibimos.
+    // Optamos por devolver 500 para que intente de nuevo, ya que en Habeas Data es crítico
+    // que el equipo reciba la alerta.
+    return NextResponse.json({ error: 'Tuvimos un inconveniente enviando la confirmación. Por favor intenta de nuevo.' }, { status: 500 });
   }
 }

@@ -563,3 +563,38 @@ model Event {
   @@index([createdAt])
   @@map("events")
 }
+
+// =============================================================================
+// User Support & Legal (Auditoría SIC)
+// =============================================================================
+
+model ContactRequest {
+  id              String   @id @default(uuid())
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Identificación
+  name            String?  @db.VarChar(255)
+  email           String   @db.VarChar(255)
+
+  // Clasificación
+  category        String   @db.VarChar(50)
+  message         String   @db.Text
+
+  // Habeas Data (opcional)
+  dataRightType   String?  @map("data_right_type") @db.VarChar(50)
+
+  // Estado interno
+  status          String   @default("received") @db.VarChar(50)
+
+  // Auditoría y Envío
+  emailStatus     String   @default("pending") @map("email_status") @db.VarChar(50)
+  emailError      String?  @map("email_error") @db.Text
+  ip              String?  @db.VarChar(50)
+  userAgent       String?  @map("user_agent") @db.Text
+
+  @@index([email])
+  @@index([category])
+  @@index([createdAt])
+  @@index([status])
+  @@map("contact_requests")
+}

@@ -36,7 +36,7 @@ function LoginForm() {
 
   const startCooldown = () => setCooldown(60)
 
-  const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
+  const handleOAuth = async (provider: 'google' | 'apple') => {
     setLoading(true)
     setError(null)
     const supabase = createSupabaseBrowserClient()
@@ -130,28 +130,17 @@ function LoginForm() {
         )}
 
         {/* Más opciones colapsadas */}
-        <div className="flex gap-2">
+        {isApple && (
           <Button
             variant="ghost"
             size="sm"
-            className="flex-1 justify-center text-[var(--hp-text-muted)]"
-            onClick={() => handleOAuth('facebook')}
+            className="w-full justify-center text-[var(--hp-text-muted)]"
+            onClick={() => handleOAuth('apple')}
             disabled={loading || status === 'loading'}
           >
-            Facebook
+            Apple
           </Button>
-          {isApple && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-1 justify-center text-[var(--hp-text-muted)]"
-              onClick={() => handleOAuth('apple')}
-              disabled={loading || status === 'loading'}
-            >
-              Apple
-            </Button>
-          )}
-        </div>
+        )}
       </div>
 
       {/* Divider */}

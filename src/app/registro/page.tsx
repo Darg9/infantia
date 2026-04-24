@@ -26,7 +26,7 @@ function RegistroForm() {
     setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
   }, [])
 
-  const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
+  const handleOAuth = async (provider: 'google' | 'apple') => {
     setLoading(true)
     const supabase = createSupabaseBrowserClient()
     const { error: authError } = await supabase.auth.signInWithOAuth({
@@ -150,13 +150,7 @@ function RegistroForm() {
             </div>
           </div>
 
-          <Button
-            variant="ghost"
-            className="w-full justify-center gap-2 text-[var(--hp-text-secondary)]"
-            onClick={() => handleOAuth('facebook')}
-          >
-            Continuar con Facebook
-          </Button>
+
           {isApple && (
             <Button
               variant="ghost"

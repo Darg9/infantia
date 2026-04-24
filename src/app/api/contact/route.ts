@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
   const urlClean     = actividadUrl?.trim() || '';
 
   // Capturar métricas de auditoría
-  const ip = req.headers.get('x-forwarded-for') || req.ip || '';
+  const ip = req.headers.get('x-forwarded-for') || '';
   const userAgent = req.headers.get('user-agent') || '';
 
   // 1. Guardar SIEMPRE en Base de Datos (Auditoría y Resiliencia)

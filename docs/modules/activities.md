@@ -72,7 +72,20 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | `PATCH/DELETE` | `/api/admin/sponsors/[id]` | Admin | Actualiza/elimina sponsor |
 | `GET` | `/api/admin/claims` | Admin | Lista claims de proveedores |
 | `PATCH` | `/api/admin/claims/[id]` | Admin | Aprueba o rechaza claim |
-| `PUT/DELETE` | `/api/admin/activities/[id]` | Admin | Actualiza/elimina actividad (C-01) |
+| `PUT/DELETE` | `/api/admin/activities/[id]` | Admin | Actualiza/elimina actividad |
+| `GET` | `/api/admin/preflight` | Admin | Métricas Date Preflight — `date_preflight_logs` (S50) |
+| `GET` | `/api/admin/retention-policy` | Admin | Política de retención de actividades expiradas |
+| `GET` | `/api/admin/cities/review` | Admin | Lista ciudades detectadas pendientes de revisión |
+| `POST` | `/api/admin/cities/review/approve` | Admin | Aprueba ciudad detectada |
+| `POST` | `/api/admin/cities/review/reassign` | Admin | Reasigna ciudad detectada a una existente |
+| `GET` | `/api/admin/check-overdue-pqrs` | CRON_SECRET | Audita PQRS vencidas y notifica a `info@habitaplan.com` (cron lun-vie 8am). Usa `RESPONSE_CHANNELS` de `src/lib/pqrs.ts` (S56) |
+| `POST` | `/api/contact` | No | Crea `ContactRequest` PQRS — devuelve ID y confirma acuse de recibo |
+| `POST` | `/api/push/subscribe` | Auth | Suscripción Web Push VAPID |
+| `GET/POST/DELETE` | `/api/legal/terminos/pdf` | No | PDF Términos de Servicio (react-pdf) |
+| `GET/POST/DELETE` | `/api/legal/privacidad/pdf` | No | PDF Política de Privacidad (react-pdf) |
+| `GET/POST/DELETE` | `/api/legal/datos/pdf` | No | PDF Tratamiento de Datos Ley 1581 (react-pdf) |
+| `POST` | `/api/events` | No | Ingesta evento de analytics — `{ type, activityId?, path?, metadata? }`. 204 No Content. |
+| `POST` | `/api/search/log` | No | Registra query de búsqueda en `SearchLog` |
 
 ## 🔌 Contrato API/UI
 

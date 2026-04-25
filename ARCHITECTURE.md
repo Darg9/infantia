@@ -153,10 +153,19 @@ habitaplan/
 │   │           ├── claims/                # Gestión de solicitudes de reclamación (NUEVO v0.16.1)
 │   │           │   └── [id]/             # PATCH approve / reject
 │   │           ├── queue/                 # Estado y encolado de jobs BullMQ
-│   │           ├── analytics/             # Endpoint POST para ingestar eventos de Product Analytics (page_view, clics)
+│   │           ├── analytics/             # Endpoint GET para KPIs últimas 24h por tipo de evento
 │   │           ├── quality/               # Content Quality Dashboard — UI/UX Métricas de ingesta (NUEVO v0.16.1)
+│   │           ├── preflight/             # Date Preflight métricas — date_preflight_logs (S50)
+│   │           ├── source-health/         # SourceHealth scores por dominio
+│   │           ├── sources/               # CRUD extendido de fuentes (url-stats)
+│   │           │   └── url-stats/
+│   │           ├── alerts/                # Alertas adaptive filter
+│   │           ├── retention-policy/      # Política de retención de actividades
+│   │           ├── check-overdue-pqrs/    # Cron lun-vie 8am — audita PQRS vencidos + notifica Resend (S56)
+│   │           ├── cities/
+│   │           │   └── review/            # Revisión y reasignación de ciudades detectadas
 │   │           └── scraping/
-│   │               ├── sources/           # CRUD de fuentes de scraping
+│   │               ├── sources/           # CRUD de fuentes de scraping (toggle activo/pausado)
 │   │               └── logs/              # Historial de ejecuciones
 │   │
 │   ├── modules/                    # Lógica de negocio por dominio
@@ -178,6 +187,11 @@ habitaplan/
 │   │   ├── logger.ts               # createLogger(ctx) — logger estructurado + Sentry (NUEVO v0.16.1)
 │   │   ├── track.ts                # Motor de Analytics In-House con throttle (NUEVO v0.16.1)
 │   │   ├── ratings.ts              # recalcProviderRating() — agrega ratingAvg/Count en Provider (NUEVO v0.16.1)
+│   │   ├── intent-manager.ts       # hp_intent localStorage TTL 15min — captura destino pre-auth (S53)
+│   │   ├── pqrs.ts                 # SSOT PQRS: RESPONSE_CHANNELS, CONTACT_CATEGORIES, PQRS_SLA (S56)
+│   │   ├── url-classifier.ts       # Stage 1+2 filtros deterministas pre-Gemini — 100% cobertura (S34)
+│   │   ├── activity-gate.ts        # evaluateActivityGate() — 5 señales, threshold 0.4 (S56 bug fix)
+│   │   ├── source-scoring.ts       # calcSourceScore(), formatReach(), TIER_LABEL/COLOR (S32)
 │   │   ├── api-response.ts         # Formato estándar de respuesta API
 │   │   ├── validation.ts           # Validaciones comunes con Zod
 │   │   ├── utils.ts                # Utilidades generales
@@ -187,6 +201,7 @@ habitaplan/
 │   │   ├── geocoding.ts            # venue-dictionary → Nominatim → cityFallback → null
 │   │   ├── push.ts                 # Web Push VAPID — sendPushNotification, sendPushToMany
 │   │   ├── expire-activities.ts    # Lógica de expiración de actividades
+│   │   ├── search.ts               # normalizeSearchQuery() — tokenización + stopwords
 │   │   ├── city/                   # [NUEVO v0.16.1]
 │   │   │   └── resolveCity.ts      # resolveCityId() — SSOT URL > localStorage > default
 │   │   ├── email/                  # Templates react-email con UTM tracking + bloque sponsor
@@ -203,30 +218,26 @@ habitaplan/
 ├── sentry.client.config.ts         # Sentry client-side (activo si NEXT_PUBLIC_SENTRY_DSN) (NUEVO v0.16.1)
 ├── .env.example                    # Documentación de las 14+ variables de entorno requeridas
 ├── scripts/                        # Scripts de mantenimiento y scraping
-│   ├── ingest-sources.ts           # Ingesta multi-fuente con canales (NUEVO v0.16.1)
+│   ├── ingest-sources.ts           # Ingesta multi-fuente con canales
 │   │                               #   --list | --channel=web|social|instagram | --source=banrep
 │   │                               #   --save-db | --queue | --dry-run | --max-pages=N
 │   ├── run-worker.ts               # Worker BullMQ (procesa jobs de scraping)
 │   ├── test-scraper.ts             # CLI scraping web (--discover, --save-db, --max-pages)
-│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts, --validate-only) (NUEVO v0.16.1)
+│   ├── test-instagram.ts           # CLI scraping Instagram (--save-db, --max-posts, --validate-only)
 │   ├── ig-login.ts                 # Login manual Instagram → genera ig-session.json
-│   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0 (NUEVO v0.16.1)
+│   ├── backfill-geocoding.ts       # Geocodifica locations con coords 0,0
 │   ├── backfill-images.ts          # Extrae og:image de sourceUrl para actividades sin imagen
-│   ├── migrate-premium.ts          # DDL: isPremium/premiumSince en Provider (raw SQL)
-│   ├── migrate-sponsors.ts         # DDL: tabla sponsors (raw SQL)
-│   ├── migrate-provider-claims.ts  # DDL: tabla provider_claims + enum ClaimStatus (NUEVO v0.16.1)
-│   ├── migrate-onboarding.ts       # DDL: onboardingDone en User, existing users → true (NUEVO v0.16.1)
-│   ├── telegram-auth.ts            # Autenticación MTProto one-time → genera TELEGRAM_SESSION (NUEVO v0.16.1)
-│   ├── ingest-telegram.ts          # Ingesta canales Telegram con Gemini + guardado en BD (NUEVO v0.16.1)
-│   ├── promote-admin.ts            # Da rol ADMIN a un usuario
-│   ├── verify-db.ts                # Reporte de estado de la BD
-│   ├── reclassify-audience.ts      # Reclasifica audiencias con Gemini
-│   ├── expire-activities.ts        # Marca actividades vencidas manualmente
-│   ├── clean-queue.ts              # Limpia jobs BullMQ acumulados
-│   ├── seed-scraping-sources.ts    # Seed de fuentes de scraping
-│   ├── generate_v19.mjs            # Genera Documento Fundacional V19 (.docx)
-│   ├── generate_v20.mjs            # Genera Documento Fundacional V20 (.docx)
-│   └── generate_v21.mjs            # Genera Documento Fundacional V21 (.docx)
+│   ├── telegram-auth.ts            # Autenticación MTProto one-time → genera TELEGRAM_SESSION
+│   ├── ingest-telegram.ts          # Ingesta canales Telegram con Gemini + guardado en BD
+│   ├── source-ranking.ts           # Ranking de fuentes: yield, calidad, histórico (S27)
+│   ├── pause-zero-yield.ts         # Pausa automática de fuentes sin yield [--dry-run] (S56)
+│   ├── query-overdue-pqrs.ts       # Reporte PQRS vencidas por días hábiles (S56)
+│   ├── inspect-biblored-reparse.ts # Diagnóstico cola reparse global por dominio (JSON local)
+│   ├── smoke-test-phase3.ts        # Valida contrato saveActivity() — CREATED/UPDATED/DEDUPE (S57)
+│   ├── promote-admin.ts            # Da rol ADMIN a un usuario por email
+│   ├── verify-db.ts                # Reporte de estado de la BD (actividades, ubicaciones, fuentes)
+│   ├── seed-scraping-sources.ts    # Seed inicial de fuentes de scraping en BD
+│   └── generate_v28.mjs            # Genera Documento Fundacional V28 (.docx)
 │
 ├── prisma/
 │   ├── schema.prisma               # Fuente de verdad del modelo de datos
@@ -234,8 +245,8 @@ habitaplan/
 ├── docs/
 │   └── modules/                    # Documentación funcional por módulo
 ├── data/
-│   ├── scraping-cache.json         # Cache incremental de URLs scrapeadas (~274 URLs)
-│   └── ig-session.json             # Sesión de Instagram — NO está en git
+│   ├── scraping-cache.json         # Cache incremental de URLs scrapeadas (~4.600+ URLs, gitignored)
+│   └── ig-session.json             # Sesión de Instagram — gitignored
 ├── DEDUPLICATION-STRATEGY.md       # Estrategia completa de deduplicación
 └── .agents/
     └── workflows/
@@ -276,21 +287,33 @@ City ── Location ───────────────────�
 | `ProviderClaim` | Solicitud de reclamación de provider por usuario autenticado (NUEVO v0.16.1) |
 | `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
 | `ScrapingLog` | Registro histórico de cada ejecución de scraping |
-| `ContentQualityMetric` | Métricas puras observadas del texto post-scraping: longitud, ruido y stopwords (NUEVO v0.10.x) |
-| `ContactRequest` | Registro forense, SLAs de respuesta (3/15 días hábiles) y estado de envío de correos de contacto para auditoría SIC (NUEVO v0.17.0) |
+| `ContentQualityMetric` | Métricas puras observadas del texto post-scraping: longitud, ruido y stopwords |
+| `ContactRequest` | Registro forense de PQRS con `firstRespondedAt`, `responseChannel`, SLAs 3/15 días hábiles (S56) |
+| `SourceHealth` | Score 0–1 por dominio — actualizado tras cada run, usado en ranking híbrido |
+| `SourcePauseConfig` | Configuración de pausa automática por fuente (S35) |
+| `SourceUrlStats` | Estadísticas de rendimiento por URL de fuente (S47) |
+| `DatePreflightLog` | Registro de ejecuciones del Date Preflight v2 — análisis de 3 capas (S50) |
+| `ScrapingCache` | Cache disco-a-BD de URLs scrapeadas: url, title, source, scrapedAt |
 
 ### Enums clave
 
 ```typescript
 ActivityAudience  → KIDS | FAMILY | ADULTS | ALL
 ActivityType      → RECURRING | ONE_TIME | CAMP | WORKSHOP
-ActivityStatus    → ACTIVE | PAUSED | EXPIRED | DRAFT
+ActivityStatus    → ACTIVE | PAUSED | EXPIRED | DRAFT | DUPLICATE
 PricePeriod       → PER_SESSION | MONTHLY | TOTAL | FREE
 ScrapingPlatform  → WEBSITE | INSTAGRAM | FACEBOOK | TELEGRAM | TIKTOK | X | WHATSAPP
 UserRole          → PARENT | PROVIDER | MODERATOR | ADMIN
 ProviderType      → ACADEMY | INDEPENDENT | INSTITUTION | GOVERNMENT
-ClaimStatus       → PENDING | APPROVED | REJECTED   (NUEVO v0.16.1)
+ClaimStatus       → PENDING | APPROVED | REJECTED
 ```
+
+### Campos nuevos en v0.17.0 (S56)
+
+| Modelo | Campo | Tipo | Propósito |
+|--------|-------|------|-----------|
+| `ContactRequest` | `firstRespondedAt` | `DateTime?` | Timestamp del primer contacto humano (SIC auditoría) |
+| `ContactRequest` | `responseChannel` | `String?` | Canal de respuesta: Email, WhatsApp, Llamada, Presencial |
 
 ### Campos nuevos en v0.16.1
 

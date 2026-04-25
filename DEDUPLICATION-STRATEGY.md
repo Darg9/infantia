@@ -8,7 +8,7 @@
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
 **Estado Actual (v0.17.0-beta — 2026-04-25):**
-- ~307 actividades en DB (132 ACTIVE, 175 EXPIRED)
+- ~357 actividades activas en DB (BibloRed 150+, Idartes 50+, Instagram ~10, otras fuentes)
 - Protección automática integrada en `ScrapingStorage`
 - **Instrumentación Phase 3**: Logs `[DEDUPE_HIT]` para auditoría de colisiones semánticas.
 - **Caché dual:** `ScrapingCache` persiste URLs en BD (`scraping_cache`) + disco.

@@ -165,7 +165,8 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.16.1 | V21 | Instagram 7 cuentas corridas (~23 acts), nueva API key Gemini, fix Vite vuln |
 | v0.16.1 | V25 | Pipeline Scheduler, Deduplication Engine, Observability |
 | v0.16.1 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
-| v0.16.1 | V27 | Design System Zero-Debt, Semantic hp-tokens, Chromatic VRT & Storybook Vite |
+| v0.16.4-beta | V27 | Design System Zero-Debt, Semantic hp-tokens, Trust Layer, Parser Resiliente |
+| v0.17.0-beta | V28 | PQRS Legal (firstRespondedAt/responseChannel), Activity Gate fix, SaveActivityResult, pqrs.ts SSOT — S56+S57 |
 ### Regla para Documento Fundacional
 
 Generar nueva versión del doc cuando:

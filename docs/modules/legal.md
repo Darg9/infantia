@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.16.4-beta
-**Última actualización:** 24 de abril de 2026
+**Versión:** ✅ v0.17.0-beta
+**Última actualización:** 25 de abril de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -15,6 +15,7 @@ Para resolver el problema histórico de desincronización entre lo que se muestr
 | `terms.ts` | Términos de Servicio | Límites de Responsabilidad (Intermediario), Uso apropiado, Propiedad. |
 | `data-treatment.ts` | Tratamiento Datos (Ley 1581) | Principios de privacidad, Tratamiento de datos de **menores**, Autorización. |
 | `legal-disclaimers.ts` | Advertencias UI | Mensajes inyectados en la UI recordando la condición de fuente tercera. |
+| `pqrs.ts` [NUEVO] | Gestión de PQRS | Categorías legales (Acceso, Rectificación, Supresión) y Canales de respuesta. |
 
 ### Flujos UI (`/seguridad/*`) vs Generación PDF (`react-pdf`)
 
@@ -52,10 +53,25 @@ ACTIVITY_DISCLAIMER_SHORT: "La información puede provenir de terceros y estar s
 - Esto se refuerza mediante un Umbral Diferenciado: si una actividad fue ingestada sin IA (Fallback Cheerio), se le exige **confianza superior (0.5 vs 0.3)** y una re-evaluación prioritaria posterior (Scheduler Inteligente).
 - Esto garantiza que solo la metadata validada (ejemplo: categorización mediante 10 buckets estrictos y evaluación del SourceHealth) sea almacenada limpiamente en la Base de Datos PostgreSQL, cuidando los Principios de Calidad del Tratamiento de Datos.
 
-### 5. Auditoría SIC en Peticiones de Contacto (NUEVO v0.16.1)
-- Para cumplir rigurosamente con los artículos 14 y 15 de la Ley 1581 (tiempos de respuesta de 10 y 15 días hábiles), el formulario de contacto clasifica las solicitudes obligatoriamente en tipos de derechos (Acceso, Rectificación, etc.).
-- Toda solicitud de contacto se guarda primero en la tabla `ContactRequest` en Base de Datos capturando IP y User Agent **antes** de despachar cualquier correo electrónico, garantizando trazabilidad y registro forense de recepción aún frente a fallos del proveedor de correo.
-- Se lleva un registro estricto del estado de envío del correo (`emailStatus: 'sent' | 'failed'`).
+### 5. Gestión de PQRS y SLAs (Ley 1581) [ACTUALIZADO v0.17.0]
+Para cumplir rigurosamente con los artículos 14 y 15 de la Ley 1581, Infantia implementa un sistema de monitoreo de SLAs (Service Level Agreements) basado en días hábiles:
+
+- **Tiempos de Respuesta Estrictos**:
+    - **Respuesta Inicial**: Máximo **3 días hábiles** para confirmar recepción y primer contacto.
+    - **Resolución de Consultas**: Máximo **10 días hábiles**.
+    - **Resolución de Reclamos**: Máximo **15 días hábiles**.
+- **Trazabilidad Forense**: La tabla `ContactRequest` registra no solo el mensaje, sino:
+    - `firstRespondedAt`: Marca de tiempo del primer contacto humano.
+    - `resolvedAt` / `resolvedBy`: Quién y cuándo cerró el caso.
+    - `responseChannel`: Medio usado (Email, WhatsApp, etc.).
+- **Alertas Automatizadas (Cron)**: Un proceso de backend (`/api/admin/check-overdue-pqrs`) audita diariamente las peticiones pendientes y notifica a `info@habitaplan.com` si algún caso está por vencer o vencido.
+
+### 6. Versionamiento de Consentimiento Granular [NUEVO v0.17.0]
+Ya no basta con saber *que* un usuario aceptó, sino *qué versión* aceptó. El modelo `User` incluye:
+- `termsVersion`: Versión específica de los Términos de Servicio.
+- `privacyVersion`: Versión específica de la Política de Privacidad.
+- `privacyAcceptedAt`: Timestamp de la última actualización de consentimiento.
+Esto permite forzar una re-aceptación si las políticas cambian sustancialmente (Compliance Audit Ready).
 
 ### 6. Coherencia UI ↔ PDF ↔ SSOT (estado actual)
 

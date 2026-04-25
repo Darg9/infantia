@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.16.4-beta
-**Última actualización:** 24 de abril de 2026
+**Versión:** ✅ v0.17.0-beta
+**Última actualización:** 25 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -14,7 +14,10 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
    - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).
    - **Trust Layer / Cuarentenas**: Las actividades clasificadas con baja confianza o caducidad leve por el guardián editorial se marcan como `PAUSED` (Cuarentena) y son 100% invisibles en la UI pública. Solo se listan actividades en estado `ACTIVE`.
 4. **Detalle de la Actividad**: Resumen unificado por la IA de NLP, protegiendo sobre cargas cognitivas o fotos gigantes cuando el texto es la metadata esencial. Enlaza siempre hacia la ruta saliente `outbound_click`.
-5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) estructurado por la base de datos de manera tipo-segura (XOR foreign keys). Agrupa el inventario en una única vista unificada (`/perfil/favoritos`) con tarjetas visuales polimórficas (identificación visual Actividad/Lugar) sin incurrir en deudas de integridad.
+5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) unificado en `/perfil/favoritos`.
+6. **Centro de Contacto y Soporte (PQRS)**: Infantia garantiza una experiencia de soporte profesional bajo la Ley 1581:
+    - **Confirmación Inmediata**: El usuario recibe acuse de recibo forense.
+    - **SLA de Respuesta**: Máximo 3 días hábiles para primer contacto humano y 15 para resolución definitiva. (NUEVO v0.17.0)
 
 ## 🔍 Punto de Entrada Principal (Search-First UX)
 
@@ -54,6 +57,11 @@ rankingScore = (relevance × 0.5) + (recency × 0.2) + (trustScore × 0.3) + ctr
   | > 15% | +0.08 |
   | > 5% | +0.03 |
   | ≤ 5% | 0 |
+
+### 💎 Estrategia de Suministro Premium (v0.17.0)
+Ante la necesidad de escalar el inventario útil, el producto prioriza fuentes de alto impacto (Premium Cohort):
+- **Curaduría Institucional**: BibloRed, Idartes, Cinemateca, Bogotá.gov, FCE.
+- **Balance de Calidad**: El sistema prefiere 100 actividades de estas fuentes (validadas por el Trust Layer) que 1000 de fuentes genéricas con ruido.
 
 ### Search Hybrid Ranking (Búsqueda Activa)
 

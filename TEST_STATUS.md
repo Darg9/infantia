@@ -1,10 +1,10 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 2026-04-24 | Version: v0.16.4-beta
+Actualizado: 25 de abril de 2026 | Version: v0.17.0-beta
 
-## Resumen Actual (v0.16.4-beta / Trust Layer & Discover Fallback)
-- **Archivos de Test:** 76
-- **Tests Totales:** 1220 (1218 pasan ✅, 2 skipped)
+## Resumen Actual (v0.17.0-beta / SIC Compliance & Phase 3 Audit)
+- **Archivos de Test:** 78
+- **Tests Totales:** 1245 (1243 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
@@ -241,7 +241,7 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.16.1-S55** | **1203** | **73** | **>91%** | **>85%** |
 | **v0.12.x** | **1215** | **75** | **>91%** | **>85%** |
 | **v0.16.1** | **1214** | **75** | **>91%** | **>85%** |
-| **v0.16.1** | **1214** | **75** | **>91%** | **>85%** |
+| **v0.17.0** | **1245** | **78** | **>91%** | **>85%** |
 
 ## Cambios en v0.16.1 (Multi-City Map Architecture)
 
@@ -340,3 +340,15 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
   - `lib/__tests__/ratings.test.ts` (3 tests) — recalcProviderRating, null avg, propagación errores
 - `lib/ratings.ts`: cobertura 0% → 100%
 - Branches: 84.91% → 85.18% ✅ (recovery del umbral por ratings.ts sin cobertura)
+
+## Cambios en v0.17.0 (SIC Compliance & Phase 3 Audit)
+
+- **Restauración de Regresiones**:
+    - `activity-gate.test.ts` (25 tests): Restaurados para prevenir el bug de hostname (EndsWith logic) y falsos positivos institucionales.
+- **Validación de Persistencia**:
+    - `smoke-test-phase3.ts` (NUEVO): Script de validación E2E para el refactor de `saveActivity` (objetos estructurados).
+- **Compliance Audit**:
+    - Manual Check: Verificación del Cron `/api/admin/check-overdue-pqrs` para SLAs de 3/15 días.
+- **Instrumentación**:
+    - Logs `[BATCH:SUMMARY]` y `[DEDUPE_HIT]` validados en `storage.ts`.
+- TypeScript: 0 errores ✅ | Coverage: Mantenido >85% branches ✅

@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.16.4-beta
-**Última actualización:** 24 de abril de 2026
+**Versión actual:** v0.17.0-beta
+**Última actualización:** 25 de abril de 2026
 
 ## ¿Qué hace?
 
@@ -77,17 +77,23 @@ evaluateActivityGate(data, url)   [NUEVO v0.16.1 — Doble capa semántica + heu
     └─ Emite log diferencial: `[discard:llm]` vs `[discard:gate]` para métricas de `llm_rejection_rate`.
     │
     ▼
-ScrapingStorage.saveActivity()
-    ├─ Streaming Saves [S54]: cada actividad validada se guarda instantáneamente, sin esperar al final del chunk.
-    ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
-    ├─ Threshold Diferenciado [S55]: Gemini entra con trust >=0.3, Fallback Cheerio >=0.5 (minimiza ruido institucional).
-    └─ Upsert Activity (sourceUrl como clave)
-        ├─ PUBLISH    → status: ACTIVE
-        ├─ QUARANTINE → status: PAUSED
-        └─ REJECT     → no persiste (discarded)
+ScrapingStorage.saveActivity() [ACTUALIZADO v0.17.0]
+    ├─ Streaming Saves [S54]: cada actividad validada se guarda instantáneamente.
+    ├─ Deduplicación Semántica: Jaccard >75% + ventana ±30 días.
+    │   └─ Si hay colisión: Emite `[DEDUPE_HIT]` con trace de fuentes (auditoría Phase 3).
+    ├─ Threshold Diferenciado: Gemini trust >=0.3, Fallback Cheerio >=0.5.
+    └─ Persistencia Estructurada: Retorna `{ id, action }` para trazabilidad exacta.
+        ├─ action: CREATED_ACTIVE / CREATED_PAUSED (Cuarentena)
+        ├─ action: UPDATED_ACTIVE / UPDATED_PAUSED
+        └─ action: DEDUPE_SKIPPED (No persiste, reutiliza ID)
     │
     ▼
-ScrapingCache.save() + ScrapingCache.saveToDb() + ScrapingLogger.completeRun()
+ScrapingStorage.saveBatchResults() [NUEVO SUMMARY v0.17.0]
+    ├─ Acumula métricas en tiempo real del lote procesado.
+    └─ Emite `[BATCH:SUMMARY]` con desglose de: creadas, actualizadas, pausadas y omitidas.
+    │
+    ▼
+ScrapingCache.save() + ScrapingLogger.completeRun()
    → Normalización Base (Spam/Reglas Cortas/Validation) Vía Data Pipeline Core v1
    → Geocoding: venue-dictionary.ts (~0ms) → Nominatim → cityFallback → null
    → ScrapingStorage.saveActivity() con deduplicación Jaccard >75%
@@ -280,11 +286,11 @@ npx tsx scripts/ingest-sources.ts --channel=instagram       # solo Instagram
 npx tsx scripts/ingest-sources.ts --source=banrep --save-db
 npx tsx scripts/ingest-sources.ts --source=banrep,cinemateca --save-db
 
-# Combinado (canal + fuente)
-npx tsx scripts/ingest-sources.ts --channel=web --source=banrep --save-db
+# Ingesta masiva (Premium Cohort - Recomendado)
+npx tsx scripts/ingest-sources.ts --source=biblored,idartes,cinemateca,culturarecreacionydeporte,fce --save-db
 
-# Dry run (descubre pero NO guarda)
-npx tsx scripts/ingest-sources.ts --dry-run
+# Smoke Test (Validación de Refactor Phase 3)
+npx tsx scripts/smoke-test-phase3.ts
 
 # Ingesta via queue BullMQ (asíncrona)
 npx tsx scripts/ingest-sources.ts --queue

@@ -1,7 +1,7 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.16.4-beta
-**Última actualización:** 24 de abril de 2026
+**Versión:** ✅ v0.17.0-beta
+**Última actualización:** 25 de abril de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
 
@@ -50,7 +50,18 @@ El sistema de Analytics opera sobre dos modelos de base de datos separados estru
 ### Regla de separación
 - Eventos de UI van a `Event` (vía `POST /api/events`).
 - Consultas de texto van a `SearchLog` (vía `POST /api/search/log`).
-- **Nunca mezclar ambos modelos.** `SearchLog` NO es parte del funnel de conversión, es un subsistema de inteligencia de demanda e inventario.
+
+### Analítica Operativa e Ingesta (NUEVO v0.17.0)
+A diferencia de los eventos de usuario, el pipeline de ingesta genera métricas de **Salud del Suministro** (Supply Health) que permiten diagnosticar "fugas" de inventario:
+
+1. **Batch Summary (`[BATCH:SUMMARY]`)**: Agregación en tiempo real por lote de:
+    - `created` vs `updated`: Tasa de crecimiento vs mantenimiento.
+    - `quarantined`: Impacto del Trust Layer.
+    - `dedupe_hit`: Tasa de colisión semántica (Duplicados).
+2. **Dedupe Trace (`[DEDUPE_HIT]`)**: Log de auditoría que correlaciona fuentes colisionadas. Permite ajustar el umbral de Jaccard (>75%) basándose en la tasa de falsos positivos detectados.
+3. **Operational Metrics (Admin Dashboard)**: Las métricas de `ContentQualityMetric` (Ruido, Longitud, Stopwords) alimentan el Quality Dashboard para alertar sobre fuentes degradadas.
+
+---
 
 ## ⚙️ Arquitectura Técnica de Ingesta
 

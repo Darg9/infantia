@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.16.4-beta | Actualizado: 2026-04-24
+> Versión: v0.17.0-beta | Actualizado: 25 de abril de 2026
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -62,6 +62,7 @@ flowchart TD
        Enriquecimiento --> AdaptiveFilter[Adaptive Quality Filter]
        AdaptiveFilter --> |"minLength = max(global, source)"| TrustLayer[Trust Layer / Publish Validator]
        TrustLayer --> |"REJECT (Discard) / QUARANTINE (PAUSED) / PUBLISH (ACTIVE)"| StorageLayer[Storage + Deduplication]
+       StorageLayer --> |"DEDUPE_HIT Trace + BATCH:SUMMARY"| DB
     end
 
     StorageLayer --> DB
@@ -276,7 +277,7 @@ City ── Location ───────────────────�
 | `ScrapingSource` | Fuente configurada: URL, plataforma, cron, estado del último run |
 | `ScrapingLog` | Registro histórico de cada ejecución de scraping |
 | `ContentQualityMetric` | Métricas puras observadas del texto post-scraping: longitud, ruido y stopwords (NUEVO v0.10.x) |
-| `ContactRequest` | Registro forense y estado de envío de correos de contacto para auditoría SIC (NUEVO v0.16.1) |
+| `ContactRequest` | Registro forense, SLAs de respuesta (3/15 días hábiles) y estado de envío de correos de contacto para auditoría SIC (NUEVO v0.17.0) |
 
 ### Enums clave
 
@@ -380,11 +381,14 @@ evaluateActivityGate(data, url)   [NUEVO S58 — Activity Gate]
     └─ Emite diferencial de trazabilidad `[discard:llm]` vs `[discard:gate]`
     │
     ▼
-ScrapingStorage.saveActivity()
-    ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
-    ├─ Crea / reutiliza Provider por hostname
-    ├─ Mapea categorías de Gemini a categorías existentes en BD
-    └─ Upsert Activity (sourceUrl como clave)
+    ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días. Emite `[DEDUPE_HIT]` log.
+    ├─ Crea / reutiliza Provider por hostname.
+    ├─ Mapea categorías de Gemini a categorías existentes en BD.
+    └─ Upsert Activity con retorno estructurado `{ id, action }`.
+    │
+    ▼
+ScrapingStorage.saveBatchResults() [NUEVO v0.17.0]
+    └─ Emite `[BATCH:SUMMARY]` con métricas de creación/actualización/cuarentena.
     │
     ▼
 ScrapingCache.save() + ScrapingCache.saveToDb() + ScrapingLogger.completeRun()

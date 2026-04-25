@@ -7,11 +7,11 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.16.4-beta — 2026-04-24):**
-- ~275 actividades en DB
+**Estado Actual (v0.17.0-beta — 2026-04-25):**
+- ~307 actividades en DB (132 ACTIVE, 175 EXPIRED)
 - Protección automática integrada en `ScrapingStorage`
-- 20 web + 12 Instagram (10 Bogotá + 2 Medellín) + 1 Telegram — sistema de canales (`web`, `instagram`, `telegram`, `tiktok`, `facebook`)
-- **Caché dual:** `ScrapingCache` persiste URLs en BD (`scraping_cache`) + disco — evita re-scrapear entre máquinas
+- **Instrumentación Phase 3**: Logs `[DEDUPE_HIT]` para auditoría de colisiones semánticas.
+- **Caché dual:** `ScrapingCache` persiste URLs en BD (`scraping_cache`) + disco.
 
 ---
 
@@ -40,11 +40,16 @@ async saveActivity() {
 - **Ventana de fechas:** ±30 días
 - **Búsqueda:** Últimas 100 actividades (rápida)
 
-### Logs Automáticos
+### Logs de Auditoría (Phase 3 Trace) [NUEVO v0.17.0]
+Para detectar si estamos siendo "demasiado agresivos" y perdiendo inventario legítimo, el sistema emite un log detallado por cada colisión:
+
 ```
-[STORAGE] ⚠️ Duplicado detectado: "Título nuevo" es similar a "Título existente"
-          Reutilizando ID existente: [UUID]
+[DEDUPE_HIT] ⚠️ Colisión semántica detectada:
+  - Entrante: [Provider A] "Taller de Pintura" (URL_A)
+  - Existente: [Provider B] "Taller de Arte" (URL_B)
+  - Similitud: 82% | Reutilizando ID: [UUID]
 ```
+Este log permite auditar si el sistema está colapsando eventos de diferentes fuentes (ej: Idartes vs BibloRed) que deberían coexistir.
 
 ---
 
@@ -306,4 +311,5 @@ A: Sí, basta comentar la lógica en `storage.ts` para Nivel 1, o desactivar el 
 - **2026-04-24 (v0.16.1)**: Activity Gate doble capa (LLM + Heurístico). Backfill geográfico 86% cobertura. 1203 tests.
 - **2026-04-24 (v0.16.1)**: Search Assist System E2E. Hybrid Ranking documentado. Design System Zero-Debt. 1215 tests.
 - **2026-04-24 (v0.16.1)**: SVG-First Branding SSOT. Brand Asset Pipeline en build. Mobile Header fix. Test suite repair (suggestions mock + ranking). 1213/1215 tests (2 skip).
+- **2026-04-25 (v0.17.0)**: **Blindaje SIC & Auditoría Phase 3**. SLAs de PQRS (3/15 días), versionamiento de consentimiento (`User.termsVersion`). Instrumentación de persistencia: `[BATCH:SUMMARY]` y `[DEDUPE_HIT]` trace. Refactor de retorno estructurado en `saveActivity`.
 - **[Futuro]**: Reportes semanales, alertas automáticas, dashboard web.

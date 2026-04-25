@@ -131,15 +131,15 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 0, after: 120 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "2026-04-23", size: 24, font: "Arial", color: "777777" })],
+  children: [new TextRun({ text: "2026-04-24", size: 24, font: "Arial", color: "777777" })],
   alignment: AlignmentType.CENTER, spacing: { before: 0, after: 80 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Sesiones S43-S68 — Design System Zero-Debt, Magic Link Auth, Multi-City Map Fase 1, v0.15.0", size: 20, font: "Arial", color: "999999", italics: true })],
+  children: [new TextRun({ text: "Sesiones S55-S56 — Activity Gate fix, PQRS Legal Compliance (Ley 1581), SSOT pqrs.ts", size: 20, font: "Arial", color: "999999", italics: true })],
   alignment: AlignmentType.CENTER, spacing: { before: 0, after: 1200 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Generado automaticamente por Claude (Anthropic) | HabitaPlan v0.15.0 | 1214 tests | 75 archivos | 0 errores TS", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
+  children: [new TextRun({ text: "Generado automaticamente por Claude (Anthropic) | commits be344e1...133e00d | 1244 tests | 77 archivos | 0 errores TS", size: 18, font: "Arial", color: "BBBBBB", italics: true })],
   alignment: AlignmentType.CENTER,
 }));
 children.push(new Paragraph({ children: [new PageBreak()] }));
@@ -315,19 +315,20 @@ children.push(twoColTable(
   ]
 ));
 children.push(spacer());
-children.push(subHeading("6.2 Fuentes activas (v0.15.0, 2026-04-23)"));
+children.push(subHeading("6.2 Fuentes activas (v0.16.x, 2026-04-24)"));
 children.push(twoColTable(
   ["Ciudad / Fuente", "Canal / Estado"],
   [
-    ["Bogota — BibloRed", "Web — ~150 actividades activas"],
-    ["Bogota — Idartes, Sec. Cultura, Alcaldia, Planetario, Cinemateca, JBB, Banrep, FCE, FUGA Filarmonica", "Web — ~100+ actividades combinadas"],
+    ["Bogota — BibloRed", "Web — ~150+ actividades activas"],
+    ["Bogota — Idartes, Sec. Cultura, Alcaldia, Planetario, Cinemateca, JBB, Banrep, FCEx3, FUGA Filarmonica", "Web — ~150+ actividades combinadas. FCE: 3 URLs actualizadas en BD (S56)"],
     ["Bogota — 10 cuentas Instagram", "Instagram (Playwright) — activas"],
-    ["Medellin — Parque Explora", "Web — sitemap activo"],
-    ["Medellin — Biblioteca Piloto", "Web — sitemap activo"],
+    ["Medellin — Parque Explora", "Web — sitemap activo. Flag PING habilitado"],
+    ["Medellin — Biblioteca Piloto", "Web — PAUSADA (0 yield). Revision manual pendiente"],
     ["Medellin — @parqueexplora, @quehacerenmedellin", "Instagram — validadas, operativas"],
     ["Banrep — 8 ciudades adicionales", "Web — Cali, Barranquilla, Cartagena, Bucaramanga, etc."],
     ["Telegram — @quehaypahacer", "Telegram MTProto via gramjs — pendiente ingest real (bloqueo ISP)"],
     ["Banrep Ibague", "PAUSADA — score 13/100, cuota Gemini insuficiente"],
+    ["@distritojovenbta", "PAUSADA — 0 yield. Revision manual pendiente"],
   ]
 ));
 children.push(spacer());
@@ -344,11 +345,13 @@ children.push(bodyParagraph("Threshold: >14 dias en el pasado → skip Gemini (e
 children.push(bodyParagraph("savePreflightLog() fire-and-forget — persiste metricas en table date_preflight_logs sin bloquear el pipeline.", { bullet: true }));
 children.push(bodyParagraph("[DATE-PREFLIGHT:SUMMARY] por batch: urls_checked, skipped_past, passed, ambiguous.", { bullet: true }));
 children.push(spacer());
-children.push(subHeading("6.5 Activity Gate (NUEVO V28, S58)"));
+children.push(subHeading("6.5 Activity Gate — con fix hostname (S56)"));
 children.push(bodyParagraph("evaluateActivityGate(data, url) entre parseActivity y saveActivity — capa de calidad post-NLP.", { bullet: true }));
 children.push(bodyParagraph("Rechaza si: Gemini declaro isActivity !== true + no hay intencion deterministica de evento.", { bullet: true }));
 children.push(bodyParagraph("Detecta falsos positivos institucionales: Gestion, Noticias, Directorio, Politica, Informe.", { bullet: true }));
 children.push(bodyParagraph("Trazabilidad diferenciada: [discard:llm] cuando Gemini lo rechazo; [discard:gate] cuando la heuristica lo rechazo.", { bullet: true }));
+children.push(bodyParagraph("FIX S56 — Bug hostname substring corregido: hostname.includes(domain) → hostname === domain || hostname.endsWith('.' + domain). cinematecadebogota.gov.co ya no matcheaba erroneamente con bogota.gov.co.", { bullet: true }));
+children.push(bodyParagraph("FCE allowlists actualizadas: /programacion-cultural, /talleres-a-fondo, /concursos. bogota.gov.co: /que-hacer/agenda-cultural, /mi-ciudad/cultura-recreacion-y-deporte.", { bullet: true }));
 children.push(spacer());
 
 // ── SECTION 7: MULTI-CITY MAP (NUEVO V28) ───────────────────────────────────
@@ -448,9 +451,37 @@ children.push(twoColTable(
     ["Politica de menores de edad", "LISTO — consentimiento parental en Child model + clausula en los 3 documentos SSOT"],
     ["PDF descargable", "LISTO — /api/legal/privacidad/pdf + /terminos/pdf + /datos/pdf (server-side)"],
     ["Email auth (SPF+DKIM+DMARC)", "LISTO — SPF: zoho.com + resend.com. DKIM via send.habitaplan.com. DMARC p=reject. Gmail PASS"],
+    ["PQRS cron alertas (Ley 1581)", "ACTIVO — check-overdue-pqrs lun-vie 8am. Null-fire. Email Resend a info@habitaplan.com"],
+    ["Retencion de datos", "ACTIVO — cron semanal: logs 90d, IPs anon 1yr, PQRS 24-36 meses segun categoria"],
+    ["Versionado de consentimientos", "ACTIVO — User.termsVersion + privacyVersion + privacyAcceptedAt. Prueba contractual ante SIC"],
     ["Registro SIC RNBD", "PENDIENTE — registrar en https://rnbd.sic.gov.co (Denys)"],
   ]
 ));
+children.push(spacer());
+
+// ── SECTION 10.5: PQRS LEGAL COMPLIANCE (S56) ───────────────────────────────
+children.push(subHeading("10.5 PQRS Legal Compliance — SIC Ley 1581 (S56)"));
+children.push(bodyParagraph("src/lib/pqrs.ts — SSOT unico para valores controlados PQRS. No duplicar en endpoints ni componentes.", { bullet: true }));
+children.push(bodyParagraph("RESPONSE_CHANNELS as const: email | phone | whatsapp | manual | platform. Tipo: ResponseChannel.", { bullet: true }));
+children.push(bodyParagraph("CONTACT_CATEGORIES as const: general | content_removal | data_access | data_claim | report_error | other.", { bullet: true }));
+children.push(bodyParagraph("PQRS_SLA: Record<ContactCategory, {alertAt, limit}>. data_access D10, data_claim D15, general D5.", { bullet: true }));
+children.push(bodyParagraph("Patron Zod para panel admin (pendiente): z.enum(RESPONSE_CHANNELS) y z.enum(CONTACT_CATEGORIES) — ver JSDoc en pqrs.ts.", { bullet: true }));
+children.push(bodyParagraph("GET /api/admin/check-overdue-pqrs — cron lun-vie 8am (Vercel). Protegido por CRON_SECRET.", { bullet: true }));
+children.push(bodyParagraph("Null-fire: solo envia email si hay al menos 1 alerta (WARNING | DUE_TODAY | OVERDUE). Sin spam si todo al dia.", { bullet: true }));
+children.push(bodyParagraph("Email HTML a info@habitaplan.com via Resend: tabla color-coded, dias habiles calculados (lun-vie, sin festivos).", { bullet: true }));
+children.push(bodyParagraph("ContactRequest.firstRespondedAt (DateTime?) + responseChannel (String? VarChar 50) — agregados en migracion S56.", { bullet: true }));
+children.push(spacer());
+
+// ── SECTION 10.6: RETENCION DE DATOS SIC (Antigravity session) ──────────────
+children.push(subHeading("10.6 Politica de Retencion de Datos (SIC — sesion Antigravity)"));
+children.push(bodyParagraph("GET /api/admin/retention-policy — cron semanal (Vercel). Protegido por CRON_SECRET.", { bullet: true }));
+children.push(bodyParagraph("SearchLogs / ScrapingLogs: eliminacion fisica despues de 90 dias.", { bullet: true }));
+children.push(bodyParagraph("Direcciones IP / User-Agents: anonimizacion automatica [ANONYMIZED] en tablas de analitica tras 1 ano.", { bullet: true }));
+children.push(bodyParagraph("PQRS cerradas (categorias comunes): eliminacion a los 24 meses.", { bullet: true }));
+children.push(bodyParagraph("PQRS cerradas (Habeas Data — data_access, data_claim): eliminacion a los 36 meses.", { bullet: true }));
+children.push(bodyParagraph("ContactRequest: resolvedAt (DateTime?), resolvedBy (String?), statusChangedAt (DateTime?) — trazabilidad de quien resolvio y cuando.", { bullet: true }));
+children.push(bodyParagraph("User: termsVersion (String?), privacyVersion (String?), privacyAcceptedAt (DateTime?) — prueba contractual inmutable de que version acepto el usuario.", { bullet: true }));
+children.push(bodyParagraph("scripts/cron-retention-policy.ts — script ejecutado por el cron. scripts/query-overdue-pqrs.ts para reporte manual.", { bullet: true }));
 children.push(spacer());
 
 // ── SECTION 11: MODELO DE DATOS ──────────────────────────────────────────────
@@ -467,7 +498,8 @@ children.push(twoColTable(
     ["Category", "name, slug, description, parentId (arbol jerarquico)"],
     ["ActivityCategory", "Relacion N:M Activity <-> Category"],
     ["Vertical", "name, slug (kids, mascotas, etc.) — configurable por BD"],
-    ["User", "supabaseAuthId, name, email, role, avatarUrl, onboardingDone, cityId"],
+    ["User", "supabaseAuthId, name, email, role, avatarUrl, onboardingDone, cityId, termsVersion, privacyVersion, privacyAcceptedAt"],
+    ["ContactRequest", "PQRS: category, status, email, message, createdAt, firstRespondedAt, responseChannel, resolvedAt, resolvedBy, statusChangedAt"],
     ["Child", "name, birthDate, gender, consentGivenAt, consentGivenBy, consentText"],
     ["Favorite", "userId, activityId?, locationId? — XOR CHECK constraint (solo uno puede ser no-null)"],
     ["Rating", "calificacion 1-5 estrellas + comentario opcional — una por usuario por actividad"],
@@ -505,7 +537,7 @@ children.push(subHeading("12.4 GitHub Actions CI/CD"));
 children.push(twoColTable(
   ["Workflow", "Descripcion"],
   [
-    ["CI principal (en cada push a master)", "Tests (Vitest 1214) + build + TypeScript check. Rechaza si coverage < 85% branches"],
+    ["CI principal (en cada push a master)", "Tests (Vitest 1244) + build + TypeScript check. Rechaza si coverage < 85% branches"],
     ["Chromatic VRT (en cada PR)", "Visual Regression Testing automatico via Storybook. Detecta regresiones de UI"],
     ["Smoke CI (*/15 * * * *)", "Ping /api/health — retry 3 + backoff 5s + Slack alert si falla"],
     ["Playwright E2E (en cada push)", "19 tests: auth, actividades, favoritos. Bloqueante en CI"],
@@ -568,38 +600,44 @@ children.push(twoColTable(
 children.push(spacer());
 
 // ── SECTION 15: ESTADO ACTUAL ────────────────────────────────────────────────
-children.push(sectionHeading("15. ESTADO ACTUAL — v0.15.0 (2026-04-23)"));
+children.push(sectionHeading("15. ESTADO ACTUAL — v0.16.x (2026-04-24)"));
 children.push(twoColTable(
   ["Metrica", "Valor"],
   [
-    ["Actividades en BD", "~275 actividades activas + expiradas (cron diario de expiracion activo)"],
+    ["Actividades en BD", "~300+ actividades activas (BibloRed 150+, Idartes, Alcaldia, Banrep, FCEx3, Cinemateca, Instagram ~10, etc.)"],
     ["Locations geocodificadas", "29/29 con coordenadas reales (lat/lng != 0)"],
-    ["Tests", "1214 tests en 75 archivos — 100% pasando (1212 passed, 2 skipped)"],
-    ["Cobertura", ">91% stmts / >85% branches (umbral 85% superado) / >88% funcs"],
-    ["TypeScript", "0 errores (tsc --noEmit)"],
-    ["npm audit", "3 moderate en @prisma/dev (dev-only, no produccion — mantener hasta Prisma fix)"],
+    ["Tests", "1244 tests en 77 archivos — 100% pasando. 0 errores TypeScript"],
+    ["Cobertura", ">85% branches (umbral cumplido) / >87% stmts / >88% funcs"],
+    ["TypeScript", "0 errores (tsc --noEmit) — tsc strict activado"],
+    ["npm audit", "3 moderate en @prisma/dev (dev-only, no produccion — NO aplicar --force)"],
     ["Build", "OK — sin warnings criticos. prisma generate incluido en build script"],
-    ["Deployment", "Vercel ACTIVO en habitaplan.com — auto-deploy desde master"],
-    ["Design System", "Storybook + Chromatic VRT activo en GitHub Actions"],
+    ["Deployment", "Vercel ACTIVO en habitaplan.com — auto-deploy desde master. Ultimo commit: 133e00d"],
+    ["Design System", "Storybook + Chromatic VRT activo en GitHub Actions. hp-tokens semanticos"],
     ["Branding", "SVG-First SSOT — og.png, favicon.png generados desde logo.svg via generate:brand"],
     ["Centro de Seguridad", "ACTIVO — /seguridad + 3 subpaginas + 3 APIs PDF"],
-    ["CI/CD", "GitHub Actions — tests + build + Chromatic VRT + Smoke CI */15"],
+    ["CI/CD", "GitHub Actions — 1244 tests + build + Chromatic VRT + Smoke CI */15"],
     ["Cola", "BullMQ + Upstash Redis OPERATIVO — Cron scheduler cada 6h"],
-    ["Fuentes web", "20 (18 Bogota + 2 Medellin)"],
-    ["Fuentes Instagram", "12 (10 Bogota + 2 Medellin)"],
-    ["Fuentes Telegram", "1 canal configurado — pendiente ingest real"],
+    ["Crons Vercel", "5 activos: scrape 6am, expire 5am, notifications 9am, retention domingos, check-overdue-pqrs lun-vie 8am"],
+    ["Fuentes web", "20 activas (18 Bogota + 2 Medellin). bibliotecapiloto PAUSADA (0 yield)"],
+    ["Fuentes Instagram", "12 (10 Bogota + 2 Medellin). @distritojovenbta PAUSADA (0 yield)"],
+    ["Fuentes Telegram", "1 canal configurado — pendiente ingest real (bloqueo ISP)"],
+    ["Activity Gate hostname fix", "APLICADO — cinematecadebogota.gov.co ya no bloqueada por bogota.gov.co (S56). Matching exacto o sufijo .domain"],
+    ["PQRS Legal (Ley 1581)", "ACTIVO — check-overdue-pqrs cron lun-vie 8am. pqrs.ts SSOT. Null-fire si 0 alertas"],
+    ["PQRS SSOT", "src/lib/pqrs.ts — RESPONSE_CHANNELS + CONTACT_CATEGORIES + PQRS_SLA (as const). 0 duplicacion"],
+    ["Retencion de datos", "ACTIVO — cron semanal: ScrapingLogs 90d, IPs anonymized 1yr, PQRS 24-36 meses"],
+    ["Trazabilidad PQRS", "ContactRequest: firstRespondedAt, responseChannel, resolvedAt, resolvedBy, statusChangedAt"],
+    ["Versionado legal", "User: termsVersion, privacyVersion, privacyAcceptedAt — prueba contractual ante SIC"],
     ["Cache dual", "scraping_cache en BD + disco — sincronizado entre maquinas"],
     ["Gemini", "gemini-2.5-flash, 20 RPD, CHUNK_SIZE=100, pool 4 keys"],
     ["Parser Resiliente", "ACTIVO — fallback Cheerio ante 429/503. PARSER_FALLBACK_ENABLED=true"],
-    ["Activity Gate", "ACTIVO — evaluateActivityGate() en pipeline. [discard:llm] vs [discard:gate]"],
+    ["Activity Gate", "ACTIVO — evaluateActivityGate() en pipeline. [discard:llm] vs [discard:gate]. Hostname fix S56"],
     ["Date Preflight v2", "ACTIVO — 3 capas + metricas en date_preflight_logs"],
     ["Sentry", "ACTIVO — SENTRY_DSN en Vercel Dashboard"],
-    ["UptimeRobot", "ACTIVO — monitoreando /api/health"],
+    ["UptimeRobot", "ACTIVO — monitoreando /api/health cada 5min"],
     ["Smoke CI", "ACTIVO — GitHub Actions */15, retry 3/3 + Slack alert"],
     ["URL Classifier", "ACTIVO — reduce ~40% URLs antes de Gemini"],
     ["Favoritos Mixtos", "ACTIVO — XOR FK constraint aplicado en BD"],
     ["CTR Feedback Loop", "ACTIVO — events → ctrBoost → ranking + BullMQ priority"],
-    ["Adaptive Quality Filter", "ACTIVO — ContentQualityMetric + SourceHealth en storage"],
     ["Intent Manager", "ACTIVO — requireAuth() + IntentResolver en layout global"],
     ["Magic Link Auth", "ACTIVO — Supabase Magic Link como metodo primario"],
     ["Multi-City Map", "ACTIVO — CityProvider + resolveCity.ts + cityId strict endpoint"],
@@ -629,24 +667,27 @@ children.push(threeColTable(
     ["v0.13.3", "V27", "prisma-serialize.ts, useLocalStorage, Prisma _count rule"],
     ["v0.14.1", "V28", "Magic Link Auth, Scraping URL Hardening, Activity Gate"],
     ["v0.15.0 (391d839)", "V28", "Multi-City Map Fase 1, CityProvider, resolveCity.ts. 1214 tests"],
+    ["v0.16.x (fc478ae)", "V28", "SIC Retention Policy cron semanal. PQRS trazabilidad. termsVersion/privacyVersion User"],
+    ["v0.16.x (133e00d)", "V28", "Activity Gate hostname fix. PQRS Legal Compliance (Ley 1581). pqrs.ts SSOT. 1244 tests, 77 archivos"],
   ]
 ));
 children.push(spacer());
 
 // ── SECTION 16: TESTING ──────────────────────────────────────────────────────
-children.push(sectionHeading("16. TESTING (v0.15.0)"));
+children.push(sectionHeading("16. TESTING (v0.16.x, 2026-04-24)"));
 children.push(twoColTable(
   ["Metrica", "Valor"],
   [
     ["Framework", "Vitest 4 + @vitest/coverage-v8 + React Testing Library"],
-    ["Tests totales", "1214 en 75 archivos (1212 passed, 2 skipped)"],
+    ["Tests totales", "1244 en 77 archivos — 100% pasando, 0 errores TS"],
     ["Threshold", "85% branches (cap fijo desde dia 16 del proyecto)"],
-    ["Statements", ">91%"],
+    ["Statements", ">87%"],
     ["Branches", ">85%"],
     ["Functions", ">88%"],
-    ["Lines", ">91%"],
+    ["Lines", ">87%"],
     ["Duracion", "~20 segundos"],
     ["E2E", "19 tests Playwright (auth, actividades, favoritos) — bloqueantes en CI"],
+    ["activity-gate.test.ts", "RESTAURADO S56 — 4 secciones, 21 tests. Fix tipos ActivityNLPResult + hostname bug regression"],
   ]
 ));
 children.push(spacer());
@@ -726,6 +767,9 @@ children.push(twoColTable(
     ["npx tsx scripts/source-ranking.ts [--weeks=4]", "Ranking de fuentes por produccion/volumen/alcance"],
     ["npx tsx scripts/test-instagram.ts <URL> --validate-only", "Validar cuenta Instagram sin consumir Gemini"],
     ["npx tsx scripts/ingest-telegram.ts [--dry-run]", "Ingestar canales Telegram"],
+    ["npx tsx scripts/query-overdue-pqrs.ts", "Reporte PQRS vencidas (dias habiles, SLA diferenciado)"],
+    ["npx tsx scripts/pause-zero-yield.ts [--dry-run]", "Pausar fuentes sin yield en BD"],
+    ["npx tsx scripts/cron-retention-policy.ts", "Ejecutar politica de retencion de datos manualmente"],
     ["node scripts/generate_v28.mjs", "Generar este Documento Fundacional V28"],
   ]
 ));
@@ -738,7 +782,7 @@ children.push(new Paragraph({
   alignment: AlignmentType.CENTER, spacing: { before: 400, after: 80 },
 }));
 children.push(new Paragraph({
-  children: [new TextRun({ text: "Generado por Claude (Anthropic) el 2026-04-23 | Software: v0.15.0 (commit 391d839) | 1214 tests | 75 archivos | 0 errores TS", size: 16, font: "Arial", color: "BBBBBB" })],
+  children: [new TextRun({ text: "Generado por Claude (Anthropic) el 2026-04-24 | Software: v0.16.x (commits be344e1...133e00d) | 1244 tests | 77 archivos | 0 errores TS", size: 16, font: "Arial", color: "BBBBBB" })],
   alignment: AlignmentType.CENTER,
 }));
 
@@ -784,7 +828,7 @@ const doc = new Document({
   ],
 });
 
-const OUTPUT_PATH = "C:\\Users\\denys\\Projects\\infantia\\Infantia_Claude\\HabitaPlan_Documento_Fundacional_V28.docx";
+const OUTPUT_PATH = "C:\\Users\\denys\\OneDrive\\Documents\\DayJul\\Denys\\Infantia\\Infantia_Claude\\HabitaPlan_Documento_Fundacional_V28.docx";
 
 Packer.toBuffer(doc).then((buffer) => {
   writeFileSync(OUTPUT_PATH, buffer);

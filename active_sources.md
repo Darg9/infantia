@@ -1,4 +1,4 @@
-# URLs de Fuentes Activas — HabitaPlan v0.16.4-beta (2026-04-24)
+# URLs de Fuentes Activas — HabitaPlan v0.17.0-beta (2026-04-25)
 
 
 ## banrepcultural.org (2)

@@ -1,5 +1,5 @@
-# HABITAPLAN — DOCUMENTO FUNDACIONAL V27
-> Generado por el script V27. Actualizado: 2026-04-24.
+# HABITAPLAN — DOCUMENTO FUNDACIONAL V28
+> Generado por el script V28. Actualizado: 2026-04-25.
 
 
 # 1. VISION Y PROBLEMA

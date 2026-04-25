@@ -1,7 +1,7 @@
-# HabitaPlan Design System (v2 — v0.16.4-beta)
+# HabitaPlan Design System (v2 — v0.17.0-beta)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
-*Nota v0.16.4-beta: Estabilización estructural bajo dependencias limpias y unificación de ecosistema.*
+*Nota v0.17.0-beta: Estabilización estructural + ESLint freeze (alert/prompt/confirm bloqueados). Toast SSOT activo.*
 
 ## 1. Principios Core
 

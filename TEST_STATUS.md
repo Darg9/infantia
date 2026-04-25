@@ -2,9 +2,9 @@
 
 Actualizado: 25 de abril de 2026 | Version: v0.17.0-beta
 
-## Resumen Actual (v0.17.0-beta / SIC Compliance & Phase 3 Audit)
-- **Archivos de Test:** 78
-- **Tests Totales:** 1245 (1243 pasan ✅, 2 skipped)
+## Resumen Actual (v0.17.0-beta / SaveActivityResult + PQRS Legal + Activity Gate Fix — S56/S57)
+- **Archivos de Test:** 77
+- **Tests Totales:** 1244 (1244 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
@@ -26,9 +26,9 @@ Actualizado: 25 de abril de 2026 | Version: v0.17.0-beta
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 76 |
-| Tests totales | 1220 |
-| Pasados | 1218 |
+| Archivos de test | 77 |
+| Tests totales | 1244 |
+| Pasados | 1244 |
 | Skipped | 2 |
 | Fallidos | 0 |
 | Threshold configurado | 85% branches (cap desde día 33) |
@@ -37,7 +37,7 @@ Actualizado: 25 de abril de 2026 | Version: v0.17.0-beta
 | Functions | >88% ✅ |
 | Lines | >91% ✅ |
 
-## Archivos de test (76 total)
+## Archivos de test (77 total)
 
 ### lib/__tests__/
 | Archivo | Tests | Estado |
@@ -241,7 +241,8 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.16.1-S55** | **1203** | **73** | **>91%** | **>85%** |
 | **v0.12.x** | **1215** | **75** | **>91%** | **>85%** |
 | **v0.16.1** | **1214** | **75** | **>91%** | **>85%** |
-| **v0.17.0** | **1245** | **78** | **>91%** | **>85%** |
+| **v0.17.0-S56** | **1244** | **77** | **>91%** | **>85%** |
+| **v0.17.0-S57** | **1244** | **77** | **>91%** | **>85%** |
 
 ## Cambios en v0.16.1 (Multi-City Map Architecture)
 

@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión actual:** v0.16.4-beta
-**Última actualización:** 24 de abril de 2026
+**Versión actual:** v0.17.0-beta
+**Última actualización:** 25 de abril de 2026
 
 ## ¿Qué hace?
 

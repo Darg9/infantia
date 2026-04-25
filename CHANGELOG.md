@@ -9,6 +9,34 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.17.0-beta] — 2026-04-25 (SaveActivityResult + PQRS Legal + Activity Gate Fix)
+
+### Fixed
+
+- **`storage.ts` — SaveActivityResult (Breaking fix S57):** `saveActivity()` ahora retorna `{ id: string | null, action: SaveAction }` en lugar de `string | null`. Elimina ambigüedad entre `null` (error) y `DISCARDED_QUALITY`. `SaveAction` enum: `CREATED_ACTIVE | CREATED_PAUSED | UPDATED_ACTIVE | UPDATED_PAUSED | DEDUPE_SKIPPED | DISCARDED_QUALITY | ERROR`.
+- **`pipeline.ts` — Instagram savedCount:** Corregido bug donde `if (activityId)` evaluaba `true` sobre un objeto, causando conteo inflado. Ahora usa `if (activityResult?.id)`.
+- **`activity-gate.ts` — Hostname substring bug (S56):** `isGovDomain()` usaba `includes()` lo que causaba que `cinematecadebogota.gov.co` fuera rechazado por no estar en la lista exacta. Corregido a match exacto o sufijo `.domain`.
+- **BibloRed reparse queue (S57):** 270 entradas con `needsReparse: true` desde 2026-04-22 (caída Gemini) excluían BibloRed del scheduler predictivo (reparse cost > 30% del budget). Limpieza directa en `data/scraping-cache.json`.
+- **FCE 3 fuentes URL actualizadas en BD (S56):** URLs desactualizadas corregidas.
+- **41 logs RUNNING → FAILED corregidos (S56):** Runs sin cierre dejaban entradas en estado RUNNING indefinidamente.
+
+### Added
+
+- **PQRS Legal (S56):** `firstRespondedAt` + `responseChannel` en `ContactRequest` (migración aplicada). Cron `/api/admin/check-overdue-pqrs` lunes-viernes 8am con notificación Resend.
+- **`src/lib/pqrs.ts` SSOT (S56):** `RESPONSE_CHANNELS`, `CONTACT_CATEGORIES`, `PQRS_SLA` centralizados. Patrón Zod: `z.enum(RESPONSE_CHANNELS)` para validación de formularios/endpoints.
+- **`[DEDUPE_HIT]` trace (S57):** Log fire-and-forget cuando `saveActivity()` detecta duplicado semántico. No bloquea el flujo ni falla tests.
+- **`[BATCH:SUMMARY]` log (S57):** Resumen estructurado al fin de cada run con breakdown: created/updated/quarantined/active/dedupe_skipped/discarded_quality.
+- **Idartes ingest +50 actividades (S57):** Run exitoso tras debloqueo de reparse queue. Cuota Gemini agotada al cierre del run.
+- **`scripts/smoke-test-phase3.ts` (S57):** Script de validación del contrato de `saveActivity()` — escenarios A (CREATED), B (UPDATED), C (DEDUPE_SKIPPED).
+
+### Tests
+
+- **1244 tests / 77 archivos** — 0 errores TypeScript
+- 9 tests en `storage.test.ts` actualizados al nuevo contrato `SaveActivityResult`
+- `activity-gate.test.ts` restaurado — 4 regressions de Antigravity resueltas
+
+---
+
 ## [v0.16.4-beta] — 2026-04-24 (Discover Fallback & Pre-Filters)
 
 ### Features

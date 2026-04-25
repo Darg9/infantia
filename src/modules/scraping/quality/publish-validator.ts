@@ -52,7 +52,7 @@ export function validateForPublish(
     return { action: 'REJECT', reason: 'empty_content' };
   }
 
-  // ── 2. QUARANTINE (Duda razonable -> guardar como INACTIVE) ──
+  // ── 2. QUARANTINE (Duda razonable -> guardar como PAUSED) ──
 
   // D. Evento Expirado (pasó hace más de X días)
   if (startDate) {

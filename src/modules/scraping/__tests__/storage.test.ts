@@ -282,13 +282,14 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
     storage = new ScrapingStorage();
   });
 
-  it('retorna null si ocurre un error inesperado (catch branch)', async () => {
+  it('retorna action ERROR si ocurre un error inesperado (catch branch)', async () => {
     mocks.mockProviderUpsert.mockRejectedValue(new Error('DB connection lost'));
     const result = await storage.saveActivity(
       actividadNLPBase,
       'https://ejemplo.com/actividad-err',
     );
-    expect(result).toBeNull();
+    expect(result.action).toBe('ERROR');
+    expect(result.id).toBeNull();
   });
 
   it('mapea "campamento" como CAMP si está en el título porque la categoría ahora es Aire Libre', async () => {
@@ -319,7 +320,8 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
       'kids',
       { platform: 'INSTAGRAM', instagramUsername: 'testaccount' },
     );
-    expect(result).toBe('act-001');
+    expect(result.id).toBe('act-001');
+    expect(result.action).toMatch(/^(CREATED|UPDATED)_(ACTIVE|PAUSED)$/);
     expect(mocks.mockProviderFindFirst).toHaveBeenCalledWith({
       where: { instagram: 'testaccount' },
     });
@@ -341,7 +343,8 @@ describe('ScrapingStorage.saveActivity() — casos adicionales', () => {
       'kids',
       { platform: 'INSTAGRAM', instagramUsername: 'nuevacuenta' },
     );
-    expect(result).toBe('act-001');
+    expect(result.id).toBe('act-001');
+    expect(result.action).toMatch(/^(CREATED|UPDATED)_(ACTIVE|PAUSED)$/);
     expect(mocks.mockProviderCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         name: '@nuevacuenta',
@@ -527,7 +530,8 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
 
     const result = await storage.saveActivity(actividadNLPBase, 'https://ejemplo.com/dup');
 
-    expect(result).toBe('existing-dup-001');
+    expect(result.id).toBe('existing-dup-001');
+    expect(result.action).toBe('DEDUPE_SKIPPED');
     expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
   });
 
@@ -541,7 +545,8 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
     };
     const result = await storage.saveActivity(dataWithDate, 'https://ejemplo.com/dup-date');
 
-    expect(result).toBe('existing-dup-001');
+    expect(result.id).toBe('existing-dup-001');
+    expect(result.action).toBe('DEDUPE_SKIPPED');
     expect(mocks.mockActivityCreate).not.toHaveBeenCalled();
   });
 
@@ -575,7 +580,7 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
 
     // El catch en findPotentialDuplicate devuelve null → saveActivity crea la actividad
     expect(mocks.mockActivityCreate).toHaveBeenCalledTimes(1);
-    expect(result).toBe('act-001');
+    expect(result.id).toBe('act-001');
   });
 
   it('activityData maneja campos opcionales nulos (price null, sin currency, pricePeriod no nulo, sin audience, sin maxAge)', async () => {
@@ -590,7 +595,7 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
 
     const result = await storage.saveActivity(dataConNulos, 'https://ejemplo.com/nulos');
 
-    expect(result).toBe('act-001');
+    expect(result.id).toBe('act-001');
     const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
     expect(d.price).toBeNull();
     expect(d.priceCurrency).toBe('COP');   // fallback cuando currency es falsy
@@ -606,7 +611,8 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
     };
 
     const result = await storage.saveActivity(dataConDescVacia, 'https://ejemplo.com/descvacia');
-    expect(result).toBe('DISCARDED_QUALITY');
+    expect(result.action).toBe('DISCARDED_QUALITY');
+    expect(result.id).toBeNull();
   });
 
   it('ageMin undefined se mapea a null (branch ?? del campo minAge)', async () => {
@@ -629,7 +635,7 @@ describe('ScrapingStorage — detección de duplicados (findPotentialDuplicate)'
 
     const result = await storage.saveActivity(dataConSchedulesSinFechas, 'https://ejemplo.com/sinfechas');
 
-    expect(result).toBe('act-001');
+    expect(result.id).toBe('act-001');
     const d = mocks.mockActivityCreate.mock.calls[0]?.[0]?.data;
     expect(d.startDate).toBeNull();
     expect(d.endDate).toBeNull();

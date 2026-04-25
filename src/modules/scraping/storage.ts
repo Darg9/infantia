@@ -18,9 +18,21 @@ const log = createLogger('scraping:storage');
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
 const prisma = new PrismaClient({ adapter });
 
+type SaveAction = 'CREATED_ACTIVE' | 'CREATED_PAUSED' | 'UPDATED_ACTIVE' | 'UPDATED_PAUSED' | 'DEDUPE_SKIPPED' | 'DISCARDED_QUALITY' | 'ERROR';
+
+type SaveActivityResult = {
+  id: string | null;
+  action: SaveAction;
+};
+
 type SaveResult = {
   saved: number;
+  created: number;
+  updated: number;
+  quarantined: number;
+  active: number;
   skipped: number;
+  dedupe_skipped: number;
   discarded: number;
   errors: string[];
 };
@@ -99,14 +111,14 @@ export class ScrapingStorage {
     verticalSlug: string = 'kids',
     sourceOptions?: { platform?: string; instagramUsername?: string },
     ctx: AdaptiveContext = EMPTY_ADAPTIVE_CTX,
-  ): Promise<string | null> {
+  ): Promise<SaveActivityResult> {
     try {
       // Rechazar dominios spam antes de cualquier procesamiento
       try {
         const hostname = new URL(sourceUrl).hostname.replace(/^www\./, '');
         if (BLOCKED_DOMAINS.has(hostname)) {
           log.warn(`[STORAGE] Dominio bloqueado rechazado: ${hostname} (${sourceUrl})`);
-          return 'DISCARDED_BLOCKED_DOMAIN';
+          return { id: null, action: 'DISCARDED_QUALITY' }; // Usamos action genérico para bloqueados
         }
       } catch { /* url inválida — dejar pasar, el pipeline lo rechazará */ }
 
@@ -122,7 +134,7 @@ export class ScrapingStorage {
           descriptionLength: data.description?.length || 0,
           title: data.title
         });
-        return "DISCARDED_QUALITY";
+        return { id: null, action: 'DISCARDED_QUALITY' };
       }
 
       log.info('Actividad supero pipeline de datos', { action: 'pipeline_process', result: 'success', title: pipeline.data.title });
@@ -147,7 +159,7 @@ export class ScrapingStorage {
             sourceScore,
             title: data.title,
           }));
-          return "DISCARDED_QUALITY";
+          return { id: null, action: 'DISCARDED_QUALITY' };
         }
       }
 
@@ -168,7 +180,7 @@ export class ScrapingStorage {
       });
 
       if (validation.action === 'REJECT') {
-        return 'DISCARDED_QUALITY';
+        return { id: null, action: 'DISCARDED_QUALITY' };
       }
 
       const finalStatus = validation.action === 'QUARANTINE' ? ActivityStatus.PAUSED : ActivityStatus.ACTIVE;
@@ -177,7 +189,7 @@ export class ScrapingStorage {
       const vertical = await prisma.vertical.findUnique({ where: { slug: verticalSlug } });
       if (!vertical) {
         log.error(`Vertical "${verticalSlug}" no encontrada. Ejecuta el seed primero.`);
-        return null;
+        return { id: null, action: 'ERROR' as const };
       }
 
       // 2. Obtener o crear Provider
@@ -207,9 +219,25 @@ export class ScrapingStorage {
       );
 
       if (potentialDuplicate) {
-        log.info(`⚠️ Duplicado detectado: "${data.title}" es similar a "${potentialDuplicate.title}"`);
-        log.info(`          Reutilizando ID existente: ${potentialDuplicate.id}`);
-        return potentialDuplicate.id;
+        // Trace de deduplicación para auditoría (Fase 3) — fire-and-forget, nunca bloquea
+        prisma.activity.findFirst({
+          where: { id: potentialDuplicate.id },
+          select: { sourceUrl: true, sourceDomain: true }
+        }).then(existingInfo => {
+          log.info(`[DEDUPE_HIT] "${data.title}" colisionó con ID: ${potentialDuplicate.id}`, {
+            incoming_source: sourceDomain,
+            existing_source: existingInfo?.sourceDomain || 'unknown',
+            incoming_url: sourceUrl,
+            existing_url: existingInfo?.sourceUrl || 'unknown'
+          });
+        }).catch(() => {
+          log.info(`[DEDUPE_HIT] "${data.title}" colisionó con ID: ${potentialDuplicate.id}`, {
+            incoming_source: sourceDomain,
+            existing_source: 'unknown',
+          });
+        });
+
+        return { id: potentialDuplicate.id, action: 'DEDUPE_SKIPPED' };
       }
 
       // 4. Crear o actualizar Activity (upsert por sourceUrl)
@@ -292,22 +320,23 @@ export class ScrapingStorage {
           data: updateData,
         });
         activityId = updated.id;
-        log.info(`Actualizada: "${data.title}" (${activityId})`);
+        log.info(`Actualizada: "${data.title}" (${activityId}) | Status: ${updateData.status}`);
+        
+        await this.linkCategories(activityId, data.categories, vertical.id);
+        return { id: activityId, action: finalStatus === ActivityStatus.PAUSED ? "UPDATED_PAUSED" : "UPDATED_ACTIVE" };
       } else {
         const created = await prisma.activity.create({
           data: activityData,
         });
         activityId = created.id;
-        log.info(`Creada: "${data.title}" (${activityId})`);
+        log.info(`Creada: "${data.title}" (${activityId}) | Status: ${activityData.status}`);
+        
+        await this.linkCategories(activityId, data.categories, vertical.id);
+        return { id: activityId, action: finalStatus === ActivityStatus.PAUSED ? "CREATED_PAUSED" : "CREATED_ACTIVE" };
       }
-
-      // 5. Asociar categorías
-      await this.linkCategories(activityId, data.categories, vertical.id);
-
-      return activityId;
     } catch (error: any) {
       log.error(`Error guardando "${data.title}":`, error.message);
-      return null;
+      return { id: null, action: 'ERROR' };
     }
   }
 
@@ -315,7 +344,12 @@ export class ScrapingStorage {
    * Guarda todos los resultados de un batch pipeline.
    */
   async saveBatchResults(batchResult: BatchPipelineResult): Promise<SaveResult> {
-    const result: SaveResult = { saved: 0, skipped: 0, discarded: 0, errors: [] };
+    const result: SaveResult = { 
+      saved: 0, created: 0, updated: 0, 
+      quarantined: 0, active: 0,
+      skipped: 0, dedupe_skipped: 0, discarded: 0, 
+      errors: [] 
+    };
 
     // Cargar contexto adaptativo UNA sola vez para todo el batch
     const [globalMetrics, sourceHealthList] = await Promise.all([
@@ -339,28 +373,48 @@ export class ScrapingStorage {
         continue;
       }
 
-      const activityId = await this.saveActivity(item.data, item.url, 'kids', undefined, ctx);
-      if (activityId === "DISCARDED_QUALITY") {
+      const resultStatus = await this.saveActivity(item.data, item.url, 'kids', undefined, ctx);
+      
+      if (resultStatus.action === "DISCARDED_QUALITY") {
         result.discarded++;
-      } else if (activityId) {
+      } else if (resultStatus.action === "DEDUPE_SKIPPED") {
+        result.dedupe_skipped++;
+      } else if (resultStatus.action === "CREATED_ACTIVE") {
+        result.saved++; result.created++; result.active++;
+      } else if (resultStatus.action === "CREATED_PAUSED") {
+        result.saved++; result.created++; result.quarantined++;
+      } else if (resultStatus.action === "UPDATED_ACTIVE") {
+        result.saved++; result.updated++; result.active++;
+      } else if (resultStatus.action === "UPDATED_PAUSED") {
+        result.saved++; result.updated++; result.quarantined++;
+      } else if (resultStatus.id) {
         result.saved++;
       } else {
         result.errors.push(item.url);
       }
     }
 
-    const total = result.saved + result.discarded + result.skipped;
+    const total = result.saved + result.discarded + result.skipped + result.dedupe_skipped;
     const discardRate = total > 0 ? Math.round((result.discarded / total) * 100) / 100 : 0;
-    log.info(JSON.stringify({
-      event: "adaptive_rules_applied",
+    
+    log.info('[BATCH:SUMMARY]', {
+      source: batchResult.sourceUrl,
+      total_processed: total,
       saved: result.saved,
-      discarded: result.discarded,
-      skipped: result.skipped,
+      details: {
+        created: result.created,
+        updated: result.updated,
+        active: result.active,
+        quarantined: result.quarantined,
+      },
+      skipped: {
+        low_confidence: result.skipped,
+        dedupe_hit: result.dedupe_skipped,
+        discarded_quality: result.discarded
+      },
       discardRate,
-      errors: result.errors.length,
-      sourceUrl: batchResult.sourceUrl,
-      timestamp: new Date().toISOString(),
-    }));
+      errors: result.errors.length
+    });
 
     // ── Trazabilidad: registrar funnel completo del run (fire-and-forget) ──────
     if (batchResult.sourceId) {

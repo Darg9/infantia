@@ -784,13 +784,13 @@ export class ScrapingPipeline {
           dbSkipped++;
           continue;
         }
-        const activityId = await this.storage.saveActivity(
+        const activityResult = await this.storage.saveActivity(
           r.data,
           r.postUrl,
           'kids',
           { platform: 'INSTAGRAM', instagramUsername: profile.username },
         );
-        if (activityId) savedCount++;
+        if (activityResult?.id) savedCount++;
       }
       log.info(`BD: ${savedCount} guardadas, ${dbSkipped} omitidas (baja confianza o sin datos)`);
     }

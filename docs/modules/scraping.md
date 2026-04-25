@@ -82,6 +82,9 @@ ScrapingStorage.saveActivity()
     ├─ Deduplicación Nivel 1: similitud Jaccard >75% + ventana ±30 días
     ├─ Threshold Diferenciado [S55]: Gemini entra con trust >=0.3, Fallback Cheerio >=0.5 (minimiza ruido institucional).
     └─ Upsert Activity (sourceUrl como clave)
+        ├─ PUBLISH    → status: ACTIVE
+        ├─ QUARANTINE → status: PAUSED
+        └─ REJECT     → no persiste (discarded)
     │
     ▼
 ScrapingCache.save() + ScrapingCache.saveToDb() + ScrapingLogger.completeRun()

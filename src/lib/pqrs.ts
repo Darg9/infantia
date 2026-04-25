@@ -11,6 +11,15 @@
 // ---------------------------------------------------------------------------
 // Canal por el que el equipo dio la primera respuesta a una PQRS.
 // Refleja el campo ContactRequest.responseChannel (String? en BD).
+//
+// Cuando construyas el endpoint admin PQRS (PATCH /api/admin/pqrs/:id),
+// úsalo directamente con Zod para cerrar compile-time + runtime:
+//
+//   import { RESPONSE_CHANNELS } from '@/lib/pqrs';
+//   const bodySchema = z.object({
+//     responseChannel: z.enum(RESPONSE_CHANNELS).optional(),
+//     firstRespondedAt: z.string().datetime().optional(),
+//   });
 // ---------------------------------------------------------------------------
 export const RESPONSE_CHANNELS = [
   'email',     // Correo electrónico directo
@@ -25,6 +34,9 @@ export type ResponseChannel = (typeof RESPONSE_CHANNELS)[number];
 // ---------------------------------------------------------------------------
 // Categorías de solicitud de contacto.
 // Deben coincidir con los valores aceptados en POST /api/contact.
+//
+// Úsalo con Zod en cualquier endpoint que reciba/valide categorías:
+//   category: z.enum(CONTACT_CATEGORIES)
 // ---------------------------------------------------------------------------
 export const CONTACT_CATEGORIES = [
   'general',

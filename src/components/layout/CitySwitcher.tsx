@@ -97,17 +97,17 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
 
   function handleOpenModal() {
     setIsOpen(true)
-    trackEvent({ type: 'city_modal_open' })
+    trackEvent({ type: 'city_modal_open', metadata: { sourceCityId: resolvedId } })
   }
 
   function handleCloseModal() {
     setIsOpen(false)
-    trackEvent({ type: 'city_modal_close_no_select' })
+    trackEvent({ type: 'city_modal_close_no_select', metadata: { sourceCityId: resolvedId } })
   }
 
   function handleSelectCity(nextId: string, isRecentClick = false) {
     if (isRecentClick) {
-      trackEvent({ type: 'city_recent_selected', metadata: { cityId: nextId } })
+      trackEvent({ type: 'city_recent_selected', metadata: { cityId: nextId, sourceCityId: resolvedId } })
     }
     
     // Si elige la misma ciudad, solo cerramos
@@ -116,7 +116,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
       return
     }
 
-    trackEvent({ type: 'city_selected', metadata: { cityId: nextId } })
+    trackEvent({ type: 'city_selected', metadata: { cityId: nextId, sourceCityId: resolvedId } })
 
     // 1. Persistir
     setCityId(nextId)

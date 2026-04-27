@@ -21,6 +21,7 @@ export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData[]>([]);
   const [matrix, setMatrix] = useState<CityMatrixData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [view, setView] = useState<'all' | 'no-bogota'>('all');
 
   useEffect(() => {
     fetch("/api/admin/analytics")
@@ -59,8 +60,9 @@ export default function AnalyticsPage() {
     return <div className="p-10 text-center text-[var(--hp-text-secondary)]">Cargando métricas en tiempo real...</div>;
   }
 
-  // Ordenamos la matriz por inventario activo descendente
-  const sortedMatrix = [...matrix].sort((a, b) => b.activeSupply - a.activeSupply);
+  // Filtrar y ordenar matriz
+  const filteredMatrix = view === 'no-bogota' ? matrix.filter((c) => c.cityName !== 'Bogotá' && c.cityName !== 'Bogota') : matrix;
+  const sortedMatrix = [...filteredMatrix].sort((a, b) => b.activeSupply - a.activeSupply);
 
   return (
     <div className="max-w-6xl mx-auto py-12 px-4 space-y-8">
@@ -73,8 +75,22 @@ export default function AnalyticsPage() {
 
       {/* Radiografía de Supply y Navegación (Tabla Principal) */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-xl shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
+        <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)] flex justify-between items-center">
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Radiografía de Inventario (Vivo) y Discovery</h2>
+          <div className="flex bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-lg p-1">
+            <button
+              onClick={() => setView('all')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${view === 'all' ? 'bg-[var(--hp-text-primary)] text-[var(--hp-bg-surface)]' : 'text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)]'}`}
+            >
+              Todas (Vista A)
+            </button>
+            <button
+              onClick={() => setView('no-bogota')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${view === 'no-bogota' ? 'bg-[var(--hp-text-primary)] text-[var(--hp-bg-surface)]' : 'text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)]'}`}
+            >
+              Sin Bogotá (Vista B)
+            </button>
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm whitespace-nowrap">
@@ -84,8 +100,9 @@ export default function AnalyticsPage() {
                 <th className="px-6 py-3 font-medium text-right">Activas Hoy (Supply)</th>
                 <th className="px-6 py-3 font-medium text-right">Modal Opens (Intención)</th>
                 <th className="px-6 py-3 font-medium text-right">Selections (Conversión)</th>
+                <th className="px-6 py-3 font-medium text-right">Self-Retention</th>
                 <th className="px-6 py-3 font-medium text-right">Escape Rate</th>
-                <th className="px-6 py-3 font-medium text-right">Demand/Supply Ratio</th>
+                <th className="px-6 py-3 font-medium text-right">Demand Pressure Score</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--hp-border)]">
@@ -98,6 +115,7 @@ export default function AnalyticsPage() {
                   // Calcular Ratios
                   const demandRatio = row.activeSupply > 0 ? (row.modalOpens / row.activeSupply).toFixed(2) : "0";
                   const escapePct = row.modalOpens > 0 ? ((row.escapes / row.modalOpens) * 100).toFixed(1) : "0.0";
+                  const selfRetentionPct = row.modalOpens > 0 ? (((row.modalOpens - row.escapes) / row.modalOpens) * 100).toFixed(1) : "0.0";
                   
                   return (
                     <tr key={row.cityId} className="hover:bg-[var(--hp-bg-page)] transition-colors">
@@ -112,6 +130,9 @@ export default function AnalyticsPage() {
                       </td>
                       <td className="px-6 py-4 text-right font-mono text-[var(--hp-text-primary)]">
                         {row.selections}
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono text-[var(--hp-text-primary)]">
+                        {row.modalOpens > 0 ? `${selfRetentionPct}%` : "-"}
                       </td>
                       <td className="px-6 py-4 text-right font-mono text-[var(--hp-text-secondary)]">
                         {row.escapes > 0 ? `${escapePct}% (${row.escapes})` : "-"}

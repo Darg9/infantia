@@ -29,9 +29,14 @@ type PageProps = {
 export default async function MapaPage({ searchParams }: PageProps) {
   const params = await searchParams
 
+  // Solo ciudades con ≥1 actividad activa → evitar ciudades vacías en el selector del mapa
+  const withActiveActivities = {
+    locations: { some: { activities: { some: { status: 'ACTIVE' as const } } } },
+  } as const;
+
   // ── Cargar ciudades disponibles (para CityProvider y selector) ─────────────
   const cities = await prisma.city.findMany({
-    where: { isActive: true },
+    where: { isActive: true, ...withActiveActivities },
     select: {
       id: true,
       name: true,
@@ -44,7 +49,7 @@ export default async function MapaPage({ searchParams }: PageProps) {
 
   // Ciudad por defecto: la primera con más ubicaciones activas (Bogotá en práctica)
   const defaultCity = await prisma.city.findFirst({
-    where: { isActive: true },
+    where: { isActive: true, ...withActiveActivities },
     orderBy: { locations: { _count: 'desc' } },
     select: { id: true },
   })

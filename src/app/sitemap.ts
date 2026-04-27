@@ -45,9 +45,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  // ── Landings SEO de ciudad ───────────────────────────────────────────────────
+  // ── Landings SEO de ciudad — solo ciudades con contenido real ──────���────────
+  // No indexar ciudades vacías: Google penaliza páginas sin contenido relevante.
   const cities = await prisma.city.findMany({
-    where: { isActive: true },
+    where: {
+      isActive: true,
+      locations: { some: { activities: { some: { status: 'ACTIVE' } } } },
+    },
     select: { name: true },
   });
 

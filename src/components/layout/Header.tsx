@@ -44,14 +44,18 @@ export async function Header() {
     activityCounts.map((r) => [r.cityId, r._count.id])
   )
 
-  const cities: CityOption[] = rawCities.map((c) => ({
-    id:            c.id,
-    name:          c.name,
-    defaultLat:    Number(c.defaultLat),
-    defaultLng:    Number(c.defaultLng),
-    defaultZoom:   c.defaultZoom,
-    activityCount: countByCityId[c.id] ?? 0,
-  }))
+  const cities: CityOption[] = rawCities
+    .map((c) => ({
+      id:            c.id,
+      name:          c.name,
+      defaultLat:    Number(c.defaultLat),
+      defaultLng:    Number(c.defaultLng),
+      defaultZoom:   c.defaultZoom,
+      activityCount: countByCityId[c.id] ?? 0,
+    }))
+    // Solo mostrar ciudades con al menos 1 actividad activa en el selector público.
+    // Ciudades con 0 activos generarían frustración al usuario (resultados vacíos).
+    .filter((c) => (c.activityCount ?? 0) > 0)
 
   // Props forwarded to the mobile client component
   const mobileSession = session

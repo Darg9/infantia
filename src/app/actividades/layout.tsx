@@ -14,10 +14,14 @@ export default async function ActividadesLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Solo ciudades que tienen al menos 1 actividad activa → evitar resultados vacíos en selector.
+  const WITH_ACTIVE_ACTIVITIES = {
+    locations: { some: { activities: { some: { status: 'ACTIVE' as const } } } },
+  } as const;
+
   const [cities, defaultCity] = await Promise.all([
-    // Lista completa de ciudades activas para el selector
     prisma.city.findMany({
-      where: { isActive: true },
+      where: { isActive: true, ...WITH_ACTIVE_ACTIVITIES },
       select: {
         id:          true,
         name:        true,
@@ -27,9 +31,9 @@ export default async function ActividadesLayout({
       },
       orderBy: { name: 'asc' },
     }),
-    // Ciudad con más locations → default razonable sin hardcodear
+    // Ciudad con más locations + actividades → default razonable (≈ Bogotá)
     prisma.city.findFirst({
-      where: { isActive: true },
+      where: { isActive: true, ...WITH_ACTIVE_ACTIVITIES },
       select: { id: true },
       orderBy: { locations: { _count: 'desc' } },
     }),

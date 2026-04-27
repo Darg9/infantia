@@ -26,7 +26,9 @@ export async function Header() {
   const rawCities = await prisma.city.findMany({
     where: { isActive: true },
     select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
-    orderBy: { name: 'asc' },
+    // Ciudad con más locations primero (≈ Bogotá) para que el fallback del CitySwitcher
+    // coincida con el default del CityProvider en /actividades. Secundario: nombre asc.
+    orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
   })
   const cities: CityOption[] = rawCities.map((c) => ({
     id:          c.id,

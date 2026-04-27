@@ -126,15 +126,18 @@ globalIgnores([
   // Prisma auto-generated — never lint:
   "src/generated/**",
 ]),
-// AST Regex Rule for className (anti-Tailwind directo)
+// AST Regex Rule for className (anti-Tailwind directo de color)
+// Captura solo clases de COLOR Tailwind directas: bg-red-500, text-blue-400, border-gray-200, etc.
+// NO captura: text-xs/sm/lg (tamaño), bg-transparent, border-b/t/l/r (lado), var(--hp-*) tokens.
+// Patrón: bg|text|border + nombre-de-color-tailwind + -dígito
 {
   files: ["**/*.tsx"],
   rules: {
     "no-restricted-syntax": [
       "error",
       {
-        selector: "JSXAttribute[name.name='className'][value.value=/bg-|text-|border-/]",
-        message: "Uso de Tailwind directo prohibido. Usa tokens hp-* o primitives"
+        selector: "JSXAttribute[name.name='className'][value.value=/(bg|text|border)-(red|blue|green|yellow|purple|pink|gray|white|black|indigo|violet|slate|zinc|stone|amber|lime|emerald|teal|cyan|sky|rose|orange|fuchsia|neutral)-\\d/]",
+        message: "Uso de color Tailwind directo prohibido. Usa tokens hp-* (ej: text-[var(--hp-text-primary)], bg-[var(--hp-bg-surface)])"
       }
     ]
   }

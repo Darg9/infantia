@@ -19,6 +19,7 @@ export function ThemeToggle() {
   return (
     <Button
       id="theme-toggle"
+      variant="ghost"
       onClick={toggleTheme}
       aria-label={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
       title={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}

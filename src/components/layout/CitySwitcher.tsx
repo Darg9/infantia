@@ -8,6 +8,7 @@
 // Solo se muestra cuando hay 2+ ciudades activas.
 // =============================================================================
 
+import { useEffect } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useLocalStorage } from '@/hooks/useLocalStorage'
 import type { CityOption } from '@/components/providers/CityProvider'
@@ -28,11 +29,29 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   const pathname  = usePathname()
   const router    = useRouter()
   const searchParams = useSearchParams()
+  const urlCityId = searchParams.get('cityId')
+
+  // Sincronizar localStorage con la URL cuando el usuario está en una página
+  // consciente de ciudad (/actividades, /mapa). Esto corrige el mismatch entre
+  // el chip de filtro ("Bogotá") y el header ("Barranquilla") que ocurría cuando
+  // localStorage estaba vacío o desactualizado respecto a la URL canónica.
+  useEffect(() => {
+    if (!mounted) return
+    const isAwarePage = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
+    if (isAwarePage && urlCityId && urlCityId !== cityId) {
+      setCityId(urlCityId)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted, urlCityId, pathname])
 
   // SSR-safe: esperar mount para evitar hydration mismatch
   if (!mounted || cities.length <= 1) return null
 
-  const resolvedId = cities.find(c => c.id === cityId)?.id ?? cities[0]?.id ?? ''
+  // Prioridad de resolución: URL (en páginas conscientes) > localStorage > primera ciudad
+  const isAwarePage = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
+  const resolvedId = (isAwarePage && urlCityId && cities.find(c => c.id === urlCityId))
+    ? urlCityId
+    : cities.find(c => c.id === cityId)?.id ?? cities[0]?.id ?? ''
 
   function handleChange(nextId: string) {
     if (nextId === resolvedId) return

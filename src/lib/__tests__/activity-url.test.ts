@@ -37,13 +37,13 @@ describe('activityPath', () => {
   it('genera ruta con UUID y slug', () => {
     const id = '550e8400-e29b-41d4-a716-446655440000';
     expect(activityPath(id, 'Taller de Arte')).toBe(
-      '/actividades/550e8400-e29b-41d4-a716-446655440000-taller-de-arte',
+      '/actividad/550e8400-e29b-41d4-a716-446655440000-taller-de-arte',
     );
   });
 
   it('genera ruta solo con UUID si title vacío', () => {
     const id = 'abc-123';
-    expect(activityPath(id, '')).toBe('/actividades/abc-123');
+    expect(activityPath(id, '')).toBe('/actividad/abc-123');
   });
 });
 

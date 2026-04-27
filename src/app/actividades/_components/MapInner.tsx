@@ -43,9 +43,19 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
 
   // ── Fetch markers cuando cambian los filtros ─────────────────────────────
   useEffect(() => {
+    // cityId es obligatorio en el API. Esperar a que CityProvider esté montado.
+    if (!city) return;
+
     setLoading(true);
     setError(null);
-    fetch(`/api/activities/map${searchParams ? `?${searchParams}` : ''}`)
+
+    // Inyectar cityId desde CityProvider si no viene en los props (URL sin ?cityId=)
+    const sp = new URLSearchParams(searchParams);
+    if (!sp.get('cityId')) {
+      sp.set('cityId', city.id);
+    }
+
+    fetch(`/api/activities/map?${sp.toString()}`)
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -58,7 +68,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
         setError('No se pudo cargar el mapa');
         setLoading(false);
       });
-  }, [searchParams]);
+  }, [searchParams, city?.id]); // city.id: re-fetch cuando cambia la ciudad
 
   // ── Inicializar mapa Leaflet (una sola vez) ───────────────────────────────
   useEffect(() => {
@@ -174,7 +184,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       {/* Overlay: loading */}
       {loading && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[var(--hp-bg-page)] gap-2">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-200 border-t-indigo-600" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[var(--hp-border-subtle)] border-t-[var(--hp-primary)]" />
           <p className="text-sm text-[var(--hp-text-secondary)]">Cargando mapa...</p>
         </div>
       )}
@@ -196,7 +206,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
 
       {/* Contador flotante */}
       {!loading && !error && markers.length > 0 && (
-        <div className="absolute bottom-4 left-4 z-20 rounded-full bg-white/90 px-3 py-1.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-md backdrop-blur-sm">
+        <div className="absolute bottom-4 left-4 z-20 rounded-full bg-[var(--hp-bg-surface)]/90 px-3 py-1.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-md backdrop-blur-sm">
           {markers.length} {markers.length === 1 ? 'actividad' : 'actividades'} en el mapa
         </div>
       )}

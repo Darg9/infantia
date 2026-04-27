@@ -60,25 +60,25 @@ describe('sitemap()', () => {
     const result = await sitemap();
     const urls = result.map(r => r.url);
     // Las URLs incluyen el UUID + slug del título (formato canónico)
-    expect(urls.some(u => u.includes('/actividades/act-1'))).toBe(true);
-    expect(urls.some(u => u.includes('/actividades/act-2'))).toBe(true);
+    expect(urls.some(u => u.includes('/actividad/act-1'))).toBe(true);
+    expect(urls.some(u => u.includes('/actividad/act-2'))).toBe(true);
   });
 
   it('las rutas de actividades tienen prioridad 0.8', async () => {
     const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividades/act-1'));
+    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
     expect(actRoute?.priority).toBe(0.8);
   });
 
   it('las rutas de actividades tienen changeFrequency weekly', async () => {
     const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividades/act-1'));
+    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
     expect(actRoute?.changeFrequency).toBe('weekly');
   });
 
   it('usa la fecha updatedAt de la actividad como lastModified', async () => {
     const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividades/act-1'));
+    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
     expect(actRoute?.lastModified).toEqual(new Date('2026-03-20'));
   });
 

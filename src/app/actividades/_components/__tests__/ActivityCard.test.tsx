@@ -51,8 +51,8 @@ describe('ActivityCard', () => {
     it('enlaza a la página de detalle con URL canónica (uuid-slug)', () => {
       const { container } = render(<ActivityCard activity={baseActivity} />);
       const link = container.querySelector('a');
-      // URL canónica: /actividades/{uuid}-{slug-del-titulo}
-      expect(link?.getAttribute('href')).toMatch(/^\/actividades\/act-1-taller-de-pintura/);
+      // URL canónica: /actividad/{uuid}-{slug-del-titulo}
+      expect(link?.getAttribute('href')).toMatch(/^\/actividad\/act-1-taller-de-pintura/);
     });
 
     it('muestra el nombre del proveedor', () => {

@@ -52,8 +52,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted, urlCityId, pathname])
 
-  // SSR-safe
-  if (!mounted || cities.length <= 1) return null
+
 
   // Prioridad de resolución SSOT
   const isAwarePage = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
@@ -64,7 +63,6 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   const currentCity = cities.find(c => c.id === resolvedId)
 
   // Lógica de Ranking Híbrido
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const groupedCities = useMemo(() => {
     const actualId = resolvedId
     const current = cities.find(c => c.id === actualId) || null
@@ -93,6 +91,9 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
 
     return { current, recientes, fuertes, restantes }
   }, [cities, resolvedId, recentCityIds])
+
+  // SSR-safe (se evalúa después de todos los hooks para no romper la regla de React)
+  if (!mounted || cities.length <= 1) return null
 
   function handleOpenModal() {
     setIsOpen(true)

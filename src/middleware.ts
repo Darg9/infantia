@@ -3,7 +3,8 @@
 //
 // Responsabilidades:
 // 1. Refrescar la sesión de Supabase en todas las rutas (necesario para SSR auth)
-// 2. Proteger /api/admin/* — solo usuarios con rol ADMIN
+// 2. Proteger /admin/* — solo usuarios con rol ADMIN (redirect a /login)
+// 3. Proteger /api/admin/* — solo usuarios con rol ADMIN (responde JSON 401/403)
 //    Excepción: rutas de cron que usan CRON_SECRET en lugar de cookies
 // =============================================================================
 
@@ -24,7 +25,22 @@ export async function middleware(request: NextRequest) {
   // ── 1. Refrescar sesión Supabase (obligatorio para que SSR auth funcione) ──
   const { supabaseResponse, user } = await updateSession(request);
 
-  // ── 2. Proteger /api/admin/* ───────────────────────────────────────────────
+  // ── 2. Proteger /admin/* (páginas UI) — redirect a /login ─────────────────
+  // Cubre: /admin/source-health, /admin/sources, /admin/claims, etc.
+  // Las rutas /api/admin/* se manejan en el bloque siguiente con respuesta JSON.
+  if (pathname.startsWith('/admin/') || pathname === '/admin') {
+    if (!user) {
+      const loginUrl = new URL('/login', request.url);
+      loginUrl.searchParams.set('redirectTo', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    const role = user.app_metadata?.role as string | undefined;
+    if (role !== 'admin') {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
+  // ── 3. Proteger /api/admin/* (rutas API) — responde JSON 401/403 ──────────
   if (pathname.startsWith('/api/admin/')) {
     // Cron routes se autentican con CRON_SECRET — dejar pasar
     if (CRON_PATHS.some((p) => pathname.startsWith(p))) {

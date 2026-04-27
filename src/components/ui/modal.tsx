@@ -62,6 +62,8 @@ export interface ModalProps {
   hideCloseButton?: boolean
   /** Evita cerrar al hacer clic en el overlay */
   disableOverlayClose?: boolean
+  /** Posicionamiento en mobile (default: 'center', 'bottom' simula un bottom-sheet) */
+  mobilePosition?: 'center' | 'bottom'
   children: ReactNode
   className?: string
 }
@@ -101,6 +103,7 @@ export function Modal({
   size = 'md',
   hideCloseButton = false,
   disableOverlayClose = false,
+  mobilePosition = 'center',
   children,
   className,
 }: ModalProps) {
@@ -129,12 +132,15 @@ export function Modal({
   const panel = (
     // Overlay
     (<div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6"
+      className={clsx(
+        "fixed inset-0 z-50 flex p-4 sm:p-6",
+        mobilePosition === 'bottom' ? "items-end justify-center sm:items-center" : "items-center justify-center"
+      )}
       aria-hidden="false"
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
         onClick={disableOverlayClose ? undefined : onClose}
         aria-hidden="true"
       />
@@ -147,8 +153,11 @@ export function Modal({
         aria-describedby={description ? descId : undefined}
         className={clsx(
           'relative z-10 w-full flex flex-col',
-          'bg-[var(--hp-bg-surface)] dark:bg-gray-900',
-          'rounded-2xl shadow-xl border border-[var(--hp-border)] dark:border-gray-800',
+          'bg-[var(--hp-bg-surface)]',
+          'shadow-xl border border-[var(--hp-border)]',
+          mobilePosition === 'bottom'
+            ? 'rounded-t-2xl rounded-b-none sm:rounded-2xl'
+            : 'rounded-2xl',
           'max-h-[90vh]',
           SIZE_MAP[size],
           className,
@@ -159,7 +168,7 @@ export function Modal({
         }}
       >
         {/* Header (always rendered — needed for aria-labelledby) */}
-        <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-[var(--hp-border)] dark:border-gray-800 flex-shrink-0">
+        <div className="flex items-start justify-between gap-4 px-6 pt-6 pb-4 border-b border-[var(--hp-border)] flex-shrink-0">
           <div className="flex-1 min-w-0">
             <h2
               id={titleId}
@@ -180,8 +189,7 @@ export function Modal({
               onClick={onClose}
               className={clsx(
                 'flex-shrink-0 p-1.5 rounded-lg text-[var(--hp-text-muted)]',
-                'hover:bg-gray-100 hover:text-gray-600',
-                'dark:hover:bg-gray-800 dark:hover:text-[var(--hp-text-muted)]',
+                'hover:bg-[var(--hp-bg-elevated)] hover:text-[var(--hp-text-primary)]',
                 'transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500',
               )}
             >
@@ -226,7 +234,7 @@ function ModalFooter({ children, className }: ModalFooterProps) {
     <div
       className={clsx(
         'flex items-center justify-end gap-3 px-6 py-4 flex-shrink-0',
-        'border-t border-[var(--hp-border)] dark:border-gray-800',
+        'border-t border-[var(--hp-border)]',
         className,
       )}
     >

@@ -769,6 +769,10 @@ vi.mock('./module', () => ({ fn: mockFn }));
 - **UserMenu**: dropdown con click-outside detection, contiene "Mi perfil", "Mis favoritos", separator, "Salir" y enlace admin condicional
 - **Header**: UserMenu reemplazó avatar + links dispersos
 
+### Header y Hero Contextual
+- **Hero Contextual:** Patrón de *hydration island* (`CityHeroLabel.tsx`) para evitar saltos (CLS) y mismatch de SSR. Servidor renderiza "cerca de ti", cliente hidrata a "en [Ciudad]" con espacio pre-reservado.
+- **Header Inteligente:** `CitySwitcher` rige el contexto global, renderizando conteos reales de suministro por ciudad (usando `Location.groupBy` optimizado) y evitando que la ciudad sea un mero filtro de sidebar.
+
 ## 13. Design System (SSOT)
 
 A partir de S47, HabitaPlan estandariza su sistema visual usando Tokens Semánticos para prevenir divergencias en la paleta y escalabilidad (soporte oscuro centralizado).
@@ -811,7 +815,7 @@ Reglas fundamentales:
 | Parser resiliente en módulo separado (S52) | `parser/` desacoplado de `pipeline.ts` y `gemini.analyzer.ts` — usa `Pick<GeminiAnalyzer, 'analyze'>` para no acoplar al constructor. `isRetryableError` centralizado en `parser.types.ts`. Fallback no modifica `ActivityNLPResult` (schema Zod inmutable) — usa wrapper `ParseResult`. |
 | Feature flag `PARSER_FALLBACK_ENABLED` (S52) | Control de activación en `src/config/feature-flags.ts`. Default: `true`. Override: `PARSER_FALLBACK=false` en Vercel env vars. Rollback sin redeploy en ~2 min. Flag vive solo en el punto de orquestación (`pipeline.ts`) — no contamina módulos internos. |
 | Unificación Legal SSOT | No duplicar rutas legales. Un solo namespace: `/seguridad`. Todas las rutas legales deben vivir bajo `/seguridad/*`. Las rutas legacy no se reutilizan: se redirigen (308) y se deprecán. |
-| CityProvider en segment layout (v0.16.1) | `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
+| Multi-City Architecture | Resolución SSOT jerárquica (`URL > localStorage > fallback default`). El componente `CitySwitcher` sincroniza el estado cliente con la URL automáticamente en rutas sensibles para evitar mismatches. El backend estrictamente requiere `cityId`. `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
 | URL como SSOT de ciudad (v0.16.1) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
 | EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.1) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |
 

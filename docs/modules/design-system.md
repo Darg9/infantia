@@ -11,13 +11,14 @@ El Design System de HabitaPlan es la fuente única de la verdad para la interfaz
 
 ## 🎨 Estilos
 
-- ❌ No usar clases directas (`bg-*`, `text-*`)
+- ❌ No usar clases de colores directos Tailwind (`bg-red-500`, `text-blue-400`, `border-gray-200`)
 - ❌ No usar hex values
-- ✔ Usar tokens (`hp-*`)
+- ✔ Usar tokens dinámicos (`hp-*`) para colores y backgrounds
+- ✔ Usar clases utilitarias neutras libremente (`text-xs`, `bg-transparent`, `border-b`)
 - ✔ Usar componentes del DS
 
 ### Enforcement
-Cualquier PR con estilos directos debe ser rechazado.
+ESLint (`no-restricted-syntax`) bloquea mecánicamente el uso de colores nativos Tailwind en props `className`, asegurando que el theming global pase por variables CSS, pero evitando falsos positivos en utilidades estructurales.
 
 ## 🖼️ Logo Asset Rules
 

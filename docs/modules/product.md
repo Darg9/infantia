@@ -8,8 +8,9 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 ## 🧭 Flujos de Usuario Principales
 
 1. **Onboarding Contextual** (`/onboarding`): Sistema rápido de 3 pasos (Ubicación -> Dependientes/Niños -> Configuración Base). Define la visualización del contenido.
-2. **Hero Search** (Búsqueda Principal): Un ecosistema compuesto capaz de devolver predicciones mixtas. Enlaza con el listado `/actividades`.
+2. **Hero Contextual & Search** (Búsqueda Principal): Un ecosistema compuesto capaz de devolver predicciones mixtas. El Hero implementa un patrón "hydration island" SSR-safe que saluda de forma genérica ("cerca de ti") y se hidrata en cliente con la ciudad activa ("en Bogotá") sin layout shifts. Enlaza con el listado `/actividades`.
 3. **Listado de Actividades y Filtros**: Experiencia de filtros facetados en tiempo real. 
+   - **Ciudad como Contexto Global:** La ciudad dejó de ser un filtro redundante y ahora rige el contexto global del listado, informando dinámicamente el catálogo real local (ej. "1,234 actividades encontradas en Bogotá").
    - **Desktop (`>= md`)**: Filtros persistentes (sidebar o topbar). Actualización en tiempo real (sin CTA explícito).
    - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).
    - **Trust Layer / Cuarentenas**: Las actividades clasificadas con baja confianza o caducidad leve por el guardián editorial se marcan como `PAUSED` (Cuarentena) y son 100% invisibles en la UI pública. Solo se listan actividades en estado `ACTIVE`.

@@ -76,7 +76,15 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
   }
 
   if (f.cityId && exclude !== 'cityId') {
-    where.location = { cityId: f.cityId };
+    // Actividades sin location asignada (~60% del catálogo aún sin geocodificar)
+    // son visibles en cualquier ciudad. Solo se excluyen actividades con location
+    // asignada explícitamente a OTRA ciudad.
+    andConditions.push({
+      OR: [
+        { locationId: null },
+        { location: { cityId: f.cityId } },
+      ],
+    });
   }
 
   if (f.audience && exclude !== 'audience') {

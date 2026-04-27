@@ -355,7 +355,6 @@ export default async function ActividadesPage({
             ageMin={params.ageMin ?? ''}
             ageMax={params.ageMax ?? ''}
             categoryId={params.categoryId ?? ''}
-            cityId={params.cityId ?? ''}
             type={params.type ?? ''}
             audience={params.audience ?? ''}
             price={params.price ?? ''}

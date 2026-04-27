@@ -42,20 +42,17 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
   const [error,    setError]    = useState<string | null>(null);
 
   // ── Fetch markers cuando cambian los filtros ─────────────────────────────
+  // cityId ya llega garantizado en searchParams desde MapView (via CityProvider).
+  // Si no hay cityId aún (CityProvider montando), esperar en lugar de disparar HTTP 400.
   useEffect(() => {
-    // cityId es obligatorio en el API. Esperar a que CityProvider esté montado.
-    if (!city) return;
+    if (!searchParams.includes('cityId=')) return;
 
     setLoading(true);
     setError(null);
 
-    // Inyectar cityId desde CityProvider si no viene en los props (URL sin ?cityId=)
-    const sp = new URLSearchParams(searchParams);
-    if (!sp.get('cityId')) {
-      sp.set('cityId', city.id);
-    }
+    const controller = new AbortController();
 
-    fetch(`/api/activities/map?${sp.toString()}`)
+    fetch(`/api/activities/map?${searchParams}`, { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -64,11 +61,14 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
         setMarkers(data.markers ?? []);
         setLoading(false);
       })
-      .catch(() => {
+      .catch((err: unknown) => {
+        if (err instanceof Error && err.name === 'AbortError') return;
         setError('No se pudo cargar el mapa');
         setLoading(false);
       });
-  }, [searchParams, city?.id]); // city.id: re-fetch cuando cambia la ciudad
+
+    return () => controller.abort();
+  }, [searchParams]);
 
   // ── Inicializar mapa Leaflet (una sola vez) ───────────────────────────────
   useEffect(() => {

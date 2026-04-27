@@ -52,7 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const cityRoutes: MetadataRoute.Sitemap = cities.map((city) => ({
-    url: `${baseUrl}/actividades/ciudad/${slugify(city.name)}`,
+    url: `${baseUrl}/actividades/${slugify(city.name)}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.85,

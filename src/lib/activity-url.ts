@@ -1,8 +1,8 @@
 // =============================================================================
 // activity-url.ts — utilidades para construir y parsear URLs de actividades
 //
-// Formato canónico: /actividades/{uuid}-{slug-del-titulo}
-//   Ejemplo: /actividades/550e8400-e29b-41d4-a716-446655440000-taller-de-arte
+// Formato canónico: /actividad/{uuid}-{slug-del-titulo}
+//   Ejemplo: /actividad/550e8400-e29b-41d4-a716-446655440000-taller-de-arte
 //
 // El UUID (36 chars) siempre va primero; el slug es sufijo opcional.
 // Esto permite lookup por UUID sin necesidad de columna slug en la BD.
@@ -26,7 +26,7 @@ export function slugifyTitle(title: string): string {
 /** Construye la ruta canónica de una actividad */
 export function activityPath(id: string, title: string): string {
   const slug = slugifyTitle(title)
-  return `/actividades/${id}${slug ? `-${slug}` : ''}`
+  return `/actividad/${id}${slug ? `-${slug}` : ''}`
 }
 
 /**

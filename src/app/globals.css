@@ -36,6 +36,16 @@
   /* BORDER */
   --hp-border-subtle: rgba(0, 33, 71, 0.1);
 
+  /* FRESHNESS BADGE */
+  --hp-badge-fresh-bg: #ecfdf5;
+  --hp-badge-fresh-text: #047857;
+  --hp-badge-fresh-dot: #10b981;
+  --hp-badge-fresh-ring: rgba(5, 150, 105, 0.2);
+
+  /* PROVIDER BADGE */
+  --hp-badge-provider-bg: #e0e7ff;
+  --hp-badge-provider-text: #4338ca;
+
   /* ACTION */
   --hp-action-primary: #ff8c00;
   --hp-action-primary-hover: #e67e00;
@@ -62,6 +72,14 @@
   --hp-text-muted: rgba(255,255,255,0.4);
 
   --hp-border-subtle: rgba(255,255,255,0.1);
+
+  --hp-badge-fresh-bg: rgba(16, 185, 129, 0.1);
+  --hp-badge-fresh-text: #34d399;
+  --hp-badge-fresh-dot: #10b981;
+  --hp-badge-fresh-ring: rgba(16, 185, 129, 0.2);
+
+  --hp-badge-provider-bg: rgba(99, 102, 241, 0.1);
+  --hp-badge-provider-text: #818cf8;
 }
 
 /* ── Mapping a Tailwind v4 Utilities ── */

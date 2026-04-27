@@ -22,6 +22,7 @@ import ActivityViewTracker from '@/components/ActivityViewTracker';
 import clsx from 'clsx';
 import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
 import { normalizePrice } from '@/lib/decimal';
+import { slugify } from '@/lib/slugify';
 
 export async function generateMetadata({
   params,
@@ -131,7 +132,7 @@ export default async function ActividadDetallePage({
 
   // Redirect a URL canónica si el param no incluye el slug del título
   const canonicalPath = activityPath(id, activity.title);
-  if (`/actividades/${rawId}` !== canonicalPath) {
+  if (`/actividad/${rawId}` !== canonicalPath) {
     redirect(canonicalPath);
   }
 
@@ -245,19 +246,19 @@ export default async function ActividadDetallePage({
       {/* Breadcrumb visual */}
       <div className="mx-auto max-w-4xl px-4 pt-4">
         <nav aria-label="Ruta de navegación" className="flex items-center gap-1.5 text-sm text-[var(--hp-text-muted)] flex-wrap">
-          <Link href="/" className="hover:text-gray-600 transition-colors">Inicio</Link>
+          <Link href="/" className="hover:text-[var(--hp-text-secondary)] transition-colors">Inicio</Link>
           <span>/</span>
-          <Link href="/actividades" className="hover:text-gray-600 transition-colors">Actividades</Link>
+          <Link href="/actividades" className="hover:text-[var(--hp-text-secondary)] transition-colors">Actividades</Link>
           {mainCategory && (
             <>
               <span>/</span>
-              <Link href={`/actividades/categoria/${mainCategory.slug}`} className="hover:text-gray-600 transition-colors">
+              <Link href={`/actividades/categoria/${mainCategory.slug}`} className="hover:text-[var(--hp-text-secondary)] transition-colors">
                 {mainCategory.name}
               </Link>
             </>
           )}
           <span>/</span>
-          <span className="text-gray-600 truncate max-w-[200px]">{activity.title}</span>
+          <span className="text-[var(--hp-text-secondary)] truncate max-w-[200px]">{activity.title}</span>
         </nav>
       </div>
 
@@ -285,7 +286,7 @@ export default async function ActividadDetallePage({
               <div className="flex-1 p-6 sm:p-8 flex flex-col gap-3">
                 {/* Chips de contexto */}
                 <div className="flex flex-wrap gap-2">
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                  <span className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-secondary)]">
                     {TYPE_LABELS[activity.type] ?? activity.type}
                   </span>
                   {priceLabel !== 'No disponible' && (
@@ -297,7 +298,7 @@ export default async function ActividadDetallePage({
                     </span>
                   )}
                   {activity.categories.map(({ category }) => (
-                    <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-indigo-700">
+                    <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-primary)]">
                       {category.name}
                     </span>
                   ))}
@@ -334,7 +335,7 @@ export default async function ActividadDetallePage({
             <div className="bg-[var(--hp-bg-surface)] rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
               {/* Chips de contexto */}
               <div className="flex flex-wrap gap-2">
-                <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
+                <span className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-secondary)]">
                   {TYPE_LABELS[activity.type] ?? activity.type}
                 </span>
                 {priceLabel !== 'No disponible' && (
@@ -346,7 +347,7 @@ export default async function ActividadDetallePage({
                   </span>
                 )}
                 {activity.categories.map(({ category }) => (
-                  <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-indigo-700">
+                  <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-primary)]">
                     {category.name}
                   </span>
                 ))}
@@ -427,7 +428,7 @@ export default async function ActividadDetallePage({
               <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
                 <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Organiza</h2>
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hp-bg-subtle)] text-lg font-bold text-indigo-700">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hp-bg-subtle)] text-lg font-bold text-[var(--hp-text-primary)]">
                     {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -440,7 +441,7 @@ export default async function ActividadDetallePage({
                         <span className="font-medium text-[var(--hp-text-primary)]">{activity.provider.name}</span>
                       )}
                       {activity.provider.isVerified && (
-                        <span className="text-xs text-indigo-500 font-medium">✓ Verificado</span>
+                        <span className="text-xs text-[var(--hp-text-secondary)] font-medium">✓ Verificado</span>
                       )}
                     </div>
                     <span className="text-xs text-[var(--hp-text-muted)]">
@@ -463,7 +464,7 @@ export default async function ActividadDetallePage({
                 {ratingsAvg._count.score > 0 && (
                   <div className="flex items-center gap-2">
                     <StarRating value={Math.round(ratingsAvg._avg.score ?? 0)} readonly size="sm" />
-                    <span className="text-sm text-gray-600 font-medium">
+                    <span className="text-sm text-[var(--hp-text-secondary)] font-medium">
                       {(ratingsAvg._avg.score ?? 0).toFixed(1)}
                     </span>
                     <span className="text-xs text-[var(--hp-text-muted)]">
@@ -489,7 +490,7 @@ export default async function ActividadDetallePage({
                       {r.user.avatarUrl ? (
                         <img src={r.user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
                       ) : (
-                        <div className="w-8 h-8 bg-gray-100 text-[var(--hp-text-secondary)] rounded-full flex items-center justify-center text-xs font-semibold">
+                        <div className="w-8 h-8 bg-[var(--hp-bg-subtle)] text-[var(--hp-text-secondary)] rounded-full flex items-center justify-center text-xs font-semibold">
                           {r.user.name[0]?.toUpperCase() ?? '?'}
                         </div>
                       )}
@@ -584,7 +585,7 @@ export default async function ActividadDetallePage({
               <OutboundLink
                 activityId={id}
                 href={activity.sourceUrl}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+                className="flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[var(--hp-action-primary-hover)] transition-colors"
               >
               Ver sitio oficial
                 <span>↗</span>
@@ -617,7 +618,7 @@ export default async function ActividadDetallePage({
             <div className="rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-4 flex flex-col gap-1.5 text-xs text-[var(--hp-text-muted)]">
               <div className="flex items-center justify-between">
                 <span>Fuente</span>
-                <span className="text-gray-600">
+                <span className="text-[var(--hp-text-secondary)]">
                   {activity.sourceUrl
                     ? (() => { try { return new URL(activity.sourceUrl).hostname.replace('www.', ''); } catch { return 'Proveedor externo'; } })()
                     : 'Proveedor externo'}
@@ -626,7 +627,7 @@ export default async function ActividadDetallePage({
               {activity.sourceCapturedAt && (
                 <div className="flex items-center justify-between">
                   <span>Última actualización</span>
-                  <span className="text-gray-600">
+                  <span className="text-[var(--hp-text-secondary)]">
                     {new Date(activity.sourceCapturedAt).toLocaleDateString('es-CO')}
                   </span>
                 </div>
@@ -669,6 +670,31 @@ export default async function ActividadDetallePage({
           )}
         </div>
       </div>
+      </div>
+      
+      {/* ── SEO Interlinking (Silos Semánticos) ────────────────────────────── */}
+      <div className="mx-auto max-w-4xl px-4 py-8">
+        <div className="border-t border-[var(--hp-border)] pt-8">
+          <h2 className="text-sm font-bold text-[var(--hp-text-primary)] mb-4 tracking-wide uppercase">Sigue explorando</h2>
+          <div className="flex flex-wrap gap-3">
+            {activity.location?.city && (
+              <Link 
+                href={`/actividades/${slugify(activity.location.city.name)}`}
+                className="inline-flex items-center rounded-full bg-brand-50 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 transition-colors"
+              >
+                📍 Más planes en {activity.location.city.name}
+              </Link>
+            )}
+            {mainCategory && activity.location?.city && (
+              <Link 
+                href={`/actividades/categoria/${mainCategory.slug}?cityId=${activity.location.city.id}`}
+                className="inline-flex items-center rounded-full bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] px-4 py-2 text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-300 transition-colors"
+              >
+                {categoryEmoji} Más {mainCategory.name.toLowerCase()} en {activity.location.city.name}
+              </Link>
+            )}
+          </div>
+        </div>
       </div>
       {/* Actividades similares */}
       <div className="mx-auto max-w-5xl px-4 pb-12">

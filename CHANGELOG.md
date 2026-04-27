@@ -9,6 +9,22 @@ Relación con Documento Fundacional:
 
 ---
 
+## [ops/2026-04-26] — S58 (Auditoría documental + Ingest ops + Gobernanza)
+
+### Operativo (sin cambios de producto)
+
+- **Auditoría documental exhaustiva:** 14 archivos actualizados a v0.17.0-beta — README, package.json, ARCHITECTURE, CHANGELOG, TEST_STATUS, TEST_PLAN, CLAUDE.md, activities.md, auth.md, design-system.md, docs/README.md, DEDUPLICATION-STRATEGY.md, FUNDACIONAL.md, active_sources.md.
+- **Fix `scripts/inspect-biblored-reparse.ts`:** 4 errores TS eliminados. Reescrito para leer `data/scraping-cache.json` directamente (Prisma no tiene campo `needsReparse`).
+- **Limpieza reparse queue Banrep:** 728 → 0 URLs con `needsReparse: true`. Barrera silenciosa que bloqueaba el scheduler predictivo.
+- **Ingest BibloRed:** 0 nuevas actividades — caché madura confirmada (408/602 URLs recientes). No es error, es estado esperado.
+- **Ingest Banrep:** Abortado — VPN activa bloqueó DNS de `banrepcultural.org` + quota Gemini agotada. 0 actividades. Pendiente run mañana.
+- **RUNBOOK.md creado:** Preflight protocol, cadencias por fuente, diagnóstico de problemas comunes, gobernanza documental.
+- **Gobernanza fundacional:** Regla "Every change" → "Every **material** change". Umbral documentado en CLAUDE.md, MEMORY.md y RUNBOOK.md.
+
+### Sin cambios en tests, esquema o código de producción
+
+---
+
 ## [v0.17.0-beta] — 2026-04-25 (SaveActivityResult + PQRS Legal + Activity Gate Fix)
 
 ### Fixed

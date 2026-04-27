@@ -169,10 +169,25 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.17.0-beta | V28 | PQRS Legal (firstRespondedAt/responseChannel), Activity Gate fix, SaveActivityResult, pqrs.ts SSOT — S56+S57 |
 ### Regla para Documento Fundacional
 
-Generar nueva versión del doc cuando:
-- Se agrega un módulo nuevo completo
-- Cambia la arquitectura o el stack
-- Se completa un milestone del roadmap
+**Generar nueva versión SOLO ante cambio material en uno de estos ejes:**
+
+| Eje | Ejemplos que SÍ ameritan nueva versión |
+|-----|---------------------------------------|
+| **Producto** | Nuevo módulo relevante, feature pública core, cambio al journey principal |
+| **Mercado** | Nueva ciudad/país, nuevo segmento objetivo |
+| **Modelo de negocio** | Nueva monetización, pricing, partnership estructural |
+| **Plataforma** | Cambio de stack, proveedor o infra core |
+| **Escala** | Catálogo >20% crecimiento, MAU significativo, cambio operacional por volumen |
+| **Marca** | Rename, dominio, repositorio oficial, identidad visual estratégica |
+
+**Lo que NO requiere nueva versión:**
+- Protocolos internos / runbooks / SOPs operativos
+- Ajustes de cadencia de scraping
+- Limpieza de deuda técnica o fixes menores
+- Runs de ingest normales (incluso exitosos)
+- Actualizaciones incrementales de documentación
+
+**La palabra clave es "material"** — si el cambio no altera el estado del sistema que un inversor o nuevo miembro del equipo necesitaría entender, no requiere nueva versión.
 
 Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 

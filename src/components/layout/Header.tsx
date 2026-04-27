@@ -23,19 +23,34 @@ export async function Header() {
   }
 
   // Cargar ciudades activas para el selector (solo si hay 2+)
-  const rawCities = await prisma.city.findMany({
-    where: { isActive: true },
-    select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
-    // Ciudad con más locations primero (≈ Bogotá) para que el fallback del CitySwitcher
-    // coincida con el default del CityProvider en /actividades. Secundario: nombre asc.
-    orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
-  })
+  const [rawCities, activityCounts] = await Promise.all([
+    prisma.city.findMany({
+      where: { isActive: true },
+      select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
+      // Ciudad con más locations primero (≈ Bogotá) para que el fallback del CitySwitcher
+      // coincida con el default del CityProvider en /actividades. Secundario: nombre asc.
+      orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
+    }),
+    // Activity → Location → City. No hay cityId directo en Activity.
+    // Contamos actividades activas por ciudad vía Location.
+    prisma.location.groupBy({
+      by: ['cityId'],
+      where: { activities: { some: { status: 'ACTIVE' } } },
+      _count: { id: true },
+    }),
+  ])
+
+  const countByCityId = Object.fromEntries(
+    activityCounts.map((r) => [r.cityId, r._count.id])
+  )
+
   const cities: CityOption[] = rawCities.map((c) => ({
-    id:          c.id,
-    name:        c.name,
-    defaultLat:  Number(c.defaultLat),
-    defaultLng:  Number(c.defaultLng),
-    defaultZoom: c.defaultZoom,
+    id:            c.id,
+    name:          c.name,
+    defaultLat:    Number(c.defaultLat),
+    defaultLng:    Number(c.defaultLng),
+    defaultZoom:   c.defaultZoom,
+    activityCount: countByCityId[c.id] ?? 0,
   }))
 
   // Props forwarded to the mobile client component

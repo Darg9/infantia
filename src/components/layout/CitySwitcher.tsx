@@ -104,6 +104,8 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   }
 
   // variant === 'desktop'
+  const currentCity = cities.find(c => c.id === resolvedId)
+
   return (
     <div className="flex items-center gap-1.5">
       <svg
@@ -129,6 +131,11 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
           <option key={c.id} value={c.id}>{c.name}</option>
         ))}
       </select>
+      {currentCity?.activityCount != null && currentCity.activityCount > 0 && (
+        <span className="text-xs text-[var(--hp-text-muted)] select-none">
+          · {currentCity.activityCount} actividades
+        </span>
+      )}
     </div>
   )
 }

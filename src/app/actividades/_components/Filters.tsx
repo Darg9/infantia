@@ -718,20 +718,9 @@ export default function Filters({
           </option>
         </select>
 
-        {/* Ubicación — visible siempre que existan ciudades disponibles o haya una seleccionada */}
-        {(facets.availableCities.length >= 1 || !!cityId) && (
-          <select
-            value={cityId}
-            onChange={e => handleCity(e.target.value)}
-            className={selectCls(!!cityId)}
-            aria-label="Ubicación"
-          >
-            <option value="">Ubicación</option>
-            {facets.availableCities.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
-            ))}
-          </select>
-        )}
+        {/* Ciudad — el selector se eliminó del bar (duplicaba el header CitySwitcher).
+            Cambio de ciudad: usar el selector 📍 del header.
+            Eliminación: usar el chip activo en la fila inferior.             */}
 
         {/* Edad */}
         <select
@@ -854,6 +843,9 @@ export default function Filters({
           <span className="text-[var(--hp-text-secondary)]">
             <span className="font-semibold text-[var(--hp-text-primary)]">{total.toLocaleString('es-CO')}</span>
             {' '}actividad{total !== 1 ? 'es' : ''} encontrada{total !== 1 ? 's' : ''}
+            {cityName && (
+              <> en <span className="font-medium text-[var(--hp-text-primary)]">{cityName}</span></>
+            )}
           </span>
         )}
       </p>

@@ -30,6 +30,8 @@ export type CityOption = {
   defaultLat: number
   defaultLng: number
   defaultZoom: number
+  /** Actividades ACTIVE en esta ciudad (opcional: solo viene del Header server query) */
+  activityCount?: number
 }
 
 type CityContextValue = {

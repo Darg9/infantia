@@ -19,17 +19,20 @@ export function ThemeToggle() {
   return (
     <Button
       id="theme-toggle"
+      size="icon"
       variant="ghost"
       onClick={toggleTheme}
       aria-label={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
       title={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
       className="
-        flex items-center justify-center
-        w-8 h-8 rounded-[var(--hp-radius-md)]
+        w-8 h-8 flex items-center justify-center
+        rounded-[var(--hp-radius-md)]
+        border border-[var(--hp-border-subtle)]
         text-[var(--hp-text-secondary)]
         hover:text-[var(--hp-text-primary)]
         hover:bg-[var(--hp-bg-subtle)]
-        transition-colors duration-[var(--hp-transition)]
+        hover:border-[var(--hp-border-subtle)]
+        transition-colors
         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
       "
     >

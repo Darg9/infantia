@@ -21,6 +21,7 @@ import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, Help
 import { Icon } from "@/components/ui/icon"
 import { CitySwitcher } from '@/components/layout/CitySwitcher'
 import type { CityOption } from '@/components/providers/CityProvider'
+import { useTheme } from '@/hooks/useTheme'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -162,32 +163,25 @@ const BOTTOM_TABS = [
   { label: 'Perfil',    href: '/perfil',           icon: User    },
 ] as const
 
-// ─── Theme toggle (reads from document.documentElement.classList) ─────────────
+// ─── Theme toggle — delega a ThemeProvider vía useTheme() ────────────────────
+// Reemplaza el patrón useState/useEffect (set-state-in-effect) por el hook
+// compartido con el toggle de escritorio. Ambos quedan sincronizados.
 
 function MobileThemeToggle() {
-  const [dark, setDark] = useState(false)
-
-  useEffect(() => {
-    setDark(document.documentElement.classList.contains('dark'))
-  }, [])
-
-  function toggle() {
-    const next = !dark
-    setDark(next)
-    document.documentElement.classList.toggle('dark', next)
-    try { localStorage.setItem('theme', next ? 'dark' : 'light') } catch {}
-  }
+  const { theme, toggleTheme } = useTheme()
+  const dark = theme === 'dark'
 
   return (
     <Button
+      size="icon"
       variant="ghost"
-      onClick={toggle}
+      onClick={toggleTheme}
       aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-      className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
+      className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--hp-border-subtle)] text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
     >
-      <Icon icon={dark ? Sun : Moon} size="lg" className="text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]" />
+      <Icon icon={dark ? Sun : Moon} size="lg" />
     </Button>
-  );
+  )
 }
 
 // ─── Drawer ───────────────────────────────────────────────────────────────────
@@ -326,7 +320,7 @@ function MobileDrawer({
                     <Link
                       href={`/proveedores/${session.providerSlug}/dashboard`}
                       onClick={onClose}
-                      className="block px-3 py-2.5 rounded-lg text-sm font-medium text-indigo-500 hover:bg-indigo-500/10 transition-colors"
+                      className="block px-3 py-2.5 rounded-lg text-sm font-medium text-[var(--hp-badge-provider-text)] hover:bg-[var(--hp-badge-provider-bg)] transition-colors"
                     >
                       Panel de proveedor
                     </Link>

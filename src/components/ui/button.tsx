@@ -18,7 +18,7 @@
 import { clsx } from 'clsx'
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive'
-type ButtonSize = 'sm' | 'md' | 'lg'
+type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -58,9 +58,11 @@ const VARIANTS: Record<ButtonVariant, string> = {
 }
 
 const SIZES: Record<ButtonSize, string> = {
-  sm: 'px-3 py-1.5 text-xs rounded-lg',
-  md: 'px-5 py-2.5 text-sm rounded-xl',
-  lg: 'px-6 py-3 text-base rounded-xl',
+  sm:   'px-3 py-1.5 text-xs rounded-lg',
+  md:   'px-5 py-2.5 text-sm rounded-xl',
+  lg:   'px-6 py-3 text-base rounded-xl',
+  /** Sin padding — para botones cuadrados de ícono solo. El caller debe fijar w/h y p. */
+  icon: 'p-0',
 }
 
 export function buttonVariants({ variant = 'primary', size = 'md', className }: Pick<ButtonProps, 'variant' | 'size' | 'className'>) {

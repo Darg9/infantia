@@ -142,6 +142,8 @@ export async function listActivities(params: ListParams) {
   const effectiveSort = isForced ? 'newest' : params.sortBy;
 
   const where: Prisma.ActivityWhereInput = {};
+  // Acumulamos condiciones AND para evitar conflictos entre filtros
+  const andConditions: Prisma.ActivityWhereInput[] = [];
 
   if (params.status) {
     where.status = params.status as Prisma.EnumActivityStatusFilter;
@@ -153,16 +155,23 @@ export async function listActivities(params: ListParams) {
   if (params.verticalId) where.verticalId = params.verticalId;
   if (params.type) where.type = params.type as Prisma.EnumActivityTypeFilter;
   if (params.categoryId) where.categories = { some: { categoryId: params.categoryId } };
-  if (params.cityId) where.location = { cityId: params.cityId };
+  if (params.cityId) {
+    // Actividades sin location asignada (~60% del catálogo) son visibles en cualquier ciudad.
+    // Solo se excluyen actividades con location asignada explícitamente a OTRA ciudad.
+    // IMPORTANTE: where.location = { cityId } es un JOIN estricto que excluye locationId=null.
+    andConditions.push({
+      OR: [
+        { locationId: null },
+        { location: { cityId: params.cityId } },
+      ],
+    });
+  }
 
   // Audience — actividades con audience=ALL aparecen en todos los filtros
   if (params.audience) {
     const vals = audienceValues(params.audience);
     if (vals.length) where.audience = { in: vals as Prisma.EnumActivityAudienceFilter['in'] };
   }
-
-  // Acumulamos condiciones AND para evitar conflictos entre age y search
-  const andConditions: Prisma.ActivityWhereInput[] = [];
 
   // Age overlap: activity range overlaps with requested range
   if (params.ageMin !== undefined) {

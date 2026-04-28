@@ -101,10 +101,20 @@ describe('listActivities()', () => {
     expect(whereArg.verticalId).toBe('vert-001');
   });
 
-  it('filtra por cityId cuando se pasa', async () => {
+  it('filtra por cityId incluyendo actividades sin location (OR locationId null)', async () => {
     await listActivities({ skip: 0, pageSize: 20, cityId: 'city-bog' });
     const whereArg = mockFindMany.mock.calls[0][0].where;
-    expect(whereArg.location).toEqual({ cityId: 'city-bog' });
+    // cityId usa OR pattern: incluye actividades sin location + las de la ciudad indicada.
+    // where.location (strict join) fue reemplazado por andConditions OR para no excluir
+    // el ~60% del catálogo que aún no tiene locationId asignado.
+    expect(whereArg.location).toBeUndefined();
+    const andOR = whereArg.AND?.find((c: any) => c.OR);
+    expect(andOR).toEqual({
+      OR: [
+        { locationId: null },
+        { location: { cityId: 'city-bog' } },
+      ],
+    });
   });
 
   it('aplica rango de precios cuando se pasan ambos', async () => {

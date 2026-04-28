@@ -10,6 +10,14 @@
  *   cityId   — Ciudad del usuario (opcional; sin cityId → conteo global)
  *
  * Response: { [categoryId]: count }
+ *
+ * Implementación: activity.count() paralelo por categoría — usa buildActivityWhere
+ * directamente, igual que listActivities(). Garantiza consistencia total con los
+ * resultados reales.
+ *
+ * ⚠️ NO usar category.findMany(_count.activities.where { activity: ... }) con cityId:
+ * el OR con location.cityId anidado en _count falla silenciosamente en Prisma 7
+ * devolviendo 0 cuando debería devolver decenas de actividades.
  */
 
 import { NextResponse } from 'next/server';
@@ -33,25 +41,19 @@ export async function GET(request: Request) {
   });
   const badDomains = badDomainSources.map((h) => h.source);
 
-  const activityFilter = buildActivityWhere({ status: 'ACTIVE', cityId, badDomains });
+  // activity.count() paralelo por categoría — mismo WHERE que listActivities.
+  // Esto garantiza que el conteo del home coincida con lo que el usuario verá
+  // al hacer clic en la categoría.
+  const entries = await Promise.all(
+    categoryIds.map(async (categoryId) => {
+      const count = await prisma.activity.count({
+        where: buildActivityWhere({ status: 'ACTIVE', cityId, categoryId, badDomains }),
+      });
+      return [categoryId, count] as [string, number];
+    }),
+  );
 
-  // Una query — mismo patrón que home page category counts
-  const categories = await prisma.category.findMany({
-    where: { id: { in: categoryIds } },
-    select: {
-      id: true,
-      _count: {
-        select: {
-          activities: { where: { activity: activityFilter } },
-        },
-      },
-    },
-  });
-
-  const result: Record<string, number> = {};
-  for (const cat of categories) {
-    result[cat.id] = cat._count.activities;
-  }
+  const result = Object.fromEntries(entries);
 
   return NextResponse.json(result, {
     headers: {

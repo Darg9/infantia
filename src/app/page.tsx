@@ -13,6 +13,7 @@ import ActivityCard from '@/app/actividades/_components/ActivityCard';
 import HeroSearch from '@/app/_components/HeroSearch';
 import { serializeActivity } from '@/lib/prisma-serialize';
 import { CityHeroLabel } from '@/app/_components/CityHeroLabel';
+import { CategoryCountsIsland } from '@/app/_components/CategoryCountsIsland';
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
@@ -157,29 +158,44 @@ export default async function HomePage() {
       {topCategories.length > 0 && (
         <section className="mx-auto max-w-5xl px-4 py-5">
           <SectionHeader title="Explora por tipo de actividad" href="/actividades" linkText="Ver todas →" />
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {topCategories.map((cat) => (
-              <Link
-                key={cat.id}
-                href={`/actividades?categoryId=${cat.id}`}
-                className="group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-md transition-all"
-              >
-                {/* Ícono con gradiente de la categoría */}
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                  style={{ background: getCategoryGradient(cat.slug) }}
-                >
-                  {getCategoryEmoji(cat.name)}
-                </div>
-                <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-hp-action-primary transition-colors leading-tight">
-                  {cat.name}
-                </span>
-                <span className="text-xs text-[var(--hp-text-muted)]">
-                  {cat._count.activities} {cat._count.activities === 1 ? 'actividad' : 'actividades'}
-                </span>
-              </Link>
-            ))}
-          </div>
+          {/*
+            CategoryCountsIsland: Server renderiza con conteos globales (calidad-filtrados).
+            Cliente, post-mount, hace UN fetch con cityId del usuario y actualiza los
+            números silenciosamente. Sin layout shift — el número se intercambia in-place.
+          */}
+          <CategoryCountsIsland
+            categoryIds={topCategories.map((c) => c.id)}
+            fallbackCounts={Object.fromEntries(topCategories.map((c) => [c.id, c._count.activities]))}
+          >
+            {(counts) => (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {topCategories.map((cat) => {
+                  const count = counts[cat.id] ?? cat._count.activities;
+                  return (
+                    <Link
+                      key={cat.id}
+                      href={`/actividades?categoryId=${cat.id}`}
+                      className="group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-md transition-all"
+                    >
+                      {/* Ícono con gradiente de la categoría */}
+                      <div
+                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
+                        style={{ background: getCategoryGradient(cat.slug) }}
+                      >
+                        {getCategoryEmoji(cat.name)}
+                      </div>
+                      <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-hp-action-primary transition-colors leading-tight">
+                        {cat.name}
+                      </span>
+                      <span className="text-xs text-[var(--hp-text-muted)]">
+                        {count} {count === 1 ? 'actividad' : 'actividades'}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </CategoryCountsIsland>
         </section>
       )}
       {/* ================================================================ */}

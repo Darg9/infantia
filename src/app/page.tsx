@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
 import { buildActivityWhere } from '@/modules/activities/activity-filters';
-import { getCategoryEmoji, getCategoryGradient } from '@/lib/category-utils';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 import HeroSearch from '@/app/_components/HeroSearch';
 import { serializeActivity } from '@/lib/prisma-serialize';
@@ -164,40 +163,13 @@ export default async function HomePage() {
             números silenciosamente. Sin layout shift — el número se intercambia in-place.
           */}
           <CategoryCountsIsland
-            categoryIds={topCategories.map((c) => c.id)}
-            fallbackCounts={Object.fromEntries(topCategories.map((c) => [c.id, c._count.activities]))}
-          >
-            {(counts) => (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {topCategories.map((cat) => {
-                  const count = counts[cat.id] ?? cat._count.activities;
-                  return (
-                    <Link
-                      key={cat.id}
-                      href={`/actividades?categoryId=${cat.id}`}
-                      className="group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-md transition-all"
-                    >
-                      {/* Ícono con gradiente de la categoría */}
-                      <div
-                        className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl"
-                        style={{ background: getCategoryGradient(cat.slug) }}
-                      >
-                        {getCategoryEmoji(cat.name)}
-                      </div>
-                      <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-hp-action-primary transition-colors leading-tight">
-                        {cat.name}
-                      </span>
-                      <span className="text-xs text-[var(--hp-text-muted)] tabular-nums">
-                        {/* key={count}: React remonta este span al cambiar → animación fade */}
-                        <span key={count} className="hp-count-fade">{count}</span>
-                        {' '}{count === 1 ? 'actividad' : 'actividades'}
-                      </span>
-                    </Link>
-                  );
-                })}
-              </div>
-            )}
-          </CategoryCountsIsland>
+            categories={topCategories.map((c) => ({
+              id: c.id,
+              name: c.name,
+              slug: c.slug,
+              initialCount: c._count.activities,
+            }))}
+          />
         </section>
       )}
       {/* ================================================================ */}

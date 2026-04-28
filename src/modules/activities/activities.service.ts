@@ -9,6 +9,7 @@ import { getDomainFromUrl, computeActivityScore } from './ranking';
 import { getCachedCTR, ctrToBoost } from '@/modules/analytics/metrics';
 import { normalizeSearchQuery } from '@/lib/search';
 import { createLogger } from '@/lib/logger';
+import { buildActivityWhere } from './activity-filters';
 
 const log = createLogger('activities:search');
 
@@ -107,14 +108,6 @@ interface ListParams {
   sortBy?: SortValue;
 }
 
-// Valores de audience que aplican a cada opción de filtro
-function audienceValues(audience: string): string[] {
-  if (audience === 'KIDS') return ['KIDS', 'ALL'];
-  if (audience === 'FAMILY') return ['FAMILY', 'ALL'];
-  if (audience === 'ADULTS') return ['ADULTS', 'ALL'];
-  return [];
-}
-
 function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInput[] {
   switch (sortBy) {
     case 'date':
@@ -141,64 +134,10 @@ export async function listActivities(params: ListParams) {
   const isForced = process.env.FORCE_CHRONO === 'true';
   const effectiveSort = isForced ? 'newest' : params.sortBy;
 
-  const where: Prisma.ActivityWhereInput = {};
-  // Acumulamos condiciones AND para evitar conflictos entre filtros
-  const andConditions: Prisma.ActivityWhereInput[] = [];
-
-  if (params.status) {
-    where.status = params.status as Prisma.EnumActivityStatusFilter;
-  } else {
-    // Mostrar solo ACTIVE. Las EXPIRED se ocultan automáticamente del portal.
-    where.status = 'ACTIVE';
-  }
-
-  if (params.verticalId) where.verticalId = params.verticalId;
-  if (params.type) where.type = params.type as Prisma.EnumActivityTypeFilter;
-  if (params.categoryId) where.categories = { some: { categoryId: params.categoryId } };
-  if (params.cityId) {
-    // Actividades sin location asignada (~60% del catálogo) son visibles en cualquier ciudad.
-    // Solo se excluyen actividades con location asignada explícitamente a OTRA ciudad.
-    // IMPORTANTE: where.location = { cityId } es un JOIN estricto que excluye locationId=null.
-    andConditions.push({
-      OR: [
-        { locationId: null },
-        { location: { cityId: params.cityId } },
-      ],
-    });
-  }
-
-  // Audience — actividades con audience=ALL aparecen en todos los filtros
-  if (params.audience) {
-    const vals = audienceValues(params.audience);
-    if (vals.length) where.audience = { in: vals as Prisma.EnumActivityAudienceFilter['in'] };
-  }
-
-  // Age overlap: activity range overlaps with requested range
-  if (params.ageMin !== undefined) {
-    andConditions.push({ OR: [{ ageMax: { gte: params.ageMin } }, { ageMax: null }] });
-  }
-  if (params.ageMax !== undefined) {
-    andConditions.push({ OR: [{ ageMin: { lte: params.ageMax } }, { ageMin: null }] });
-  }
-
-  if (params.priceMin !== undefined || params.priceMax !== undefined) {
-    where.price = {};
-    if (params.priceMin !== undefined) where.price.gte = params.priceMin;
-    if (params.priceMax !== undefined) where.price.lte = params.priceMax;
-  }
-
-  if (params.price === 'free') {
-    andConditions.push({ OR: [{ price: 0 }, { pricePeriod: 'FREE' }] });
-  } else if (params.price === 'paid') {
-    andConditions.push({
-      AND: [
-        { price: { not: null } },
-        { price: { gt: 0 } },
-        { NOT: { pricePeriod: 'FREE' } },
-      ],
-    });
-  }
-
+  // ── 1. pg_trgm search ────────────────────────────────────────────────────────
+  // Early return si no hay matches — evita queries costosas de ranking.
+  // Los IDs resultantes se pasan a buildActivityWhere como matchingIds.
+  let matchingIds: string[] | undefined;
   let textScoreMap: Map<string, number> | null = null;
 
   if (params.search) {
@@ -209,7 +148,6 @@ export async function listActivities(params: ListParams) {
     const patternExact  = `%${q}%`;
     const patternPrefix = `${q}%`;
 
-    // ── pg_trgm: similarity en título + word_similarity para frases largas  ──
     // Umbrales calibrados:
     //   title similarity  > 0.25  (evita ruido, title es señal fuerte)
     //   word_similarity   > 0.30  (funciona mejor para queries cortos en frases largas)
@@ -244,7 +182,7 @@ export async function listActivities(params: ListParams) {
 
     log.info('Intento de búsqueda de actividades', { action: 'activity_search', result: 'attempt', queryLength: rawSearch.length, raw: rawSearch, normalized: q });
 
-    const matchingIds: string[] = [];
+    matchingIds = [];
     textScoreMap = new Map();
 
     for (const r of searchResults) {
@@ -265,17 +203,16 @@ export async function listActivities(params: ListParams) {
       log.info('Búsqueda sin resultados', { action: 'activity_search', result: 'success', results: 0 });
       return { activities: [], total: 0 };
     }
-    andConditions.push({ id: { in: matchingIds } });
   }
 
-  // 1. Obtener Diccionario Global de Orígenes para ranking (Con caché TTL de 5 minutos)
+  // ── 2. Health data (con caché TTL 5 min) ──────────────────────────────────────
   const [healthData, ctrMap] = await Promise.all([
     getCachedHealthData(),
     getCachedCTR(),
   ]);
   const healthDict: Record<string, number> = {};
   const badDomains: string[] = [];
-  
+
   for (const h of healthData) {
     healthDict[h.source] = h.score;
     // Threshold conservador: solo ocultar fuentes con score < 0.1 (prácticamente muertas).
@@ -285,24 +222,14 @@ export async function listActivities(params: ListParams) {
     }
   }
 
-  // 2. Filtrado mínimo pre-SQL para aliviar presión y asegurar páginas completas
+  // ── 3. WHERE — SSOT via buildActivityWhere ────────────────────────────────────
+  // badDomains solo en relevance (otros sorts como 'date' muestran todo sin filtro de calidad).
   const isRelevanceSort = !effectiveSort || effectiveSort === 'relevance';
-  
-  if (isRelevanceSort && badDomains.length > 0) {
-    // IMPORTANTE: NOT IN en SQL excluye NULLs (NULL NOT IN (...) → NULL, no TRUE).
-    // Las actividades sin sourceDomain (pre-fix) son legítimas y deben mostrarse.
-    // Usamos OR explícito para preservar las que aún no tienen dominio asignado.
-    andConditions.push({
-      OR: [
-        { sourceDomain: null },
-        { NOT: { sourceDomain: { in: badDomains } } },
-      ],
-    });
-  }
-
-  if (andConditions.length) {
-    where.AND = andConditions;
-  }
+  const where = buildActivityWhere({
+    ...params,
+    matchingIds,
+    badDomains: isRelevanceSort ? badDomains : [],
+  });
 
   const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(effectiveSort);
 

@@ -9,6 +9,7 @@ import { listActivities, VALID_SORT_VALUES, type SortValue } from '@/modules/act
 import { prisma } from '@/lib/db';
 import { getSession } from '@/lib/auth';
 import type { Prisma } from '@/generated/prisma/client';
+import { buildActivityWhere, type ActivityFilterParams } from '@/modules/activities/activity-filters';
 import ActivityCard from './_components/ActivityCard';
 import Filters, { FiltersSkeleton } from './_components/Filters';
 import Pagination from './_components/Pagination';
@@ -60,73 +61,13 @@ interface ActiveFilters {
 }
 
 // =============================================================================
-// Construye el WHERE de Prisma a partir de los filtros activos
-// Se usa tanto en listActivities como en getFacets para consistencia
+// buildWhere — wrapper de buildActivityWhere para getFacets
+// Mapea ActiveFilters → ActivityFilterParams y delega al SSOT.
+// Nota: los facets NO pasan badDomains → muestran todas las opciones disponibles
+// sin importar la calidad de la fuente.
 // =============================================================================
 function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.ActivityWhereInput {
-  const where: Prisma.ActivityWhereInput = { status: 'ACTIVE' };
-  const andConditions: Prisma.ActivityWhereInput[] = [];
-
-  if (f.type && exclude !== 'type') {
-    where.type = f.type as Prisma.EnumActivityTypeFilter;
-  }
-
-  if (f.categoryId && exclude !== 'categoryId') {
-    where.categories = { some: { categoryId: f.categoryId } };
-  }
-
-  if (f.cityId && exclude !== 'cityId') {
-    // Actividades sin location asignada (~60% del catálogo aún sin geocodificar)
-    // son visibles en cualquier ciudad. Solo se excluyen actividades con location
-    // asignada explícitamente a OTRA ciudad.
-    andConditions.push({
-      OR: [
-        { locationId: null },
-        { location: { cityId: f.cityId } },
-      ],
-    });
-  }
-
-  if (f.audience && exclude !== 'audience') {
-    const vals =
-      f.audience === 'KIDS' ? ['KIDS', 'ALL'] :
-      f.audience === 'FAMILY' ? ['FAMILY', 'ALL'] :
-      f.audience === 'ADULTS' ? ['ADULTS', 'ALL'] : [];
-    if (vals.length) where.audience = { in: vals as Prisma.EnumActivityAudienceFilter['in'] };
-  }
-
-  if (f.ageMin !== undefined && exclude !== 'ageMin') {
-    andConditions.push({ OR: [{ ageMax: { gte: f.ageMin } }, { ageMax: null }] });
-  }
-  if (f.ageMax !== undefined && exclude !== 'ageMax') {
-    andConditions.push({ OR: [{ ageMin: { lte: f.ageMax } }, { ageMin: null }] });
-  }
-
-  if (f.search && exclude !== 'search') {
-    andConditions.push({
-      OR: [
-        { title: { contains: f.search, mode: 'insensitive' } },
-        { description: { contains: f.search, mode: 'insensitive' } },
-      ],
-    });
-  }
-
-  if (f.price && exclude !== 'price') {
-    if (f.price === 'free') {
-      andConditions.push({ OR: [{ price: 0 }, { pricePeriod: 'FREE' }] });
-    } else if (f.price === 'paid') {
-      andConditions.push({
-        AND: [
-          { price: { not: null } },
-          { price: { gt: 0 } },
-          { NOT: { pricePeriod: 'FREE' } },
-        ],
-      });
-    }
-  }
-
-  if (andConditions.length) where.AND = andConditions;
-  return where;
+  return buildActivityWhere(f as ActivityFilterParams, exclude as keyof ActivityFilterParams | undefined);
 }
 
 // =============================================================================

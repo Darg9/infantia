@@ -7,6 +7,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
+import { buildActivityWhere } from '@/modules/activities/activity-filters';
 import { getCategoryEmoji, getCategoryGradient } from '@/lib/category-utils';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 import HeroSearch from '@/app/_components/HeroSearch';
@@ -36,6 +37,17 @@ function logHomeQueryFailure(queryName: string, reason: unknown) {
 }
 
 export default async function HomePage() {
+  // Filtro de calidad para conteos de categorías:
+  // Excluye fuentes con score < 0.1 (dead sources) igual que listActivities en relevance.
+  // Esto hace que los conteos del home coincidan ~80% con lo que el usuario verá en la página
+  // (el 20% restante es el threshold de ranking score JS, no replicable en SQL).
+  const badDomainSources = await prisma.sourceHealth.findMany({
+    where: { score: { lt: 0.1 } },
+    select: { source: true },
+  });
+  const badDomains = badDomainSources.map((h) => h.source);
+  const qualityFilter = buildActivityWhere({ status: 'ACTIVE', badDomains });
+
   // Home resiliente: una query rota no debe tumbar todo el portal.
   const [
     totalActivitiesResult,
@@ -44,17 +56,18 @@ export default async function HomePage() {
     popularActivitiesResult,
     citiesResult,
   ] = await Promise.allSettled([
-    // Total de actividades activas (visible en la plataforma)
+    // Total de actividades activas (mismo criterio que las categorías)
     listActivities({ skip: 0, pageSize: 1, status: 'ACTIVE' }),
 
-    // Top 8 categorías por número de actividades activas
+    // Top 8 categorías — mismo filtro de calidad que listActivities (relevance)
+    // para que los conteos coincidan con lo que el usuario verá al hacer clic.
     prisma.category.findMany({
       where: {
         activities: {
-          some: { activity: { status: 'ACTIVE' } },
+          some: { activity: qualityFilter },
         },
       },
-      include: { _count: { select: { activities: { where: { activity: { status: 'ACTIVE' } } } } } },
+      include: { _count: { select: { activities: { where: { activity: qualityFilter } } } } },
       orderBy: { activities: { _count: 'desc' } },
       take: 8,
     }),

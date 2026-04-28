@@ -26,10 +26,8 @@ interface Props {
 
 function formatCount(count?: number) {
   const n = count || 0
-  if (n >= 20) return `${n.toLocaleString('es-CO')}`
-  if (n >= 5) return 'Nuevos planes'
-  if (n >= 1) return 'Disponible'
-  return null
+  if (n <= 0) return null
+  return n.toLocaleString('es-CO')
 }
 
 export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
@@ -180,39 +178,37 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   const CityRow = ({ city, isRecent = false }: { city: CityOption, isRecent?: boolean }) => {
     const isActive = city.id === resolvedId
     const countLabel = formatCount(city.activityCount)
-    // Determinar si el label es solo texto o un numero con badge
-    const isNumber = (city.activityCount || 0) >= 20
 
     return (
       <button
         onClick={() => handleSelectCity(city.id, isRecent)}
         className={clsx(
-          "w-full flex items-center justify-between p-3.5 sm:p-3 rounded-xl transition-colors text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+          "w-full flex items-center justify-between gap-3 p-3.5 sm:p-3 rounded-xl transition-colors text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
           isActive ? "bg-brand-50 dark:bg-brand-500/10" : "hover:bg-[var(--hp-bg-elevated)]"
         )}
       >
-        <div className="flex items-center gap-3">
+        {/* Izquierda: ícono + nombre (truncable) */}
+        <div className="flex items-center gap-3 min-w-0 flex-1">
           <div className={clsx(
-            "flex items-center justify-center w-8 h-8 rounded-full",
+            "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
             isActive ? "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400" : "bg-[var(--hp-bg-subtle)] text-[var(--hp-text-muted)] group-hover:bg-[var(--hp-bg-surface)]"
           )}>
             <PinIcon className="w-4 h-4" />
           </div>
           <span className={clsx(
-            "font-medium text-[15px]",
+            "font-medium text-[15px] truncate",
             isActive ? "text-brand-700 dark:text-brand-400" : "text-[var(--hp-text-primary)]"
           )}>
             {city.name}
           </span>
         </div>
+        {/* Derecha: conteo — siempre reserva espacio, no se comprime */}
         {countLabel && (
           <span className={clsx(
-            "text-sm",
-            isActive ? "text-brand-600 dark:text-brand-400" : "text-[var(--hp-text-muted)]",
-            isNumber ? "" : "italic"
+            "shrink-0 tabular-nums text-sm",
+            isActive ? "text-brand-600 dark:text-brand-400" : "text-[var(--hp-text-muted)]"
           )}>
-            {isNumber && <span className="mr-1 hidden sm:inline">·</span>}
-            {countLabel}
+            · {countLabel}
           </span>
         )}
       </button>
@@ -245,9 +241,9 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
         >
           <PinIcon className="w-3.5 h-3.5 text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
           <span className="font-semibold text-[var(--hp-text-primary)]">{currentCity?.name}</span>
-          {currentCity?.activityCount != null && currentCity.activityCount >= 20 && (
-            <span className="text-xs text-[var(--hp-text-muted)] select-none hidden sm:inline">
-              · {currentCity.activityCount.toLocaleString('es-CO')}
+          {(currentCity?.activityCount ?? 0) > 0 && (
+            <span className="tabular-nums text-xs text-[var(--hp-text-muted)] select-none hidden sm:inline">
+              · {currentCity!.activityCount!.toLocaleString('es-CO')}
             </span>
           )}
         </button>

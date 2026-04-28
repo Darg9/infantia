@@ -33,7 +33,39 @@ function formatCount(count?: number) {
 }
 
 export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
-  const [cityId, setCityId, mounted] = useLocalStorage<string>(LS_KEY, '')
+  // hp_city_id es un string plano (UUID). Usamos raw localStorage para que
+  // CityProvider, CategoryCountsIsland y CityHeroLabel lean el mismo valor sin
+  // tener que JSON.parse. useLocalStorage JSON.stringify-a los valores, lo que
+  // corrompe el UUID al almacenarlo como "\"uuid\"" → lecturas directas reciben
+  // comillas literales y backslashes → cityId inválido en URL.
+  const [mounted, setMounted] = useState(false)
+  const [cityId, setCityIdRaw] = useState('')
+
+  useEffect(() => {
+    const raw = localStorage.getItem(LS_KEY)
+    if (raw) {
+      // Compatibilidad hacia atrás: si el valor está JSON-encodificado (con comillas),
+      // limpiarlo. Ejemplo: '"uuid-123"' → 'uuid-123'
+      try {
+        const parsed = JSON.parse(raw)
+        if (typeof parsed === 'string') {
+          setCityIdRaw(parsed)
+          localStorage.setItem(LS_KEY, parsed) // normalizar a raw
+        } else {
+          setCityIdRaw(raw)
+        }
+      } catch {
+        setCityIdRaw(raw) // ya es raw, usar directo
+      }
+    }
+    setMounted(true)
+  }, [])
+
+  function setCityId(nextId: string) {
+    setCityIdRaw(nextId)
+    localStorage.setItem(LS_KEY, nextId) // raw — sin JSON.stringify
+  }
+
   const [recentCityIds, setRecentCityIds] = useLocalStorage<string[]>(LS_RECENT_KEY, [])
   const [isOpen, setIsOpen] = useState(false)
   

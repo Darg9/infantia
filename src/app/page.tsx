@@ -187,8 +187,10 @@ export default async function HomePage() {
                       <span className="text-sm font-semibold text-[var(--hp-text-primary)] group-hover:text-hp-action-primary transition-colors leading-tight">
                         {cat.name}
                       </span>
-                      <span className="text-xs text-[var(--hp-text-muted)]">
-                        {count} {count === 1 ? 'actividad' : 'actividades'}
+                      <span className="text-xs text-[var(--hp-text-muted)] tabular-nums">
+                        {/* key={count}: React remonta este span al cambiar → animación fade */}
+                        <span key={count} className="hp-count-fade">{count}</span>
+                        {' '}{count === 1 ? 'actividad' : 'actividades'}
                       </span>
                     </Link>
                   );

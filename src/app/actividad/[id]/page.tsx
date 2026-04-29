@@ -6,6 +6,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getActivityById } from '@/modules/activities';
 import { ShareButton } from '@/components/ShareButton';
 import { FavoriteButton } from '@/components/FavoriteButton';
@@ -488,7 +489,16 @@ export default async function ActividadDetallePage({
                   {ratingsData.map((r) => (
                     <div key={r.id} className="flex items-start gap-3">
                       {r.user.avatarUrl ? (
-                        <img src={r.user.avatarUrl} alt="" className="w-8 h-8 rounded-full object-cover" />
+                        // Avatar de OAuth (Google/GitHub/Supabase) — dominio variable.
+                        // unoptimized evita registrar cada proveedor en remotePatterns.
+                        <Image
+                          src={r.user.avatarUrl}
+                          alt=""
+                          width={32}
+                          height={32}
+                          className="w-8 h-8 rounded-full object-cover"
+                          unoptimized
+                        />
                       ) : (
                         <div className="w-8 h-8 bg-[var(--hp-bg-subtle)] text-[var(--hp-text-secondary)] rounded-full flex items-center justify-center text-xs font-semibold">
                           {r.user.name[0]?.toUpperCase() ?? '?'}

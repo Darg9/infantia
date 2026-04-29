@@ -143,7 +143,7 @@ export default async function HomePage() {
           {/* Selector de ciudad + buscador
               Mobile: columna — ciudad arriba, buscador abajo (ancho completo)
               Desktop (sm+): fila — [Colombia ▼] [Buscar...] izquierda a derecha */}
-          <div className="mb-3 max-w-2xl mx-auto flex flex-col sm:flex-row items-start gap-2">
+          <div className="mb-3 max-w-2xl mx-auto flex flex-col sm:flex-row items-start gap-1">
             <CitySwitcher cities={cities} variant="hero" />
             <div className="w-full sm:flex-1 sm:min-w-0">
               <HeroSearch />

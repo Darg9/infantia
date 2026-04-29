@@ -66,9 +66,13 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   function setCityId(nextId: string) {
     setCityIdRaw(nextId)
     if (nextId) {
-      localStorage.setItem(LS_KEY, nextId) // raw — sin JSON.stringify
+      localStorage.setItem(LS_KEY, nextId)
+      // Guardar nombre para placeholder contextual en HeroSearch
+      const name = cities.find(c => c.id === nextId)?.name
+      if (name) localStorage.setItem('hp_city_name', name)
     } else {
-      localStorage.removeItem(LS_KEY) // '' = Toda Colombia → limpiar
+      localStorage.removeItem(LS_KEY)
+      localStorage.removeItem('hp_city_name') // Colombia → limpiar
     }
   }
 
@@ -144,7 +148,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   if (!mounted) {
     if (variant === 'hero') {
       return (
-        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-muted)]">
+        <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
           <PinIcon className="w-3.5 h-3.5" />
           cerca de ti
         </span>
@@ -272,7 +276,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
         <button
           onClick={handleOpenModal}
           aria-label={`Ciudad actual: ${currentCity?.name ?? 'Colombia'}. Cambiar ciudad`}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-elevated)] text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group"
+          className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
         >
           <PinIcon className="w-3.5 h-3.5 text-brand-500 shrink-0" />
           <span>{currentCity?.name ?? 'Colombia'}</span>

@@ -41,17 +41,19 @@ function useTypewriterHints() {
     
     if (isDeleting) {
       if (displayText === '') {
-        setIsDeleting(false);
-        setIndex((prev) => (prev + 1) % HINTS.length);
-        timer = setTimeout(() => {}, 500);
+        // Mover setState fuera del cuerpo síncrono del effect (react-hooks/set-state-in-effect)
+        timer = setTimeout(() => {
+          setIsDeleting(false);
+          setIndex((prev) => (prev + 1) % HINTS.length);
+        }, 300);
       } else {
-        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length - 1)), 25); // 25ms delete
+        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length - 1)), 25);
       }
     } else {
       if (displayText === current) {
-        timer = setTimeout(() => setIsDeleting(true), 2500); // 2.5s pause
+        timer = setTimeout(() => setIsDeleting(true), 2500);
       } else {
-        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length + 1)), 50); // 50ms type
+        timer = setTimeout(() => setDisplayText(current.substring(0, displayText.length + 1)), 50);
       }
     }
     return () => clearTimeout(timer);
@@ -92,8 +94,8 @@ function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
 
 export default function HeroSearch() {
   const router = useRouter();
-  const { toast } = useToast();
-  const { hintText, currentHref } = useTypewriterHints();
+  useToast(); // inicializa el contexto — sin desestructurar (no usado aquí)
+  const { hintText } = useTypewriterHints();
 
   const [query, setQuery]             = useState('');
   const [suggestions, setSugg]        = useState<SuggestionItem[]>([]);
@@ -103,18 +105,27 @@ export default function HeroSearch() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [recentSearches, setRecent]   = useState<string[]>([]);
+  // Ciudad activa — sincronizada por CitySwitcher vía localStorage 'hp_city_name'
+  const [cityName, setCityName]       = useState('');
 
   const debounceRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fetchCtrlRef  = useRef<AbortController | null>(null);
   const cacheRef      = useRef<Map<string, SuggestionItem[]>>(new Map());
   const containerRef  = useRef<HTMLDivElement>(null);
 
-  // Cargar historial
+  // Cargar historial y ciudad activa tras el primer render (evita setState síncrono en effect)
   useEffect(() => {
-    try {
-      const raw = sessionStorage.getItem(HISTORY_KEY);
-      if (raw) setRecent(JSON.parse(raw));
-    } catch {}
+    const t = setTimeout(() => {
+      try {
+        const raw = sessionStorage.getItem(HISTORY_KEY);
+        if (raw) setRecent(JSON.parse(raw));
+      } catch {}
+      try {
+        const n = localStorage.getItem('hp_city_name');
+        if (n) setCityName(n);
+      } catch {}
+    }, 0);
+    return () => clearTimeout(t);
   }, []);
 
   function closeDropdown() {
@@ -340,7 +351,7 @@ export default function HeroSearch() {
             }
           }}
           onKeyDown={handleKeyDown}
-          placeholder={query ? "" : hintText}
+          placeholder={query ? "" : (cityName ? `Busca en ${cityName}...` : hintText)}
           autoComplete="off"
           spellCheck={false}
           disabled={isSubmitting}
@@ -392,13 +403,13 @@ export default function HeroSearch() {
 
             {/* Skeleton */}
             {isFetching && (
-              <ul className="animate-pulse divide-y divide-gray-50 dark:divide-gray-800">
+              <ul className="animate-pulse divide-y divide-[var(--hp-border-subtle)]">
                 {[1, 2, 3].map(i => (
                   <li key={i} className="flex items-center gap-3 px-4 py-3">
-                    <div className="w-5 h-5 rounded-full bg-gray-100 dark:bg-gray-700 shrink-0" />
+                    <div className="w-5 h-5 rounded-full bg-[var(--hp-bg-subtle)] shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 bg-gray-100 dark:bg-gray-700 rounded-full" style={{ width: `${50 + i * 15}%` }} />
-                      <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full w-1/4" />
+                      <div className="h-3.5 bg-[var(--hp-bg-subtle)] rounded-full" style={{ width: `${50 + i * 15}%` }} />
+                      <div className="h-2.5 bg-[var(--hp-bg-subtle)] rounded-full w-1/4" />
                     </div>
                   </li>
                 ))}

@@ -131,26 +131,23 @@ export default async function HomePage() {
             <span className="text-hp-action-primary">hoy?</span>
           </h1>
 
-          <div className="max-w-xl mx-auto mb-5">
-            {/* CitySwitcher hero: mismo modal que el header, misma fuente de verdad.
-                Servidor renderiza "cerca de ti" (fallback pre-mount).
-                Cliente muestra chip clickeable "[📍 Ciudad ▼]" que abre el modal. */}
-            <div className="flex justify-center mb-2">
-              <CitySwitcher cities={cities} variant="hero" />
-            </div>
-            <p className="text-sm text-[var(--hp-text-muted)] mt-1">
-              <span className="text-hp-action-primary font-semibold tabular-nums">
-                {totalActivities.toLocaleString('es-CO')}
-              </span>{" "}
-              {totalActivities === 1
-                ? 'actividad para niños y familias'
-                : 'actividades para niños y familias'}
-            </p>
-          </div>
+          <p className="text-sm text-[var(--hp-text-muted)] mb-4">
+            <span className="text-hp-action-primary font-semibold tabular-nums">
+              {totalActivities.toLocaleString('es-CO')}
+            </span>{" "}
+            {totalActivities === 1
+              ? 'actividad para niños y familias'
+              : 'actividades para niños y familias'}
+          </p>
 
-          {/* Buscador principal */}
-          <div className="mb-3">
-            <HeroSearch />
+          {/* Selector de ciudad + buscador en fila
+              CitySwitcher hero: SSR renderiza "cerca de ti" → cliente muestra chip interactivo.
+              HeroSearch: flex-1 ocupa el resto del ancho. */}
+          <div className="mb-3 max-w-2xl mx-auto flex items-start gap-2">
+            <CitySwitcher cities={cities} variant="hero" />
+            <div className="flex-1 min-w-0">
+              <HeroSearch />
+            </div>
           </div>
         </div>
       </section>

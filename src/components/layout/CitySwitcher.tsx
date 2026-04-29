@@ -65,7 +65,11 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
 
   function setCityId(nextId: string) {
     setCityIdRaw(nextId)
-    localStorage.setItem(LS_KEY, nextId) // raw — sin JSON.stringify
+    if (nextId) {
+      localStorage.setItem(LS_KEY, nextId) // raw — sin JSON.stringify
+    } else {
+      localStorage.removeItem(LS_KEY) // '' = Toda Colombia → limpiar
+    }
   }
 
   const [recentCityIds, setRecentCityIds] = useLocalStorage<string[]>(LS_RECENT_KEY, [])
@@ -90,9 +94,10 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
 
   // Prioridad de resolución SSOT
   const isAwarePage = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
+  // resolvedId='' → Toda Colombia (sin filtro ciudad)
   const resolvedId = (isAwarePage && urlCityId && cities.find(c => c.id === urlCityId))
     ? urlCityId
-    : cities.find(c => c.id === cityId)?.id ?? cities[0]?.id ?? ''
+    : cities.find(c => c.id === cityId)?.id ?? ''
 
   const currentCity = cities.find(c => c.id === resolvedId)
 
@@ -147,7 +152,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     }
     return null
   }
-  if (cities.length <= 1) return null
+  if (cities.length === 0) return null
 
   function handleOpenModal() {
     setIsOpen(true)
@@ -163,30 +168,40 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     if (isRecentClick) {
       trackEvent({ type: 'city_recent_selected', metadata: { cityId: nextId, sourceCityId: resolvedId } })
     }
-    
-    // Si elige la misma ciudad, solo cerramos
+
+    // Si elige la misma opción, solo cerramos
     if (nextId === resolvedId) {
       setIsOpen(false)
       return
     }
 
-    trackEvent({ type: 'city_selected', metadata: { cityId: nextId, sourceCityId: resolvedId } })
+    trackEvent({ type: 'city_selected', metadata: { cityId: nextId || 'all', sourceCityId: resolvedId } })
 
-    // 1. Persistir
+    // 1. Persistir ('' limpia localStorage → próximo mount resolverá como Colombia)
     setCityId(nextId)
-    
-    // 2. Actualizar recientes (poner al inicio, unique, max 5 en storage real)
-    setRecentCityIds(prev => {
-      const filtered = prev.filter(id => id !== nextId)
-      return [nextId, ...filtered].slice(0, 5)
-    })
-    
+
+    // 2. Actualizar recientes (solo ciudades reales, no Colombia)
+    if (nextId) {
+      setRecentCityIds(prev => {
+        const filtered = prev.filter(id => id !== nextId)
+        return [nextId, ...filtered].slice(0, 5)
+      })
+    }
+
     // 3. Cerrar modal instantáneamente
     setIsOpen(false)
 
     // 4. Actualizar URL
     const isAware = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
-    if (isAware) {
+    if (nextId === '') {
+      // Toda Colombia: en página city-aware quitar cityId de URL; en home solo cerrar
+      if (isAware) {
+        const params = new URLSearchParams(searchParams.toString())
+        params.delete('cityId')
+        const newSearch = params.toString()
+        router.push(`${pathname}${newSearch ? `?${newSearch}` : ''}`)
+      }
+    } else if (isAware) {
       // Ya estamos en actividades/mapa → actualizar cityId en la URL actual
       const params = new URLSearchParams(searchParams.toString())
       params.set('cityId', nextId)
@@ -243,16 +258,24 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     </svg>
   )
 
+  const GlobeIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className || "w-4 h-4"} aria-hidden="true">
+      <circle cx="12" cy="12" r="10" />
+      <line x1="2" y1="12" x2="22" y2="12" />
+      <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+    </svg>
+  )
+
   return (
     <>
       {variant === 'hero' ? (
         <button
           onClick={handleOpenModal}
-          aria-label={`Ciudad actual: ${currentCity?.name}. Cambiar ciudad`}
+          aria-label={`Ciudad actual: ${currentCity?.name ?? 'Colombia'}. Cambiar ciudad`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-elevated)] text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group"
         >
           <PinIcon className="w-3.5 h-3.5 text-brand-500 shrink-0" />
-          <span>{currentCity?.name}</span>
+          <span>{currentCity?.name ?? 'Colombia'}</span>
           <ChevronIcon />
         </button>
       ) : variant === 'drawer' ? (
@@ -266,7 +289,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
           >
             <div className="flex items-center gap-2">
               <PinIcon className="w-4 h-4 text-[var(--hp-text-muted)]" />
-              <span className="font-medium text-[var(--hp-text-primary)]">{currentCity?.name}</span>
+              <span className="font-medium text-[var(--hp-text-primary)]">{currentCity?.name ?? 'Colombia'}</span>
             </div>
             <span className="text-[var(--hp-text-muted)] font-medium text-xs">Cambiar</span>
           </button>
@@ -278,7 +301,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
           aria-label="Seleccionar ciudad"
         >
           <PinIcon className="w-3.5 h-3.5 text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
-          <span className="font-semibold text-[var(--hp-text-primary)]">{currentCity?.name}</span>
+          <span className="font-semibold text-[var(--hp-text-primary)]">{currentCity?.name ?? 'Colombia'}</span>
           {(currentCity?.activityCount ?? 0) > 0 && (
             <span className="tabular-nums text-xs text-[var(--hp-text-muted)] select-none hidden sm:inline">
               ({currentCity!.activityCount!.toLocaleString('es-CO')})
@@ -296,7 +319,31 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
       >
         <Modal.Body className="px-4 sm:px-6 pb-6">
           <div className="space-y-6">
-            
+
+            {/* Toda Colombia */}
+            <section>
+              <button
+                onClick={() => handleSelectCity('')}
+                className={clsx(
+                  "w-full flex items-center gap-3 p-3.5 sm:p-3 rounded-xl transition-colors text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500",
+                  resolvedId === '' ? "bg-brand-50 dark:bg-brand-500/10" : "hover:bg-[var(--hp-bg-elevated)]"
+                )}
+              >
+                <div className={clsx(
+                  "flex items-center justify-center w-8 h-8 rounded-full shrink-0",
+                  resolvedId === '' ? "bg-brand-100 text-brand-600 dark:bg-brand-500/20 dark:text-brand-400" : "bg-[var(--hp-bg-subtle)] text-[var(--hp-text-muted)] group-hover:bg-[var(--hp-bg-surface)]"
+                )}>
+                  <GlobeIcon className="w-4 h-4" />
+                </div>
+                <span className={clsx(
+                  "font-medium text-[15px]",
+                  resolvedId === '' ? "text-brand-700 dark:text-brand-400" : "text-[var(--hp-text-primary)]"
+                )}>
+                  Toda Colombia
+                </span>
+              </button>
+            </section>
+
             {/* Ciudad Actual */}
             {groupedCities.current && (
               <section>

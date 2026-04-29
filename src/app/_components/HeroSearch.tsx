@@ -25,9 +25,9 @@ const QUICK_CHIPS = [
 // ── Hints Estructurales (Fase 2) ──────────────────────────────────────────────
 type SearchHint = { text: string; href: string };
 const HINTS: SearchHint[] = [
-  { text: 'Gratis hoy en Bogotá',   href: '/actividades?price=free&sort=date&search=Bogot%C3%A1' },
-  { text: 'Niños 5 años, ciencia',  href: '/actividades?ageMin=5&ageMax=5&search=ciencia' },
-  { text: 'Talleres fin de semana', href: '/actividades?type=WORKSHOP&search=fin%20de%20semana' },
+  { text: 'Actividades gratis hoy',  href: '/actividades?price=free&sort=date' },
+  { text: 'Niños 5 años, ciencia',   href: '/actividades?ageMin=5&ageMax=5&search=ciencia' },
+  { text: 'Talleres fin de semana',  href: '/actividades?type=WORKSHOP&search=fin%20de%20semana' },
 ];
 
 function useTypewriterHints() {

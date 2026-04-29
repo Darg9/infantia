@@ -2,7 +2,6 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { buildActivityWhere } from '@/modules/activities/activity-filters'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -40,11 +39,23 @@ export async function Header() {
   ])
   const badDomains = badDomainSources.map((h) => h.source)
 
-  // activity.count paralelo por ciudad — mismo WHERE que buildActivityWhere en /actividades
+  // Conteo ESTRICTO por ciudad: solo actividades con location.cityId = city.id.
+  // El OR pattern (que incluye locationId=null) infla los contadores de todas las ciudades
+  // con las mismas actividades sin geocodificar → Barranquilla, Pereira, etc. muestran
+  // el mismo "(2)" que Bogotá, aunque no tienen contenido local real.
+  // Los resultados de búsqueda siguen usando OR (buildActivityWhere) para ser más generosos.
+  const badDomainsFilter = badDomains.length > 0
+    ? { AND: [{ OR: [{ sourceDomain: null }, { NOT: { sourceDomain: { in: badDomains } } }] }] }
+    : {}
   const activityCountEntries = await Promise.all(
     rawCities.map(async (city) => {
       const count = await prisma.activity.count({
-        where: buildActivityWhere({ status: 'ACTIVE', cityId: city.id, badDomains }),
+        where: {
+          status: 'ACTIVE',
+          locationId: { not: null },
+          location: { cityId: city.id },
+          ...badDomainsFilter,
+        },
       })
       return [city.id, count] as [string, number]
     }),

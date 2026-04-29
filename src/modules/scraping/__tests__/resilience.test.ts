@@ -9,29 +9,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 const mocks = vi.hoisted(() => {
   const mockSourceHealthFindUnique = vi.fn().mockResolvedValue(null);
   const mockSourceHealthUpsert     = vi.fn().mockResolvedValue({});
-  const mockDisconnect             = vi.fn().mockResolvedValue(undefined);
 
   return {
     mockSourceHealthFindUnique,
     mockSourceHealthUpsert,
-    mockDisconnect,
   };
 });
 
-vi.mock('@prisma/adapter-pg', () => ({
-  PrismaPg: vi.fn().mockImplementation(function () { return {}; }),
-}));
-
-vi.mock('../../../generated/prisma/client', () => ({
-  PrismaClient: vi.fn().mockImplementation(function () {
-    return {
-      sourceHealth: {
-        findUnique: mocks.mockSourceHealthFindUnique,
-        upsert:     mocks.mockSourceHealthUpsert,
-      },
-      $disconnect: mocks.mockDisconnect,
-    };
-  }),
+// Mockea el singleton de lib/db (el módulo usa `prisma` de ahí ahora)
+vi.mock('../../../lib/db', () => ({
+  prisma: {
+    sourceHealth: {
+      findUnique: mocks.mockSourceHealthFindUnique,
+      upsert:     mocks.mockSourceHealthUpsert,
+    },
+  },
 }));
 
 vi.mock('dotenv/config', () => ({}));
@@ -44,6 +36,7 @@ import {
   updateSourceHealth,
   shouldSkipSource,
 } from '../resilience';
+
 
 // =============================================================================
 // classifyError
@@ -326,11 +319,6 @@ describe('updateSourceHealth', () => {
     mocks.mockSourceHealthFindUnique.mockRejectedValue(new Error('DB error'));
     await expect(updateSourceHealth('ejemplo.com', { success: true, responseTimeMs: 100 })).resolves.not.toThrow();
   });
-
-  it('llama $disconnect en el finally', async () => {
-    await updateSourceHealth('ejemplo.com', { success: true, responseTimeMs: 100 });
-    expect(mocks.mockDisconnect).toHaveBeenCalled();
-  });
 });
 
 // =============================================================================
@@ -371,11 +359,5 @@ describe('shouldSkipSource', () => {
     });
     const result = await shouldSkipSource('recuperado.com');
     expect(result).toEqual({ skip: false });
-  });
-
-  it('llama $disconnect en el finally', async () => {
-    mocks.mockSourceHealthFindUnique.mockResolvedValue(null);
-    await shouldSkipSource('cualquiera.com');
-    expect(mocks.mockDisconnect).toHaveBeenCalled();
   });
 });

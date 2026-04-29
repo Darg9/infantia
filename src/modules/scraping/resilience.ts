@@ -1,6 +1,5 @@
 import { createLogger } from '../../lib/logger';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../generated/prisma/client';
+import { prisma } from '../../lib/db';
 import { InstagramExtractOptions } from './extractors/playwright.extractor';
 import { ScrapedRawData, InstagramProfileData } from './types';
 
@@ -194,12 +193,8 @@ export interface SourceHealthResult {
 }
 
 export async function updateSourceHealth(sourceHost: string, result: SourceHealthResult): Promise<void> {
-  const connectionString = process.env.DATABASE_URL!;
-  const adapter = new PrismaPg({ connectionString });
-  const p = new PrismaClient({ adapter });
-
   try {
-    const current = await p.sourceHealth.findUnique({ where: { source: sourceHost } });
+    const current = await prisma.sourceHealth.findUnique({ where: { source: sourceHost } });
     
     // Fallback if not tracked yet
     const base = current ?? {
@@ -260,7 +255,7 @@ export async function updateSourceHealth(sourceHost: string, result: SourceHealt
       }));
     }
 
-    await p.sourceHealth.upsert({
+    await prisma.sourceHealth.upsert({
       where: { source: sourceHost },
       create: {
         source: sourceHost,
@@ -285,41 +280,31 @@ export async function updateSourceHealth(sourceHost: string, result: SourceHealt
 
   } catch (err: any) {
     log.error(`Fallo escribiendo source health para ${sourceHost}: ${err.message}`);
-  } finally {
-    await p.$disconnect();
   }
 }
 
 export async function shouldSkipSource(sourceHost: string): Promise<{ skip: boolean; reason?: string }> {
-  const connectionString = process.env.DATABASE_URL!;
-  const adapter = new PrismaPg({ connectionString });
-  const p = new PrismaClient({ adapter });
+  const health = await prisma.sourceHealth.findUnique({ where: { source: sourceHost } });
+  if (!health) return { skip: false };
 
-  try {
-    const health = await p.sourceHealth.findUnique({ where: { source: sourceHost } });
-    if (!health) return { skip: false };
-
-    if (health.status === 'critical') {
-      const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
-      if (health.lastErrorAt && Date.now() - health.lastErrorAt.getTime() < SIX_HOURS_MS) {
-        log.info(JSON.stringify({ 
-          event: "source_blocked", 
-          source: sourceHost, 
-          message: "Bloqueo por penalización Crítica en enfriamiento (6h)" 
-        }));
-        return { skip: true, reason: 'CRITICAL_COOLDOWN' };
-      } else {
-        log.info(JSON.stringify({ 
-          event: "source_auto_recovery", 
-          source: sourceHost, 
-          message: "Período de enfriamiento superado. Intentando recovery." 
-        }));
-        return { skip: false };
-      }
+  if (health.status === 'critical') {
+    const SIX_HOURS_MS = 6 * 60 * 60 * 1000;
+    if (health.lastErrorAt && Date.now() - health.lastErrorAt.getTime() < SIX_HOURS_MS) {
+      log.info(JSON.stringify({ 
+        event: "source_blocked", 
+        source: sourceHost, 
+        message: "Bloqueo por penalización Crítica en enfriamiento (6h)" 
+      }));
+      return { skip: true, reason: 'CRITICAL_COOLDOWN' };
+    } else {
+      log.info(JSON.stringify({ 
+        event: "source_auto_recovery", 
+        source: sourceHost, 
+        message: "Período de enfriamiento superado. Intentando recovery." 
+      }));
+      return { skip: false };
     }
-    
-    return { skip: false };
-  } finally {
-    await p.$disconnect();
   }
+
+  return { skip: false };
 }

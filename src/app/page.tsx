@@ -140,12 +140,12 @@ export default async function HomePage() {
               : 'actividades para niños y familias'}
           </p>
 
-          {/* Selector de ciudad + buscador en fila
-              CitySwitcher hero: SSR renderiza "cerca de ti" → cliente muestra chip interactivo.
-              HeroSearch: flex-1 ocupa el resto del ancho. */}
-          <div className="mb-3 max-w-2xl mx-auto flex items-start gap-2">
+          {/* Selector de ciudad + buscador
+              Mobile: columna — ciudad arriba, buscador abajo (ancho completo)
+              Desktop (sm+): fila — [Colombia ▼] [Buscar...] izquierda a derecha */}
+          <div className="mb-3 max-w-2xl mx-auto flex flex-col sm:flex-row items-start gap-2">
             <CitySwitcher cities={cities} variant="hero" />
-            <div className="flex-1 min-w-0">
+            <div className="w-full sm:flex-1 sm:min-w-0">
               <HeroSearch />
             </div>
           </div>

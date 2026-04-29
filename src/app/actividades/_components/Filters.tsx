@@ -711,9 +711,20 @@ export default function Filters({
           </option>
         </select>
 
-        {/* Ciudad — el selector se eliminó del bar (duplicaba el header CitySwitcher).
-            Cambio de ciudad: usar el selector 📍 del header.
-            Eliminación: usar el chip activo en la fila inferior.             */}
+        {/* Ciudad */}
+        {facets.availableCities.length > 1 && (
+          <select
+            value={cityId}
+            onChange={e => handleCity(e.target.value)}
+            className={selectCls(!!cityId)}
+            aria-label="Ciudad"
+          >
+            <option value="">Todas las ciudades</option>
+            {facets.availableCities.map(c => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+        )}
 
         {/* Edad */}
         <select

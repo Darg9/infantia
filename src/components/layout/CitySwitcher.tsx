@@ -160,11 +160,16 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     // 3. Cerrar modal instantáneamente
     setIsOpen(false)
 
-    // 4. Actualizar URL si corresponde
-    if (CITY_AWARE_PATHS.some(p => pathname.startsWith(p))) {
+    // 4. Actualizar URL
+    const isAware = CITY_AWARE_PATHS.some(p => pathname.startsWith(p))
+    if (isAware) {
+      // Ya estamos en actividades/mapa → actualizar cityId en la URL actual
       const params = new URLSearchParams(searchParams.toString())
       params.set('cityId', nextId)
       router.push(`${pathname}?${params.toString()}`)
+    } else {
+      // Home u otra página → llevar directamente a actividades con la ciudad elegida
+      router.push(`/actividades?cityId=${nextId}`)
     }
   }
 

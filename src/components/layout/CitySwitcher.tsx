@@ -26,6 +26,13 @@ interface Props {
    * 'hero'    → chip clickeable en el hero del home, abre el mismo modal
    */
   variant?: 'desktop' | 'drawer' | 'hero'
+  /**
+   * Cuando true, el botón hero forma parte de la cápsula unificada:
+   * — Sin border/shadow/radius propios (la cápsula los provee)
+   * — bg transparente
+   * — Divisor horizontal en mobile, vertical en desktop
+   */
+  unified?: boolean
 }
 
 function formatCount(count?: number) {
@@ -34,7 +41,7 @@ function formatCount(count?: number) {
   return n.toLocaleString('es-CO')
 }
 
-export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
+export function CitySwitcher({ cities, variant = 'desktop', unified = false }: Props) {
   // hp_city_id es un string plano (UUID). Usamos raw localStorage para que
   // CityProvider, CategoryCountsIsland y CityHeroLabel lean el mismo valor sin
   // tener que JSON.parse. useLocalStorage JSON.stringify-a los valores, lo que
@@ -147,6 +154,14 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
   // Hero: renderiza fallback estático antes del mount para evitar layout shift
   if (!mounted) {
     if (variant === 'hero') {
+      if (unified) {
+        return (
+          <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 border-b border-[var(--hp-border-subtle)] sm:border-b-0 sm:border-r bg-transparent text-sm text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
+            <PinIcon className="w-3.5 h-3.5" />
+            cerca de ti
+          </span>
+        )
+      }
       return (
         <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
           <PinIcon className="w-3.5 h-3.5" />
@@ -276,7 +291,11 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
         <button
           onClick={handleOpenModal}
           aria-label={`Ciudad actual: ${currentCity?.name ?? 'Colombia'}. Cambiar ciudad`}
-          className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
+          className={
+            unified
+              ? "inline-flex items-center gap-1.5 px-4 py-4 md:py-5 border-b border-[var(--hp-border-subtle)] sm:border-b-0 sm:border-r bg-transparent text-sm font-medium text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
+              : "inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
+          }
         >
           <PinIcon className="w-3.5 h-3.5 text-brand-500 shrink-0" />
           <span>{currentCity?.name ?? 'Colombia'}</span>

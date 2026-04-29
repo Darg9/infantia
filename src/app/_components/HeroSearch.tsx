@@ -92,7 +92,7 @@ function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
-export default function HeroSearch() {
+export default function HeroSearch({ unified = false }: { unified?: boolean }) {
   const router = useRouter();
   useToast(); // inicializa el contexto — sin desestructurar (no usado aquí)
   const { hintText } = useTypewriterHints();
@@ -357,7 +357,11 @@ export default function HeroSearch() {
           disabled={isSubmitting}
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
-          className="rounded-2xl shadow-lg py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text"
+          className={
+            unified
+              ? "rounded-none shadow-none border-0 py-4 text-base md:text-lg md:py-5 bg-transparent focus:ring-0 cursor-text"
+              : "rounded-2xl shadow-lg py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text"
+          }
           rightSlot={
             <div className="p-1 pr-1 mr-1">
                {searchIcon}
@@ -481,21 +485,23 @@ export default function HeroSearch() {
         )}
       </div>
 
-      {/* ── Chips rápidos ─────────────────────────────────────────────── */}
-      <div className="flex gap-2.5 justify-center mt-4 flex-wrap">
-        {QUICK_CHIPS.map(chip => (
-          <Button
-            key={chip.label}
-            variant="ghost"
-            size="sm"
-            disabled={isSubmitting}
-            onClick={() => router.push(chip.href)}
-            className="rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all"
-          >
-            {chip.label}
-          </Button>
-        ))}
-      </div>
+      {/* Chips rápidos — solo en modo standalone (en modo unified los renderiza page.tsx) */}
+      {!unified && (
+        <div className="flex gap-2.5 justify-center mt-4 flex-wrap">
+          {QUICK_CHIPS.map(chip => (
+            <Button
+              key={chip.label}
+              variant="ghost"
+              size="sm"
+              disabled={isSubmitting}
+              onClick={() => router.push(chip.href)}
+              className="rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all"
+            >
+              {chip.label}
+            </Button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

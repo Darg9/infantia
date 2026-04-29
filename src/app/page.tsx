@@ -131,7 +131,7 @@ export default async function HomePage() {
             <span className="text-hp-action-primary">hoy?</span>
           </h1>
 
-          <p className="text-sm text-[var(--hp-text-muted)] mb-4">
+          <p className="text-sm text-[var(--hp-text-muted)] mb-2">
             <span className="text-hp-action-primary font-semibold tabular-nums">
               {totalActivities.toLocaleString('es-CO')}
             </span>{" "}
@@ -140,14 +140,22 @@ export default async function HomePage() {
               : 'actividades para niños y familias'}
           </p>
 
-          {/* Selector de ciudad + buscador
-              Mobile: columna — ciudad arriba, buscador abajo (ancho completo)
-              Desktop (sm+): fila — [Colombia ▼] [Buscar...] izquierda a derecha */}
-          <div className="mb-3 max-w-2xl mx-auto flex flex-col sm:flex-row items-start gap-1">
-            <CitySwitcher cities={cities} variant="hero" />
-            <div className="w-full sm:flex-1 sm:min-w-0">
-              <HeroSearch />
+          {/* Cápsula unificada: ciudad + buscador como un solo sistema visual
+              Mobile: stack — ciudad arriba (border-b), buscador abajo (ancho completo)
+              Desktop (sm+): fila — [Colombia ▼ |] [Buscar...] con divisor vertical
+              focus-within: el ring se aplica en la cápsula, no en el input interno */}
+          <div className="mb-2 max-w-2xl mx-auto rounded-2xl shadow-lg border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] overflow-hidden flex flex-col sm:flex-row focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500 transition-all">
+            <CitySwitcher cities={cities} variant="hero" unified />
+            <div className="flex-1 min-w-0">
+              <HeroSearch unified />
             </div>
+          </div>
+          {/* Chips rápidos — fuera de la cápsula para no quedar dentro del borde */}
+          <div className="flex gap-2.5 justify-center mt-3 flex-wrap">
+            <Link href="/actividades?sort=date" className="inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all whitespace-nowrap">Hoy</Link>
+            <Link href="/actividades?price=free" className="inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all whitespace-nowrap">Gratis</Link>
+            <Link href="/actividades?search=conversatorios" className="inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all whitespace-nowrap">Conversatorios</Link>
+            <Link href="/mapa" className="inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all whitespace-nowrap">Cerca de ti</Link>
           </div>
         </div>
       </section>

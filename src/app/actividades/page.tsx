@@ -128,17 +128,10 @@ async function getFacets(filters: ActiveFilters) {
         },
       }),
 
-      // Ciudades con actividades (excluyendo filtro de ciudad para mostrar todas las opciones)
+      // Ciudades activas — misma fuente que el Header CitySwitcher.
+      // No usar join locations→activities (strict join excluye actividades sin locationId).
       prisma.city.findMany({
-        where: {
-          locations: {
-            some: {
-              activities: {
-                some: buildWhere(filters, 'cityId'),
-              },
-            },
-          },
-        },
+        where: { isActive: true },
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
       }),
@@ -236,7 +229,7 @@ export default async function ActividadesPage({
   }
 
   // Fallback Data UX: si el usuario buscó texto pero no hay matches
-  let fallbackActivities: any[] = [];
+  let fallbackActivities: Awaited<ReturnType<typeof listActivities>>['activities'] = [];
   if (total === 0 && filters.search) {
     const { activities } = await listActivities({ skip: 0, pageSize: 4, sortBy: 'relevance' });
     fallbackActivities = activities;

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+import { buildActivityWhere } from '@/modules/activities/activity-filters'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
@@ -23,30 +24,32 @@ export async function Header() {
   }
 
   // Cargar ciudades activas para el selector (solo si hay 2+)
-  const [rawCities, rawActivityCounts] = await Promise.all([
+  // El conteo por ciudad usa el mismo OR filter que la página de actividades
+  // (locationId null OR location.cityId) + calidad — así selector y página muestran
+  // el mismo número.
+  const [rawCities, badDomainSources] = await Promise.all([
     prisma.city.findMany({
       where: { isActive: true },
       select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
-      // Ciudad con más locations primero (≈ Bogotá) para que el fallback del CitySwitcher
-      // coincida con el default del CityProvider en /actividades. Secundario: nombre asc.
       orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
     }),
-    // Contamos ACTIVIDADES (no locations) por ciudad para que el número del selector
-    // sea consistente con lo que el usuario ve al hacer clic.
-    // Actividades sin locationId no tienen ciudad asignada → no se cuentan aquí,
-    // pero sí aparecen en /actividades gracias al OR filter de CityProvider.
-    prisma.activity.findMany({
-      where: { status: 'ACTIVE', locationId: { not: null } },
-      select: { location: { select: { cityId: true } } },
+    prisma.sourceHealth.findMany({
+      where: { score: { lt: 0.1 } },
+      select: { source: true },
     }),
   ])
+  const badDomains = badDomainSources.map((h) => h.source)
 
-  // Agrupa conteos de actividades por ciudad en memoria (evita raw SQL)
-  const countByCityId: Record<string, number> = {}
-  for (const a of rawActivityCounts) {
-    const cid = a.location?.cityId
-    if (cid) countByCityId[cid] = (countByCityId[cid] ?? 0) + 1
-  }
+  // activity.count paralelo por ciudad — mismo WHERE que buildActivityWhere en /actividades
+  const activityCountEntries = await Promise.all(
+    rawCities.map(async (city) => {
+      const count = await prisma.activity.count({
+        where: buildActivityWhere({ status: 'ACTIVE', cityId: city.id, badDomains }),
+      })
+      return [city.id, count] as [string, number]
+    }),
+  )
+  const countByCityId = Object.fromEntries(activityCountEntries)
 
   const cities: CityOption[] = rawCities
     .map((c) => ({

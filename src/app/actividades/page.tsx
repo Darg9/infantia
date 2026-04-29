@@ -128,10 +128,19 @@ async function getFacets(filters: ActiveFilters) {
         },
       }),
 
-      // Ciudades activas — misma fuente que el Header CitySwitcher.
-      // No usar join locations→activities (strict join excluye actividades sin locationId).
+      // Ciudades con actividades geo-asignadas reales (mismo criterio que el Header).
+      // No usar isActive:true ni OR pattern — ambos incluyen ciudades sin contenido local.
       prisma.city.findMany({
-        where: { isActive: true },
+        where: {
+          isActive: true,
+          locations: {
+            some: {
+              activities: {
+                some: { status: 'ACTIVE' },
+              },
+            },
+          },
+        },
         select: { id: true, name: true },
         orderBy: { name: 'asc' },
       }),

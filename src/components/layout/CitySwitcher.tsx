@@ -208,7 +208,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
             "shrink-0 tabular-nums text-sm",
             isActive ? "text-brand-600 dark:text-brand-400" : "text-[var(--hp-text-muted)]"
           )}>
-            · {countLabel}
+            ({countLabel})
           </span>
         )}
       </button>
@@ -243,7 +243,7 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
           <span className="font-semibold text-[var(--hp-text-primary)]">{currentCity?.name}</span>
           {(currentCity?.activityCount ?? 0) > 0 && (
             <span className="tabular-nums text-xs text-[var(--hp-text-muted)] select-none hidden sm:inline">
-              · {currentCity!.activityCount!.toLocaleString('es-CO')}
+              ({currentCity!.activityCount!.toLocaleString('es-CO')})
             </span>
           )}
         </button>

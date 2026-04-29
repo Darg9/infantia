@@ -1,5 +1,5 @@
 'use client';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 
 // =============================================================================
 // Filters — cabecera de resultados de /actividades
@@ -97,14 +97,14 @@ const CACHE_MAX   = 20;
 export function FiltersSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
-      <div className="h-14 rounded-2xl bg-gray-100 w-full" />
+      <div className="h-14 rounded-2xl bg-[var(--hp-bg-subtle)] w-full" />
       <div className="hidden sm:flex gap-2">
-        <div className="h-9 rounded-xl bg-gray-100 w-36" />
-        <div className="h-9 rounded-xl bg-gray-100 w-40" />
-        <div className="h-9 rounded-xl bg-gray-100 w-28" />
-        <div className="h-9 rounded-xl bg-gray-100 w-32" />
+        <div className="h-9 rounded-xl bg-[var(--hp-bg-subtle)] w-36" />
+        <div className="h-9 rounded-xl bg-[var(--hp-bg-subtle)] w-40" />
+        <div className="h-9 rounded-xl bg-[var(--hp-bg-subtle)] w-28" />
+        <div className="h-9 rounded-xl bg-[var(--hp-bg-subtle)] w-32" />
       </div>
-      <div className="h-4 rounded bg-gray-100 w-44" />
+      <div className="h-4 rounded bg-[var(--hp-bg-subtle)] w-44" />
     </div>
   );
 }
@@ -119,7 +119,7 @@ function highlightMatch(text: string, query: string): React.ReactNode {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className="bg-indigo-100 text-indigo-800 rounded px-0.5 not-italic">
+      <mark className="bg-brand-50 text-brand-700 rounded px-0.5 not-italic">
         {text.slice(idx, idx + query.length)}
       </mark>
       {text.slice(idx + query.length)}
@@ -473,14 +473,6 @@ export default function Filters({
     }`;
   }
 
-  function pillCls(active: boolean) {
-    return `px-3 py-1.5 rounded-lg text-sm font-medium border transition-colors cursor-pointer whitespace-nowrap ${
-      active
-        ? 'bg-brand-600 text-[var(--hp-bg-surface)] border-brand-600'
-        : 'bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] border-[var(--hp-border)] hover:border-brand-300 hover:text-brand-600'
-    }`;
-  }
-
   // ── Contenido del dropdown ────────────────────────────────────────────────
   // Determinamos qué mostrar sin bloquear el render
 
@@ -498,9 +490,10 @@ export default function Filters({
         {/* Lupa — clickeable, dispara búsqueda */}
         <Button
           type="button"
+          size="icon"
           onClick={handleSearchSubmit}
           aria-label="Buscar"
-          className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)] hover:text-indigo-500 transition-colors z-10 p-0.5"
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)] hover:text-brand-500 transition-colors z-10"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
@@ -508,7 +501,7 @@ export default function Filters({
           </svg>
         </Button>
 
-        {/* eslint-disable-next-line no-restricted-syntax -- campo de búsqueda, el DS Input requiere id+label */}
+        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- aria-expanded en input de búsqueda es patrón combobox estándar */}
         <input
           type="text"
           value={searchValue}
@@ -534,14 +527,14 @@ export default function Filters({
             placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2
             transition-all shadow-sm
             ${isPending
-              ? 'border-indigo-300 opacity-80 focus:ring-indigo-100'
-              : 'border-[var(--hp-border)] hover:border-gray-300 focus:border-indigo-400 focus:ring-indigo-100'
+              ? 'border-brand-300 opacity-80 focus:ring-brand-100'
+              : 'border-[var(--hp-border)] hover:border-[var(--hp-border-subtle)] focus:border-brand-500 focus:ring-brand-100'
             }`}
         />
 
         {/* Spinner de navegación (derecha) */}
         {isPending && (
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-indigo-400">
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-400">
             <Spinner />
           </span>
         )}
@@ -572,7 +565,7 @@ export default function Filters({
                       onMouseLeave={() => setActiveIndex(-1)}
                       onClick={() => selectHistory(term)}
                       className={`flex items-center gap-3 px-4 py-2.5 cursor-pointer text-sm transition-colors ${
-                        i === activeIndex ? 'bg-[var(--hp-bg-subtle)] text-indigo-900' : 'text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)]'
+                        i === activeIndex ? 'bg-[var(--hp-bg-subtle)] text-[var(--hp-text-primary)]' : 'text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)]'
                       }`}
                     >
                       <svg className="w-4 h-4 shrink-0 text-[var(--hp-text-muted)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
@@ -588,13 +581,13 @@ export default function Filters({
 
             {/* ── Skeleton de carga ────────────────────────────────── */}
             {isFetchingSugg && (
-              <ul className="animate-pulse divide-y divide-gray-50">
+              <ul className="animate-pulse divide-y divide-[var(--hp-border)]">
                 {[1, 2, 3].map(i => (
                   <li key={i} className="flex items-center gap-3 px-4 py-3">
-                    <div className="w-5 h-5 rounded-full bg-gray-100 shrink-0" />
+                    <div className="w-5 h-5 rounded-full bg-[var(--hp-bg-subtle)] shrink-0" />
                     <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 bg-gray-100 rounded-full" style={{ width: `${50 + i * 15}%` }} />
-                      <div className="h-2.5 bg-gray-100 rounded-full w-1/4" />
+                      <div className="h-3.5 bg-[var(--hp-bg-subtle)] rounded-full" style={{ width: `${50 + i * 15}%` }} />
+                      <div className="h-2.5 bg-[var(--hp-bg-subtle)] rounded-full w-1/4" />
                     </div>
                   </li>
                 ))}
@@ -606,7 +599,7 @@ export default function Filters({
               <div className="px-4 py-8 text-center">
                 <p className="text-sm text-[var(--hp-text-secondary)]">
                   No encontramos resultados para{' '}
-                  <span className="font-medium text-[var(--hp-text-primary)]">"{searchValue}"</span>
+                  <span className="font-medium text-[var(--hp-text-primary)]">&quot;{searchValue}&quot;</span>
                 </p>
                 <p className="text-xs text-[var(--hp-text-muted)] mt-1">
                   Intenta con otras palabras o explora los filtros
@@ -661,7 +654,7 @@ export default function Filters({
 
                     {/* Flecha */}
                     <span className={`shrink-0 text-xs ${
-                      i === activeIndex ? 'text-indigo-400' : 'text-[var(--hp-text-muted)]'
+                      i === activeIndex ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'
                     }`}>→</span>
                   </li>
                 ))}
@@ -670,7 +663,7 @@ export default function Filters({
 
             {/* ── Footer teclado — solo desktop, bajo contraste ────── */}
             {(showSugg && suggestions.length > 0) && (
-              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-gray-50 select-none">
+              <div className="hidden sm:block px-4 py-2 text-xs text-[var(--hp-text-muted)] border-t border-[var(--hp-border)] select-none">
                 ↑↓ navegar · Enter seleccionar · Esc cerrar
               </div>
             )}
@@ -773,8 +766,8 @@ export default function Filters({
           onClick={openMobile}
           className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
             hasFilters
-              ? 'border-indigo-400 bg-[var(--hp-bg-subtle)] text-indigo-700'
-              : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-gray-600 hover:border-gray-300'
+              ? 'border-brand-400 bg-[var(--hp-bg-subtle)] text-brand-700'
+              : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] hover:border-[var(--hp-border-subtle)]'
           }`}
         >
           <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -782,7 +775,7 @@ export default function Filters({
           </svg>
           Filtros
           {chips.length > 0 && (
-            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white text-xs font-bold">
+            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-brand-600 text-white text-xs font-bold">
               {chips.length}
             </span>
           )}
@@ -805,14 +798,14 @@ export default function Filters({
           {chips.map(chip => (
             <span
               key={chip.key}
-              className="inline-flex items-center gap-1.5 rounded-full border border-indigo-200 bg-[var(--hp-bg-subtle)] px-3 py-1 text-sm font-medium text-indigo-700"
+              className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-[var(--hp-bg-subtle)] px-3 py-1 text-sm font-medium text-brand-700"
             >
               {chip.label}
               <Button
                 type="button"
                 onClick={chip.onRemove}
                 aria-label={`Quitar filtro ${chip.label}`}
-                className="ml-0.5 text-indigo-400 hover:text-indigo-700 transition-colors leading-none"
+                className="ml-0.5 text-brand-400 hover:text-brand-700 transition-colors leading-none"
               >
                 ✕
               </Button>
@@ -826,7 +819,7 @@ export default function Filters({
       <p className={`text-sm transition-opacity ${isPending ? 'opacity-40' : 'opacity-100'}`}>
         {isPending ? (
           <span className="text-[var(--hp-text-muted)] flex items-center gap-1.5">
-            <Spinner className="inline text-indigo-400" />
+            <Spinner className="inline text-brand-400" />
             Buscando…
           </span>
         ) : total === 0 ? (
@@ -834,7 +827,7 @@ export default function Filters({
             No hay actividades con estos filtros.{' '}
             {hasFilters && (
               <Button type="button" onClick={handleReset}
-                className="text-indigo-600 hover:underline font-medium">
+                className="text-brand-600 hover:underline font-medium">
                 Limpiar filtros
               </Button>
             )}
@@ -870,7 +863,7 @@ export default function Filters({
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Categoría</label>
               <select value={mobileCatId} onChange={e => setMobileCatId(e.target.value)}
-                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
                 <option value="">Todas las categorías</option>
                 {facets.validCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
@@ -881,7 +874,7 @@ export default function Filters({
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Precio</label>
               <select value={mobilePrice} onChange={e => setMobilePrice(e.target.value)}
-                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
                 <option value="">Cualquier precio</option>
                 <option value="free">Solo gratis</option>
                 <option value="paid">Con precio visible</option>
@@ -892,7 +885,7 @@ export default function Filters({
               <div>
                 <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ubicación</label>
                 <select value={mobileCityId} onChange={e => setMobileCityId(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-indigo-400 focus:outline-none">
+                  className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
                   <option value="">Todas las ciudades</option>
                   {facets.availableCities.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>
@@ -908,8 +901,8 @@ export default function Filters({
                   <Button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
                     className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                       mobileAgeIdx === i
-                        ? 'border-indigo-500 bg-indigo-600 text-white'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-indigo-300'
+                        ? 'border-brand-500 bg-brand-600 text-white'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-brand-300'
                     }`}>
                     {o.label}
                   </Button>
@@ -924,11 +917,11 @@ export default function Filters({
                   <Button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
                     className={`rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
                       mobileSort === o.value
-                        ? 'border-indigo-500 bg-[var(--hp-bg-subtle)] text-indigo-700'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-gray-300'
+                        ? 'border-brand-500 bg-[var(--hp-bg-subtle)] text-brand-700'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-[var(--hp-border-subtle)]'
                     }`}>
                     {o.label}
-                    {mobileSort === o.value && <span className="float-right text-indigo-500">✓</span>}
+                    {mobileSort === o.value && <span className="float-right text-brand-500">✓</span>}
                   </Button>
                 ))}
               </div>
@@ -938,11 +931,11 @@ export default function Filters({
           {/* Footer */}
           <div className="border-t border-[var(--hp-border)] px-5 py-4 flex gap-3 bg-[var(--hp-bg-surface)]">
             <Button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
-              className="flex-1 rounded-xl border border-[var(--hp-border)] py-3 text-sm font-medium text-gray-600 hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
+              className="flex-1 rounded-xl border border-[var(--hp-border)] py-3 text-sm font-medium text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Limpiar
             </Button>
             <Button type="button" onClick={applyMobile}
-              className="flex-[2] rounded-xl bg-indigo-600 py-3 text-sm font-semibold text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
+              className="flex-[2] rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white hover:bg-brand-700 active:bg-brand-800 transition-colors">
               Aplicar filtros
             </Button>
           </div>

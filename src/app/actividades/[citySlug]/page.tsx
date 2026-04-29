@@ -1,6 +1,11 @@
 // =============================================================================
-// /actividades/[citySlug] — Landing SEO "Brutal" por ciudad
+// /actividades/[citySlug] — Landing SEO por ciudad
+// ISR: se construye en el primer request y se cachea 1h.
+// generateStaticParams eliminado para evitar EMAXCONN en build
+// (Supabase free tier: límite 200 conexiones simultáneas).
 // =============================================================================
+
+export const revalidate = 3600 // 1 hora — revalida en background tras cada hora
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -45,14 +50,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       canonical: `/actividades/${citySlug}`,
     },
   };
-}
-
-export async function generateStaticParams() {
-  const cities = await prisma.city.findMany({
-    where: { isActive: true },
-    select: { name: true },
-  });
-  return cities.map((c) => ({ citySlug: slugify(c.name) }));
 }
 
 export default async function CiudadLandingPage({ params }: Props) {

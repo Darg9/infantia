@@ -228,9 +228,9 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
 - **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.16.1 — Actualizado 2026-04-24)
+## Estado actual (v0.17.0 — Actualizado 2026-04-29)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1214 tests** en 75 archivos — `npm test` pasa — 1212 passed, 2 skipped, 0 errores
+- **1291 tests** en 79 archivos — `npm test` pasa — 1291 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)

@@ -58,6 +58,26 @@ test-results.json
 ts-errors.txt
 ts-admin-errors.txt
 
+# ─── ESLint output (nunca commitear — generar con npx eslint) ──
+eslint.json
+eslint-report.txt
+eslint-report.json
+
+# ─── Storybook logs ─────────────────────────────────────────────
+build-storybook.log
+debug-storybook.log
+storybook-out.log
+
+# ─── Backups de archivos fuente ─────────────────────────────────
+*.bak
+*.orig
+
+# ─── Scripts de diagnóstico temporales ──────────────────────────
+fix.js
+fix.ts
+debug.js
+debug.ts
+
 # ─── Playwright E2E ────────────────────────────────────────────
 /playwright-report/
 /test-results/

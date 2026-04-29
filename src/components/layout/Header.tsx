@@ -2,13 +2,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getSessionWithRole } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-import { buildActivityWhere } from '@/modules/activities/activity-filters'
+import { getCitiesForSelector } from '@/lib/cities'
 import { UserMenu } from '@/components/layout/UserMenu'
 import { buttonVariants } from '@/components/ui/button'
 import { ThemeToggle } from '@/components/ui/ThemeToggle'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { CitySwitcher } from '@/components/layout/CitySwitcher'
-import type { CityOption } from '@/components/providers/CityProvider'
 
 export async function Header() {
   const session = await getSessionWithRole()
@@ -23,67 +22,8 @@ export async function Header() {
     providerSlug = provider?.slug ?? null
   }
 
-  // Cargar ciudades activas para el selector (solo si hay 2+)
-  // El conteo por ciudad usa el mismo OR filter que la página de actividades
-  // (locationId null OR location.cityId) + calidad — así selector y página muestran
-  // el mismo número.
-  const [rawCities, badDomainSources] = await Promise.all([
-    prisma.city.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, defaultLat: true, defaultLng: true, defaultZoom: true },
-      orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
-    }),
-    prisma.sourceHealth.findMany({
-      where: { score: { lt: 0.1 } },
-      select: { source: true },
-    }),
-  ])
-  const badDomains = badDomainSources.map((h) => h.source)
-
-  // Dos conteos paralelos por ciudad:
-  //   strictCount — actividades con location.cityId asignada (gate: ≥1 = ciudad real)
-  //   orCount     — mismo OR que los resultados (locationId null + location.cityId)
-  //
-  // Por qué dos: el OR infla contadores de ciudades sin contenido local (Barranquilla, etc.
-  // muestran las mismas ~2 actividades sin geocodificar que aparecen en toda ciudad).
-  // Solución: solo mostramos una ciudad si strictCount ≥ 1, pero el número visible
-  // es orCount — así coincide exactamente con lo que verá el usuario en /actividades.
-  const badDomainsFilter = badDomains.length > 0
-    ? { AND: [{ OR: [{ sourceDomain: null }, { NOT: { sourceDomain: { in: badDomains } } }] }] }
-    : {}
-  const activityCountEntries = await Promise.all(
-    rawCities.map(async (city) => {
-      const [strictCount, orCount] = await Promise.all([
-        prisma.activity.count({
-          where: {
-            status: 'ACTIVE',
-            locationId: { not: null },
-            location: { cityId: city.id },
-            ...badDomainsFilter,
-          },
-        }),
-        prisma.activity.count({
-          where: buildActivityWhere({ status: 'ACTIVE', cityId: city.id, badDomains }),
-        }),
-      ])
-      return [city.id, { strictCount, orCount }] as [string, { strictCount: number; orCount: number }]
-    }),
-  )
-  const countByCityId = Object.fromEntries(activityCountEntries)
-
-  const cities: CityOption[] = rawCities
-    .map((c) => ({
-      id:            c.id,
-      name:          c.name,
-      defaultLat:    Number(c.defaultLat),
-      defaultLng:    Number(c.defaultLng),
-      defaultZoom:   c.defaultZoom,
-      // Número visible = OR count (coincide con /actividades?cityId=x)
-      activityCount: countByCityId[c.id]?.orCount ?? 0,
-    }))
-    // Gate: solo ciudades con ≥1 actividad geo-asignada real (strictCount).
-    // Evita ciudades fantasma que solo tienen actividades sin locationId.
-    .filter((c) => (countByCityId[c.id]?.strictCount ?? 0) > 0)
+  // Ciudades con conteo estricto (gate) + OR (display) — ver getCitiesForSelector()
+  const cities = await getCitiesForSelector()
 
   // Props forwarded to the mobile client component
   const mobileSession = session

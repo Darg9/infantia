@@ -11,8 +11,9 @@ import { buildActivityWhere } from '@/modules/activities/activity-filters';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
 import HeroSearch from '@/app/_components/HeroSearch';
 import { serializeActivity } from '@/lib/prisma-serialize';
-import { CityHeroLabel } from '@/app/_components/CityHeroLabel';
+import { CitySwitcher } from '@/components/layout/CitySwitcher';
 import { CategoryCountsIsland } from '@/app/_components/CategoryCountsIsland';
+import { getCitiesForSelector } from '@/lib/cities';
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
@@ -54,7 +55,6 @@ export default async function HomePage() {
     topCategoriesResult,
     recentActivitiesResult,
     popularActivitiesResult,
-    citiesResult,
   ] = await Promise.allSettled([
     // Total de actividades activas (mismo criterio que las categorías)
     listActivities({ skip: 0, pageSize: 1, status: 'ACTIVE' }),
@@ -78,13 +78,16 @@ export default async function HomePage() {
     // Fallback: 4 actividades populares (relevance) si no hay recientes
     listActivities({ skip: 0, pageSize: 4, status: 'ACTIVE', sortBy: 'relevance' }),
 
-    // Ciudades activas para CityHeroLabel (query ligera: solo id + name)
-    prisma.city.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true },
-      orderBy: [{ locations: { _count: 'desc' } }, { name: 'asc' }],
-    }),
   ] as const);
+
+  // Ciudades para CitySwitcher hero — query separada con conteo doble (strict + OR).
+  // Fuera del allSettled para simplificar tipos; falla silenciosa → selector oculto.
+  let cities: Awaited<ReturnType<typeof getCitiesForSelector>> = [];
+  try {
+    cities = await getCitiesForSelector();
+  } catch {
+    // fallback silencioso — CitySwitcher no renderiza si cities=[]
+  }
 
   if (totalActivitiesResult.status === 'rejected') {
     logHomeQueryFailure('totalActivities', totalActivitiesResult.reason);
@@ -107,8 +110,6 @@ export default async function HomePage() {
     recentActivitiesResult.status === 'fulfilled' ? recentActivitiesResult.value.activities : [];
   const popularActivities =
     popularActivitiesResult.status === 'fulfilled' ? popularActivitiesResult.value.activities : [];
-  const cities =
-    citiesResult.status === 'fulfilled' ? citiesResult.value : [];
 
   // Lógica de fallback para la sección de actividades
   const hasRecent   = recentActivities.length > 0;
@@ -131,10 +132,12 @@ export default async function HomePage() {
           </h1>
 
           <div className="max-w-xl mx-auto mb-5">
-            {/* CityHeroLabel: isla cliente — servidor renderiza "cerca de ti",
-                cliente sustituye por la ciudad guardada en localStorage post-mount.
-                Sin hydration mismatch: ambos lados parten de cityName=null. */}
-            <CityHeroLabel cities={cities} />
+            {/* CitySwitcher hero: mismo modal que el header, misma fuente de verdad.
+                Servidor renderiza "cerca de ti" (fallback pre-mount).
+                Cliente muestra chip clickeable "[📍 Ciudad ▼]" que abre el modal. */}
+            <div className="flex justify-center mb-2">
+              <CitySwitcher cities={cities} variant="hero" />
+            </div>
             <p className="text-sm text-[var(--hp-text-muted)] mt-1">
               <span className="text-hp-action-primary font-semibold tabular-nums">
                 {totalActivities.toLocaleString('es-CO')}

@@ -20,8 +20,12 @@ const CITY_AWARE_PATHS = ['/actividades', '/mapa']
 
 interface Props {
   cities: CityOption[]
-  /** 'desktop' → compacto inline | 'drawer' → con label, full-width */
-  variant?: 'desktop' | 'drawer'
+  /**
+   * 'desktop' → compacto inline en header
+   * 'drawer'  → con label, full-width en menú móvil
+   * 'hero'    → chip clickeable en el hero del home, abre el mismo modal
+   */
+  variant?: 'desktop' | 'drawer' | 'hero'
 }
 
 function formatCount(count?: number) {
@@ -122,8 +126,28 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     return { current, recientes, fuertes, restantes }
   }, [cities, resolvedId, recentCityIds])
 
+  // Iconos: declarados antes de los early returns para que SSR fallback pueda usarlos
+  const PinIcon = ({ className }: { className?: string }) => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className || "w-4 h-4"} aria-hidden="true">
+      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  )
+
   // SSR-safe (se evalúa después de todos los hooks para no romper la regla de React)
-  if (!mounted || cities.length <= 1) return null
+  // Hero: renderiza fallback estático antes del mount para evitar layout shift
+  if (!mounted) {
+    if (variant === 'hero') {
+      return (
+        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-muted)]">
+          <PinIcon className="w-3.5 h-3.5" />
+          cerca de ti
+        </span>
+      )
+    }
+    return null
+  }
+  if (cities.length <= 1) return null
 
   function handleOpenModal() {
     setIsOpen(true)
@@ -173,13 +197,6 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     }
   }
 
-  const PinIcon = ({ className }: { className?: string }) => (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className || "w-4 h-4"} aria-hidden="true">
-      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-      <circle cx="12" cy="10" r="3" />
-    </svg>
-  )
-
   const CityRow = ({ city, isRecent = false }: { city: CityOption, isRecent?: boolean }) => {
     const isActive = city.id === resolvedId
     const countLabel = formatCount(city.activityCount)
@@ -220,9 +237,25 @@ export function CitySwitcher({ cities, variant = 'desktop' }: Props) {
     )
   }
 
+  const ChevronIcon = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+      <path d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+
   return (
     <>
-      {variant === 'drawer' ? (
+      {variant === 'hero' ? (
+        <button
+          onClick={handleOpenModal}
+          aria-label={`Ciudad actual: ${currentCity?.name}. Cambiar ciudad`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-elevated)] text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group"
+        >
+          <PinIcon className="w-3.5 h-3.5 text-brand-500 shrink-0" />
+          <span>{currentCity?.name}</span>
+          <ChevronIcon />
+        </button>
+      ) : variant === 'drawer' ? (
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider text-[var(--hp-text-muted)] mb-2">
             Tu ciudad

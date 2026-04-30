@@ -152,20 +152,31 @@ export function CitySwitcher({ cities, variant = 'desktop', unified = false }: P
 
   // SSR-safe (se evalúa después de todos los hooks para no romper la regla de React)
   // Hero: renderiza fallback estático antes del mount para evitar layout shift
+  // Chevron inline para el fallback (ChevronIcon se define después de este bloque)
+  const ChevronFallback = () => (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className="w-3.5 h-3.5 shrink-0" aria-hidden="true">
+      <path d="M19 9l-7 7-7-7" />
+    </svg>
+  )
+
   if (!mounted) {
     if (variant === 'hero') {
       if (unified) {
+        // Mismo contenido que el botón hidratado con resolvedId='' (Colombia por defecto)
+        // para evitar layout shift del divisor al hidratar.
         return (
-          <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 border-b border-[var(--hp-border-subtle)] sm:border-b-0 sm:border-r bg-transparent text-sm text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
+          <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 border-b border-[var(--hp-border-subtle)] sm:border-b-0 sm:border-r bg-transparent text-sm font-medium text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
             <PinIcon className="w-3.5 h-3.5" />
-            cerca de ti
+            Colombia
+            <ChevronFallback />
           </span>
         )
       }
       return (
-        <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
+        <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
           <PinIcon className="w-3.5 h-3.5" />
-          cerca de ti
+          Colombia
+          <ChevronFallback />
         </span>
       )
     }

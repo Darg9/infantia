@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.17.0-beta | Actualizado: 25 de abril de 2026
+> Versión: v0.17.0 | Actualizado: 29 de abril de 2026
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -770,7 +770,7 @@ vi.mock('./module', () => ({ fn: mockFn }));
 - **Header**: UserMenu reemplazó avatar + links dispersos
 
 ### Header y Hero Contextual
-- **Hero Contextual:** Patrón de *hydration island* (`CityHeroLabel.tsx`) para evitar saltos (CLS) y mismatch de SSR. Servidor renderiza "cerca de ti", cliente hidrata a "en [Ciudad]" con espacio pre-reservado.
+- **Hero Capsule:** Patrón de integración fluida donde el `CitySwitcher` (selector geográfico) y la caja de búsqueda se unifican en una sola cápsula visual (flex row, borders unificados), situando primero la ciudad (origen) y luego la búsqueda (intención) respetando el modelo mental occidental de izquierda a derecha. Se mantiene el patrón de *hydration island* (`CityHeroLabel.tsx`) para evitar saltos (CLS) y mismatch de SSR.
 - **Header Inteligente:** `CitySwitcher` rige el contexto global, renderizando conteos reales de suministro por ciudad (usando `Location.groupBy` optimizado) y evitando que la ciudad sea un mero filtro de sidebar.
 
 ## 13. Design System (SSOT)

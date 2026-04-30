@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.17.0-beta | **Fecha:** 2026-04-25
+**Version:** v0.17.0 | **Fecha:** 2026-04-29
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-04-24)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.17.0-S57)
+## Cobertura actual (v0.17.0-S58)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -70,7 +70,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.16.1 (recalcProviderRating mock) |
 | lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
 
-**Total v0.17.0: >91% stmts / >85% branches / 77 archivos | 1244 tests (2 skipped)**
+**Total v0.17.0: >91% stmts / >85% branches / 79 archivos | 1293 tests (2 skipped)**
 
 ---
 
@@ -116,7 +116,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 ## Comandos
 
 ```bash
-npm test                  # Suite rapida sin cobertura (1244 tests)
+npm test                  # Suite rapida sin cobertura (1293 tests)
 npm run test:coverage     # Con reporte (verifica threshold 85%)
 npx vitest run <archivo>  # Test especifico
 ```
@@ -125,8 +125,10 @@ npx vitest run <archivo>  # Test especifico
 
 ## Roadmap de pruebas
 
-### Completado hasta v0.17.0-S57
-- ✅ 1244 tests, 77 archivos, todos verdes
+### Completado hasta v0.17.0-S58
+- ✅ 1293 tests, 79 archivos, todos verdes
+- ✅ `activity-filters.test.ts` (38 tests): SSOT de filtros geográficos y características de la actividad.
+- ✅ `cities.test.ts` (11 tests): SSOT de selector de ciudad y exclusiones por bloqueos.
 - ✅ activity-gate.test.ts: hostname matching exacto + sufijo (bug substring corregido S56)
 - ✅ storage.test.ts: SaveActivityResult type (id+action) — 9 tests actualizados S57
 - ✅ PQRS: firstRespondedAt + responseChannel en ContactRequest (S56)
@@ -178,4 +180,4 @@ npx vitest run <archivo>  # Test especifico
 | v0.16.1 | 73 | 1203 | Activity Gate, Geographic backfill |
 | v0.16.1 | 73 | 1215 | Design System Enforcement, Chromatic |
 | v0.16.1 | 75 | 1215 | Search Assist System E2E |
-| **v0.16.1** | **75** | **1213+2skip** | **Branding Pipeline; fix searchLog mock en suggestions.test.ts; fix createdAt exacto en ranking.test.ts** |
+| **v0.17.0** | **79** | **1291+2skip** | **Capsule Hero + Resilience Singleton + SSOT Tests** |

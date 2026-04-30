@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.17.0-beta
+**Versión:** ✅ v0.17.0
 **Última actualización:** 25 de abril de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -8,8 +8,8 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 ## 🧭 Flujos de Usuario Principales
 
 1. **Onboarding Contextual** (`/onboarding`): Sistema rápido de 3 pasos (Ubicación -> Dependientes/Niños -> Configuración Base). Define la visualización del contenido.
-2. **Hero Contextual & Search** (Búsqueda Principal): Un ecosistema compuesto capaz de devolver predicciones mixtas. El Hero implementa un patrón "hydration island" SSR-safe que saluda de forma genérica ("cerca de ti") y se hidrata en cliente con la ciudad activa ("en Bogotá") sin layout shifts. Enlaza con el listado `/actividades`.
-3. **Listado de Actividades y Filtros**: Experiencia de filtros facetados en tiempo real. 
+2. **Hero Capsule & Search** (Búsqueda Principal): Un ecosistema unificado en una "cápsula" visual (`HeroSearch` + `CitySwitcher`) capaz de devolver predicciones mixtas. El Hero implementa un patrón "hydration island" SSR-safe que saluda de forma genérica ("Toda Colombia") y se hidrata en cliente con la ciudad activa ("Bogotá") sin layout shifts. Integra visualmente la selección de ciudad y la búsqueda en un único bloque redondeado, evitando componentes visualmente desconectados. Enlaza con el listado `/actividades`.
+3. **Listado de Actividades y Filtros (SSOT protegido)**: Experiencia de filtros facetados en tiempo real. La lógica central (`buildActivityWhere`) actúa como Single Source of Truth, protegida por una amplia barrera de tests automatizados que impiden violar las reglas de filtrado geográfico, de edad, público objetivo, precio o bloqueo por reputación de dominio (`badDomains`).
    - **Ciudad como Contexto Global:** La ciudad dejó de ser un filtro redundante y ahora rige el contexto global del listado, informando dinámicamente el catálogo real local (ej. "1,234 actividades encontradas en Bogotá").
    - **Desktop (`>= md`)**: Filtros persistentes (sidebar o topbar). Actualización en tiempo real (sin CTA explícito).
    - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).

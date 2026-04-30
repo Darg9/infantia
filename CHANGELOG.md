@@ -9,6 +9,24 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.17.0] — 2026-04-29 (Capsule Hero + Resilience Singleton + SSOT Tests)
+
+### Features & UI
+- **Capsule Hero Integration:** Refactor del componente del Hero principal para integrar el `CitySwitcher` (selector de ciudad) y el `HeroSearch` (buscador) en una "cápsula" visual única (`rounded-2xl`, flexbox unificado). Esto consolida la experiencia visual y elimina la sensación de que la ciudad es un "filtro secundario" aislado.
+- **Design System Cleanup:** Eliminación total de variables de UI hardcodeadas pre-Design System y purga del lint warning `@next/next/no-img-element` en `actividad/[id]/page.tsx` reemplazando los `<img>` nativos por `<Image unoptimized />` de Next.js para los avatares externos de Google.
+
+### Architecture & Resilience
+- **Resilience Singleton Fix:** Solucionado el riesgo de `Pool Exhaustion` (agotamiento de conexiones PostgreSQL) en `src/modules/scraping/resilience.ts` al reemplazar la inyección e instanciación local reiterada de un nuevo `PrismaClient` por el import directo del Singleton de persistencia (`src/lib/db.ts`).
+
+### Quality & Testing (SSOT)
+- **Suite Ampliada (49 tests SSOT):** Blindaje absoluto de las dos funciones de Single Source of Truth (`buildActivityWhere` y `getCitiesForSelector`).
+- **`activity-filters.test.ts` (38 tests):** Asegura que las reglas de `OR` geográfico, `status='ACTIVE'`, matching de text-search, `age`, `price`, `audience` y descarte por `badDomains` no sufran regresiones jamás.
+- **`cities.test.ts` (11 tests):** Verifica los flujos de conteo (estricto vs. amplio) e ignora correctamente "ciudades fantasma" y registros provenientes de dominios bloqueados.
+- **Estabilidad de Suite:** 1293 tests en total, 100% en verde.
+- **Git Hygiene:** Refuerzo exhaustivo del `.gitignore` para bloquear silenciosamente logs de compilación de Storybook, repositorios de reportes eslint `eslint.json`, backups `.bak` y scripts temporales `fix.js`.
+
+---
+
 ## [ops/2026-04-26] — S58 (Auditoría documental + Ingest ops + Gobernanza)
 
 ### Operativo (sin cambios de producto)

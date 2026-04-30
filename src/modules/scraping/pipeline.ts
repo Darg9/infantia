@@ -810,13 +810,26 @@ export class ScrapingPipeline {
       }
     }
 
-    // ── Resumen de ahorro en cuota ────────────────────────────────────────────
-    const sentToGemini = newPosts.length - textPrefilterSkipped - preflightSkipped;
+    // ── Resumen de eficiencia — cuota + calibración del filtro ───────────────
+    // geminiSaveRate  = % de posts filtrados ANTES de Gemini (pre-filters)
+    // geminiRejectRate = % de posts que llegaron a Gemini y fueron rechazados
+    //   Si geminiRejectRate > 70% → filtro aún permisivo → candidato para batching
+    //   Si geminiRejectRate < 30% → filtro bien calibrado → no hace falta batching aún
+    const sentToGemini     = newPosts.length - textPrefilterSkipped - preflightSkipped;
+    const geminiAnalyzed   = results.length; // posts que completaron llamada Gemini
+    const geminiConfirmed  = results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
+    const geminiRejected   = results.filter((r) => r.data && r.data.confidenceScore < 0.3).length;
     log.info('[IG-FILTER:SUMMARY]', {
       totalNewPosts:        newPosts.length,
       skippedByTextFilter:  textPrefilterSkipped,
       skippedByPreflight:   preflightSkipped,
       sentToGemini,
+      geminiAnalyzed,
+      geminiConfirmed,
+      geminiRejected,
+      geminiRejectRate:     geminiAnalyzed > 0
+        ? `${Math.round((geminiRejected / geminiAnalyzed) * 100)}%`
+        : '0%',
       geminiSaveRate:       newPosts.length > 0
         ? `${Math.round((1 - sentToGemini / newPosts.length) * 100)}%`
         : '0%',

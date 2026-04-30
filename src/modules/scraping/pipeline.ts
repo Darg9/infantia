@@ -811,15 +811,19 @@ export class ScrapingPipeline {
     }
 
     // ── Resumen de eficiencia — cuota + calibración del filtro ───────────────
+    // source          = cuenta analizada (para separar métricas con múltiples cuentas)
     // geminiSaveRate  = % de posts filtrados ANTES de Gemini (pre-filters)
     // geminiRejectRate = % de posts que llegaron a Gemini y fueron rechazados
     //   Si geminiRejectRate > 70% → filtro aún permisivo → candidato para batching
     //   Si geminiRejectRate < 30% → filtro bien calibrado → no hace falta batching aún
+    // costPerActivity = sentToGemini / geminiConfirmed — calls Gemini por actividad guardada
+    //   < 2 → excelente  |  2–5 → aceptable  |  > 5 → ineficiente
     const sentToGemini     = newPosts.length - textPrefilterSkipped - preflightSkipped;
     const geminiAnalyzed   = results.length; // posts que completaron llamada Gemini
     const geminiConfirmed  = results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
     const geminiRejected   = results.filter((r) => r.data && r.data.confidenceScore < 0.3).length;
     log.info('[IG-FILTER:SUMMARY]', {
+      source:               `@${profile.username}`,
       totalNewPosts:        newPosts.length,
       skippedByTextFilter:  textPrefilterSkipped,
       skippedByPreflight:   preflightSkipped,
@@ -830,6 +834,9 @@ export class ScrapingPipeline {
       geminiRejectRate:     geminiAnalyzed > 0
         ? `${Math.round((geminiRejected / geminiAnalyzed) * 100)}%`
         : '0%',
+      costPerActivity:      geminiConfirmed > 0
+        ? parseFloat((sentToGemini / geminiConfirmed).toFixed(1))
+        : null,
       geminiSaveRate:       newPosts.length > 0
         ? `${Math.round((1 - sentToGemini / newPosts.length) * 100)}%`
         : '0%',

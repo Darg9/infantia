@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { isOldByUrl, isOldByLastmod } from '../pipeline';
+import { isOldByUrl, isOldByLastmod, isLikelyInstagramEvent } from '../pipeline';
 
 // vi.hoisted() asegura que estas funciones mock estén disponibles cuando vi.mock() se ejecuta
 const {
@@ -401,7 +401,8 @@ const sampleInstagramProfile = {
     },
     {
       url: 'https://www.instagram.com/p/DEF456/',
-      caption: 'Feliz dia del libro! #books',
+      // Caption con señales de evento (pasa el pre-filter: "feria" +2, "sabado" +2)
+      caption: 'Feria del libro este sabado! Entrada libre para toda la familia. #feria #libros',
       imageUrls: ['https://instagram.com/img2.jpg'],
       timestamp: '2026-03-14T08:00:00.000Z',
       likesCount: 100,
@@ -828,6 +829,85 @@ describe('Pipeline — branches no cubiertos', () => {
       // Evita race condition por dos llamadas a Date.now() con diferente timestamp
       const fiftyNine = new Date(Date.now() - 59 * 24 * 60 * 60 * 1000).toISOString();
       expect(isOldByLastmod(fiftyNine)).toBe(false);
+    });
+  });
+
+  // ── isLikelyInstagramEvent() ────────────────────────────────────────────────
+
+  describe('isLikelyInstagramEvent()', () => {
+    // Guard de longitud
+    it('retorna false para captions < 40 caracteres', () => {
+      expect(isLikelyInstagramEvent('Taller hoy!')).toBe(false);
+      expect(isLikelyInstagramEvent('Nuevo pabellón. #ciencia #exploración')).toBe(false);
+    });
+
+    // Señales de evento solo (score = 2 → true)
+    it('retorna true si caption tiene palabra de evento', () => {
+      expect(isLikelyInstagramEvent(
+        'Gran taller de arte para niños disponible en nuestro centro cultural educativo',
+      )).toBe(true);
+      expect(isLikelyInstagramEvent(
+        'Festival de teatro callejero con presentaciones para toda la familia este mes',
+      )).toBe(true);
+      expect(isLikelyInstagramEvent(
+        'Inscripcion abierta para los talleres de verano disponibles en nuestra sede principal',
+      )).toBe(true);
+    });
+
+    // Señales de fecha (score = 2 → true) — con y sin tilde
+    it('retorna true si caption tiene fecha específica', () => {
+      expect(isLikelyInstagramEvent(
+        'Este sabado gran evento en el parque central con entrada libre para todos los visitantes',
+      )).toBe(true);
+      expect(isLikelyInstagramEvent(
+        'El 15 de mayo tenemos una presentación especial para toda la familia en la biblioteca',
+      )).toBe(true);
+      expect(isLikelyInstagramEvent(
+        'Este sábado gran celebración con actividades culturales para toda la comunidad educativa',
+      )).toBe(true);
+    });
+
+    // Hora sola (score = 1 → false)
+    it('retorna false si solo hay señal de hora sin fecha ni evento (score=1)', () => {
+      expect(isLikelyInstagramEvent(
+        'Abrimos nuestras puertas de 9am a 6pm para visitantes y turistas del área metropolitana',
+      )).toBe(false);
+    });
+
+    // Fecha + hora (score = 3 → true)
+    it('retorna true con fecha + hora aunque sin palabra de evento (score=3)', () => {
+      expect(isLikelyInstagramEvent(
+        'Este sabado 3pm gran celebración en la plaza central para todos los asistentes registrados',
+      )).toBe(true);
+    });
+
+    // Contenido institucional — caso real @parqueexplora
+    it('retorna false para contenido institucional sin señales de evento (@parqueexplora)', () => {
+      expect(isLikelyInstagramEvent(
+        'Sumérgete en el mundo de la tecnología con nuestro nuevo pabellón permanente. ¡Visítanos!',
+      )).toBe(false);
+      expect(isLikelyInstagramEvent(
+        'Somos un espacio dedicado a la educación y el entretenimiento para toda la familia colombiana',
+      )).toBe(false);
+      expect(isLikelyInstagramEvent(
+        'Conoce nuestra nueva exhibición de astronomía. Un espacio único de aprendizaje y exploración',
+      )).toBe(false);
+    });
+
+    // Caso real @quehacerenmedellin con evento
+    it('retorna true para post típico de @quehacerenmedellin con evento', () => {
+      expect(isLikelyInstagramEvent(
+        'Festival de Teatro Callejero este domingo 19 de mayo. Entrada libre. Parque el Poblado 4pm',
+      )).toBe(true);
+    });
+
+    // Posts reflexivos / conmemorativos sin señal de evento
+    it('retorna false para post reflexivo sin fecha, evento ni hora', () => {
+      // "Hoy" activa HAS_DATE_RE (+2) → si el texto dijera "Hoy" sería un verdadero positivo válido.
+      // Este test usa un caption sin ninguna señal de fecha, evento ni hora.
+      expect(isLikelyInstagramEvent(
+        'Reflexionamos sobre la importancia de la lectura y el aprendizaje para el desarrollo infantil',
+      )).toBe(false);
     });
   });
 

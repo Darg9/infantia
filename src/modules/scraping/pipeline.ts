@@ -44,6 +44,39 @@ export function isOldByLastmod(lastmod?: string): boolean {
   return ageDays > MAX_LASTMOD_AGE_DAYS;
 }
 
+// ── Instagram text pre-filter ─────────────────────────────────────────────────
+// Descarta posts sin señal mínima de evento antes de llamar a Gemini.
+// Complementa el Date Preflight (que descarta fechas pasadas) descartando
+// contenido institucional/general que nunca tendrá evento (score=0).
+//
+// Sistema de puntos (threshold: >= 2):
+//   Fecha detectada  → +2  (día, mes, "hoy", "mañana", día de semana)
+//   Palabra de evento→ +2  (taller, feria, inscripción, cupos, etc.)
+//   Señal de hora    → +1  (2pm, 14:00, am/pm)
+//
+// Umbral >= 2 significa: basta con UNA señal fuerte (fecha o palabra de evento).
+// Esto es conservador — mejor falso positivo (va a Gemini) que falso negativo
+// (perder un evento real).
+//
+// Guard extra: captions < 40 chars rara vez son anuncios de eventos.
+
+// Acepta formas con y sin tilde — Instagram rara vez usa tildes en captions.
+const HAS_DATE_RE = /\b\d{1,2}\s*(?:de\s*)?(?:enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)\b|\b\d{1,2}\/\d{1,2}\b|\b(?:hoy|ma[nñ]ana|esta\s+semana|este\s+fin|lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\b/i;
+const HAS_EVENT_WORD_RE = /\btaller(?:es)?\b|\bevento(?:s)?\b|\bferia(?:s)?\b|\bfestival(?:es)?\b|\binscripci[oó]n(?:es)?\b|\bcupo(?:s)?\b|\bagenda\b|\bprogramaci[oó]n\b|\bfunci[oó]n(?:es)?\b|\bapertura\b|\bconcierto(?:s)?\b|\bobra(?:s)?\b|\bexposici[oó]n(?:es)?\b|\bmuestra(?:s)?\b|\bespect[aá]culo(?:s)?\b|\blanzamiento\b|\bworkshop\b|\bcharla(?:s)?\b|\bconversatorio(?:s)?\b/i;
+const HAS_TIME_RE = /\b\d{1,2}:\d{2}\b|\b\d{1,2}\s*(?:am|pm)\b/i;
+
+export function isLikelyInstagramEvent(caption: string): boolean {
+  // Guard: captions muy cortos nunca son anuncios de eventos estructurados
+  if (caption.trim().length < 40) return false;
+
+  let score = 0;
+  if (HAS_DATE_RE.test(caption))       score += 2;
+  if (HAS_EVENT_WORD_RE.test(caption)) score += 2;
+  if (HAS_TIME_RE.test(caption))       score += 1;
+
+  return score >= 2;
+}
+
 export class ScrapingPipeline {
   private extractor: CheerioExtractor;
   private playwrightExtractor: PlaywrightExtractor | null = null;
@@ -732,13 +765,25 @@ export class ScrapingPipeline {
     // Phase 3: Analyze each post with Gemini (sequential to avoid rate limits)
     log.info(`Fase 2: Analizando ${newPosts.length} posts con Gemini...`);
     const results: InstagramPipelineResult['results'] = [];
-    let preflightSkipped = 0;
+    let textPrefilterSkipped = 0;
+    let preflightSkipped      = 0;
 
     for (let i = 0; i < newPosts.length; i++) {
-      const post = newPosts[i];
+      const post    = newPosts[i];
+      const caption = post.caption ?? '';
 
-      // Date Preflight sobre el caption — evita llamadas a Gemini para posts claramente pasados
-      const preflight = evaluatePreflight(post.caption ?? '');
+      // ── Gate 1: Text pre-filter — descarta posts sin señal mínima de evento ──
+      // Corre antes del Date Preflight para ahorrar cuota en contenido institucional
+      // (posts sin fecha, sin palabras de evento, sin hora).
+      if (!isLikelyInstagramEvent(caption)) {
+        log.info(`⏭️  [IG-PREFILTER] Post ${i + 1}/${newPosts.length} sin señal de evento — saltado: ${post.url.split('/').slice(-2).join('/')}`);
+        this.cache.add(post.url, '[text-prefilter-skip]');
+        textPrefilterSkipped++;
+        continue;
+      }
+
+      // ── Gate 2: Date Preflight — descarta posts con fechas claramente pasadas ──
+      const preflight = evaluatePreflight(caption);
       if (preflight.skip) {
         log.info(`⏭️  Post ${i + 1}/${newPosts.length} saltado por Date Preflight (${preflight.reason}): ${post.url}`);
         this.cache.add(post.url, '[preflight-skip]');
@@ -765,9 +810,17 @@ export class ScrapingPipeline {
       }
     }
 
-    if (preflightSkipped > 0) {
-      log.info(`[IG-PREFLIGHT] ${preflightSkipped}/${newPosts.length} posts saltados por Date Preflight (cuota ahorrada).`);
-    }
+    // ── Resumen de ahorro en cuota ────────────────────────────────────────────
+    const sentToGemini = newPosts.length - textPrefilterSkipped - preflightSkipped;
+    log.info('[IG-FILTER:SUMMARY]', {
+      totalNewPosts:        newPosts.length,
+      skippedByTextFilter:  textPrefilterSkipped,
+      skippedByPreflight:   preflightSkipped,
+      sentToGemini,
+      geminiSaveRate:       newPosts.length > 0
+        ? `${Math.round((1 - sentToGemini / newPosts.length) * 100)}%`
+        : '0%',
+    });
 
     // Persist cache
     this.cache.save();

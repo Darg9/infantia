@@ -1,6 +1,6 @@
 # Módulo: Activities
 
-**Versión:** ✅ v0.18.0-stable
+**Versión:** ✅ v0.19.0-stable
 **Última actualización:** 1 de mayo de 2026
 
 ## ¿Qué hace?
@@ -16,7 +16,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.16.1) |
 | DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.16.1) |
-| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars** (umbral corregido en v0.16.1). Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }` |
+| GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars**. Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }`. Incorpora **Normalización NFD** (remueve diacríticos, filtra stop-words) y **Progressive Fallback** si no hay resultados. Las sugerencias de historial implementan **Filtro Bi-capa** (`count >= 3`) para suprimir typos. |
 | GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.16.1)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |

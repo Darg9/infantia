@@ -1,6 +1,6 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.18.0
+**Versión:** ✅ v0.19.0-stable
 **Última actualización:** 1 de mayo de 2026
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -32,10 +32,10 @@ El buscador está diseñado para proveer una sugerencia fluida de resultados.
 - **Honest but Invisible Facets:** Los filtros UI de exclusión absoluta (como "Precio nulo") son tratados sin sesgo y no rellenan sus huecos con asunciones matemáticas para evitar sumas erróneas (Falsa expectativa Gestalt en los usuarios). Si un campo tiene datos desconocidos, la interfaz de filtro se colapsa a componentes genéricos (`<select>`) evitando botones que sugieran que cubren matemáticamente el 100% de la oferta.
 - **Mix de Resultados**: Muestra hasta 5 entidades agrupadas (3 Actividades, 1 Categoría, 1 Ciudad). Esto evita que una categoría inunde y tape resultados directos.
 - **Búsqueda Avanzada Híbrida (`Search Engine V1`)**: Combina la flexibilidad de `pg_trgm` (tolerancia a errores ortográficos e inversión de sílabas; umbrales: `similarity(title) > 0.25`, `word_similarity(title) > 0.30`, `similarity(desc) > 0.15`; score ponderado 0.7/0.3 + prefix boost +0.10) con una normalización estricta mediante TypeScript. Esta estrategia previene el quiebre de base de datos causado por wildcards masivos `%` y pondera los puntajes antes de regresar los resultados.
-- **Normalización de Queries**: Tokeniza la entrada del usuario omitiendo "stopwords", colapsando espacios y reduciendo a la raíz semántica para una mejor correlación.
-- **LRU Cache & History**: Se guarda estado de sesión en caché usando `sessionStorage` (Búsquedas recientes).
+- **Normalización de Queries (NFD)**: Tokeniza la entrada del usuario omitiendo "stopwords", remueve diacríticos y retiene máximo 3 tokens fuertes. Esto evita la penalización algorítmica de `pg_trgm` en búsquedas largas.
+- **LRU Cache & History**: Se guarda estado de sesión en caché usando `sessionStorage` (Búsquedas recientes). El historial cuenta con un **Filtro Bi-capa** (`count >= 3`) para suprimir _typos_ visuales.
 - **Control de Carreras Web (Aborts)**: El frontend siempre incluye un `AbortController` debounced (300ms) que frena queries viejos al tipear muy rápido.
-- **Fallback UX Inteligente**: Si la búsqueda arroja `0 resultados`, el motor atrapa el evento y arroja heurísticas de fallback (Ej: "Intenta con menos palabras", o resultados recomendados globales).
+- **Progressive Fallback UX**: Si la búsqueda estricta/normalizada arroja `0 resultados`, el motor atrapa el evento y arroja heurísticas de fallback progresivo hacia la query original, minimizando falsos negativos.
 
 ## 📈 Lógica de Ranking Algorítmico y Health Source
 

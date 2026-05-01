@@ -1,6 +1,6 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.18.0-stable
+**Versión:** ✅ v0.19.0-stable
 **Última actualización:** 1 de mayo de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
@@ -60,6 +60,7 @@ A diferencia de los eventos de usuario, el pipeline de ingesta genera métricas 
     - `dedupe_hit`: Tasa de colisión semántica (Duplicados).
 2. **Dedupe Trace (`[DEDUPE_HIT]`)**: Log de auditoría que correlaciona fuentes colisionadas. Permite ajustar el umbral de Jaccard (>75%) basándose en la tasa de falsos positivos detectados.
 3. **Operational Metrics (Admin Dashboard)**: Las métricas de `ContentQualityMetric` (Ruido, Longitud, Stopwords) alimentan el Quality Dashboard para alertar sobre fuentes degradadas.
+4. **Search Assist Telemetry (`[SEARCH_ASSIST]`)**: Registros de calibración en `/api/activities/suggestions`. Captura `queryLength` y la métrica booleana `usedFallback` para monitorear la agresividad del Normalizador NFD y el Progressive Fallback sin saturar la base de datos (NUEVO v0.19.0).
 
 ---
 

@@ -40,6 +40,7 @@ import { getSourceAggregatedStats } from '../src/modules/analytics/metrics';
 import { getCTRByDomain } from '../src/modules/analytics/metrics';
 import { quota } from '../src/lib/quota-tracker';
 import { ScrapingCache } from '../src/modules/scraping/cache';
+import { prisma } from '../src/lib/db';
 
 type Channel = 'web' | 'instagram' | 'tiktok' | 'facebook' | 'telegram';
 
@@ -275,7 +276,6 @@ async function saveMetrics(
  * Recopila estadísticas y construye el plan según el presupuesto de Gemini (Predictive Scheduler).
  */
 async function buildRunPlan(sources: Source[]) {
-  const { prisma } = require('../src/lib/db');
   const [healthData, ctrMap, budget] = await Promise.all([
     prisma.sourceHealth.findMany({ select: { source: true, score: true } }),
     getCTRByDomain(),
@@ -357,7 +357,9 @@ async function runDirect(sources: Source[], dryRun: boolean) {
       let saved = 0, failed = 0, skipped = 0;
 
       if (item.mode === 'PARSE_ONLY') {
-         // CIRCUITO CORTO: Entrar directo al Rescue Pipeline prescindiendo de discovery
+         // CIRCUITO CORTO (backward-compat): solo reparse, sin discovery.
+         // v2: pickMode() ya no asigna PARSE_ONLY automáticamente. Este bloque
+         // queda como fallback para uso manual explícito.
          const host = new URL(source.url).hostname.replace('www.', '');
          const tempCache = new ScrapingCache();
          await tempCache.syncFromDb(host);
@@ -370,7 +372,7 @@ async function runDirect(sources: Source[], dryRun: boolean) {
            failed = result.results.filter(r => !r.data).length;
          }
       } else {
-        // FLUJO STANDARD CON MAX PAGES ALTERADO POR EL BUDGET
+        // ── v2: FLUJO STANDARD — DISCOVERY + REPARSE (si hay deuda) ───────────
         switch (source.channel) {
           case 'instagram': {
             const igConfig = Object.assign({}, source.instagram ?? {}, { maxPosts: item.maxUrls });
@@ -386,12 +388,30 @@ async function runDirect(sources: Source[], dryRun: boolean) {
           case 'tiktok':
           case 'facebook':
           case 'telegram': {
+            // FASE 1: Discovery de URLs nuevas
             const result = await pipeline.runBatchPipeline(source.url, { maxPages: item.maxUrls, sitemapPatterns: source.sitemapPatterns });
             saved   = result.savedCount ?? result.results.filter((r) => r.data && r.data.confidenceScore >= 0.3).length;
             failed  = result.results.filter((r) => !r.data).length;
             skipped = result.discoveredLinks - result.filteredLinks;
             const errorType = failed > 0 ? 'parse' : null;
             await saveMetrics(metricsPrisma, source, result.filteredLinks, saved, failed, errorType);
+
+            // FASE 2 (v2): Reparse de URLs con deuda de Cheerio fallback
+            if ((item.reparseCount ?? 0) > 0) {
+              const host = new URL(source.url).hostname.replace('www.', '');
+              const tempCache = new ScrapingCache();
+              await tempCache.syncFromDb(host);
+              const reparseUrls = tempCache.getReparseUrlsByDomain(host).slice(0, item.reparseCount ?? 20);
+              if (reparseUrls.length > 0) {
+                console.log(`  🔄 [REPARSE] ${reparseUrls.length} URLs con deuda → procesando después del discovery...`);
+                const reparseResult = await pipeline.runReparsePipeline(reparseUrls, source.url);
+                const reparseSaved  = reparseResult.savedCount ?? reparseResult.results.filter(r => r.data).length;
+                const reparseFailed = reparseResult.results.filter(r => !r.data).length;
+                saved  += reparseSaved;
+                failed += reparseFailed;
+                console.log(`  🔄 [REPARSE] ${reparseSaved} guardadas, ${reparseFailed} fallidas`);
+              }
+            }
             break;
           }
           default:

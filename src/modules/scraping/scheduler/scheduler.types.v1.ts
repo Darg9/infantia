@@ -20,20 +20,10 @@ export interface SourceStats {
 export interface SchedulePlan {
   /** Fuente objetivo que entrará al pipeline */
   source: any; // Se reemplazará con el modelo Source en ingest-sources.ts
-  /** Modo predictivo seleccionado por la heurística (DEEP/SURFACE/PING para discovery) */
+  /** Modo predictivo seleccionado por la heurística */
   mode: Mode;
-  /** Cantidad de URLs a descubrir (capped por presupuesto disponible) */
+  /** Cantidad estimada de URLs a descubrir (si aplica) */
   maxUrls: number;
-  /** Profundidad estimada en costos de LLM (discovery + reparse combinados) */
+  /** Profundidad estimada en costos de LLM */
   estimatedCost: number;
-  /**
-   * v2: Cantidad de URLs con needsReparse a procesar DESPUÉS del discovery.
-   * undefined / 0 = sin deuda de reparse en este run.
-   *
-   * Cambio clave respecto a v1:
-   * - v1: reparseCount > 0 → modo PARSE_ONLY → discovery desactivado completamente
-   * - v2: reparseCount > 0 → discovery ocurre normalmente + reparse se ejecuta al final
-   *       El resultado: nunca se pierde contenido nuevo por tener deuda de reparse.
-   */
-  reparseCount?: number; // undefined = 0 (backward-compat con v1)
 }

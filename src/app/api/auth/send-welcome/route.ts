@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../lib/error';
 import { NextRequest, NextResponse } from 'next/server'
 import { sendWelcomeEmail } from '@/lib/email/resend'
 import { createLogger } from '@/lib/logger';
@@ -36,11 +37,11 @@ export async function POST(request: NextRequest) {
       { success: true, messageId: result.messageId },
       { status: 200 }
     )
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error('Exception en send-welcome', { error })
     // No fallar — el signup ya sucedió
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) },
       { status: 200 }
     )
   }

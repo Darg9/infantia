@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../lib/error';
 import { createLogger } from '../../lib/logger';
 import { prisma } from '../../lib/db';
 import { InstagramExtractOptions } from './extractors/playwright.extractor';
@@ -30,7 +31,7 @@ const log = createLogger('scraping:resilience');
 export type NormalizedErrorType = 'timeout' | 'blocked' | 'parse_error' | 'empty_response' | 'unknown';
 
 export function classifyError(error: any): NormalizedErrorType {
-  const message = (error?.message || error?.toString() || '').toLowerCase();
+  const message = (getErrorMessage(error) || error?.toString() || '').toLowerCase();
   const status = error?.status || error?.response?.status;
 
   if (message.includes('timeout') || message.includes('abort') || message.includes('connreset')) {
@@ -78,7 +79,7 @@ export async function fetchWithRetry(
         responseTime: Date.now() - start,
         methodUsed: methodName,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       const errType = classifyError(error);
       const latency = Date.now() - start;
 
@@ -88,7 +89,7 @@ export async function fetchWithRetry(
         attempt,
         responseTime: latency,
         errorType: errType,
-        message: error.message
+        message: getErrorMessage(error)
       }));
 
       if (attempt === maxRetries || errType === 'blocked') {
@@ -157,7 +158,7 @@ export async function fetchWithFallback(
       }));
 
       return result;
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.info(JSON.stringify({
         event: 'scrape_fallback',
         source: sourceType,
@@ -278,8 +279,8 @@ export async function updateSourceHealth(sourceHost: string, result: SourceHealt
       }
     });
 
-  } catch (err: any) {
-    log.error(`Fallo escribiendo source health para ${sourceHost}: ${err.message}`);
+  } catch (err: unknown) {
+    log.error(`Fallo escribiendo source health para ${sourceHost}: ${getErrorMessage(err)}`);
   }
 }
 

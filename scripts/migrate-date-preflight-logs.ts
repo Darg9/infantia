@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import "dotenv/config";
@@ -51,8 +52,8 @@ async function main() {
     console.log('');
     console.log('Retención recomendada: 14 días.');
     console.log('Limpieza manual: DELETE FROM date_preflight_logs WHERE created_at < now() - interval \'14 days\';');
-  } catch (error: any) {
-    console.error(`❌ Fallo: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`❌ Fallo: ${getErrorMessage(error)}`);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

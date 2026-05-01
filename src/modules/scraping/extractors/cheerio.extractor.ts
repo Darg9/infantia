@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../lib/error';
 import * as cheerio from 'cheerio';
 import { Agent } from 'undici';
 import { Extractor, ScrapedRawData, DiscoveredLink } from '../types';
@@ -88,13 +89,13 @@ export class CheerioExtractor implements Extractor {
         extractedAt: new Date(),
         status: 'SUCCESS',
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       return {
         url,
         sourceText: '',
         extractedAt: new Date(),
         status: 'FAILED',
-        error: error.message,
+        error: getErrorMessage(error),
       };
     }
   }
@@ -294,8 +295,8 @@ export class CheerioExtractor implements Extractor {
           try {
             const childXml = await fetchXml(childUrl);
             nested.push(...(await collectEntries(childXml)));
-          } catch (err: any) {
-            log.warn(`Error fetching child sitemap ${childUrl}: ${err.message}`);
+          } catch (err: unknown) {
+            log.warn(`Error fetching child sitemap ${childUrl}: ${getErrorMessage(err)}`);
           }
         }
         return nested;

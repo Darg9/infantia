@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import "dotenv/config";
@@ -30,8 +31,8 @@ async function main() {
     await prisma.$executeRawUnsafe(`CREATE INDEX IF NOT EXISTS "events_createdAt_idx" ON "events"("createdAt");`);
     
     console.log('✅ Indices de events establecidos.');
-  } catch (error: any) {
-    console.error(`❌ Fallo corriendo Raw SQL: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`❌ Fallo corriendo Raw SQL: ${getErrorMessage(error)}`);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

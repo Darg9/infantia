@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../lib/error';
 import { PrismaClient } from '../../../generated/prisma/client';
 import { createLogger } from '../../../lib/logger';
 
@@ -61,7 +62,7 @@ export async function runCategorySkewGuardrail(): Promise<void> {
     } else {
       log.info('Distribución de categorías en niveles saludables (<25%).');
     }
-  } catch (err: any) {
-    log.error('Error in runCategorySkewGuardrail', { error: err.message });
+  } catch (err: unknown) {
+    log.error('Error in runCategorySkewGuardrail', { error: getErrorMessage(err) });
   }
 }

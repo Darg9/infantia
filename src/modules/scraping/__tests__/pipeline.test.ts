@@ -144,20 +144,24 @@ vi.mock('../../../lib/db', () => ({
     },
   },
 }));
-vi.mock('../../../generated/prisma/client', () => ({
-  PrismaClient: vi.fn().mockImplementation(function () {
-    return {
-      city: { findFirst: vi.fn().mockResolvedValue({ id: 'city-bog' }) },
-      vertical: { findUnique: vi.fn().mockResolvedValue({ id: 'vert-kids' }) },
-      sourceHealth: {
-        findUnique: vi.fn().mockResolvedValue(null),
-        upsert: vi.fn().mockResolvedValue({}),
-        update: vi.fn().mockResolvedValue({}),
-      },
-      $disconnect: vi.fn(),
-    };
-  }),
-}));
+vi.mock('../../../generated/prisma/client', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../../generated/prisma/client')>();
+  return {
+    ...actual,
+    PrismaClient: vi.fn().mockImplementation(function () {
+      return {
+        city: { findFirst: vi.fn().mockResolvedValue({ id: 'city-bog' }) },
+        vertical: { findUnique: vi.fn().mockResolvedValue({ id: 'vert-kids' }) },
+        sourceHealth: {
+          findUnique: vi.fn().mockResolvedValue(null),
+          upsert: vi.fn().mockResolvedValue({}),
+          update: vi.fn().mockResolvedValue({}),
+        },
+        $disconnect: vi.fn(),
+      };
+    }),
+  };
+});
 
 import { ScrapingPipeline } from '../pipeline';
 import { PrismaClient } from '../../../generated/prisma/client';

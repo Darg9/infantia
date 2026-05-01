@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // ingest-sources.ts
 // Ingesta de múltiples fuentes.
 // Uso: npx tsx scripts/ingest-sources.ts [opciones]
@@ -421,11 +422,11 @@ async function runDirect(sources: Source[], dryRun: boolean) {
 
       summary.push({ name: source.name, saved, failed, skipped });
       console.log(`\n✅ ${source.name}: ${saved} guardadas, ${failed} fallidas, ${skipped} omitidas`);
-    } catch (err: any) {
-      const isQuota = err.message?.includes('QUOTA_EXHAUSTED');
+    } catch (err: unknown) {
+      const isQuota = getErrorMessage(err)?.includes('QUOTA_EXHAUSTED');
       const errorType = isQuota ? 'quota' : 'network';
       await saveMetrics(metricsPrisma, source, 0, 0, 1, errorType);
-      console.error(`\n❌ Error fatal en ${source.name}: ${err.message}`);
+      console.error(`\n❌ Error fatal en ${source.name}: ${getErrorMessage(err)}`);
       summary.push({ name: source.name, saved: 0, failed: 1, skipped: 0 });
     } finally {
       await pipeline.disconnect();

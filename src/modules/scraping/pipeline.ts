@@ -13,6 +13,7 @@ import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetri
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
 import { evaluateActivityGate } from './quality/activity-gate';
+import { ScrapingStatus } from '../../generated/prisma/client';
 
 const log = createLogger('scraping:pipeline');
 
@@ -115,12 +116,13 @@ export class ScrapingPipeline {
       if (sourceHost) {
         await updateSourceHealth(sourceHost, { success: true, responseTimeMs: fallbackResult.responseTime });
       }
-    } catch (err: any) {
-      log.error(`[PIPELINE] Falló la extracción con fallbacks agotados: ${err.message}`);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log.error(`[PIPELINE] Falló la extracción con fallbacks agotados: ${msg}`);
       if (sourceHost) {
         await updateSourceHealth(sourceHost, { success: false, responseTimeMs: Date.now() - start });
       }
-      throw new Error(`[PIPELINE] Extracción abortada: ${err.message}`);
+      throw new Error(`[PIPELINE] Extracción abortada: ${msg}`);
     }
 
     const textLength = htmlContent.length;
@@ -230,8 +232,9 @@ export class ScrapingPipeline {
           logId = await this.logger.startRun(sourceId);
           log.info(`Logger: sourceId=${sourceId}, logId=${logId}`);
         }
-      } catch (err: any) {
-        log.warn(`Logger init error (non-fatal): ${err?.message ?? String(err)}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.warn(`Logger init error (non-fatal): ${msg}`);
       }
     }
 
@@ -285,8 +288,9 @@ export class ScrapingPipeline {
       try {
         allLinks = await this.playwrightExtractor.extractWebLinks(listingUrl);
         log.info(`Playwright encontró: ${allLinks.length} links`);
-      } catch (err: any) {
-        log.error(`Playwright también falló: ${err.message}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.error(`Playwright también falló: ${msg}`);
       }
     }
 
@@ -294,7 +298,7 @@ export class ScrapingPipeline {
       log.warn('No se encontraron links ni con Cheerio ni con Playwright.');
       if (this.logger && logId && sourceId) {
         await this.logger.completeRun(logId, { itemsFound: 0, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: 0, errorMessage: 'No links found' });
-        await this.logger.updateSourceStatus(sourceId, 'FAILED' as any, 0);
+        await this.logger.updateSourceStatus(sourceId, ScrapingStatus.FAILED, 0);
       }
       return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
     }
@@ -310,7 +314,7 @@ export class ScrapingPipeline {
       log.warn('Gemini no identificó ningún link como actividad.');
       if (this.logger && logId && sourceId) {
         await this.logger.completeRun(logId, { itemsFound: 0, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: 0, metadata: { discoveredLinks: allLinks.length } });
-        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, 0);
+        await this.logger.updateSourceStatus(sourceId, ScrapingStatus.SUCCESS, 0);
       }
       return { sourceUrl: listingUrl, discoveredLinks: allLinks.length, filteredLinks: 0, results: [] };
     }
@@ -398,7 +402,7 @@ export class ScrapingPipeline {
       log.info('✅ Todo al día — no hay actividades nuevas.');
       if (this.logger && logId && sourceId) {
         await this.logger.completeRun(logId, { itemsFound: activityUrls.length, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: skipped });
-        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, activityUrls.length);
+        await this.logger.updateSourceStatus(sourceId, ScrapingStatus.SUCCESS, activityUrls.length);
       }
       return {
         sourceUrl: listingUrl,
@@ -447,16 +451,18 @@ export class ScrapingPipeline {
             try {
               await this.storage.saveActivity(data, actUrl);
               log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore}, gate=${gate.score.toFixed(2)})`);
-            } catch (err: any) {
-              log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${err?.message}`);
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              log.warn(`[STREAMING] Error (non-fatal, Fase 4 reintentará): ${msg}`);
             }
           }
           } // end gate.pass check
           } // end isActivity check
           results.push({ url: actUrl, data });
-        } catch (error: any) {
-          log.error(`Error en ${actUrl}: ${error.message}`);
-          results.push({ url: actUrl, data: null, error: error.message });
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          log.error(`Error en ${actUrl}: ${msg}`);
+          results.push({ url: actUrl, data: null, error: msg });
         }
         log.info(`Progreso: ${i + 1}/${newUrls.length} procesadas`);
       }
@@ -486,16 +492,18 @@ export class ScrapingPipeline {
               try {
                 await this.storage.saveActivity(data, actUrl);
                 log.info(`[STREAMING] ✅ Guardada: "${data.title}" (${data.parserSource ?? 'gemini'}, score=${data.confidenceScore}, gate=${gate.score.toFixed(2)})`);
-              } catch (err: any) {
-                log.warn(`[STREAMING] Error (non-fatal): ${err?.message}`);
+              } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                log.warn(`[STREAMING] Error (non-fatal): ${msg}`);
               }
             } // end storage check
             } // end gate else
             } // end isActivity else
             return { url: actUrl, data };
-          } catch (error: any) {
-            log.error(`Error en ${actUrl}: ${error.message}`);
-            return { url: actUrl, data: null, error: error.message };
+          } catch (error: unknown) {
+            const msg = error instanceof Error ? error.message : String(error);
+            log.error(`Error en ${actUrl}: ${msg}`);
+            return { url: actUrl, data: null, error: msg };
           }
         });
         // Contabilizar preflight calls/skips en batch (fuera del async interno para evitar race condition)
@@ -583,7 +591,7 @@ export class ScrapingPipeline {
           errorMessage: errors.length > 0 ? `${errors.length} URLs fallaron` : undefined,
           metadata: { discoveredLinks: allLinks.length, processed: results.length, cached: skipped },
         });
-        await this.logger.updateSourceStatus(sourceId, status as any, activityUrls.length);
+        await this.logger.updateSourceStatus(sourceId, status as ScrapingStatus, activityUrls.length);
 
         // -- Skew Guardrail (Post-Ingesta) --
         // Ejecución lazy para no bloquear la finalización
@@ -591,8 +599,9 @@ export class ScrapingPipeline {
           module.runCategorySkewGuardrail().catch(e => log.error('Guardrail err', e));
         }).catch(err => log.error('Failed to run category skew guardrail', err));
 
-      } catch (err: any) {
-        log.warn(`Logger complete error (non-fatal): ${err.message}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.warn(`Logger complete error (non-fatal): ${msg}`);
       }
     }
 
@@ -647,14 +656,16 @@ export class ScrapingPipeline {
               await this.storage.saveActivity(data, actUrl);
               log.info(`[REPARSE-STREAMING] ✅ Recuperada: "${data.title}" (score=${data.confidenceScore})`);
               savedCount++;
-            } catch (err: any) {
-              log.warn(`[REPARSE-STREAMING] Error (non-fatal): ${err?.message}`);
+            } catch (err: unknown) {
+              const msg = err instanceof Error ? err.message : String(err);
+              log.warn(`[REPARSE-STREAMING] Error (non-fatal): ${msg}`);
             }
           }
           results.push({ url: actUrl, data });
-        } catch (error: any) {
-          log.error(`[REPARSE] Error en ${actUrl}: ${error.message}`);
-          results.push({ url: actUrl, data: null, error: error.message });
+        } catch (error: unknown) {
+          const msg = error instanceof Error ? error.message : String(error);
+          log.error(`[REPARSE] Error en ${actUrl}: ${msg}`);
+          results.push({ url: actUrl, data: null, error: msg });
         }
         log.info(`Reparse Progreso: ${i + 1}/${urls.length}`);
     }
@@ -721,8 +732,9 @@ export class ScrapingPipeline {
         logId = await this.logger.startRun(sourceId);
         log.info(`Logger: sourceId=${sourceId}, logId=${logId}`);
         }
-      } catch (err: any) {
-        log.warn(`Logger init error (non-fatal): ${err.message}`);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.warn(`Logger init error (non-fatal): ${msg}`);
       }
     }
 
@@ -752,7 +764,7 @@ export class ScrapingPipeline {
       log.info('✅ Todo al dia — no hay posts nuevos.');
       if (this.logger && logId && sourceId) {
         await this.logger.completeRun(logId, { itemsFound: profile.posts.length, itemsNew: 0, itemsUpdated: 0, itemsDuplicated: skipped });
-        await this.logger.updateSourceStatus(sourceId, 'SUCCESS' as any, profile.posts.length);
+        await this.logger.updateSourceStatus(sourceId, ScrapingStatus.SUCCESS, profile.posts.length);
       }
       return {
         profileUrl,
@@ -800,13 +812,14 @@ export class ScrapingPipeline {
         results.push({ postUrl: post.url, data });
 
         log.info(`→ "${data.title}" (confianza: ${data.confidenceScore})`);
-      } catch (error: any) {
-        if (error.message?.includes('QUOTA_EXHAUSTED')) {
+      } catch (error: unknown) {
+        const msg = error instanceof Error ? error.message : String(error);
+        if (msg.includes('QUOTA_EXHAUSTED')) {
           log.warn(`Todas las keys agotadas — deteniendo loop de ${newPosts.length - i - 1} posts restantes.`);
           break; // no contar como failed — cuota no es un fallo de parsing
         }
-        log.error(`Error analizando ${post.url}: ${error.message}`);
-        results.push({ postUrl: post.url, data: null, error: error.message });
+        log.error(`Error analizando ${post.url}: ${msg}`);
+        results.push({ postUrl: post.url, data: null, error: msg });
       }
     }
 
@@ -885,9 +898,10 @@ export class ScrapingPipeline {
           errorMessage: errorCount > 0 ? `${errorCount} posts fallaron` : undefined,
           metadata: { postsExtracted: profile.posts.length, processed: results.length, cached: skipped },
         });
-        await this.logger.updateSourceStatus(sourceId, status as any, newPosts.length);
-      } catch (err: any) {
-        log.warn(`Logger complete error (non-fatal): ${err.message}`);
+        await this.logger.updateSourceStatus(sourceId, status as ScrapingStatus, newPosts.length);
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        log.warn(`Logger complete error (non-fatal): ${msg}`);
       }
     }
 

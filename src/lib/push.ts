@@ -45,9 +45,9 @@ export async function sendPushNotification(
       JSON.stringify(payload),
     );
     return true;
-  } catch (err: any) {
+  } catch (err: unknown) {
     // 410 Gone / 404 = suscripción expirada — debe eliminarse
-    if (err.statusCode === 410 || err.statusCode === 404) return false;
+    if ((err as any).statusCode === 410 || (err as any).statusCode === 404) return false;
     // Otros errores no son fatales — loguear y seguir
     log.error('Error enviando notificación push', { endpoint: subscription.endpoint, error: err });
     return true;

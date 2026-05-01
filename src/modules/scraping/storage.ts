@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../lib/error';
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient, ActivityStatus } from '../../generated/prisma/client';
@@ -334,8 +335,8 @@ export class ScrapingStorage {
         await this.linkCategories(activityId, data.categories, vertical.id);
         return { id: activityId, action: finalStatus === ActivityStatus.PAUSED ? "CREATED_PAUSED" : "CREATED_ACTIVE" };
       }
-    } catch (error: any) {
-      log.error(`Error guardando "${data.title}":`, error.message);
+    } catch (error: unknown) {
+      log.error(`Error guardando "${data.title}":`, { error: getErrorMessage(error) });
       return { id: null, action: 'ERROR' };
     }
   }
@@ -436,7 +437,7 @@ export class ScrapingStorage {
           // Non-fatal — nunca rompe el pipeline
           log.warn('[storage] source_run_metrics insert fallido (non-fatal)', {
             sourceId: batchResult.sourceId,
-            error: err instanceof Error ? err.message : String(err),
+            error: err instanceof Error ? getErrorMessage(err) : String(err),
           });
         }
       })();
@@ -648,8 +649,8 @@ export class ScrapingStorage {
       }
 
       return location.id;
-    } catch (err: any) {
-      log.error('Error creando location:', err.message);
+    } catch (err: unknown) {
+      log.error('Error creando location:', { error: getErrorMessage(err) });
       return null;
     }
   }

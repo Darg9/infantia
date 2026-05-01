@@ -35,8 +35,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       },
     });
     return NextResponse.json(sponsor);
-  } catch (e: any) {
-    if (e?.name === 'ZodError') return NextResponse.json({ error: e.errors }, { status: 400 });
+  } catch (e: unknown) {
+    if (e instanceof z.ZodError) return NextResponse.json({ error: e.issues }, { status: 400 });
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 }

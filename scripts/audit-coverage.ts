@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 /**
  * audit-coverage.ts
  * ─────────────────────────────────────────────────────────────────────────────
@@ -206,7 +207,7 @@ async function auditSource(
       allLinks = fastMode
         ? await fetchLinksCheerio(source.url)
         : await fetchLinksPlaywright(source.url, browser);
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Si Playwright falla (SPA), intentar Cheerio como fallback
       if (!fastMode) {
         try {
@@ -238,8 +239,8 @@ async function auditSource(
       newUrls: newUrls.slice(0, 10),
       durationMs: Date.now() - start,
     };
-  } catch (err: any) {
-    const isTimeout = err.message?.includes('timeout') || err.message?.includes('ETIMEDOUT');
+  } catch (err: unknown) {
+    const isTimeout = getErrorMessage(err)?.includes('timeout') || getErrorMessage(err)?.includes('ETIMEDOUT');
     return {
       name: source.name,
       url: source.url,
@@ -248,7 +249,7 @@ async function auditSource(
       cached: 0,
       newLinks: 0,
       newUrls: [],
-      error: err.message?.slice(0, 120),
+      error: getErrorMessage(err)?.slice(0, 120),
       durationMs: Date.now() - start,
     };
   }
@@ -297,8 +298,8 @@ async function getSchedulerModes(sources: AuditSource[]): Promise<Map<string, { 
     for (const item of plan.skipped) {
       result.set(item.source.name, { mode: 'SKIPPED', maxUrls: 0 });
     }
-  } catch (err: any) {
-    console.warn(`⚠️  No se pudo consultar el scheduler: ${err.message?.slice(0, 80)}`);
+  } catch (err: unknown) {
+    console.warn(`⚠️  No se pudo consultar el scheduler: ${getErrorMessage(err)?.slice(0, 80)}`);
   }
   return result;
 }

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // Debug: test different strategies to access Instagram data without login
 import 'dotenv/config';
 import { chromium } from 'playwright';
@@ -39,8 +40,8 @@ async function main() {
       const text = await resp.text();
       console.log(`Response: ${text.substring(0, 200)}`);
     }
-  } catch (e: any) {
-    console.log(`Error: ${e.message}`);
+  } catch (e: unknown) {
+    console.log(`Error: ${getErrorMessage(e)}`);
   }
 
   console.log(`\n=== Strategy 2: HTML page with desktop UA (Playwright) ===`);
@@ -90,8 +91,8 @@ async function main() {
     console.log(`Screenshot: data/ig-debug-desktop.png`);
 
     await context.close();
-  } catch (e: any) {
-    console.log(`Error: ${e.message}`);
+  } catch (e: unknown) {
+    console.log(`Error: ${getErrorMessage(e)}`);
   }
 
   console.log(`\n=== Strategy 3: Direct post URL ===`);
@@ -116,8 +117,8 @@ async function main() {
     console.log(`og:image: ${ogImage ? 'yes' : 'no'}`);
 
     await context.close();
-  } catch (e: any) {
-    console.log(`Error: ${e.message}`);
+  } catch (e: unknown) {
+    console.log(`Error: ${getErrorMessage(e)}`);
   }
 
   await browser.close();

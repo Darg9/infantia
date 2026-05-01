@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // =============================================================================
 // ingest-telegram.ts — Ingesta de canales de Telegram
 //
@@ -90,8 +91,8 @@ async function main() {
             await storage.saveActivity(result, msg.url, 'kids');
           }
           saved++;
-        } catch (err: any) {
-          log.error('Error analizando mensaje', { error: err.message, url: msg.url });
+        } catch (err: unknown) {
+          log.error('Error analizando mensaje', { error: getErrorMessage(err), url: msg.url });
           skipped++;
         }
       }
@@ -100,8 +101,8 @@ async function main() {
       totalSaved   += saved;
       totalSkipped += skipped;
 
-    } catch (err: any) {
-      console.error(`\n   ❌ Error en @${ch.username}: ${err.message}`);
+    } catch (err: unknown) {
+      console.error(`\n   ❌ Error en @${ch.username}: ${getErrorMessage(err)}`);
     }
   }
 

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 /**
  * Migration: Agregar tablas para source pause config y URL stats tracking
  * Ejecutar: npx tsx scripts/migrate-source-pause.ts
@@ -65,11 +66,11 @@ async function migrate() {
     console.log('✅ Índice source_url_stats.avg_url_score creado');
 
     console.log('\n✨ Migration completada exitosamente\n');
-  } catch (error: any) {
-    if (error.code === 'POSTGRES_ERROR' && error.message.includes('already exists')) {
+  } catch (error: unknown) {
+    if ((error as any).code === 'POSTGRES_ERROR' && getErrorMessage(error).includes('already exists')) {
       console.log('ℹ️  Tablas ya existen — saltando...\n');
     } else {
-      console.error('❌ Error en migration:', error.message);
+      console.error('❌ Error en migration:', getErrorMessage(error));
       throw error;
     }
   } finally {

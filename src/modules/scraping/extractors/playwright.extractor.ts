@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../lib/error';
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
@@ -141,8 +142,8 @@ export class PlaywrightExtractor {
           const post = await this.extractPost(page, postUrl, contentMode);
           posts.push(post);
           log.info(`Post extraído: ${postUrl} (caption: ${post.caption.substring(0, 60)}...)`);
-        } catch (error: any) {
-          log.error(`Error en post ${postUrl}: ${error.message}`);
+        } catch (error: unknown) {
+          log.error(`Error en post ${postUrl}: ${getErrorMessage(error)}`);
         }
       }
 
@@ -446,8 +447,8 @@ export class PlaywrightExtractor {
         status: text.length > 50 ? 'SUCCESS' : 'FAILED',
         error: text.length <= 50 ? 'Texto insuficiente extraído por Playwright' : undefined,
       };
-    } catch (error: any) {
-      return { url, sourceText: '', html: '', extractedAt: new Date(), status: 'FAILED', error: error.message };
+    } catch (error: unknown) {
+      return { url, sourceText: '', html: '', extractedAt: new Date(), status: 'FAILED', error: getErrorMessage(error) };
     } finally {
       await page.close();
       await context.close();

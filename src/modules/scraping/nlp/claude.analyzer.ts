@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../lib/error';
 import { ActivityNLPResult, activityNLPResultSchema } from '../types';
 import { createLogger } from '../../../lib/logger';
 
@@ -66,7 +67,10 @@ export class ClaudeAnalyzer {
       const data = await response.json();
 
       if (data.error) {
-        throw new Error(`Claude API error: ${data.error.message}`);
+        const errMsg = data.error && typeof data.error === 'object' && 'message' in data.error
+          ? String((data.error as { message: unknown }).message)
+          : getErrorMessage(data.error);
+        throw new Error(`Claude API error: ${errMsg}`);
       }
 
       const jsonStr = data.content[0].text;
@@ -86,8 +90,8 @@ export class ClaudeAnalyzer {
       }
 
       return validated.data;
-    } catch (error: any) {
-      log.error('Error en ClaudeAnalyzer:', error.message);
+    } catch (error: unknown) {
+      log.error('Error en ClaudeAnalyzer:', { error: getErrorMessage(error) });
       throw error;
     }
   }

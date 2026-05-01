@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // =============================================================================
 // reclassify-audience.ts
 // Clasifica la audiencia (KIDS / FAMILY / ADULTS / ALL) de todas las
@@ -138,8 +139,8 @@ async function main() {
       if (i + BATCH_SIZE < activities.length) {
         await new Promise((r) => setTimeout(r, 800));
       }
-    } catch (error: any) {
-      console.error(`❌ Error: ${error.message}`);
+    } catch (error: unknown) {
+      console.error(`❌ Error: ${getErrorMessage(error)}`);
       errors++;
     }
   }

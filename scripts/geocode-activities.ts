@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // =============================================================================
 // geocode-activities.ts — Backfill de locations para actividades existentes
 //
@@ -168,8 +169,8 @@ async function main() {
       });
 
       success++;
-    } catch (err: any) {
-      console.error(`   ✗ Error: ${err.message}`);
+    } catch (err: unknown) {
+      console.error(`   ✗ Error: ${getErrorMessage(err)}`);
       failed++;
     }
   }

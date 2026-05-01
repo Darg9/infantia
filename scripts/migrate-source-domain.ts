@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import "dotenv/config";
@@ -20,8 +21,8 @@ async function main() {
       CREATE INDEX IF NOT EXISTS activities_source_domain_idx ON activities(source_domain);
     `);
     console.log('✅ Indice sobre source_domain establecido.');
-  } catch (error: any) {
-    console.error(`❌ Fallo corriendo Raw SQL: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`❌ Fallo corriendo Raw SQL: ${getErrorMessage(error)}`);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

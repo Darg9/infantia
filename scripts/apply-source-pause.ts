@@ -1,4 +1,5 @@
 #!/usr/bin/env npx tsx
+import { getErrorMessage } from '../src/lib/error';
 /**
  * Script: apply-source-pause
  * Ejecuta la lógica de auto-pause de fuentes basado en URL scores
@@ -82,10 +83,10 @@ async function main() {
         } else if (verbose && pauseResult.reason !== 'score_above_threshold') {
           console.log(`  ℹ️  No action ${source.name}: ${pauseResult.reason}`);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         results.errors.push({
           sourceId: source.id,
-          error: error.message,
+          error: getErrorMessage(error),
         });
         log.error(`Error processing source ${source.id}`, { error });
       }
@@ -136,8 +137,8 @@ async function main() {
     }
 
     console.log('='.repeat(70) + '\n');
-  } catch (error: any) {
-    console.error('\n❌ Error en script:', error.message);
+  } catch (error: unknown) {
+    console.error('\n❌ Error en script:', getErrorMessage(error));
     process.exit(1);
   } finally {
     await prisma.$disconnect();

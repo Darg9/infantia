@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
       },
     });
     return NextResponse.json(sponsor, { status: 201 });
-  } catch (e: any) {
-    if (e?.name === 'ZodError') return NextResponse.json({ error: e.errors }, { status: 400 });
+  } catch (e: unknown) {
+    if (e instanceof z.ZodError) return NextResponse.json({ error: e.issues }, { status: 400 });
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
   }
 }

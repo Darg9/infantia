@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 import "dotenv/config";
@@ -14,8 +15,8 @@ async function main() {
       ALTER TABLE events ADD COLUMN IF NOT EXISTS metadata JSONB;
     `);
     console.log('✅ Metadata JSONB adicionada con exito.');
-  } catch (error: any) {
-    console.error(`❌ Fallo corriendo Raw SQL: ${error.message}`);
+  } catch (error: unknown) {
+    console.error(`❌ Fallo corriendo Raw SQL: ${getErrorMessage(error)}`);
     process.exit(1);
   } finally {
     await prisma.$disconnect();

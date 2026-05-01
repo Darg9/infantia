@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../lib/error';
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -48,8 +49,8 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
         const data = await response.json();
         setStats(data.sources);
         setSummary(data.summary);
-      } catch (err: any) {
-        setError(err.message);
+      } catch (err: unknown) {
+        setError(getErrorMessage(err));
       } finally {
         setLoading(false);
       }

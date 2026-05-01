@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@/generated/prisma/client';
@@ -191,9 +192,9 @@ export async function POST(request: NextRequest) {
             errors.push({ email: user.email, error: result.error });
           }
         }
-      } catch (error: any) {
-        log.error(`Error processing user ${user.email}:`, error.message);
-        errors.push({ email: user.email, error: error.message });
+      } catch (error: unknown) {
+        log.error(`Error processing user ${user.email}:`, { error: getErrorMessage(error) });
+        errors.push({ email: user.email, error: getErrorMessage(error) as any });
       }
     }
 
@@ -245,10 +246,10 @@ export async function POST(request: NextRequest) {
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    log.error('Catastrophic error:', error);
+  } catch (error: unknown) {
+    log.error('Catastrophic error:', { error });
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: false, error: getErrorMessage(error) as any },
       { status: 500 }
     );
   } finally {

@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../../lib/error';
 // =============================================================================
 // PATCH /api/admin/claims/[id] — Aprobar o rechazar una solicitud (admin)
 // =============================================================================
@@ -73,8 +74,8 @@ export async function PATCH(
       app_metadata: { role: 'provider' },
     });
     log.info('app_metadata actualizado a provider', { userId: claim.userId });
-  } catch (err: any) {
-    log.error('Error actualizando app_metadata', { userId: claim.userId, error: err.message });
+  } catch (err: unknown) {
+    log.error('Error actualizando app_metadata', { userId: claim.userId, error: getErrorMessage(err) });
     // No bloqueamos la respuesta — la BD ya está actualizada
   }
 

@@ -154,10 +154,11 @@ async function callWithRetry<T>(fn: () => Promise<T>, label: string, apiKey?: st
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
     try {
       return await fn();
-    } catch (error: any) {
-      const status = error?.status ?? error?.httpStatusCode ?? 0;
-      const is429 = status === 429 || error.message?.includes('429');
-      const isRetryable = status === 503 || is429 || error.message?.includes('503');
+    } catch (error: unknown) {
+      const err = error as { status?: number; httpStatusCode?: number; message?: string };
+      const status = err?.status ?? err?.httpStatusCode ?? 0;
+      const is429 = status === 429 || err?.message?.includes('429');
+      const isRetryable = status === 503 || is429 || err?.message?.includes('503');
 
       if (isRetryable && attempt < MAX_RETRIES) {
         const delay = RETRY_BASE_MS * Math.pow(2, attempt - 1);
@@ -253,8 +254,9 @@ export class GeminiAnalyzer {
       let parsed: unknown;
       try {
         parsed = JSON.parse(jsonStr);
-      } catch (parseErr: any) {
-        throw new Error(`Gemini retornó JSON inválido (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
+      } catch (parseErr: unknown) {
+        const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+        throw new Error(`Gemini retornó JSON inválido (${msg}): ${jsonStr.substring(0, 300)}`);
       }
 
       // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
@@ -304,7 +306,7 @@ export class GeminiAnalyzer {
       }
 
       return validated.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('Error en GeminiAnalyzer', { error });
       throw error;
     }
@@ -424,8 +426,9 @@ ${linksText}`;
         let parsed: unknown;
         try {
           parsed = JSON.parse(jsonStr);
-        } catch (parseErr: any) {
-          log.error(`Lote ${chunkIndex + 1}: JSON inválido (${parseErr.message})`);
+        } catch (parseErr: unknown) {
+          const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+          log.error(`Lote ${chunkIndex + 1}: JSON inválido (${msg})`);
           continue;
         }
 
@@ -506,8 +509,9 @@ ${profileBio}`;
       let parsed: unknown;
       try {
         parsed = JSON.parse(jsonStr);
-      } catch (parseErr: any) {
-        throw new Error(`Gemini retornó JSON inválido para Instagram (${parseErr.message}): ${jsonStr.substring(0, 300)}`);
+      } catch (parseErr: unknown) {
+        const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+        throw new Error(`Gemini retornó JSON inválido para Instagram (${msg}): ${jsonStr.substring(0, 300)}`);
       }
 
       // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
@@ -540,7 +544,7 @@ ${profileBio}`;
       }
 
       return validated.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       log.error('Error en GeminiAnalyzer (Instagram)', { error });
       throw error;
     }

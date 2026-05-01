@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 import { ScrapingStorage } from '../src/modules/scraping/storage';
 import { ActivityNLPResult } from '../src/modules/scraping/types';
 
@@ -43,8 +44,8 @@ async function main() {
     if (resC.action !== 'DEDUPE_SKIPPED' || !resC.id) throw new Error('Fallo Escenario C');
 
     console.log('\n✅ SMOKE TEST EXITOSO. El refactor es estable.');
-  } catch (err: any) {
-    console.error('\n❌ FALLO EN SMOKE TEST:', err.message);
+  } catch (err: unknown) {
+    console.error('\n❌ FALLO EN SMOKE TEST:', getErrorMessage(err));
     process.exit(1);
   } finally {
     await storage.disconnect();

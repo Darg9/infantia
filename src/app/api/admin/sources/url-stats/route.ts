@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../../lib/error';
 // GET /api/admin/sources/url-stats
 // Obtiene estadísticas de URL scores para el dashboard de admin
 
@@ -58,10 +59,10 @@ export async function GET(request: NextRequest) {
       summary,
       sources: formatted,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error('Error fetching source stats', { error });
     return NextResponse.json(
-      { error: error.message || 'Error fetching source stats' },
+      { error: getErrorMessage(error) || 'Error fetching source stats' },
       { status: 500 },
     );
   }

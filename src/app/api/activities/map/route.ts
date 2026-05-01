@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../../../lib/error';
 // =============================================================================
 // GET /api/activities/map
 // Devuelve hasta 500 actividades ACTIVE con coordenadas para el mapa.
@@ -147,7 +148,7 @@ export async function GET(req: NextRequest) {
       .filter((m) => m.lat !== 0 || m.lng !== 0);
 
     return NextResponse.json({ markers });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return NextResponse.json({ error: getErrorMessage(err) }, { status: 500 });
   }
 }

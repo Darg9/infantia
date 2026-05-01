@@ -56,11 +56,11 @@ export async function getOrCreateDbUser(authUser: User) {
         ...(authUser.phone ? { phone: authUser.phone } : {}),
       },
     })
-  } catch (err: any) {
+  } catch (err: unknown) {
     // Safety net: si hay P2002 por constraints aún no migradas en DB,
     // retornar el usuario existente para no romper el login.
     // Con el schema correcto (sin @unique en phone/email), este bloque nunca debe ejecutarse.
-    if (err.code === 'P2002') {
+    if ((err as any).code === 'P2002') {
       const existing = await prisma.user.findUnique({
         where: { supabaseAuthId: authUser.id },
       })

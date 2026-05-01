@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../error';
 import { Resend } from 'resend';
 import { WelcomeEmail } from './templates/welcome';
 import { ActivityDigestEmail } from './templates/activity-digest';
@@ -47,14 +48,14 @@ export async function sendWelcomeEmail({ to, userName }: SendWelcomeEmailParams)
 
     if (result.error) {
       log.error('Error enviando welcome', { to, error: result.error });
-      return { success: false, error: result.error.message };
+      return { success: false, error: getErrorMessage(result.error) };
     }
 
     log.info('Welcome email enviado', { to });
     return { success: true, messageId: result.data?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error('Exception en sendWelcomeEmail', { to, error });
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -87,14 +88,14 @@ export async function sendActivityDigest({
 
     if (result.error) {
       log.error('Error enviando digest', { to, error: result.error });
-      return { success: false, error: result.error.message };
+      return { success: false, error: getErrorMessage(result.error) };
     }
 
     log.info('Digest email enviado', { to, count: activities.length });
     return { success: true, messageId: result.data?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error('Exception en sendActivityDigest', { to, error });
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }
 
@@ -123,13 +124,13 @@ export async function sendClaimNotification(params: SendClaimNotificationParams)
 
     if (result.error) {
       log.error('Error enviando claim notification', { error: result.error });
-      return { success: false, error: result.error.message };
+      return { success: false, error: getErrorMessage(result.error) };
     }
 
     log.info('Claim notification enviada', { claimId: params.claimId, providerName: params.providerName });
     return { success: true, messageId: result.data?.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
     log.error('Exception en sendClaimNotification', { error });
-    return { success: false, error: error.message };
+    return { success: false, error: getErrorMessage(error) };
   }
 }

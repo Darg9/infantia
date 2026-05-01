@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 /**
  * backfill-images.ts
  * Extrae og:image (o primera imagen relevante) de sourceUrl de cada actividad
@@ -118,8 +119,8 @@ async function main() {
             data: { imageUrl },
           });
           updated++;
-        } catch (e: any) {
-          process.stdout.write(`  ⚠️  Error al guardar: ${e.message}\n`);
+        } catch (e: unknown) {
+          process.stdout.write(`  ⚠️  Error al guardar: ${getErrorMessage(e)}\n`);
           errors++;
         }
       } else {

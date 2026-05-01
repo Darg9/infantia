@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../lib/error';
 import { prisma } from '@/lib/db';
 import { getDomainFromUrl } from '@/modules/activities/ranking';
 import { createLogger } from '@/lib/logger';
@@ -88,8 +89,8 @@ export async function getCTRByDomain(): Promise<Record<string, number>> {
 
     ctrCache = { data: result, expiresAt: now + CTR_CACHE_TTL_MS };
     return result;
-  } catch (err: any) {
-    log.error('Error computing CTR by domain', { error: err.message });
+  } catch (err: unknown) {
+    log.error('Error computing CTR by domain', { error: getErrorMessage(err) });
     return {};
   }
 }

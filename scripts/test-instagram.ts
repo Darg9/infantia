@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // test-instagram.ts
 // Uso: npx tsx scripts/test-instagram.ts "https://www.instagram.com/fcecolombia/"
 // Flags: --save-db, --max-posts=N (1-12, default 6), --content-mode=text|image|both (default text)
@@ -160,8 +161,8 @@ async function main() {
 
     console.log('======================================================');
     console.log(`Tiempo total: ${elapsed} segundos`);
-  } catch (error: any) {
-    console.error('\nError en el pipeline de Instagram:', error.message);
+  } catch (error: unknown) {
+    console.error('\nError en el pipeline de Instagram:', getErrorMessage(error));
   } finally {
     await pipeline.disconnect();
   }

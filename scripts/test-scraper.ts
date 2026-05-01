@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../src/lib/error';
 // test-scraper.ts
 // Uso single:    npx tsx scripts/test-scraper.ts "https://url-de-actividad.com"
 // Uso discover:  npx tsx scripts/test-scraper.ts --discover "https://url-de-listado.com"
@@ -67,8 +68,8 @@ async function main() {
       console.log('\n======================================================================\n');
       console.log(`⏱️  Tiempo total: ${elapsed} segundos`);
     }
-  } catch (error: any) {
-    console.error('\n❌ Error catastrófico en el pipeline:', error.message);
+  } catch (error: unknown) {
+    console.error('\n❌ Error catastrófico en el pipeline:', getErrorMessage(error));
   } finally {
     await pipeline.disconnect();
   }

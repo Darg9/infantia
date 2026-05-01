@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../lib/error';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../../generated/prisma/client';
@@ -74,8 +75,8 @@ export class ScrapingCache {
       }
       await prisma.$disconnect();
       if (added > 0) log.info(`syncFromDb: ${added} entradas nuevas desde BD (total: ${this.size})`);
-    } catch (err: any) {
-      log.warn(`syncFromDb falló (non-fatal, usando solo disco): ${err?.message ?? String(err)}`);
+    } catch (err: unknown) {
+      log.warn(`syncFromDb falló (non-fatal, usando solo disco): ${getErrorMessage(err) ?? String(err)}`);
     }
   }
 
@@ -104,8 +105,8 @@ export class ScrapingCache {
       await prisma.$disconnect();
       log.info(`saveToDb: ${data.length} entradas guardadas en BD`);
       this.newEntries.clear();
-    } catch (err: any) {
-      log.warn(`saveToDb falló (non-fatal): ${err?.message ?? String(err)}`);
+    } catch (err: unknown) {
+      log.warn(`saveToDb falló (non-fatal): ${getErrorMessage(err) ?? String(err)}`);
     }
   }
 

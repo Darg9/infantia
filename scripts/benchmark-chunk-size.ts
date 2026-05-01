@@ -1,4 +1,5 @@
 #!/usr/bin/env npx tsx
+import { getErrorMessage } from '../src/lib/error';
 /**
  * Benchmark: CHUNK_SIZE 50 vs 100 vs 200 en Gemini discoverActivityLinks
  * Fuente de prueba: Banrep Ibagué (causa original del problema de JSON inválido)
@@ -175,10 +176,10 @@ ${linksText}`;
       console.log(
         `  ✅ Lote ${idx + 1}/${chunks.length}: ${found.length} actividades (${chunk.length} URLs enviadas)`,
       );
-    } catch (err: any) {
+    } catch (err: unknown) {
       apiCalls++;
       jsonErrors++;
-      console.log(`  ❌ Lote ${idx + 1}: Error API — ${err.message?.substring(0, 80)}`);
+      console.log(`  ❌ Lote ${idx + 1}: Error API — ${getErrorMessage(err)?.substring(0, 80)}`);
     }
   }
 

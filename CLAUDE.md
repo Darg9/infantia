@@ -269,8 +269,9 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
 | DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
-| **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | - | **Issue V6.8.0:** Modelo 2 capas. Mantener persistencia raw (para análisis de unmet-demand) pero aplicar filtro en `/api/suggestions`: `q.count > MIN_FREQ && q.ctr > MIN_CTR`. |
-| **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | - | **Issue V6.8.0:** Clasificación de Query. Implementar `normalizeQuery()` con NFD (sin tildes) que haga split de palabras `>3` letras y retenga máximo 3 tokens fuertes para mantener la consistencia en el motor `pg_trgm`. |
+| DEBT-06 | Testing Mocks | 7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57. | **Congelado (S58):** Pruebas operativas bloqueadas en CI local. | Refactorizar Mocks de Inyección de Dependencias. |
+| **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | **Mitigado (S58):** Implementado Filtro Bi-capa (`count >= 3`) en autocompletado preservando la persistencia raw. | - |
+| **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | **Mitigado (S58):** Implementado `normalizeQuery()` con NFD, stopwords filtering y retención de 3 tokens fuertes. | - |
 
 ### Features v0.16.1 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

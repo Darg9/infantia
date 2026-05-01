@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { normalizeSearchQuery } from '@/lib/search';
+import { normalizeQuery } from '@/modules/activities/search-normalizer';
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('api:suggestions');
@@ -32,44 +33,68 @@ export async function GET(req: NextRequest) {
 
   const qNorm = normalizeSearchQuery(q);
   const term  = qNorm.length > 0 ? qNorm : q.toLowerCase();
-
+  // Aplicamos normalización fuerte (nfd, stop-words, 3 tokens) para pg_trgm
+  const strongTerm = normalizeQuery(q);
+  const useStrongTerm = strongTerm.length > 0 && strongTerm !== term;
+  
   try {
-    log.info('Búsqueda de sugerencia', { action: 'suggestion_attempt', query: q, normalized: term });
+    log.info('Búsqueda de sugerencia', { action: 'suggestion_attempt', query: q, normalized: term, strongTerm });
+
+    // Helper para buscar actividades y poder reusarlo en el fallback
+    const searchActivities = async (searchTerm: string) => {
+      return await prisma.$queryRaw<{
+        id: string;
+        title: string;
+        cat_name: string | null;
+        score: number;
+      }[]>`
+        SELECT
+          a.id,
+          a.title,
+          (
+            SELECT c2.name
+            FROM activity_categories ac2
+            JOIN categories c2 ON c2.id = ac2."categoryId"
+            WHERE ac2."activityId" = a.id
+            LIMIT 1
+          ) AS cat_name,
+          GREATEST(
+            similarity(a.title, ${searchTerm}),
+            word_similarity(${searchTerm}, a.title)
+          ) +
+          CASE WHEN a.title ILIKE ${searchTerm + '%'} THEN 0.10 ELSE 0 END
+          AS score
+        FROM activities a
+        WHERE
+          a.status = 'ACTIVE'
+          AND (
+            similarity(a.title, ${searchTerm}) > 0.25
+            OR word_similarity(${searchTerm}, a.title) > 0.30
+            OR a.title ILIKE ${`%${searchTerm}%`}
+          )
+        ORDER BY score DESC, a."sourceConfidence" DESC NULLS LAST
+        LIMIT 8
+      `;
+    };
 
     // ── Actividades: pg_trgm similarity + word_similarity ──────────────────
-    const actRows = await prisma.$queryRaw<{
-      id: string;
-      title: string;
-      cat_name: string | null;
-      score: number;
-    }[]>`
-      SELECT
-        a.id,
-        a.title,
-        (
-          SELECT c2.name
-          FROM activity_categories ac2
-          JOIN categories c2 ON c2.id = ac2."categoryId"
-          WHERE ac2."activityId" = a.id
-          LIMIT 1
-        ) AS cat_name,
-        GREATEST(
-          similarity(a.title, ${term}),
-          word_similarity(${term}, a.title)
-        ) +
-        CASE WHEN a.title ILIKE ${term + '%'} THEN 0.10 ELSE 0 END
-        AS score
-      FROM activities a
-      WHERE
-        a.status = 'ACTIVE'
-        AND (
-          similarity(a.title, ${term}) > 0.25
-          OR word_similarity(${term}, a.title) > 0.30
-          OR a.title ILIKE ${`%${term}%`}
-        )
-      ORDER BY score DESC, a."sourceConfidence" DESC NULLS LAST
-      LIMIT 8
-    `;
+    let actRows = await searchActivities(useStrongTerm ? strongTerm : term);
+    
+    // Fallback progresivo si la búsqueda fuerte no da resultados
+    let usedFallback = false;
+    if (actRows.length === 0 && useStrongTerm) {
+      usedFallback = true;
+      log.info('Fallback progresivo a query original', { strongTerm, originalTerm: term });
+      actRows = await searchActivities(term);
+    }
+
+    // Telemetría temporal para calibrar agresividad del normalizador
+    log.info('Métrica SearchAssist', { 
+      query: q, 
+      queryLength: q.split(/\s+/).length,
+      usedFallback, 
+      resultsCount: actRows.length 
+    });
 
     const rankedActivities: SuggestionItem[] = actRows.slice(0, 3).map((a) => ({
       type: 'activity',
@@ -137,12 +162,23 @@ export async function GET(req: NextRequest) {
       }));
 
     // ── Queries Históricas (SearchLog) ─────────────────────────────────────
+    // Modelo de 2 capas: lectura filtrada por calidad
     const logRows = await prisma.searchLog.groupBy({
       by: ['query'],
       where: {
         query: { startsWith: term, mode: 'insensitive' },
       },
       _count: { query: true },
+      having: {
+        // Filtrar typos: solo consultas frecuentes (count >= 3).
+        // A FUTURO (Fase 2): Permitir (_count >= 2 AND updatedAt > NOW() - 24h) para no penalizar tendencias.
+        // (La lógica de CTR se añadirá cuando se extienda el esquema para medir clicks)
+        query: {
+          _count: {
+            gte: 3
+          }
+        }
+      },
       orderBy: { _count: { query: 'desc' } },
       take: 5,
     });

@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { ActivityNLPResult, activityNLPResultSchema, DiscoveredLink, discoveredActivityUrlsSchema, InstagramPost } from '../types';
 import { createLogger } from '../../../lib/logger';
-import { preFilterUrls, getProductivityTier } from '../../../lib/url-classifier';
+import { preFilterUrls } from '../../../lib/url-classifier';
 import { isRetryableError } from '../parser/parser.types';
 import { quota, getAvailableKey } from '../../../lib/quota-tracker';
 

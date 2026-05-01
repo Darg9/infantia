@@ -1,11 +1,11 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.17.0-beta
-**Última actualización:** 25 de abril de 2026
+**Versión actual:** v0.18.0-stable
+**Última actualización:** 1 de mayo de 2026
 
 ## ¿Qué hace?
 
-Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Soporta proxy residencial opcional (IPRoyal). Incluye parser resiliente con fallback a Cheerio cuando Gemini no está disponible (429/503).
+Descubre y extrae actividades de sitios web, Instagram y canales de Telegram, las normaliza con Gemini 2.5 Flash y las guarda en Supabase con deduplicación automática. Soporta scraping directo y asíncrono via BullMQ. Incluye un módulo de Resiliencia Puro (Zero-Debt), parser resiliente con fallback a Cheerio, y tests de integración E2E que garantizan que los errores de red o caídas del LLM no corrompen el worker (crash prevention).
 
 ## 📉 Naturaleza del Inventario
 
@@ -187,7 +187,7 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 | `utils/date-preflight.ts` | Gate pre-NLP: detecta eventos pasados y omite Gemini. `evaluatePreflight()` devuelve `{ skip, reason, datesFound, matchedText }` |
 | `utils/preflight-db.ts` | **(NUEVO S50)** Persiste resultados en `date_preflight_logs` (fire-and-forget). Incluye queries de métricas embebidas. |
 | `data-pipeline.ts` | **(NUEVO v0.16.1)** Orquestador principal de limpieza atómica NLP pre-persistencia. Reemplazó por completo al antiguo `validation.ts`. Incluye detección de spam (stopwords/ruidos), enriquecimiento (Environment/PricePeriod) y penalización condicional. |
-| `resilience.ts` | **(NUEVO v0.16.1)** Proxy dinámico que intenta Cheerio primero y en caso de fallo, dispara Playwright automáticamente |
+| `resilience/index.ts` | **(NUEVO v0.18.0)** Módulo puro (Zero-Debt). Contiene `retry-policy` y `classify-error`. Implementa backoff exponencial, proxy dinámico, y resiliencia determinista E2E sin acoplamiento. |
 | `cache.ts` | Caché dual disco+BD — evita re-scrapear URLs ya procesadas entre máquinas |
 | `types.ts` | Tipos y schemas Zod de validación |
 | `storage.ts` | Guarda actividades + deduplicación Nivel 1 (Jaccard >75%) |

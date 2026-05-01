@@ -1,7 +1,7 @@
 # Módulo: Autenticación y Gestión de Identidad
 
-**Versión:** ✅ v0.17.0-beta
-**Última actualización:** 24 de abril de 2026
+**Versión:** ✅ v0.18.0-stable
+**Última actualización:** 1 de mayo de 2026
 
 Este módulo centraliza toda la lógica de autenticación multi-proveedor de HabitaPlan, la sincronización de identidades y el cumplimiento legal de términos obligatorios.
 

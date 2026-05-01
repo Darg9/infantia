@@ -1,8 +1,15 @@
-import { getErrorMessage } from '../../lib/error';
-import { createLogger } from '../../lib/logger';
-import { prisma } from '../../lib/db';
-import { InstagramExtractOptions } from './extractors/playwright.extractor';
-import { ScrapedRawData, InstagramProfileData } from './types';
+import { getErrorMessage } from '../../../lib/error';
+import { createLogger } from '../../../lib/logger';
+import { prisma } from '../../../lib/db';
+import { InstagramExtractOptions } from '../extractors/playwright.extractor';
+import { ScrapedRawData, InstagramProfileData } from '../types';
+import { classifyError } from './classify-error';
+import { fetchWithRetry, FetchRetryResult } from './retry-policy';
+
+export { classifyError } from './classify-error';
+export type { NormalizedErrorType } from './classify-error';
+export { fetchWithRetry } from './retry-policy';
+export type { FetchRetryResult } from './retry-policy';
 
 /**
  * Interfaces mínimas: solo los métodos que getSourceStrategies realmente invoca.
@@ -25,86 +32,6 @@ export interface ExtractorFactory {
 
 const log = createLogger('scraping:resilience');
 
-/* ============================================================================
- * ERROR CLASSIFICATION
- * ============================================================================ */
-export type NormalizedErrorType = 'timeout' | 'blocked' | 'parse_error' | 'empty_response' | 'unknown';
-
-export function classifyError(error: unknown): NormalizedErrorType {
-  const message = (getErrorMessage(error) || String(error) || '').toLowerCase();
-  const status = (error as { status?: number; response?: { status?: number } })?.status
-    ?? (error as { status?: number; response?: { status?: number } })?.response?.status;
-
-  if (message.includes('timeout') || message.includes('abort') || message.includes('connreset')) {
-    return 'timeout';
-  }
-  if (status === 403 || status === 429 || message.includes('forbidden') || message.includes('captcha') || message.includes('rate limit')) {
-    return 'blocked';
-  }
-  if (message.includes('parse') || message.includes('json') || message.includes('syntax')) {
-    return 'parse_error';
-  }
-  if (message.includes('empty') || message.includes('no extractable')) {
-    return 'empty_response';
-  }
-  return 'unknown';
-}
-
-/* ============================================================================
- * RETRIES INTELIGENTES (BACKOFF)
- * ============================================================================ */
-export interface FetchRetryResult {
-  data: string;
-  responseTime: number;
-  methodUsed: string;
-}
-
-export async function fetchWithRetry(
-  fetchFn: () => Promise<string>,
-  methodName: string,
-  maxRetries = 3
-): Promise<FetchRetryResult> {
-  let attempt = 1;
-  const start = Date.now();
-
-  while (attempt <= maxRetries) {
-    try {
-      const data = await fetchFn();
-      
-      if (!data || data.trim().length === 0) {
-        throw new Error('empty_response');
-      }
-
-      return {
-        data,
-        responseTime: Date.now() - start,
-        methodUsed: methodName,
-      };
-    } catch (error: unknown) {
-      const errType = classifyError(error);
-      const latency = Date.now() - start;
-
-      log.info(JSON.stringify({
-        event: 'scrape_retry',
-        method: methodName,
-        attempt,
-        responseTime: latency,
-        errorType: errType,
-        message: getErrorMessage(error)
-      }));
-
-      if (attempt === maxRetries || errType === 'blocked') {
-        throw error; // Al quedarse sin reintentos o recibir un hard block
-      }
-      
-      const delay = Math.pow(2, attempt) * 1000;
-      await new Promise(res => setTimeout(res, delay));
-      attempt++;
-    }
-  }
-
-  throw new Error('Agotados reintentos');
-}
 
 /* ============================================================================
  * FALLBACKS POR FUENTE

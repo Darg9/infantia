@@ -290,7 +290,7 @@ describe('Integration: pipeline — flujo válido (scrape → analyze → store)
   it('runBatchPipeline: la caché evita reprocesar URLs ya vistas', async () => {
     // Simular que la URL ya está en caché
     const { ScrapingCache } = await import('../../cache');
-    vi.mocked(ScrapingCache).mockImplementation(function (this: Record<string, unknown>) {
+    vi.mocked(ScrapingCache).mockImplementation(function (this: any) {
       Object.defineProperty(this, 'size', { get: () => 1, configurable: true });
       this.has            = vi.fn().mockReturnValue(true); // ya en caché
       this.filterNew      = vi.fn().mockReturnValue([]);   // filtra todo

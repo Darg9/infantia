@@ -313,5 +313,20 @@ describe('Integration: pipeline — error de red', () => {
 
     // El batch no terminó antes de tiempo
     expect(result.discoveredLinks).toBe(2);
+  it('never throws uncaught exceptions', async () => {
+    // Caso faltante de la propuesta: garantizar que un input roto no tumba el worker
+    mockExtract.mockResolvedValue({
+      url:        '',
+      sourceText: '',
+      status:     'FAILED',
+      error:      'FATAL INTERNAL CRASH',
+    });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runPipeline('https://x.com/invalid').catch(e => e);
+
+    // Debe ser capturado y devuelto o lanzado ordenadamente, no un uncaught silencioso
+    expect(result).toBeDefined();
+    expect(result).toBeInstanceOf(Error);
   });
 });

@@ -57,7 +57,7 @@ async function getCachedHealthData() {
 const countCache = new Map<string, { value: number, expiresAt: number }>();
 const COUNT_CACHE_TTL_MS = 60 * 1000; // 60 segundos
 
-export async function getCachedCount(where: any): Promise<number> {
+export async function getCachedCount(where: Prisma.ActivityWhereInput): Promise<number> {
   const key = JSON.stringify(where);
   const now = Date.now();
   const cached = countCache.get(key);
@@ -245,7 +245,8 @@ export async function listActivities(params: ListParams) {
 
   const skipAmount = isRelevanceSort ? 0 : params.skip;
 
-  let rawActivities: any[] = [];
+  type ActivityWithScore = Awaited<ReturnType<typeof prisma.activity.findMany<{ include: typeof activityIncludes }>>>[number] & { rankingScore: number; _domainTemp: string };
+  let rawActivities: Awaited<ReturnType<typeof prisma.activity.findMany<{ include: typeof activityIncludes }>>> = [];
   let finalTotal: number = 0;
 
   // Ejecución asíncrona paralela: Obtener el pull y su metadata de conteo nativo con TTL Cacheado
@@ -308,7 +309,7 @@ export async function listActivities(params: ListParams) {
   // nunca bloquee la paginación (si se aplica globalmente, con pocas fuentes/dominios
   // los primeros N items consumen toda la cuota y las páginas 2+ quedan vacías).
   let totalHidden = 0;
-  let diversified: any[] = processedActivities; // fallback para sort no-relevance
+  let diversified: ActivityWithScore[] = processedActivities; // fallback para sort no-relevance
 
   if (isRelevanceSort) {
     const initialCount = processedActivities.length;

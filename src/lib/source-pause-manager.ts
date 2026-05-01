@@ -34,7 +34,8 @@ export const CITY_PAUSE_CONFIG: Record<string, { threshold?: number; durationDay
 export async function resolvePauseConfig(sourceId: string, cityId?: string) {
   // 1. Buscar config específica de fuente + ciudad
   if (cityId && sourceId) {
-    const sourceConfig = await prisma.$queryRawUnsafe<any[]>(
+  type PauseConfigRow = { pause_threshold_score: number; pause_duration_days: number; auto_pause_enabled: boolean };
+    const sourceConfig = await prisma.$queryRawUnsafe<PauseConfigRow[]>(
       `SELECT pause_threshold_score, pause_duration_days, auto_pause_enabled
        FROM source_pause_config
        WHERE source_id = $1 AND city_id = $2
@@ -54,7 +55,8 @@ export async function resolvePauseConfig(sourceId: string, cityId?: string) {
 
   // 2. Buscar config específica de fuente (sin city)
   if (sourceId) {
-    const sourceConfig = await prisma.$queryRawUnsafe<any[]>(
+  type PauseConfigRow = { pause_threshold_score: number; pause_duration_days: number; auto_pause_enabled: boolean };
+    const sourceConfig = await prisma.$queryRawUnsafe<PauseConfigRow[]>(
       `SELECT pause_threshold_score, pause_duration_days, auto_pause_enabled
        FROM source_pause_config
        WHERE source_id = $1 AND city_id IS NULL
@@ -209,7 +211,8 @@ export async function pauseSourceIfNeeded(sourceId: string, cityId?: string) {
  * Despausa fuentes automáticamente si período ya expiró
  */
 export async function unpausSourceIfExpired(sourceId: string, cityId?: string) {
-  const pauseConfig = await prisma.$queryRawUnsafe<any[]>(
+  type PauseRecord = { paused_at: string | null; pause_duration_days: number };
+  const pauseConfig = await prisma.$queryRawUnsafe<PauseRecord[]>(
     `
     SELECT paused_at, pause_duration_days
     FROM source_pause_config
@@ -224,6 +227,9 @@ export async function unpausSourceIfExpired(sourceId: string, cityId?: string) {
   }
 
   const config = pauseConfig[0];
+  if (!config.paused_at) {
+    return { unpaused: false, reason: 'not_paused' };
+  }
   const pausedAt = new Date(config.paused_at);
   const expireAt = new Date(pausedAt.getTime() + config.pause_duration_days * 24 * 60 * 60 * 1000);
   const now = new Date();
@@ -292,7 +298,8 @@ export async function getSourceDashboardStats(cityId?: string) {
     WHERE 1=1
   `;
 
-  const params: any[] = [];
+  type DashboardRow = Record<string, unknown>;
+  const params: string[] = [];
   if (cityId) {
     query += ` AND c.id = $1`;
     params.push(cityId);
@@ -300,6 +307,6 @@ export async function getSourceDashboardStats(cityId?: string) {
 
   query += ` ORDER BY s.name`;
 
-  const stats = await prisma.$queryRawUnsafe<any[]>(query, ...params);
+  const stats = await prisma.$queryRawUnsafe<DashboardRow[]>(query, ...params);
   return stats;
 }

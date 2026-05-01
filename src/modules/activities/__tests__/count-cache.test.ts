@@ -19,7 +19,7 @@ describe('Count TTL Cache Engine', () => {
   });
 
   const sampleWhere = { 
-    status: 'ACTIVE', 
+    status: 'ACTIVE' as const, 
     AND: [{ NOT: { sourceDomain: { in: ['bad.com'] } } }] 
   };
 
@@ -36,10 +36,10 @@ describe('Count TTL Cache Engine', () => {
   it('debería saltarse la llamada a BD si el payload/where está en caché', async () => {
     // Primera llamada (arrastra caché)
     vi.mocked(prisma.activity.count).mockResolvedValueOnce(150);
-    await getCachedCount({ test: 'hit' });
+    await getCachedCount({ test: 'hit' } as any);
 
     // Segunda llamada inmediata
-    const count = await getCachedCount({ test: 'hit' });
+    const count = await getCachedCount({ test: 'hit' } as any);
     
     expect(count).toBe(150);
     expect(prisma.activity.count).toHaveBeenCalledTimes(1); // No subió a 2.
@@ -50,7 +50,7 @@ describe('Count TTL Cache Engine', () => {
        .mockResolvedValueOnce(200)
        .mockResolvedValueOnce(205); // Simulated updated total items
 
-    const wherePattern = { dynamic: true };
+    const wherePattern = { dynamic: true } as any;
     await getCachedCount(wherePattern);
     
     // Saltamos 61 segundos hacia el futuro

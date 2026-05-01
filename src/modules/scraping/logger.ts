@@ -50,7 +50,7 @@ export class ScrapingLogger {
         itemsUpdated: stats.itemsUpdated,
         itemsDuplicated: stats.itemsDuplicated,
         errorMessage: stats.errorMessage ?? null,
-        metadata: (stats.metadata as any) ?? undefined,
+        metadata: stats.metadata ? (stats.metadata as import('../../generated/prisma/client').Prisma.InputJsonValue) : undefined,
       },
     })
   }

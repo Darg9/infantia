@@ -171,8 +171,8 @@ export async function GET(request: Request) {
         sourceId:     p.source.id,
         url:          p.source.url,
         platform:     p.source.platform,
-        cityName:     p.source.city.name,
-        verticalSlug: p.source.vertical.slug,
+        cityName:     p.source.city?.name ?? '',
+        verticalSlug: p.source.vertical?.slug ?? 'kids',
         // PARSE_ONLY tiene maxUrls=Infinity → no pasar maxPages (usa default del worker)
         ...(p.maxUrls !== Infinity ? { maxPages: p.maxUrls } : {}),
       }),

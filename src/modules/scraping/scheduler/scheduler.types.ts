@@ -18,8 +18,17 @@ export interface SourceStats {
 }
 
 export interface SchedulePlan {
-  /** Fuente objetivo que entrará al pipeline */
-  source: any; // Se reemplazará con el modelo Source en ingest-sources.ts
+  /** Fuente objetivo que entrará al pipeline (modelo ScrapingSource serializado) */
+  source: {
+    id: string;
+    name: string;
+    url: string;
+    platform: string;
+    config?: Record<string, unknown> | null;
+    city?: { name: string } | null;
+    vertical?: { slug: string } | null;
+    [key: string]: unknown; // permite campos extra sin romper narrowing
+  };
   /** Modo predictivo seleccionado por la heurística (DEEP/SURFACE/PING para discovery) */
   mode: Mode;
   /** Cantidad de URLs a descubrir (capped por presupuesto disponible) */

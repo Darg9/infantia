@@ -65,7 +65,11 @@ export class ScrapingCache {
       const prisma = new PrismaClient({ adapter });
 
       const where = source ? { source } : {};
-      const rows = await (prisma as any).scrapingCache.findMany({ where, select: { url: true, title: true, scrapedAt: true } });
+      type ScrapingCacheModel = {
+        findMany: (args: { where: Record<string, unknown>; select: Record<string, unknown> }) => Promise<{ url: string; title: string; scrapedAt: Date }[]>;
+      };
+      const cacheModel = (prisma as unknown as { scrapingCache: ScrapingCacheModel }).scrapingCache;
+      const rows = await cacheModel.findMany({ where, select: { url: true, title: true, scrapedAt: true } });
       let added = 0;
       for (const row of rows) {
         if (!(row.url in this.data.entries)) {
@@ -95,7 +99,11 @@ export class ScrapingCache {
 
       // upsert en batch
       for (const entry of data) {
-        await (prisma as any).scrapingCache.upsert({
+        type ScrapingCacheModel = {
+          upsert: (args: { where: Record<string, unknown>; create: Record<string, unknown>; update: Record<string, unknown> }) => Promise<unknown>;
+        };
+        const cacheModel = (prisma as unknown as { scrapingCache: ScrapingCacheModel }).scrapingCache;
+        await cacheModel.upsert({
           where: { url: entry.url },
           create: entry,
           update: { title: entry.title, source: entry.source },

@@ -30,9 +30,10 @@ const log = createLogger('scraping:resilience');
  * ============================================================================ */
 export type NormalizedErrorType = 'timeout' | 'blocked' | 'parse_error' | 'empty_response' | 'unknown';
 
-export function classifyError(error: any): NormalizedErrorType {
-  const message = (getErrorMessage(error) || error?.toString() || '').toLowerCase();
-  const status = error?.status || error?.response?.status;
+export function classifyError(error: unknown): NormalizedErrorType {
+  const message = (getErrorMessage(error) || String(error) || '').toLowerCase();
+  const status = (error as { status?: number; response?: { status?: number } })?.status
+    ?? (error as { status?: number; response?: { status?: number } })?.response?.status;
 
   if (message.includes('timeout') || message.includes('abort') || message.includes('connreset')) {
     return 'timeout';

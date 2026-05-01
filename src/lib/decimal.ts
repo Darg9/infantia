@@ -9,12 +9,14 @@ export function normalizePrice(value: unknown): number | null {
   } else if (typeof value === "string") {
     const parsed = Number(value);
     result = isNaN(parsed) ? null : parsed;
-  } else if (typeof value === "object" && value !== null) {
+  } else if (typeof value === 'object' && value !== null) {
     // Prisma Decimal (toNumber)
-    if ("toNumber" in value && typeof (value as any).toNumber === "function") {
-      result = (value as any).toNumber();
-    } else if ("valueOf" in value && typeof (value as any).valueOf === "function") {
-      const val = Number((value as any).valueOf());
+    type WithToNumber = { toNumber: () => number };
+    type WithValueOf  = { valueOf: () => unknown };
+    if ('toNumber' in value && typeof (value as WithToNumber).toNumber === 'function') {
+      result = (value as WithToNumber).toNumber();
+    } else if ('valueOf' in value && typeof (value as WithValueOf).valueOf === 'function') {
+      const val = Number((value as WithValueOf).valueOf());
       result = isNaN(val) ? null : val;
     }
   }

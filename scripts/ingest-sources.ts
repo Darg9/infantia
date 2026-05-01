@@ -346,7 +346,7 @@ async function runDirect(sources: Source[], dryRun: boolean) {
   const summary: { name: string; saved: number; failed: number; skipped: number }[] = [];
 
   for (const item of planResult.planned) {
-    const source = item.source as Source;
+    const source = item.source as unknown as Source;
     const icon = CHANNEL_ICON[source.channel];
     console.log(`\n${'='.repeat(60)}`);
     console.log(`${icon} ${source.name} [MODO: ${item.mode}] [Presupuesto: max ${item.maxUrls} urls]`);
@@ -453,7 +453,7 @@ async function runQueue(sources: Source[]) {
   console.log(`   Asegúrate de que el worker esté corriendo: npx tsx scripts/run-worker.ts\n`);
 
   for (const item of planResult.planned) {
-    const source = item.source as Source;
+    const source = item.source as unknown as Source;
     const host = new URL(source.url).hostname.replace('www.', '');
 
     if (item.mode === 'PARSE_ONLY') {

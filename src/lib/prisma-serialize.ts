@@ -35,9 +35,8 @@ export function toNumber(value: unknown): number | null {
     const n = parseFloat(value);
     return isNaN(n) ? null : n;
   }
-  // Decimal.js instance (Prisma Decimal)
   if (typeof (value as any).toNumber === 'function') {
-    return (value as any).toNumber();
+    return (value as { toNumber: () => number }).toNumber();
   }
   return null;
 }
@@ -115,7 +114,18 @@ export interface SerializedLocation {
  * const activity = await prisma.activity.findUnique({ ... })
  * return <ActivityCard activity={serializeActivity(activity)} />
  */
-export function serializeActivity(act: any): SerializedActivity {
+type ActivityInput = {
+  id: string; title: string; description?: string | null; type: string; status: string;
+  audience: string; ageMin?: number | null; ageMax?: number | null; price?: unknown;
+  priceCurrency?: string; pricePeriod?: string | null; imageUrl?: string | null;
+  sourceUrl?: string | null; sourceDomain?: string | null; duplicatesCount?: number;
+  createdAt: Date | string;
+  provider?: { name: string; isVerified?: boolean; isPremium?: boolean } | null;
+  location?: { name: string; neighborhood?: string | null; city?: { name: string } | null } | null;
+  categories?: { category: { id: string; name: string; slug: string } }[];
+  _count?: { views?: number };
+};
+export function serializeActivity(act: ActivityInput): SerializedActivity {
   return {
     id: act.id,
     title: act.title,
@@ -147,7 +157,7 @@ export function serializeActivity(act: any): SerializedActivity {
           city: act.location.city ? { name: act.location.city.name } : null,
         }
       : null,
-    categories: (act.categories ?? []).map((c: any) => ({
+    categories: (act.categories ?? []).map((c: { category: { id: string; name: string; slug: string } }) => ({
       category: {
         id: c.category.id,
         name: c.category.name,
@@ -162,7 +172,12 @@ export function serializeActivity(act: any): SerializedActivity {
  * Serializa una Location de Prisma a un objeto plano apto para Client Components.
  * No incluye latitude/longitude (Decimal) que nunca se necesitan en el frontend.
  */
-export function serializeLocation(loc: any): SerializedLocation {
+type LocationInput = {
+  id: string; name: string; address?: string | null;
+  neighborhood?: string | null;
+  city?: { name: string } | null;
+};
+export function serializeLocation(loc: LocationInput): SerializedLocation {
   return {
     id: loc.id,
     name: loc.name,

@@ -9,6 +9,19 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.19.0-stable] — 2026-05-01 (Search Assist Hardening)
+
+### Features & Architecture
+- **Normalización de Queries (NFD):** Implementado `src/modules/activities/search-normalizer.ts`. Reduce la penalización algorítmica de `pg_trgm` en búsquedas largas al eliminar diacríticos y retener un máximo de tokens fuertes (ignora preposiciones comunes), manteniendo la precisión sin crear un motor de búsqueda paralelo (Zero-Debt).
+- **Progressive Fallback:** Añadido soporte de recuperación resiliente en `route.ts`. Si la búsqueda estricta/normalizada arroja 0 resultados, el sistema hace fallback progresivo a la query original, protegiendo al usuario de falsos negativos.
+- **Modelo de Búsqueda Bi-capa (2-Layer Filtering):** Instrumentación de umbrales dinámicos (`_count >= 3`) en las consultas de autocompletado (`SearchLog`), erradicando la presentación visual de _typos_ del usuario (ej: "arra", "nin"), sin eliminar la memoria en bruto de la base de datos (SSOT).
+- **Telemetría de Calibración:** Agregados registros `log.info` con la dimensión `usedFallback` y `queryLength` para analizar el desempeño real del normalizador en producción y ajustar iterativamente su agresividad sin afectar el core.
+
+### Code Quality & Types
+- **Gemini Analyzer Strict Typing:** Refactorizado `gemini.analyzer.ts` para eliminar el antipatrón `any` en los bloques catch (`error: any` → `error: unknown`), empleando Type Narrowing estricto según los estándares del proyecto.
+
+---
+
 ## [v0.17.0] — 2026-04-29 (Capsule Hero + Resilience Singleton + SSOT Tests)
 
 ### Features & UI

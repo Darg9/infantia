@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.17.0 | **Status:** Production | **Tests:** 1291 passing / 79 files (2 skipped) | **Coverage:** >85% branches | **Quality Metrics:** ✅ Active
+**Version:** v0.19.0-stable | **Status:** Production | **Tests:** 1319 passing / 83 files (2 skipped) | **Coverage:** >85% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 

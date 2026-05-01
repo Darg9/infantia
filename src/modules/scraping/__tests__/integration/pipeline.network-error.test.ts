@@ -313,6 +313,8 @@ describe('Integration: pipeline — error de red', () => {
 
     // El batch no terminó antes de tiempo
     expect(result.discoveredLinks).toBe(2);
+  });
+
   it('never throws uncaught exceptions', async () => {
     // Caso faltante de la propuesta: garantizar que un input roto no tumba el worker
     mockExtract.mockResolvedValue({

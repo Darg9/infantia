@@ -1,9 +1,9 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 29 de abril de 2026 | Version: v0.17.0
+Actualizado: 01 de mayo de 2026 | Version: v0.19.0-stable
 
-## Resumen Actual (v0.17.0 / Capsule Hero + Resilience Singleton + DS Cleanup + 49 Tests SSOT — S58)
-- **Archivos de Test:** 79
+## Resumen Actual (v0.19.0-stable / Search Assist Hardening)
+- **Archivos de Test:** 83
 - **Tests Totales:** 1293 (1291 pasan ✅, 2 skipped)
 - **Estado:** 100% pasando ✅
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
@@ -247,6 +247,10 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.17.0-S56** | **1244** | **77** | **>91%** | **>85%** |
 | **v0.17.0-S57** | **1244** | **77** | **>91%** | **>85%** |
 | **v0.17.0-S58** | **1291** | **79** | **>91%** | **>85%** |
+| **v0.19.0**     | **1328** | **83** | **>91%** | **>85%** |
+
+## Known Technical Debt (v0.19.0-stable)
+- **DEBT-06:** 7 tests fallando en `pipeline.success.test.ts` y `pipeline.llm-invalid.test.ts` debido a un refactor previo del Resilience Singleton y el `saveActivity` streaming, lo cual desincronizó los mocks. Requerido refactor arquitectónico de mocks.
 
 ## Cambios en v0.16.1 (Multi-City Map Architecture)
 

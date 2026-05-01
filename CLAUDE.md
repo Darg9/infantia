@@ -167,6 +167,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.16.1 | V26 | Data Quality Optimization, Semantic NLP Gate, Strict Inference |
 | v0.16.4-beta | V27 | Design System Zero-Debt, Semantic hp-tokens, Trust Layer, Parser Resiliente |
 | v0.17.0-beta | V28 | PQRS Legal (firstRespondedAt/responseChannel), Activity Gate fix, SaveActivityResult, pqrs.ts SSOT — S56+S57 |
+| v0.19.0-stable | V29 | Search Assist Hardening, NFD Query Normalization, 2-Layer Filtering |
 ### Regla para Documento Fundacional
 
 **Generar nueva versión SOLO ante cambio material en uno de estos ejes:**
@@ -228,7 +229,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
 - **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.17.0 — Actualizado 2026-04-29)
+## Estado actual (v0.19.0-stable — Actualizado 2026-05-01)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
 - **1291 tests** en 79 archivos — `npm test` pasa — 1291 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
@@ -331,6 +332,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | v0.16.1     | V28 | Zero-Debt Architecture, Magic Link Auth & Scraping URL Hardening |
 | v0.16.1     | V28 | Multi-City Map Fase 1+2: CityProvider, resolveCity.ts SSOT, CitySwitcher en Header global |
 | v0.16.1     | V28 | Hardening Auth (Facebook/Apple ocultos) & Formulario Contacto SIC (Ley 1581) con trazabilidad DB |
+| v0.19.0-stable | V29 | Search Assist Hardening, Query Normalization, 2-Layer Filtering |
 
 ## Regla: Serialización de objetos Prisma (OBLIGATORIO)
 

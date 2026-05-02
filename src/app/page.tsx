@@ -119,7 +119,7 @@ export default async function HomePage() {
   const activityHref      = hasRecent ? '/actividades?sort=newest' : '/actividades';
 
   return (
-    <div className="min-h-screen bg-[var(--hp-bg-page)]">
+    <div>
       {/* ================================================================ */}
       {/* HERO                                                              */}
       {/* ================================================================ */}

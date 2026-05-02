@@ -16,6 +16,7 @@ import { Button } from '@/components/ui';
 import { useRouter, usePathname } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { activityPath } from '@/lib/activity-url';
+import { trackFilterApplied } from '@/lib/track';
 import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
@@ -191,11 +192,55 @@ export default function Filters({
     } catch {}
   }, []);
 
-  // Limpiar isPending cuando llegan nuevos props (navegación completada)
+  // Limpiar isPending cuando llegan nuevos props (navegación completada) +
+  // Disparar evento filter_applied con el conteo real (post-SSR).
+  // IMPORTANTE: El disparo se hace AQUÍ y no en los handleXxx, porque:
+  //   1. `total` en Filters refleja el conteo del render ACTUAL (no del siguiente)
+  //   2. Los handleXxx navégan via router.push; el resultado llega en el próximo render
+  //   3. Este useEffect corre DESPUÉS del re-render, cuando `total` ya es el nuevo conteo
+  const prevFiltersRef = useRef<{
+    categoryId: string; cityId: string; price: string;
+    ageMin: string; ageMax: string; type: string;
+    audience: string; sort: string;
+  } | null>(null);
+
   useEffect(() => {
     setSearchValue(search);
     setIsPending(false);
-  }, [search, ageMin, ageMax, categoryId, cityId, price, sort]);
+
+    const prev = prevFiltersRef.current;
+    const currentPath = pathname + (typeof window !== 'undefined' ? window.location.search : '');
+
+    // No trackear en el mount inicial (prev es null)
+    if (prev !== null) {
+      // Detectar qué filtro cambió de forma atómica (un evento por interacción)
+      if (categoryId !== prev.categoryId && categoryId) {
+        const label = facets.validCategories.find(c => c.id === categoryId)?.name ?? categoryId;
+        trackFilterApplied({ filterType: 'category', filterValue: label, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (cityId !== prev.cityId && cityId) {
+        const label = facets.availableCities.find(c => c.id === cityId)?.name ?? cityId;
+        trackFilterApplied({ filterType: 'city', filterValue: label, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (price !== prev.price && price) {
+        trackFilterApplied({ filterType: 'price', filterValue: price, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if ((ageMin !== prev.ageMin || ageMax !== prev.ageMax) && (ageMin || ageMax)) {
+        const ageLabel = AGE_OPTIONS.find(o => o.min === ageMin && o.max === ageMax)?.label ?? `${ageMin}-${ageMax}`;
+        trackFilterApplied({ filterType: 'age', filterValue: ageLabel, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (type !== prev.type && type) {
+        const typeLabel = TYPE_LABELS[type] ?? type;
+        trackFilterApplied({ filterType: 'type', filterValue: typeLabel, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (audience !== prev.audience && audience) {
+        const audienceLabel = AUDIENCE_LABELS[audience] ?? audience;
+        trackFilterApplied({ filterType: 'audience', filterValue: audienceLabel, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (sort !== prev.sort && sort !== 'relevance') {
+        const sortLabel = SORT_OPTIONS.find(o => o.value === sort)?.label ?? sort;
+        trackFilterApplied({ filterType: 'sort', filterValue: sortLabel, resultsCount: total, query: search || undefined, path: currentPath });
+      }
+    }
+
+    // Actualizar referencia para la siguiente comparación
+    prevFiltersRef.current = { categoryId, cityId, price, ageMin, ageMax, type, audience, sort };
+  }, [search, ageMin, ageMax, categoryId, cityId, price, sort, type, audience, total]);
+  // ↑ `total` en las deps es intencional: garantiza que el disparo usa el conteo post-SSR correcto.
 
   // Cerrar dropdown al hacer clic fuera
   useEffect(() => {

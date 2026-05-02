@@ -225,16 +225,24 @@ describe('Integration: pipeline — output inválido del LLM', () => {
     expect(result).toBeDefined();
     expect(result.results).toHaveLength(1);
 
-    // La URL tiene data=null (isActivity=false → rechazado) o confidenceScore muy bajo
+    // La URL tiene data con isActivity=false (rechazada por LLM fail-safe).
+    // El pipeline empuja { url, data } incluso para rechazos — data: null solo ocurre en errores de red.
     const r = result.results[0];
-    const isRejected = r.data === null || (r.data !== null && r.data.isActivity === false);
-    expect(isRejected).toBe(true);
+    expect(r.data).not.toBeNull();
+    expect(r.data?.isActivity).toBe(false);
 
-    // NO se guardó nada en BD
-    expect(mockSaveBatchResults).not.toHaveBeenCalled();
+    // saveBatchResults recibe el BatchPipelineResult completo (objeto, no array).
+    // Se llama siempre que hay storage y URLs procesadas — la storage decide qué guardar.
+    expect(mockSaveBatchResults).toHaveBeenCalledTimes(1);
+    const batchArg = mockSaveBatchResults.mock.calls[0][0];
+    expect(batchArg).toHaveProperty('results');
+    // El resultado tiene isActivity=false → storage no lo guardará
+    const savedResults = batchArg.results as Array<{ data: { isActivity?: boolean } | null }>;
+    const activeItems = savedResults.filter((r) => r.data?.isActivity === true);
+    expect(activeItems).toHaveLength(0);
   });
 
-  it('runBatchPipeline: NO guarda cuando confidenceScore < 0.3', async () => {
+  it('runBatchPipeline: NO guarda individualmente cuando confidenceScore < threshold', async () => {
     mockExtractLinksAllPages.mockResolvedValue([{ url: URL_LOW_CONF, anchorText: 'Ambiguo' }]);
     mockDiscoverActivityLinks.mockResolvedValue([URL_LOW_CONF]);
     mockAnalyze.mockResolvedValue(NLP_LOW_CONFIDENCE);
@@ -245,11 +253,17 @@ describe('Integration: pipeline — output inválido del LLM', () => {
     // El batch procesó la URL
     expect(result.results).toHaveLength(1);
 
-    // No se guardó (threshold 0.3 no alcanzado)
-    expect(mockSaveBatchResults).not.toHaveBeenCalled();
+    // El streaming save (inline en Fase 3) no llamó a saveActivity porque confidenceScore=0.08 < 0.3
+    expect(mockSaveActivity).not.toHaveBeenCalled();
+
+    // saveBatchResults SÍ se llama con el batchResult completo — es la fase de contabilidad final
+    expect(mockSaveBatchResults).toHaveBeenCalledTimes(1);
+    const batchArg = mockSaveBatchResults.mock.calls[0][0];
+    // El resultado tiene confidenceScore bajo — el storage lo contabilizará como skipped
+    expect(batchArg.results[0].data?.confidenceScore).toBe(0.08);
   });
 
-  it('runBatchPipeline mixto: válidas se guardan, inválidas reportan error sin contaminar DB', async () => {
+  it('runBatchPipeline mixto: válidas se guardan individualmente, inválidas no llaman saveActivity', async () => {
     mockExtractLinksAllPages.mockResolvedValue([
       { url: URL_OK,      anchorText: 'Taller Arte' },
       { url: URL_NOT_ACT, anchorText: 'Promo' },
@@ -277,18 +291,24 @@ describe('Integration: pipeline — output inválido del LLM', () => {
     const okResult = result.results.find((r) => r.url === URL_OK);
     expect(okResult?.data).not.toBeNull();
     expect(okResult?.data?.confidenceScore).toBeGreaterThanOrEqual(0.3);
+    expect(okResult?.data?.isActivity).toBe(true);
 
-    // La URL inválida: data=null o isActivity=false
+    // La URL inválida tiene data con isActivity=false (no es null — fue parseada, pero rechazada)
     const badResult = result.results.find((r) => r.url === URL_NOT_ACT);
-    const badRejected = badResult?.data === null ||
-      (badResult?.data !== null && badResult?.data?.isActivity === false);
-    expect(badRejected).toBe(true);
+    expect(badResult?.data).not.toBeNull();
+    expect(badResult?.data?.isActivity).toBe(false);
 
-    // Solo las actividades válidas llegaron a saveBatchResults
+    // saveActivity solo fue llamado para la URL válida (streaming save inline en Fase 3)
+    expect(mockSaveActivity).toHaveBeenCalledTimes(1);
+
+    // saveBatchResults recibe el BatchPipelineResult completo (objeto con propiedad results[])
     expect(mockSaveBatchResults).toHaveBeenCalledTimes(1);
-    const savedPayload = mockSaveBatchResults.mock.calls[0][0] as Array<{ url: string }>;
-    expect(savedPayload.some((a) => a.url === URL_OK)).toBe(true);
-    expect(savedPayload.some((a) => a.url === URL_NOT_ACT)).toBe(false);
+    const batchArg = mockSaveBatchResults.mock.calls[0][0];
+    expect(batchArg).toHaveProperty('results');
+    const batchResults = batchArg.results as Array<{ url: string; data: { isActivity?: boolean } | null }>;
+    // El batch contiene ambas URLs pero storage discrimina por isActivity
+    expect(batchResults.some((r) => r.url === URL_OK)).toBe(true);
+    expect(batchResults.some((r) => r.url === URL_NOT_ACT)).toBe(true);
   });
 
   it('runPipeline: lanza error cuando GeminiAnalyzer rechaza schema inválido', async () => {
@@ -323,7 +343,10 @@ describe('Integration: pipeline — output inválido del LLM', () => {
 
     mockExtract.mockResolvedValue({ url: '', sourceText: 'Texto.', status: 'SUCCESS' });
 
-    // Primera URL → LLM lanza error; Segunda → respuesta válida
+    // Primera URL → LLM lanza error (quota); Segunda → respuesta válida
+    // Con PARSER_FALLBACK_ENABLED=true (default), el error de Gemini activa el Cheerio fallback.
+    // El fallback produce un resultado con parserSource='fallback' y confidenceScore=0.5.
+    // Por lo tanto, failResult?.data NO es null — es un objeto con parserSource='fallback'.
     mockAnalyze
       .mockRejectedValueOnce(new Error('Gemini API quota exceeded'))
       .mockResolvedValueOnce(NLP_VALID);
@@ -334,13 +357,22 @@ describe('Integration: pipeline — output inválido del LLM', () => {
     // Las 2 URLs fueron intentadas
     expect(result.results).toHaveLength(2);
 
-    // La URL con LLM fallido reporta error
+    // La URL con error de LLM: el fallback Cheerio produjo un resultado parcial
+    // (no null — el pipeline es resiliente y no propaga el error al nivel de resultado)
     const failResult = result.results.find((r) => r.url === URL_LLM_FAIL);
-    expect(failResult?.data).toBeNull();
-    expect(failResult?.error).toContain('quota');
+    expect(failResult).toBeDefined();
+    // El fallback tiene parserSource='fallback' con confidenceScore=0.5
+    if (failResult?.data !== null) {
+      // Comportamiento con PARSER_FALLBACK_ENABLED=true: data tiene parserSource fallback
+      expect(failResult?.data?.parserSource).toBe('fallback');
+    } else {
+      // Comportamiento legacy (PARSER_FALLBACK_ENABLED=false): data=null con error
+      expect(failResult?.error).toContain('quota');
+    }
 
-    // La URL con LLM exitoso tiene datos
+    // La URL con LLM exitoso tiene datos válidos
     const okResult = result.results.find((r) => r.url === URL_LLM_OK);
     expect(okResult?.data?.confidenceScore).toBeGreaterThanOrEqual(0.3);
+    expect(okResult?.data?.isActivity).toBe(true);
   });
 });

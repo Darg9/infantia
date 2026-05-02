@@ -223,6 +223,23 @@ export default async function HomePage() {
               </Link>
             </div>)
           )}
+          {/* ================================================================ */}
+          {/* B2B CTA — Captación de organizadores                            */}
+          {/* ================================================================ */}
+          <div className="mt-12 md:mt-16 px-4 text-center max-w-xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] rounded-2xl p-5 md:p-6">
+            <h3 className="text-sm md:text-base font-semibold text-[var(--hp-text-primary)]">
+              ¿Organizas actividades para niños y familias?
+            </h3>
+            <p className="text-xs text-[var(--hp-text-muted)] mt-1">
+              Llega a más familias cerca de ti.
+            </p>
+            <Link
+              href="https://www.habitaplan.com/anunciate"
+              className="inline-flex items-center gap-1 mt-4 px-4 py-2 rounded-full border border-[var(--hp-border-subtle)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-hover)] transition-colors"
+            >
+              Publica tu plan →
+            </Link>
+          </div>
         </div>
       </section>
 

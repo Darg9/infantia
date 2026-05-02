@@ -235,7 +235,7 @@ export default async function HomePage() {
             </p>
             <Link
               href="https://www.habitaplan.com/anunciate"
-              className="inline-flex items-center gap-1.5 mt-5 px-6 py-2.5 rounded-full bg-hp-action-primary text-white text-sm font-semibold hover:opacity-90 shadow-sm transition-all"
+              className="inline-flex items-center gap-1.5 mt-5 px-6 py-2.5 rounded-full bg-hp-action-primary text-white text-sm font-semibold hover:bg-hp-action-primary-hover shadow-sm transition-all"
             >
               Publica tu plan →
             </Link>

@@ -37,7 +37,8 @@ export async function trackEvent({
     // filter_applied: throttle por combinación tipo+valor para evitar doble disparo en cambios rápidos
     if (type === "filter_applied") delay = 2000;
 
-    const key = `${type}:${activityId || path || "global"}`;
+    const filterTypeStr = type === 'filter_applied' && metadata?.filterType ? `:${metadata.filterType}` : '';
+    const key = `${type}${filterTypeStr}:${activityId || path || "global"}`;
 
     if (delay > 0 && !shouldTrack(key, delay)) {
       return; // Bloqueo temporal Anti-Spam Throttled

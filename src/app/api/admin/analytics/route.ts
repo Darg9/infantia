@@ -101,6 +101,36 @@ export async function GET(request: Request) {
       }
     });
 
+    // 5. Fetch Filter Analytics
+    const filterEventsRaw = await prisma.event.findMany({
+      where: {
+        createdAt: { gte: timeWindow },
+        type: 'filter_applied'
+      },
+      select: { metadata: true }
+    });
+
+    const filterStats: Record<string, { count: number, zeroResults: number, withQuery: number }> = {};
+    
+    filterEventsRaw.forEach(ev => {
+      const meta = ev.metadata as Record<string, any>;
+      if (!meta || !meta.filterType || !meta.filterValue) return;
+      
+      const key = `${meta.filterType}:${meta.filterValue}`;
+      if (!filterStats[key]) {
+        filterStats[key] = { count: 0, zeroResults: 0, withQuery: 0 };
+      }
+      
+      filterStats[key].count++;
+      if (meta.resultsCount === 0) filterStats[key].zeroResults++;
+      if (meta.query) filterStats[key].withQuery++;
+    });
+
+    const filters = Object.entries(filterStats).map(([key, stats]) => {
+      const [type, value] = key.split(':');
+      return { type, value, ...stats };
+    });
+
     // Build the final response
     const matrix = cities.map(city => {
       const metrics = cityMetrics[city.id] || { visits: 0, modalOpens: 0, selections: 0, escapes: 0 };
@@ -119,7 +149,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json({
       globalEvents,
-      matrix
+      matrix,
+      filters
     });
   } catch (error) {
     console.error("Analytics Error:", error);

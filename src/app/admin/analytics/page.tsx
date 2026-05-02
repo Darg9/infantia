@@ -17,9 +17,18 @@ interface CityMatrixData {
   escapes: number;
 }
 
+interface FilterData {
+  type: string;
+  value: string;
+  count: number;
+  zeroResults: number;
+  withQuery: number;
+}
+
 export default function AnalyticsPage() {
   const [data, setData] = useState<AnalyticsData[]>([]);
   const [matrix, setMatrix] = useState<CityMatrixData[]>([]);
+  const [filters, setFilters] = useState<FilterData[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'all' | 'no-bogota'>('all');
 
@@ -35,6 +44,9 @@ export default function AnalyticsPage() {
         }
         if (json.matrix) {
           setMatrix(json.matrix);
+        }
+        if (json.filters) {
+          setFilters(json.filters);
         }
         setLoading(false);
       })
@@ -194,6 +206,58 @@ export default function AnalyticsPage() {
               </div>
             ))
           )}
+        </div>
+      </div>
+
+      {/* Filter Analytics */}
+      <div className="bg-[var(--hp-bg-surface)] border text-sm border-[var(--hp-border)] rounded-xl shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
+          <h2 className="font-semibold text-[var(--hp-text-primary)]">Intención y Refinamiento (Filtros)</h2>
+          <p className="text-xs text-[var(--hp-text-muted)] mt-1">Uso de filtros facetados, tasa de fallos (0 resultados) y cruce con búsquedas de texto.</p>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left whitespace-nowrap">
+            <thead className="bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)] border-b border-[var(--hp-border)]">
+              <tr>
+                <th className="px-6 py-3 font-medium">Filtro</th>
+                <th className="px-6 py-3 font-medium text-right">Uso Total</th>
+                <th className="px-6 py-3 font-medium text-right">Con Búsqueda</th>
+                <th className="px-6 py-3 font-medium text-right">0 Resultados (Ceguera)</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--hp-border)]">
+              {filters.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-6 py-8 text-center text-[var(--hp-text-muted)]">Aún no hay interacción con filtros.</td>
+                </tr>
+              ) : (
+                filters.sort((a,b) => b.count - a.count).map((item) => {
+                  const zeroRate = item.count > 0 ? ((item.zeroResults / item.count) * 100).toFixed(1) : "0.0";
+                  const queryRate = item.count > 0 ? ((item.withQuery / item.count) * 100).toFixed(1) : "0.0";
+                  
+                  return (
+                    <tr key={`${item.type}:${item.value}`} className="hover:bg-[var(--hp-bg-page)] transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="text-[var(--hp-text-muted)] text-xs uppercase tracking-wide mr-2">{item.type}</span>
+                        <span className="font-medium text-[var(--hp-text-primary)]">{item.value}</span>
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono text-[var(--hp-text-primary)]">
+                        {item.count}
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono text-[var(--hp-text-secondary)]">
+                        {item.withQuery > 0 ? `${queryRate}% (${item.withQuery})` : "-"}
+                      </td>
+                      <td className="px-6 py-4 text-right font-mono">
+                        <span className={item.zeroResults > 0 && Number(zeroRate) > 20 ? "text-error-600 font-bold" : "text-[var(--hp-text-secondary)]"}>
+                          {item.zeroResults > 0 ? `${zeroRate}% (${item.zeroResults})` : "-"}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

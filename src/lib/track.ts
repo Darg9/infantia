@@ -34,6 +34,8 @@ export async function trackEvent({
 
     if (type === "activity_click") delay = 500;
     if (type === "outbound_click") delay = 1000;
+    // filter_applied: throttle por combinación tipo+valor para evitar doble disparo en cambios rápidos
+    if (type === "filter_applied") delay = 2000;
 
     const key = `${type}:${activityId || path || "global"}`;
 
@@ -60,4 +62,41 @@ export async function trackEvent({
     // fail silently para no afectar performance UX ni crashear arbol de render...
     // console.warn('Silenced Event Error');
   }
+}
+
+/**
+ * Evento semántico para interacciones con filtros facetados.
+ * Se dispara UNA vez por filtro activo tras confirmar el cambio (post-navegación, no en debounce).
+ *
+ * Permite responder:
+ * - ¿Qué filtros generan más valor?
+ * - ¿Los filtros corroboran o contradicen la intención de búsqueda?
+ * - ¿Qué combinación filtro+búsqueda produce mayor descubrimiento?
+ */
+export function trackFilterApplied({
+  filterType,
+  filterValue,
+  resultsCount,
+  query,
+  path,
+}: {
+  /** 'category' | 'city' | 'price' | 'age' | 'type' | 'audience' | 'sort' */
+  filterType: string;
+  /** Valor legible del filtro (label o enum) — nunca UUID crudo */
+  filterValue: string;
+  /** Conteo de resultados DESPUÉS de aplicar el filtro (post-SSR) */
+  resultsCount: number;
+  /** Búsqueda de texto activa en ese momento, si la hay */
+  query?: string;
+  /** Ruta actual para contextualización */
+  path?: string;
+}) {
+  // No trackear limpiezas de filtro ni valores vacíos — el reset es un evento implícito
+  if (!filterValue) return;
+
+  void trackEvent({
+    type: 'filter_applied',
+    path,
+    metadata: { filterType, filterValue, resultsCount, query: query || null },
+  });
 }

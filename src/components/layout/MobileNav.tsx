@@ -412,7 +412,7 @@ function BottomNav({ session }: { session: MobileNavProps['session'] }) {
       className="fixed bottom-0 left-0 right-0 z-30 bg-[var(--hp-bg-surface)] border-t border-[var(--hp-border)]"
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
-      <div className="flex items-stretch h-16">
+      <div className="max-w-md mx-auto flex items-stretch justify-between h-16 px-2 sm:px-4">
         {BOTTOM_TABS.map((tab) => {
           const active = isActive(tab.href)
           return (

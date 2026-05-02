@@ -231,7 +231,7 @@ export default async function HomePage() {
               ¿Organizas actividades para niños y familias?
             </h3>
             <p className="text-xs text-[var(--hp-text-muted)] mt-1">
-              Llega a más familias cerca de ti.
+              Llega a más interesados cerca de ti.
             </p>
             <Link
               href="https://www.habitaplan.com/anunciate"

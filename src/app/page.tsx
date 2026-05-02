@@ -183,7 +183,7 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
-      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] py-6">
+      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] pt-6 pb-16 md:pb-24">
         <div className="mx-auto max-w-5xl px-4">
           {(hasRecent || hasPopular) ? (
             <>
@@ -197,12 +197,12 @@ export default async function HomePage() {
                   <ActivityCard key={activity.id} activity={serializeActivity(activity)} compact />
                 ))}
               </div>
-              <div className="mt-5 text-center">
+              <div className="mt-8 text-center">
                 <Link
                   href={activityHref}
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white transition-all"
+                  className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white hover:shadow-md transition-all"
                 >
-                  Ver más actividades →
+                  Explorar todas las actividades →
                 </Link>
               </div>
             </>
@@ -212,14 +212,14 @@ export default async function HomePage() {
               <p className="text-lg font-semibold text-[var(--hp-text-primary)] mb-1">
                 No hay actividades nuevas por ahora
               </p>
-              <p className="text-sm text-[var(--hp-text-muted)] mb-6">
+              <p className="text-sm text-[var(--hp-text-muted)] mb-8">
                 Explora todas las actividades disponibles
               </p>
               <Link
                 href="/actividades"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white transition-all"
+                className="inline-flex items-center gap-2 rounded-full border-2 border-hp-action-primary px-8 py-3 text-sm font-semibold text-hp-action-primary hover:bg-hp-action-primary hover:text-white hover:shadow-md transition-all"
               >
-                Ver más actividades →
+                Explorar todas las actividades →
               </Link>
             </div>)
           )}

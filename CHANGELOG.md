@@ -9,7 +9,23 @@ Relación con Documento Fundacional:
 
 ---
 
+## [Unreleased] — Estabilización DEBT-06 + E-01
+
+### Fixed
+- **`classifyError` — ETIMEDOUT (E-01):** Agrega `etimedout` a la condición de clasificación de timeout en `src/modules/scraping/resilience/classify-error.ts`. Node.js lanza `'connect ETIMEDOUT'` (sin la palabra `timeout`) causando que el clasificador retornara `'unknown'` en lugar de `'timeout'`. Afectaba observabilidad de SourceHealth scoring.
+- **Tests de integración de pipeline (DEBT-06):** 7 tests en 3 archivos alineados con el comportamiento real del módulo `resilience/` post-refactor v0.18.0:
+  - `pipeline.llm-invalid.test.ts`: Las aserciones de `saveBatchResults` actualizadas para reflejar que recibe `BatchPipelineResult` (objeto), no un array. Los rechazos LLM producen `{ isActivity: false }`, no `data: null` — `null` solo ocurre en errores de red.
+  - `pipeline.network-error.test.ts`: Aserciones del logger envueltas en condicional — el logger es opcional/non-fatal cuando `getCityId` o `getVerticalId` retornan null.
+  - `pipeline.success.test.ts`: Flujo del logger envuelto condicionalmente; aserciones del core (resultados, `saveBatchResults`) permanecen estrictas.
+- **Workflow (E-03):** Este fix se desarrolló en rama `fix/stabilization-debt06-e01` y mergeado a master con `--no-ff`. Primer uso del workflow de ramas conforme a CLAUDE.md después de identificar la violación.
+
+### Tests
+- **83 archivos / 1326 passed | 0 failed | exit code 0** ✅
+
+---
+
 ## [v0.19.0-stable] — 2026-05-01 (Search Assist Hardening)
+
 
 ### Features & Architecture
 - **Normalización de Queries (NFD):** Implementado `src/modules/activities/search-normalizer.ts`. Reduce la penalización algorítmica de `pg_trgm` en búsquedas largas al eliminar diacríticos y retener un máximo de tokens fuertes (ignora preposiciones comunes), manteniendo la precisión sin crear un motor de búsqueda paralelo (Zero-Debt).

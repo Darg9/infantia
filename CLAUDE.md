@@ -229,9 +229,9 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
 - **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.19.0-stable — Actualizado 2026-05-01)
+## Estado actual (v0.19.0-stable — Actualizado 2026-05-02)
 - **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1291 tests** en 79 archivos — `npm test` pasa — 1291 passed, 2 skipped, 0 errores
+- **1326 tests** en 83 archivos — `npm test` pasa — 1326 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
 - GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -269,7 +269,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
 | DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
-| DEBT-06 | Testing Mocks | 7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57. | **Congelado (S58):** Pruebas operativas bloqueadas en CI local. | Refactorizar Mocks de Inyección de Dependencias. |
+| DEBT-06 | Testing Mocks | ~~7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57.~~ | **RESUELTO (2026-05-02):** Tests alineados con comportamiento real del módulo `resilience/` v0.18.0. `classifyError` ETIMEDOUT fix (E-01) incluido. 83 archivos / 1326 tests — exit 0. | — |
 | **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | **Mitigado (S58):** Implementado Filtro Bi-capa (`count >= 3`) en autocompletado preservando la persistencia raw. | - |
 | **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | **Mitigado (S58):** Implementado `normalizeQuery()` con NFD, stopwords filtering y retención de 3 tokens fuertes. | - |
 

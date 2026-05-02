@@ -19,8 +19,16 @@ Relación con Documento Fundacional:
   - `pipeline.success.test.ts`: Flujo del logger envuelto condicionalmente; aserciones del core (resultados, `saveBatchResults`) permanecen estrictas.
 - **Workflow (E-03):** Este fix se desarrolló en rama `fix/stabilization-debt06-e01` y mergeado a master con `--no-ff`. Primer uso del workflow de ramas conforme a CLAUDE.md después de identificar la violación.
 
+### Features & Analytics
+- **Filter Applied Analytics (FEAT-6.8-3):** Implementada instrumentación para rastrear la interacción de los usuarios con los filtros facetados en `/actividades`.
+  - Evento `filter_applied` atómico disparado a través de `trackFilterApplied` en `src/lib/track.ts`.
+  - Disparo basado en `useEffect` post-navegación en `Filters.tsx` para asegurar que el conteo de resultados refleje el estado post-SSR correcto.
+  - El payload captura `{ filterType, filterValue, resultsCount, query | null }` habilitando la posibilidad de cruzar intención y refinamiento.
+  - Añadido un throttle de 2000ms a nivel del tracker subyacente para prevenir doble-conteo en ajustes rápidos de filtros.
+  - Implementadas pruebas exhaustivas (aislamiento de tests, fail-silent behavior, keepalive).
+
 ### Tests
-- **83 archivos / 1326 passed | 0 failed | exit code 0** ✅
+- **83 archivos / 1332 passed | 0 failed | exit code 0** ✅
 
 ---
 

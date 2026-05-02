@@ -272,6 +272,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | DEBT-06 | Testing Mocks | ~~7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57.~~ | **RESUELTO (2026-05-02):** Tests alineados con comportamiento real del módulo `resilience/` v0.18.0. `classifyError` ETIMEDOUT fix (E-01) incluido. 83 archivos / 1326 tests — exit 0. | — |
 | **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | **Mitigado (S58):** Implementado Filtro Bi-capa (`count >= 3`) en autocompletado preservando la persistencia raw. | - |
 | **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | **Mitigado (S58):** Implementado `normalizeQuery()` con NFD, stopwords filtering y retención de 3 tokens fuertes. | - |
+| **FEAT-6.8-3** | Analytics | Ceguera analítica sobre interacción de usuarios con filtros facetados en navegación no textual. | **RESUELTO (v0.19.1):** Evento `filter_applied` instrumentado en `Filters.tsx` con throttle de 2000ms. | - |
 
 ### Features v0.16.1 (seguridad + observabilidad + scraping)
 - **Middleware global:** `src/middleware.ts` protege `/api/admin/*` automáticamente (ADMIN o CRON_SECRET)

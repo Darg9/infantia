@@ -23,15 +23,23 @@ Cualquier evento nuevo debe declararse primero ahí para evitar fragmentación. 
 5. **`search_applied`**: Input textual de un usuario (para evaluar la pertinencia del NLP).
 6. **`search_suggestion_clicked`**: Evento capturado en el `HeroSearch` (Search Assist System) para medir adopción del autocompletado y de la corrección explícita de intención.
 
-7. **`filter_applied` [CRITICAL - NOT IMPLEMENTED]**:
-   - El sistema actualmente NO mide interacción con filtros facetados.
-   - Esto genera ceguera en navegación no textual.
-   - **Impacto**: No se puede entender intención real de exploración ni optimizar UX de filtros.
-   - **Prioridad**: HIGH (bloquea decisiones de producto).
-   - **Recomendación**: Instrumentar evento en cambios de categoría, rango de edad, precio, ubicación.
-   - **Backlog ID**: FEAT-6.8-3
+7. **`filter_applied`** ✅ **(IMPLEMENTADO v0.19.1 — FEAT-6.8-3 cerrado)**:
+   - Mide interacción con filtros facetados en `/actividades`.
+   - **Payload** (`metadata`): `{ filterType, filterValue, resultsCount, query | null }`
+     - `filterType`: `'category' | 'city' | 'price' | 'age' | 'type' | 'audience' | 'sort'`
+     - `filterValue`: Label legible (nunca UUID crudo). Ej: `'Arte'`, `'Bogotá'`, `'free'`, `'4-6 años'`
+     - `resultsCount`: Conteo **post-SSR** (número real de actividades tras aplicar el filtro)
+     - `query`: Búsqueda de texto activa en ese momento, si la hay. Permite cruzar intención + refinamiento.
+   - **Diseño atómico**: Un evento por interacción. No agrupa múltiples filtros.
+   - **Punto de disparo**: `useEffect` post-navegación en `Filters.tsx`, cuando los nuevos props del SSR llegan y `total` refleja el conteo actualizado. NO se dispara en el handler del filtro ni en debounce intermedio.
+   - **Throttle**: 2000ms por combinación `filterType+value` (en `track.ts`).
+   - **Reset no trackeable**: Limpiar filtros no emite evento (valor vacío = guardado sin señal de intención).
+   - **Preguntas que habilita**:
+     - ¿Qué filtros generan más descubrimiento?
+     - ¿En qué contexto de búsqueda se usan más los filtros?
+     - ¿Qué filtros tienen alta tasa de cero-resultados (ceguera de inventario)?
 
-> **Nota v0.16.1:** El script `scripts/generate-brand-assets.mjs` no emite eventos de analytics — opera exclusivamente en build-time. Los únicos eventos de producción son los 6 definidos arriba más el pendiente `filter_applied`.
+> **Nota v0.19.1:** El script `scripts/generate-brand-assets.mjs` no emite eventos de analytics — opera exclusivamente en build-time. Los 7 eventos de producción están definidos en `src/lib/track.ts` (SSOT).
 
 ## 👤 Identidad de Usuario (Tracking)
 

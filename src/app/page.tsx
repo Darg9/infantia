@@ -183,7 +183,7 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
-      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] pt-6 pb-16 md:pb-24">
+      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] pt-6 pb-8 md:pb-10">
         <div className="mx-auto max-w-5xl px-4">
           {(hasRecent || hasPopular) ? (
             <>
@@ -226,16 +226,16 @@ export default async function HomePage() {
           {/* ================================================================ */}
           {/* B2B CTA — Captación de organizadores                            */}
           {/* ================================================================ */}
-          <div className="mt-12 md:mt-16 px-4 text-center max-w-xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] rounded-2xl p-5 md:p-6">
-            <h3 className="text-sm md:text-base font-semibold text-[var(--hp-text-primary)]">
+          <div className="mt-12 md:mt-16 text-center max-w-2xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-2xl p-6 md:p-8">
+            <h3 className="text-base md:text-lg font-semibold text-[var(--hp-text-primary)]">
               ¿Organizas actividades para niños y familias?
             </h3>
-            <p className="text-xs text-[var(--hp-text-muted)] mt-1">
+            <p className="text-sm text-[var(--hp-text-muted)] mt-1.5">
               Llega a más interesados cerca de ti.
             </p>
             <Link
               href="https://www.habitaplan.com/anunciate"
-              className="inline-flex items-center gap-1 mt-4 px-4 py-2 rounded-full border border-[var(--hp-border-subtle)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-hover)] transition-colors"
+              className="inline-flex items-center gap-1.5 mt-5 px-6 py-2.5 rounded-full bg-hp-action-primary text-white text-sm font-semibold hover:opacity-90 shadow-sm transition-all"
             >
               Publica tu plan →
             </Link>

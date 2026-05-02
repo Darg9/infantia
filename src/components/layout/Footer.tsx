@@ -36,7 +36,7 @@ const NAV_COLUMNS = [
 export function Footer() {
   return (
     <footer aria-label="Pie de página" className="bg-[var(--hp-bg-surface)] border-t border-[var(--hp-border)] mt-auto">
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-6xl mx-auto px-4 pt-8 pb-10">
 
         {/* ── Grid de columnas ─────────────────────────────────────── */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-8">
@@ -73,7 +73,7 @@ export function Footer() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-sm text-[var(--hp-text-muted)] hover:text-indigo-600 transition-colors"
+                      className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors"
                     >
                       {link.label}
                     </Link>

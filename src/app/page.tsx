@@ -225,25 +225,7 @@ export default async function HomePage() {
           )}
         </div>
       </section>
-      {/* ================================================================ */}
-      {/* CTA FINAL                                                        */}
-      {/* ================================================================ */}
-      <section className="mx-auto max-w-5xl px-4 py-6 text-center">
-        <div className="rounded-3xl bg-brand-600 px-8 py-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-2">
-            ¿No encontraste algo que te guste?
-          </h2>
-          <p className="text-brand-100 mb-4 max-w-md mx-auto text-sm">
-            Descubre más actividades filtrando por edad, precio o ubicación
-          </p>
-          <Link
-            href="/actividades"
-            className="inline-flex items-center gap-2 rounded-full bg-hp-bg-surface px-8 py-3 text-sm font-semibold text-hp-text-primary hover:bg-hp-bg-subtle transition-colors shadow"
-          >
-            Ver más actividades →
-          </Link>
-        </div>
-      </section>
+
     </div>
   );
 }

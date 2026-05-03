@@ -80,23 +80,22 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `
               try {
+                var d = document.documentElement;
+                d.classList.add('no-transition');
                 var saved = localStorage.getItem('theme');
                 var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
                 var theme = saved === 'dark' || saved === 'light'
                   ? saved
                   : (systemDark ? 'dark' : 'light');
-                // Suprimir transiciones CSS durante la inicializaci\u00f3n del tema
-                // Evita el flash dark\u2192light causado por la transici\u00f3n global de 180ms
-                document.documentElement.classList.add('no-transition');
                 if (theme === 'dark') {
-                  document.documentElement.classList.add('dark');
+                  d.classList.add('dark');
                 } else {
-                  document.documentElement.classList.remove('dark');
+                  d.classList.remove('dark');
                 }
-                // Restaurar transiciones en el siguiente frame (despu\u00e9s del primer paint)
-                setTimeout(function() {
-                  document.documentElement.classList.remove('no-transition');
-                }, 0);
+                // rAF: se alinea con el pr\u00f3ximo paint, no con el event loop
+                requestAnimationFrame(function() {
+                  d.classList.remove('no-transition');
+                });
               } catch(e) {}
             `,
           }}

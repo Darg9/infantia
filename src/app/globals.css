@@ -33,6 +33,9 @@
 
 /* ===== BRAND (LOCKED) ===== */
 :root {
+  /* Alinea la UI nativa del navegador (scrollbars, inputs, selects) con el tema */
+  color-scheme: light dark;
+
   --hp-primary: #002147;
   --hp-accent: #ff8c00;
 
@@ -129,8 +132,11 @@
 
 /* ── Anti-flash: elimina transiciones durante inicialización del tema ── */
 /* El script inline del <head> añade esta clase antes del primer paint   */
-/* y la elimina en el siguiente frame con setTimeout(fn, 0).             */
-.no-transition * {
+/* y la elimina en el siguiente rAF (requestAnimationFrame).             */
+.no-transition,
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after {
   transition: none !important;
 }
 

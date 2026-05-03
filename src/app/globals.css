@@ -180,3 +180,12 @@ body {
   animation: hp-count-fade 300ms ease-out;
   display: inline-block;   /* garantiza que tabular-nums aplique correctamente */
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FEATURE FLAG: Surface System v1
+   Usado para validar contrastes suaves entre secciones sin romper el UI actual.
+   Solo se activa si <html className="hp-surfaces-v1"> está presente.
+───────────────────────────────────────────────────────────────────────────── */
+.hp-surfaces-v1 .hp-section-alt {
+  background-color: var(--hp-bg-subtle);
+}

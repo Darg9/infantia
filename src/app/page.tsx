@@ -163,7 +163,7 @@ export default async function HomePage() {
       {/* CATEGORÍAS DESTACADAS                                            */}
       {/* ================================================================ */}
       {topCategories.length > 0 && (
-        <section id="categorias" className="mx-auto max-w-5xl px-4 py-5">
+        <section id="categorias" className="hp-section-alt mx-auto max-w-5xl px-4 py-5">
           <SectionHeader title="Explora por tipo de actividad" href="/actividades" linkText="Ver todas →" />
           {/*
             CategoryCountsIsland: Server renderiza con conteos globales (calidad-filtrados).

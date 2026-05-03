@@ -70,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="es">
+    <html lang="es" className="hp-surfaces-v1">
       {/* ── Script anti-flash: se ejecuta de forma síncrona antes del render ──
           Prioridad: localStorage.theme > prefers-color-scheme del sistema.
           El fallback hardened evita valores corruptos en localStorage. */}

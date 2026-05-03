@@ -343,14 +343,25 @@ function MobileDrawer({
               <ul className="space-y-1">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      onClick={onClose}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-[var(--color-brand-500)] transition-colors group"
-                    >
-                      <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-[var(--color-brand-500)] transition-colors" />
-                      {link.label}
-                    </Link>
+                    {link.href.startsWith('/#') ? (
+                      <a
+                        href={link.href}
+                        onClick={onClose}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-500 transition-colors group"
+                      >
+                        <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
+                        {link.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={link.href}
+                        onClick={onClose}
+                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-500 transition-colors group"
+                      >
+                        <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
+                        {link.label}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>

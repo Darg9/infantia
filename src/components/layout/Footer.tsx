@@ -68,16 +68,24 @@ export function Footer() {
                 {col.title}
               </h3>
               <ul className="space-y-3">
-                {col.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                {col.links.map((link) => {
+                  const isHashLink = link.href.startsWith('/#');
+                  const anchorClasses = "text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors";
+                  
+                  return (
+                    <li key={link.label}>
+                      {isHashLink ? (
+                        <a href={link.href} className={anchorClasses}>
+                          {link.label}
+                        </a>
+                      ) : (
+                        <Link href={link.href} className={anchorClasses}>
+                          {link.label}
+                        </Link>
+                      )}
+                    </li>
+                  );
+                })}
               </ul>
             </div>
           ))}

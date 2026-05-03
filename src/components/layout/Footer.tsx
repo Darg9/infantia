@@ -11,7 +11,7 @@ const NAV_COLUMNS = [
     title: 'Explorar',
     links: [
       { label: 'Ver actividades',    href: '/actividades' },
-      { label: 'Categorías',         href: '/#categorias' },
+      // { label: 'Categorías',         href: '/#categorias' }, // TODO: Revivir cuando exista /categorias dedicado
       { label: 'Publicar actividad', href: '/anunciate'   },
     ],
   },

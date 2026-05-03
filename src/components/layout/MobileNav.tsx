@@ -127,7 +127,8 @@ const DRAWER_SECTIONS = [
     links: [
       { label: 'Actividades',      href: '/actividades', icon: MapPinned },
       { label: 'Mapa',             href: '/mapa',        icon: MapIcon },
-      { label: 'Categorías',       href: '/#categorias', icon: Grid },
+      // { label: 'Categorías',       href: '/#categorias', icon: Grid }, // TODO: Revivir cuando exista /categorias dedicado
+
     ],
   },
   {

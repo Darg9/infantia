@@ -226,9 +226,11 @@ export default async function HomePage() {
           {/* ================================================================ */}
           {/* B2B CTA — Captación de organizadores                            */}
           {/* ================================================================ */}
-          <div className="mt-12 md:mt-16 text-center max-w-2xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-2xl p-6 md:p-8">
+          {/* Spacer: separa visualmente el flujo B2C (explorar) del B2B (publicar) */}
+          <div className="mt-16 md:mt-20" />
+          <div className="text-center max-w-2xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-2xl p-6 md:p-8">
             <h3 className="text-base md:text-lg font-semibold text-[var(--hp-text-primary)]">
-              ¿Organizas actividades para niños y familias?
+              ¿Ofreces actividades para niños y familias?
             </h3>
             <p className="text-sm text-[var(--hp-text-muted)] mt-1.5">
               Llega a más interesados cerca de ti.

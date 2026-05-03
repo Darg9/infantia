@@ -196,8 +196,35 @@ Todas nuestras definiciones base yacen configuradas en el motor `@theme` de *Tai
 
 ### Dark Mode
 
-- **Regla Estricta de Paridad**: Se emplea soporte server-side inyectado (`Cookie SRR`), requiriendo que los componentes invirtan sin clases hardcodeadas (`dark:bg-gray-800`).
+- **Regla Estricta de Paridad**: Se emplea soporte server-side inyectado vía clase `.dark` en `<html>`, requiriendo que los componentes invirtan sin clases hardcodeadas (`dark:bg-gray-800`).
 - No deben existir colores exiliados del dark mode scheme. Si es blanco en light, debe resolverse automáticamente apoyándose en los tokens designados (o el variant dark invertido `dark:text-white`).
+
+#### Arquitectura Anti-FOT (Flash of Incorrect Theme)
+
+La inicialización del tema se realiza en 4 capas coordinadas para garantizar cero flicker:
+
+| Capa | Implementación | Propósito |
+|---|---|---|
+| Script inline `<head>` | `layout.tsx` — **antes de cualquier `<link>` de recursos** | Aplica `.dark` / `.no-transition` en el primer byte del HTML |
+| `requestAnimationFrame` | Dentro del mismo script inline | Restaura transiciones exactamente en el primer paint |
+| `@custom-variant dark` | `globals.css` | Habilita `dark:*` de Tailwind v4 respetando la clase `.dark` manual |
+| `color-scheme: light dark` | `globals.css :root` + `<meta>` en `<head>` | UI nativa del navegador (scrollbars, inputs) adopta el tema correcto |
+
+#### Clase de utilidad `.no-transition`
+
+```css
+/* globals.css — Suprimir transiciones durante la inicialización del tema */
+.no-transition,
+.no-transition *,
+.no-transition *::before,
+.no-transition *::after {
+  transition: none !important;
+}
+```
+
+- El script la añade antes de aplicar `.dark` → el primer paint no muestra fade.
+- Se elimina con `requestAnimationFrame` → el siguiente frame ya tiene transiciones normales.
+- ❌ **Prohibido** usarla fuera del contexto de inicialización de tema.
 
 ### Tipografía, Spacing & Shadows
 

@@ -64,13 +64,15 @@ export function CategoryCountsIsland({ categories }: Props) {
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-      {categories.map((cat) => {
+      {categories.map((cat, index) => {
         const count = counts[cat.id] ?? cat.initialCount
+        // Ocultar a partir de la 5ta categoría solo en Desktop para mantener 1 sola fila visible
+        const desktopHiddenClass = index >= 4 ? 'sm:hidden' : ''
         return (
           <Link
             key={cat.id}
             href={`/actividades?categoryId=${cat.id}`}
-            className='group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
+            className={`group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all ${desktopHiddenClass}`}
           >
             {/* Ícono con gradiente de la categoría */}
             <div

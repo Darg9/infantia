@@ -163,7 +163,7 @@ export default async function HomePage() {
       {/* CATEGORÍAS DESTACADAS                                            */}
       {/* ================================================================ */}
       {topCategories.length > 0 && (
-        <section id="categorias" className="hp-section-alt mx-auto max-w-5xl px-4 pt-4 pb-10 sm:pb-12">
+        <section id="categorias" className="hp-section-alt mx-auto max-w-5xl px-4 pt-4 pb-10 sm:pb-10">
           <SectionHeader title="Explora por tipo de actividad" href="/actividades" linkText="Ver todas →" />
           {/*
             CategoryCountsIsland: Server renderiza con conteos globales (calidad-filtrados).
@@ -183,7 +183,7 @@ export default async function HomePage() {
       {/* ================================================================ */}
       {/* ACTIVIDADES — recientes o populares como fallback               */}
       {/* ================================================================ */}
-      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] pt-8 pb-8 md:pb-10">
+      <section className="bg-[var(--hp-bg-surface)] border-t border-b border-[var(--hp-border)] pt-6 pb-8 md:pb-10">
         <div className="mx-auto max-w-5xl px-4">
           {(hasRecent || hasPopular) ? (
             <>

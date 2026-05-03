@@ -25,7 +25,8 @@
     "build-storybook": "storybook build",
     "chromatic": "chromatic",
     "prepare": "husky install",
-    "validate:logo": "node scripts/validate-logo.mjs"
+    "validate:logo": "node scripts/validate-logo.mjs",
+    "ds:check": "node scripts/ds-guard.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",

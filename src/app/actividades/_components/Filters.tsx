@@ -687,7 +687,7 @@ export default function Filters({
                     {s.type !== 'activity' && (
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
-                          ? 'bg-violet-50 text-violet-600'
+                          ? 'bg-brand-50 text-brand-700'
                           : 'bg-success-50 text-success-600'
                       }`}>
                         {s.type === 'category' ? 'Categoría' : 'Ciudad'}

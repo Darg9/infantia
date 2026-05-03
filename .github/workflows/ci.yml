@@ -29,6 +29,12 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: "🎨 Lint — Design System enforcement"
+        run: npm run lint
+
+      - name: "🛡️ DS Guard — no colores Tailwind directos"
+        run: npm run ds:check
+
       - name: Run unit tests
         run: npm test
 

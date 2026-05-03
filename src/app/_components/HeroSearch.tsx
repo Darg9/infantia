@@ -460,8 +460,8 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
                     {s.type !== 'activity' && s.type !== 'query' && (
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
-                          ? 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200'
-                          : 'bg-success-50 text-success-600 dark:bg-success-900 dark:text-success-200'
+                          ? 'bg-brand-50 text-brand-700'
+                          : 'bg-success-50 text-success-600'
                       }`}>
                         {s.type === 'category' ? 'Categoría' : 'Ciudad'}
                       </span>

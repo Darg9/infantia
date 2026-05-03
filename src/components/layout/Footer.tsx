@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { SmartLink } from '@/components/ui/smart-link'
 
 // =============================================================================
 // Footer — estructura de 4 columnas + barra inferior
@@ -68,24 +69,16 @@ export function Footer() {
                 {col.title}
               </h3>
               <ul className="space-y-3">
-                {col.links.map((link) => {
-                  const isHashLink = link.href.startsWith('/#');
-                  const anchorClasses = "text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors";
-                  
-                  return (
-                    <li key={link.label}>
-                      {isHashLink ? (
-                        <a href={link.href} className={anchorClasses}>
-                          {link.label}
-                        </a>
-                      ) : (
-                        <Link href={link.href} className={anchorClasses}>
-                          {link.label}
-                        </Link>
-                      )}
-                    </li>
-                  );
-                })}
+                {col.links.map((link) => (
+                  <li key={link.label}>
+                    <SmartLink
+                      href={link.href}
+                      className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors"
+                    >
+                      {link.label}
+                    </SmartLink>
+                  </li>
+                ))}
               </ul>
             </div>
           ))}

@@ -1,5 +1,4 @@
 'use client';
-import { Button } from '@/components/ui';
 
 // =============================================================================
 // MobileNav — Dual Navigation Model (≤768px only)
@@ -16,6 +15,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { SmartLink } from '@/components/ui/smart-link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
 import { Icon } from "@/components/ui/icon"
@@ -343,25 +344,14 @@ function MobileDrawer({
               <ul className="space-y-1">
                 {section.links.map((link) => (
                   <li key={link.label}>
-                    {link.href.startsWith('/#') ? (
-                      <a
-                        href={link.href}
-                        onClick={onClose}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-500 transition-colors group"
-                      >
-                        <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
-                        {link.label}
-                      </a>
-                    ) : (
-                      <Link
-                        href={link.href}
-                        onClick={onClose}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-500 transition-colors group"
-                      >
-                        <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
-                        {link.label}
-                      </Link>
-                    )}
+                    <SmartLink
+                      href={link.href}
+                      onClick={onClose}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-500 transition-colors group"
+                    >
+                      <Icon icon={link.icon} size="md" className="text-[var(--hp-text-muted)] group-hover:text-brand-500 transition-colors" />
+                      {link.label}
+                    </SmartLink>
                   </li>
                 ))}
               </ul>

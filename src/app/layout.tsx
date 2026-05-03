@@ -69,8 +69,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const surfacesEnabled = process.env.NEXT_PUBLIC_UI_SURFACES === 'true';
+
   return (
-    <html lang="es" className="hp-surfaces-v1">
+    <html lang="es" className={surfacesEnabled ? 'hp-surfaces-v1' : ''}>
       {/* ── Script anti-flash: se ejecuta de forma síncrona antes del render ──
           Prioridad: localStorage.theme > prefers-color-scheme del sistema.
           El fallback hardened evita valores corruptos en localStorage. */}

@@ -51,11 +51,11 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
               key={href}
               href={href}
               className={[
-                'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
+                'px-3 py-2 text-sm font-medium transition-colors',
                 isActive
-                  ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:border-[var(--hp-border-subtle)]',
-              ].join('')}
+                  ? 'text-[var(--hp-text-primary)] border-b-2 border-brand-500'
+                  : 'text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)]',
+              ].join(' ')}
             >
               {label}
             </Link>

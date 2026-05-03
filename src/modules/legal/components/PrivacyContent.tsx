@@ -11,7 +11,7 @@ export function PrivacyContent() {
   return (
     <div className="space-y-10">
       {/* ── Card — Resumen para humanos ──────────────────────── */}
-      <div className='rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-surface)] p-6 text-white'>
+      <div className='rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-sm)] p-6'>
         <div className="flex items-center gap-2 mb-4">
           <span className="text-lg">🛡️</span>
           <span className="text-xs font-semibold uppercase tracking-widest text-brand-400">
@@ -86,7 +86,7 @@ export function PrivacyContent() {
         />
       </div>
       {/* ── Navegación inferior ──────────────────────────────── */}
-      <div className="flex flex-wrap gap-6 text-sm pt-4 border-t border-[var(--hp-border)]">
+      <div className="flex flex-wrap gap-6 text-sm mt-8 pt-4 border-t border-[var(--hp-border-subtle)]">
         <Link
           href="/seguridad/terminos"
           className="text-[var(--hp-text-secondary)] hover:text-brand-600 transition-colors"

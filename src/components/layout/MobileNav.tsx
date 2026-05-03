@@ -140,7 +140,6 @@ const DRAWER_SECTIONS = [
     title: 'Ayuda',
     links: [
       { label: 'Contacto',             href: '/contacto', icon: Mail },
-      { label: 'Preguntas frecuentes', href: '/contacto', icon: HelpCircle },
     ],
   },
   {

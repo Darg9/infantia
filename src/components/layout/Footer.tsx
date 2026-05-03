@@ -19,7 +19,6 @@ const NAV_COLUMNS = [
     links: [
       { label: 'Cómo funciona',        href: '/contribuir' },
       { label: 'Contacto',             href: '/contacto'   },
-      { label: 'Preguntas frecuentes', href: '/contacto'   },
     ],
   },
   {

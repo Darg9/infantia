@@ -72,41 +72,40 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div className="bg-brand-50 border border-brand-200 rounded-lg p-4">
-            <p className="text-sm text-gray-600">Total</p>
+            <p className='text-sm text-[var(--hp-text-secondary)]'>Total</p>
             <p className="text-2xl font-bold text-brand-600">{summary.total}</p>
           </div>
 
           <div className="bg-success-50 border border-success-200 rounded-lg p-4">
-            <p className="text-sm text-gray-600">Activas</p>
+            <p className='text-sm text-[var(--hp-text-secondary)]'>Activas</p>
             <p className="text-2xl font-bold text-success-600">{summary.active}</p>
           </div>
 
           <div className="bg-warning-50 border border-warning-200 rounded-lg p-4">
-            <p className="text-sm text-gray-600">Pausadas</p>
+            <p className='text-sm text-[var(--hp-text-secondary)]'>Pausadas</p>
             <p className="text-2xl font-bold text-warning-600">{summary.paused}</p>
           </div>
 
           <div className="bg-error-50 border border-error-200 rounded-lg p-4">
-            <p className="text-sm text-gray-600">Baja calidad</p>
+            <p className='text-sm text-[var(--hp-text-secondary)]'>Baja calidad</p>
             <p className="text-2xl font-bold text-error-600">{summary.lowQuality}</p>
           </div>
         </div>
       )}
-
       {/* Table */}
       <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
         <table className="w-full text-sm">
           <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
             <tr>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Fuente</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Plataforma</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">URL Score</th>
-              <th className="px-4 py-3 text-right font-medium text-gray-600">URLs</th>
-              <th className="px-4 py-3 text-center font-medium text-gray-600">Estado</th>
-              <th className="px-4 py-3 text-left font-medium text-gray-600">Acción</th>
+              <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Fuente</th>
+              <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Plataforma</th>
+              <th className='px-4 py-3 text-center font-medium text-[var(--hp-text-secondary)]'>URL Score</th>
+              <th className='px-4 py-3 text-right font-medium text-[var(--hp-text-secondary)]'>URLs</th>
+              <th className='px-4 py-3 text-center font-medium text-[var(--hp-text-secondary)]'>Estado</th>
+              <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Acción</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
             {stats.map((source) => {
               const scoreColor =
                 source.urlScore === null
@@ -127,9 +126,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                       {source.cityName && <p className="text-xs text-[var(--hp-text-secondary)]">{source.cityName}</p>}
                     </div>
                   </td>
-
-                  <td className="px-4 py-3 text-gray-600">{source.platform}</td>
-
+                  <td className='px-4 py-3 text-[var(--hp-text-secondary)]'>{source.platform}</td>
                   <td className="px-4 py-3 text-center">
                     {source.urlScore !== null ? (
                       <div>
@@ -140,9 +137,7 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                       <p className="text-[var(--hp-text-muted)] text-xs">Sin datos</p>
                     )}
                   </td>
-
-                  <td className="px-4 py-3 text-right text-gray-600">{source.totalUrls}</td>
-
+                  <td className='px-4 py-3 text-right text-[var(--hp-text-secondary)]'>{source.totalUrls}</td>
                   <td className="px-4 py-3 text-center">
                     {source.paused ? (
                       <div className="inline-block bg-warning-100 text-warning-700 px-2 py-1 rounded text-xs font-medium">
@@ -159,7 +154,6 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
                       </div>
                     )}
                   </td>
-
                   <td className="px-4 py-3">
                     <Link
                       href={`/admin/sources/${source.id}`}
@@ -174,7 +168,6 @@ export function SourceStatsTable({ cityId }: { cityId?: string }) {
           </tbody>
         </table>
       </div>
-
       {stats.length === 0 && (
         <div className="text-center py-8 text-[var(--hp-text-muted)]">No hay fuentes disponibles</div>
       )}

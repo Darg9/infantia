@@ -34,17 +34,16 @@ export default async function CalificacionesPage() {
           </span>
         )}
       </div>
-
       {ratings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">⭐</span>
-          <p className="text-gray-600 font-medium text-lg">Aun no has calificado actividades</p>
+          <p className='text-[var(--hp-text-secondary)] font-medium text-lg'>Aun no has calificado actividades</p>
           <p className="text-sm text-[var(--hp-text-muted)] max-w-sm">
             Visita una actividad y dejale una calificacion para ayudar a otros padres.
           </p>
           <Link
             href="/actividades"
-            className="mt-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+            className="mt-2 rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
           >
             Explorar actividades
           </Link>
@@ -93,5 +92,5 @@ export default async function CalificacionesPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

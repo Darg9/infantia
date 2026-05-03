@@ -86,11 +86,11 @@ export default function EditarActividadPage() {
     return (
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-100 rounded-xl w-1/2" />
-          <div className="h-40 bg-gray-100 rounded-2xl" />
+          <div className='h-8 bg-[var(--hp-bg-page)] rounded-xl w-1/2' />
+          <div className='h-40 bg-[var(--hp-bg-page)] rounded-2xl' />
         </div>
       </div>
-    )
+    );
   }
 
   if (!activity) {
@@ -138,7 +138,7 @@ export default function EditarActividadPage() {
         {/* Título */}
         <div>
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Título</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="text"
             value={title}
@@ -192,7 +192,7 @@ export default function EditarActividadPage() {
         <div className="grid grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Precio (COP)</label>
-            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            { }
             <input
               type="number"
               min="0"
@@ -204,7 +204,7 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad mín.</label>
-            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            { }
             <input
               type="number"
               min="0"
@@ -216,7 +216,7 @@ export default function EditarActividadPage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">Edad máx.</label>
-            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            { }
             <input
               type="number"
               min="0"
@@ -256,14 +256,14 @@ export default function EditarActividadPage() {
         </Button>
         <Link
           href="/admin/actividades"
-          className="px-6 py-2.5 border border-[var(--hp-border)] text-gray-600 rounded-xl text-sm hover:border-gray-300 transition-colors"
+          className='px-6 py-2.5 border border-[var(--hp-border)] text-[var(--hp-text-secondary)] rounded-xl text-sm hover:border-[var(--hp-border-subtle)] transition-colors'
         >
           Cancelar
         </Link>
         <Link
           href={`/actividades/${id}`}
           target="_blank"
-          className="ml-auto text-sm text-[var(--hp-text-muted)] hover:text-gray-600 underline"
+          className='ml-auto text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] underline'
         >
           Ver pública →
         </Link>

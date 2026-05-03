@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<ClaimStatus, string> = {
 const STATUS_COLORS: Record<ClaimStatus, string> = {
   PENDING:  'bg-warning-100 text-warning-700',
   APPROVED: 'bg-success-100 text-success-700',
-  REJECTED: 'bg-gray-100 text-[var(--hp-text-secondary)]',
+  REJECTED: 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]',
 };
 
 export default function ClaimsAdminPage() {
@@ -79,8 +79,8 @@ export default function ClaimsAdminPage() {
             onClick={() => setFilter(s)}
             className={`text-xs font-medium px-4 py-1.5 rounded-full border transition-colors ${
               filter === s
-                ? 'bg-gray-900 text-white border-gray-900'
-                : 'border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-gray-400'
+                ? 'bg-[var(--hp-bg-surface)] text-white border-[var(--hp-border-subtle)]'
+                : 'border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-[var(--hp-border-subtle)]'
             }`}
           >
             {STATUS_LABELS[s]}
@@ -111,7 +111,7 @@ export default function ClaimsAdminPage() {
                       {STATUS_LABELS[c.status]}
                     </span>
                   </div>
-                  <p className="text-sm text-gray-600">{c.userName ?? '—'} · {c.userEmail}</p>
+                  <p className='text-sm text-[var(--hp-text-secondary)]'>{c.userName ?? '—'} · {c.userEmail}</p>
                   {c.message && (
                     <p className="text-sm text-[var(--hp-text-secondary)] mt-2 italic">"{c.message}"</p>
                   )}

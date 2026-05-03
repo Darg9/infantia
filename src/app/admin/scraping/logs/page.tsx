@@ -40,7 +40,6 @@ export default async function ScrapingLogsPage() {
         <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Logs de ejecucion</h1>
         <p className="text-[var(--hp-text-secondary)] text-sm mt-1">Ultimas {logs.length} ejecuciones del pipeline</p>
       </div>
-
       {logs.length === 0 ? (
         <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-12 text-center">
           <p className="text-[var(--hp-text-muted)] text-lg">No hay logs todavia</p>
@@ -64,14 +63,14 @@ export default async function ScrapingLogsPage() {
             </thead>
             <tbody>
               {logs.map((log) => {
-                const style = statusStyle[log.status] ?? { bg: 'bg-gray-100 text-[var(--hp-text-secondary)]', icon: '—' }
+                const style = statusStyle[log.status] ?? { bg: 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]', icon: '—' }
                 const duration =
                   log.finishedAt && log.startedAt
                     ? Math.round((new Date(log.finishedAt).getTime() - new Date(log.startedAt).getTime()) / 1000)
                     : null
 
                 return (
-                  <tr key={log.id} className="border-b border-gray-50 hover:bg-[var(--hp-bg-page)]/50">
+                  <tr key={log.id} className='border-b border-[var(--hp-border-subtle)] hover:bg-[var(--hp-bg-page)]/50'>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-1 rounded-full ${style.bg}`}>
                         {style.icon} {log.status}
@@ -102,13 +101,12 @@ export default async function ScrapingLogsPage() {
                       )}
                     </td>
                   </tr>
-                )
+                );
               })}
             </tbody>
           </table>
         </div>
       )}
-
       {logs.some((l) => l.errorMessage) && (
         <div className="mt-8">
           <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Errores recientes</h2>
@@ -131,5 +129,5 @@ export default async function ScrapingLogsPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

@@ -107,13 +107,11 @@ function RegistroForm() {
     <Card className="w-full max-w-md p-8">
       <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Crea tu cuenta</h1>
       <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Únete a HabitaPlan y descubre actividades</p>
-
       {error && (
         <p className="mb-4 text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
-
       {authMode === 'options' && (
         <div className="space-y-3">
           <Button
@@ -175,7 +173,6 @@ function RegistroForm() {
           )}
         </div>
       )}
-
       {authMode === 'email' && (
         <form onSubmit={handleEmailSubmit} className="space-y-4">
           <div>
@@ -219,7 +216,7 @@ function RegistroForm() {
               checked={aceptaTerminos}
               onChange={(e) => setAceptaTerminos(e.target.checked)}
               required
-              className="mt-1 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+              className='mt-1 h-4 w-4 rounded border-[var(--hp-border-subtle)] text-brand-500 focus:ring-brand-500'
             />
             <label htmlFor="acepta-terminos" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed">
               Acepto la{' '}
@@ -255,7 +252,6 @@ function RegistroForm() {
           </button>
         </form>
       )}
-
       <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
         ¿Ya tienes cuenta?{' '}
         <Link href="/login" className="text-brand-600 font-medium hover:underline">
@@ -263,7 +259,7 @@ function RegistroForm() {
         </Link>
       </p>
     </Card>
-  )
+  );
 }
 
 export default function RegistroPage() {

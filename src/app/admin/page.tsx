@@ -9,11 +9,10 @@ export default async function AdminPage() {
     <div className="max-w-4xl mx-auto px-4 py-12">
       <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Panel de administración</h1>
       <p className="text-[var(--hp-text-secondary)] mb-8">HabitaPlan Admin — versión inicial</p>
-
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Link
           href="/admin/scraping/sources"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">🕷️</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Fuentes de scraping</h2>
@@ -22,7 +21,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/scraping/logs"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">📋</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Logs de ejecución</h2>
@@ -31,7 +30,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/actividades"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">🎯</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Gestión de actividades</h2>
@@ -40,7 +39,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/metricas"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">📊</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Métricas</h2>
@@ -49,7 +48,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/sponsors"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-warning-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-warning-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">💛</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Patrocinadores</h2>
@@ -58,7 +57,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/claims"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">✋</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Solicitudes de perfil</h2>
@@ -67,7 +66,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/sources"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">📈</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">URL Score Dashboard</h2>
@@ -76,7 +75,7 @@ export default async function AdminPage() {
         
         <Link
           href="/admin/quality"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">🛡️</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Content Quality</h2>
@@ -85,7 +84,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/cities/review"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">🗺️</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Revisión de ciudades</h2>
@@ -94,7 +93,7 @@ export default async function AdminPage() {
 
         <Link
           href="/admin/preflight"
-          className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-sm transition-all"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
         >
           <div className="text-2xl mb-2">🗓️</div>
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Date Preflight</h2>
@@ -102,5 +101,5 @@ export default async function AdminPage() {
         </Link>
       </div>
     </div>
-  )
+  );
 }

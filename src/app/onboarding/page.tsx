@@ -25,7 +25,7 @@ function StepDots({ step }: { step: number }) {
         <div
           key={s}
           className={`h-2 rounded-full transition-all ${
-            s === step ? 'w-8 bg-brand-500' : s < step ? 'w-2 bg-brand-300' : 'w-2 bg-gray-200'
+            s === step ? 'w-8 bg-brand-500' : s < step ? 'w-2 bg-brand-300' : 'w-2 bg-[var(--hp-bg-surface)]'
           }`}
         />
       ))}
@@ -68,7 +68,7 @@ function StepCiudad({ onNext }: { onNext: (cityId?: string) => void }) {
             className={`w-full text-left px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
               cityId === c.id
                 ? 'border-brand-400 bg-brand-50 text-brand-700'
-                : 'border-[var(--hp-border)] text-[var(--hp-text-primary)] hover:border-gray-300'
+                : 'border-[var(--hp-border)] text-[var(--hp-text-primary)] hover:border-[var(--hp-border-subtle)]'
             }`}
           >
             {c.name}
@@ -141,26 +141,26 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
       <div className="space-y-4 mb-5">
         <div>
           <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Nombre del niño o niña</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             maxLength={100}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            className='w-full border border-[var(--hp-border-subtle)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400'
             placeholder="Nombre"
           />
         </div>
         <div>
           <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Fecha de nacimiento</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="date"
             value={birthDate}
             onChange={(e) => setBirthDate(e.target.value)}
             min={minDate}
             max={maxDate}
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+            className='w-full border border-[var(--hp-border-subtle)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400'
           />
         </div>
         <div className="flex items-start gap-2">
@@ -189,7 +189,7 @@ function StepHijos({ onNext, onSkip }: { onNext: () => void; onSkip: () => void 
         </Button>
         <Button
           onClick={onSkip}
-          className="w-full text-sm text-[var(--hp-text-muted)] hover:text-gray-600 py-2 transition-colors"
+          className='w-full text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] py-2 transition-colors'
         >
           Saltar — lo agrego después
         </Button>
@@ -236,7 +236,7 @@ export default function OnboardingPage() {
           <p className="text-xs text-[var(--hp-text-muted)] mt-1">Configura tu cuenta en 2 minutos</p>
         </div>
 
-        <div className="bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] p-7 shadow-sm">
+        <div className='bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] p-7 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
           <StepDots step={step} />
 
           {step === 1 && (

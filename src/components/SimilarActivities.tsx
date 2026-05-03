@@ -37,7 +37,7 @@ export async function SimilarActivities({ activityId }: Props) {
             <Link
               key={act.id}
               href={activityPath(act.id, act.title)}
-              className="group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] hover:border-brand-300 hover:shadow-sm transition-all overflow-hidden"
+              className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all overflow-hidden'
             >
               {/* Imagen o gradiente */}
               <div
@@ -51,13 +51,13 @@ export async function SimilarActivities({ activityId }: Props) {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
-                  <span className="text-4xl drop-shadow-sm">{emoji}</span>
+                  <span className="text-4xl drop-shadow-[var(--hp-shadow-md)]">{emoji}</span>
                 )}
                 {priceLabel && (
                   <span
                     className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${
                       priceLabel === 'Gratis'
-                        ? 'bg-emerald-100 text-emerald-700'
+                        ? 'bg-success-100 text-success-700'
                         : 'bg-brand-100 text-brand-700'
                     }`}
                   >
@@ -65,7 +65,6 @@ export async function SimilarActivities({ activityId }: Props) {
                   </span>
                 )}
               </div>
-
               {/* Info */}
               <div className="p-3 flex flex-col gap-1 flex-1">
                 <p className="text-sm font-semibold text-[var(--hp-text-primary)] line-clamp-2 group-hover:text-brand-600 transition-colors leading-tight">
@@ -77,7 +76,7 @@ export async function SimilarActivities({ activityId }: Props) {
                   </p>
                 )}
                 {act.categories[0] && (
-                  <span className="mt-auto inline-block text-xs text-indigo-600 bg-[var(--hp-bg-subtle)] rounded-full px-2 py-0.5 w-fit">
+                  <span className="mt-auto inline-block text-xs text-brand-600 bg-[var(--hp-bg-subtle)] rounded-full px-2 py-0.5 w-fit">
                     {act.categories[0].category.name}
                   </span>
                 )}

@@ -34,11 +34,11 @@ export function StarRating({ value, onChange, readonly = false, size = 'md' }: S
             disabled={readonly}
             onClick={() => onChange?.(star)}
             onMouseEnter={() => !readonly && setHovered(star)}
-            className={`${readonly ? 'cursor-default' : 'cursor-pointer'} transition-colors`}
+            className={`${readonly ? 'cursor-default' : 'cursor-pointer'}transition-colors`}
             aria-label={`${star} estrella${star > 1 ? 's' : ''}`}
           >
             <svg
-              className={`${sizeClass} ${active ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'}`}
+              className={`${sizeClass}${active ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'}`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >

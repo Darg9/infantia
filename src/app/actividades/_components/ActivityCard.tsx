@@ -112,7 +112,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
   const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowOfficial;
 
   const cardContent = (
-    <div className="group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 overflow-hidden h-full">
+    <div className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all duration-200 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:-translate-y-0.5 overflow-hidden h-full'>
 
       {/* ── Strip visual ─────────────────────────────────────────────── */}
       <div
@@ -132,12 +132,12 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             loading="lazy"
           />)
         ) : (
-          <span className="text-4xl select-none drop-shadow-sm">{categoryEmoji}</span>
+          <span className="text-4xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>
         )}
 
         {/* Badge tipo — oculto en compact */}
         {!compact && !shouldShowFeatured && !shouldShowOfficial && !shouldShowPopular && (
-          <span className="absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-sm">
+          <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             {TYPE_LABELS[activity.type] ?? activity.type}
           </span>
         )}
@@ -145,17 +145,17 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         {/* ── Badges de Producto (Max 2 permitidos) ── */}
         <div className="absolute top-1.5 left-2 flex gap-1 items-start max-w-[80%] flex-wrap">
           {shouldShowFeatured && (
-            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-bold text-amber-900 shadow-[0_0_8px_rgba(251,191,36,0.5)] border border-amber-300">
+            <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[0_0_8px_rgba(251,191,36,0.5)] border border-warning-300">
               ⭐ Destacado
             </span>
           )}
           {shouldShowOfficial && (
-            <span className="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-bold text-indigo-900 shadow-sm border border-indigo-200">
+            <span className='rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-900 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] border border-brand-200'>
               🛡️ Oficial
             </span>
           )}
           {shouldShowPopular && (
-            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-bold text-rose-900 shadow-sm border border-rose-200">
+            <span className='rounded-full bg-error-100 px-2 py-0.5 text-xs font-bold text-error-900 shadow-[var(--hp-shadow-md)] border border-error-200'>
               🔥 Popular
             </span>
           )}
@@ -164,8 +164,8 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         {/* Badge precio */}
         {priceLabel !== 'No disponible' && (
           <span className={clsx(
-            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-sm',
-            priceLabel === 'Gratis' ? 'bg-emerald-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
+            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]',
+            priceLabel === 'Gratis' ? 'bg-success-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
           )}>
             {priceLabel}
           </span>
@@ -173,21 +173,21 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Badge expirada */}
         {activity.status === 'EXPIRED' && (
-          <span className="absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-sm">
+          <span className='absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             Verificar disponibilidad
           </span>
         )}
 
         {/* Badge Destacado — proveedor premium puro (se quita si isFeatured manda arriba, para no sobrecargar) */}
         {activity.provider?.isPremium && !shouldShowFeatured && (
-          <span className="absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-sm">
+          <span className='absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             ⭐ Sponsor
           </span>
         )}
 
         {/* Badge Nuevo — últimos 7 días */}
         {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowOfficial && (
-          <span className="absolute bottom-1.5 left-2 rounded-full bg-blue-500 px-2 py-0.5 text-xs font-bold text-white shadow-sm">
+          <span className='absolute bottom-1.5 left-2 rounded-full bg-info-500 px-2 py-0.5 text-xs font-bold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             🆕 Nuevo
           </span>
         )}
@@ -237,12 +237,12 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           {!compact && (
             <>
               {activity.audience === 'KIDS' && (
-                <span className="flex items-center gap-1 text-xs text-violet-600 font-medium">
+                <span className="flex items-center gap-1 text-xs text-brand-700 font-medium">
                   <span>👶</span> Niños
                 </span>
               )}
               {activity.audience === 'FAMILY' && (
-                <span className="flex items-center gap-1 text-xs text-teal-600 font-medium">
+                <span className="flex items-center gap-1 text-xs text-success-700 font-medium">
                   <span>👨‍👩‍👧</span> Familia
                 </span>
               )}

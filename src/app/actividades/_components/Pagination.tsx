@@ -43,8 +43,8 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
     return pages;
   }
 
-  const anchorCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors';
-  const disabledCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-gray-600 opacity-40 cursor-not-allowed pointer-events-none';
+  const anchorCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] transition-colors';
+  const disabledCls = 'rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-[var(--hp-text-secondary)] opacity-40 cursor-not-allowed pointer-events-none';
 
   return (
     <nav aria-label="Paginación" className="flex items-center justify-center gap-1">
@@ -64,7 +64,7 @@ export default function Pagination({ page, totalPages }: PaginationProps) {
             aria-current={p === page ? 'page' : undefined}
             className={
               p === page
-                ? 'rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white pointer-events-none'
+                ? 'rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white pointer-events-none'
                 : anchorCls
             }
           >

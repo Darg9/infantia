@@ -29,19 +29,19 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
   return (
     <>
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 min-h-[calc(100vh-3.5rem)]">
+      <aside className='hidden lg:flex flex-col w-64 shrink-0 border-r border-[var(--hp-border)] border-[var(--hp-border-subtle)] bg-[var(--hp-bg-surface)] min-h-[calc(100vh-3.5rem)]'>
 
         {/* User card */}
-        <div className="p-5 border-b border-[var(--hp-border)] dark:border-gray-800">
+        <div className='p-5 border-b border-[var(--hp-border)] border-[var(--hp-border-subtle)]'>
           <div className="flex items-center gap-3">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt={userName}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 dark:ring-gray-700 shrink-0"
+                className="w-10 h-10 rounded-full object-cover ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)] shrink-0"
               />
             ) : (
-              <div className="w-10 h-10 bg-brand-100 dark:bg-orange-900/30 text-brand-600 dark:text-orange-400 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
+              <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
                 {(userName?.[0] ?? userEmail?.[0] ?? '?').toUpperCase()}
               </div>
             )}
@@ -66,28 +66,27 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                 className={[
                   'relative flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-sm transition-colors overflow-hidden',
                   active
-                    ? 'bg-brand-50 dark:bg-orange-900/20 text-brand-700 dark:text-orange-400 font-semibold'
-                    : 'text-gray-600 dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] dark:hover:bg-gray-800 hover:text-[var(--hp-text-primary)] dark:hover:text-white',
-                ].join(' ')}
+                    ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 font-semibold'
+                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] hover:bg-[var(--hp-bg-surface)] hover:text-[var(--hp-text-primary)] dark:hover:text-white',
+                ].join('')}
               >
                 {/* Active indicator bar — requiere relative en el Link padre */}
                 <span
                   className={[
                     'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full bg-brand-500 transition-opacity',
                     active ? 'opacity-100' : 'opacity-0',
-                  ].join(' ')}
+                  ].join('')}
                   aria-hidden="true"
                 />
                 <span className="text-base leading-none">{item.icon}</span>
                 {item.label}
               </Link>
-            )
+            );
           })}
         </nav>
       </aside>
-
       {/* ── Mobile horizontal nav ── */}
-      <div className="lg:hidden border-b border-[var(--hp-border)] dark:border-gray-800 bg-[var(--hp-bg-surface)] dark:bg-gray-900 overflow-x-auto">
+      <div className='lg:hidden border-b border-[var(--hp-border)] border-[var(--hp-border-subtle)] bg-[var(--hp-bg-surface)] overflow-x-auto'>
         <nav className="flex gap-1 px-4 py-2 min-w-max" aria-label="Menú de perfil">
           {NAV_ITEMS.map((item) => {
             const active = isActive(item.href)
@@ -99,17 +98,17 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                 className={[
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors',
                   active
-                    ? 'bg-brand-100 dark:bg-orange-900/30 text-brand-700 dark:text-orange-400 font-semibold'
-                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-[var(--hp-text-primary)] dark:hover:text-gray-200',
-                ].join(' ')}
+                    ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 font-semibold'
+                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] hover:bg-[var(--hp-bg-surface)] hover:text-[var(--hp-text-primary)] hover:text-[var(--hp-text-muted)]',
+                ].join('')}
               >
                 <span>{item.icon}</span>
                 {item.label}
               </Link>
-            )
+            );
           })}
         </nav>
       </div>
     </>
-  )
+  );
 }

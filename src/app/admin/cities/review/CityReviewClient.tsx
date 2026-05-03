@@ -192,7 +192,7 @@ export function CityReviewClient({ cities }: Props) {
       </p>
       <div className="overflow-x-auto rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)]">
         <table className="w-full text-sm">
-          <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)] text-xs text-gray-600">
+          <thead className='bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)] text-xs text-[var(--hp-text-secondary)]'>
             <tr>
               <th className="px-4 py-3 text-left font-medium">Input original</th>
               <th className="px-4 py-3 text-left font-medium">Normalizado</th>
@@ -201,7 +201,7 @@ export function CityReviewClient({ cities }: Props) {
               <th className="px-4 py-3 text-left font-medium">Acciones</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
             {entries.map((entry) => {
               const busy = rowLoading[entry.id] ?? false;
               const feedback = rowFeedback[entry.id] ?? '';
@@ -240,7 +240,7 @@ export function CityReviewClient({ cities }: Props) {
                   {/* Score */}
                   <td className="px-4 py-3 text-center">
                     <span
-                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${scoreColor(entry.similarity_score)} ${scoreBg(entry.similarity_score)}`}
+                      className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${scoreColor(entry.similarity_score)}${scoreBg(entry.similarity_score)}`}
                     >
                       {Math.round(entry.similarity_score * 100)}%
                     </span>
@@ -279,7 +279,7 @@ export function CityReviewClient({ cities }: Props) {
                           <Button
                             onClick={() => handleIgnore(entry.id)}
                             disabled={busy}
-                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className='px-3 py-1 text-xs font-medium bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-surface)] rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
                           >
                             × Ignorar
                           </Button>
@@ -296,7 +296,7 @@ export function CityReviewClient({ cities }: Props) {
                               }))
                             }
                             disabled={busy}
-                            className="rounded-lg border border-gray-300 px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-40"
+                            className='rounded-lg border border-[var(--hp-border-subtle)] px-2 py-1 text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-40'
                           >
                             <option value="">Seleccionar ciudad…</option>
                             {cities.map((c) => (
@@ -321,7 +321,7 @@ export function CityReviewClient({ cities }: Props) {
                               setRowMsg(entry.id, '');
                             }}
                             disabled={busy}
-                            className="px-3 py-1 text-xs font-medium bg-gray-100 text-[var(--hp-text-secondary)] hover:bg-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                            className='px-3 py-1 text-xs font-medium bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-surface)] rounded-lg disabled:opacity-40 disabled:cursor-not-allowed transition-colors'
                           >
                             Cancelar
                           </Button>

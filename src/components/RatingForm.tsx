@@ -81,7 +81,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
         {/* Cerrar */}
         <Button
           onClick={onClose}
-          className="absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-gray-600 transition-colors"
+          className='absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] transition-colors'
           aria-label="Cerrar"
         >
           ✕
@@ -119,16 +119,16 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
 
             {/* Formulario */}
             <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              { }
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="tu@correo.com"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent'
               />
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              { }
               <input
                 type="password"
                 value={password}
@@ -136,7 +136,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
                 required
                 placeholder="Contraseña"
                 minLength={6}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent'
               />
 
               {error && (
@@ -148,7 +148,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+                className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
               >
                 {loading
                   ? 'Un momento...'
@@ -282,7 +282,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
             placeholder="Cuéntanos tu experiencia..."
             maxLength={500}
             rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none'
           />
         </div>
 
@@ -290,7 +290,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         {msg && (
           <p className={`text-sm px-3 py-2 rounded-lg ${
             msg.type === 'success'
-              ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+              ? 'text-success-700 bg-success-50 border border-success-200'
               : 'text-error-600 bg-error-50 border border-error-200'
           }`}>
             {msg.text}
@@ -301,7 +301,7 @@ export function RatingForm({ activityId, existingScore, existingComment, isAuthe
         <Button
           type="submit"
           disabled={loading || score === 0}
-          className="self-start bg-brand-500 hover:bg-brand-600 disabled:bg-gray-200 disabled:text-[var(--hp-text-muted)] disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors"
+          className='self-start bg-brand-500 hover:bg-brand-600 disabled:bg-[var(--hp-bg-surface)] disabled:text-[var(--hp-text-muted)] disabled:cursor-not-allowed text-white font-medium py-2 px-5 rounded-lg text-sm transition-colors'
         >
           {loading
             ? 'Enviando...'

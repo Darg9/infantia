@@ -194,7 +194,7 @@ describe('ActivityCard', () => {
     it('muestra emoji cuando no hay imageUrl', () => {
       const { container } = render(<ActivityCard activity={baseActivity} />);
       // Sin imagen, se muestra un span con emoji y gradiente en el strip
-      const emojiSpan = container.querySelector('span.drop-shadow-sm');
+      const emojiSpan = container.querySelector('span.drop-shadow-[var(--hp-shadow-md)]');
       expect(emojiSpan).toBeInTheDocument();
     });
 

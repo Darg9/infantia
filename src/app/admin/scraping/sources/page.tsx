@@ -45,7 +45,6 @@ export default async function ScrapingSourcesPage() {
           <p className="text-[var(--hp-text-secondary)] text-sm mt-1">{sources.length} fuentes configuradas</p>
         </div>
       </div>
-
       {sources.length === 0 ? (
         <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-12 text-center">
           <p className="text-[var(--hp-text-muted)] text-lg">No hay fuentes configuradas</p>
@@ -56,7 +55,7 @@ export default async function ScrapingSourcesPage() {
           {sources.map((source) => (
             <div
               key={source.id}
-              className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-gray-300 transition-all"
+              className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-[var(--hp-border-subtle)] transition-all'
             >
               <div className="flex items-start justify-between">
                 <div className="flex-1">
@@ -66,7 +65,7 @@ export default async function ScrapingSourcesPage() {
                     {source.isActive ? (
                       <span className="text-xs bg-success-100 text-success-700 px-2 py-0.5 rounded-full">Activa</span>
                     ) : (
-                      <span className="text-xs bg-gray-100 text-[var(--hp-text-secondary)] px-2 py-0.5 rounded-full">Inactiva</span>
+                      <span className='text-xs bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)] px-2 py-0.5 rounded-full'>Inactiva</span>
                     )}
                   </div>
                   <p className="text-sm text-[var(--hp-text-secondary)] truncate max-w-lg">{source.url}</p>
@@ -82,7 +81,7 @@ export default async function ScrapingSourcesPage() {
                   {source.lastRunAt ? (
                     <>
                       <span
-                        className={`text-xs px-2 py-1 rounded-full ${statusColor[source.lastRunStatus ?? ''] ?? 'bg-gray-100 text-[var(--hp-text-secondary)]'}`}
+                        className={`text-xs px-2 py-1 rounded-full ${statusColor[source.lastRunStatus ?? ''] ?? 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]'}`}
                       >
                         {source.lastRunStatus ?? '—'}
                       </span>
@@ -124,5 +123,5 @@ export default async function ScrapingSourcesPage() {
         </div>
       )}
     </div>
-  )
+  );
 }

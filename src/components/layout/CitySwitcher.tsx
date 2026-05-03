@@ -173,12 +173,11 @@ export function CitySwitcher({ cities, variant = 'desktop', unified = false }: P
         )
       }
       return (
-        <span className="inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap">
-          <PinIcon className="w-3.5 h-3.5" />
-          Colombia
-          <ChevronFallback />
+        <span className='inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] text-sm font-medium text-[var(--hp-text-muted)] shrink-0 whitespace-nowrap'>
+          <PinIcon className="w-3.5 h-3.5" />Colombia
+                    <ChevronFallback />
         </span>
-      )
+      );
     }
     return null
   }
@@ -305,7 +304,7 @@ export function CitySwitcher({ cities, variant = 'desktop', unified = false }: P
           className={
             unified
               ? "inline-flex items-center gap-1.5 px-4 py-4 md:py-5 border-b border-[var(--hp-border-subtle)] sm:border-b-0 sm:border-r bg-transparent text-sm font-medium text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
-              : "inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-lg text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap"
+              : 'inline-flex items-center gap-1.5 px-4 py-4 md:py-5 rounded-2xl border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] text-sm font-medium text-[var(--hp-text-primary)] hover:border-brand-400 hover:text-brand-600 transition-all cursor-pointer group shrink-0 whitespace-nowrap'
           }
         >
           <PinIcon className="w-3.5 h-3.5 text-brand-500 shrink-0" />
@@ -343,7 +342,6 @@ export function CitySwitcher({ cities, variant = 'desktop', unified = false }: P
           )}
         </button>
       )}
-
       <Modal 
         open={isOpen} 
         onClose={handleCloseModal} 
@@ -433,5 +431,5 @@ export function CitySwitcher({ cities, variant = 'desktop', unified = false }: P
         </Modal.Body>
       </Modal>
     </>
-  )
+  );
 }

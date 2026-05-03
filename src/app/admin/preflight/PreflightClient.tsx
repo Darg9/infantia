@@ -78,9 +78,9 @@ function reasonBadgeClass(reason: string): string {
     case 'process':        return 'bg-success-100 text-success-700';
     case 'datetime_past':  return 'bg-warning-100 text-warning-700';
     case 'text_date_past': return 'bg-warning-100 text-warning-600';
-    case 'past_year_only': return 'bg-orange-100 text-orange-700';
-    case 'keyword_past':   return 'bg-orange-100 text-orange-600';
-    default:               return 'bg-gray-100 text-gray-600';
+    case 'past_year_only': return 'bg-brand-100 text-brand-700';
+    case 'keyword_past':   return 'bg-brand-100 text-brand-600';
+    default:               return 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]';
   }
 }
 
@@ -108,14 +108,14 @@ const REASON_BAR_COLOR: Record<string, string> = {
   process:        'bg-success-400',
   datetime_past:  'bg-warning-400',
   text_date_past: 'bg-warning-300',
-  past_year_only: 'bg-orange-400',
-  keyword_past:   'bg-orange-300',
+  past_year_only: 'bg-brand-400',
+  keyword_past:   'bg-brand-300',
 };
 
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
 function Skeleton({ className }: { className: string }) {
-  return <div className={`animate-pulse rounded bg-gray-200 ${className}`} />;
+  return <div className={`animate-pulse rounded bg-[var(--hp-bg-surface)]${className}`} />;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -162,35 +162,35 @@ export function PreflightClient() {
       {/* ── Filtros ─────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-end gap-4 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-2xl px-5 py-4">
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Desde</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Desde</label>
+          { }
           <input
             type="date"
             value={from}
             max={to}
             onChange={(e) => setFrom(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Hasta</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Hasta</label>
+          { }
           <input
             type="date"
             value={to}
             min={from}
             onChange={(e) => setTo(e.target.value)}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label className="text-xs font-medium text-gray-600">Límite filas</label>
+          <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Límite filas</label>
           <select
             value={limit}
             onChange={(e) => setLimit(Number(e.target.value))}
-            className="rounded-lg border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
           >
             {[50, 100, 200, 500].map((v) => (
               <option key={v} value={v}>{v}</option>
@@ -264,7 +264,7 @@ export function PreflightClient() {
                 label: 'Detección capa 2/3',
                 value: `${data.stats.fallbackRate}%`,
                 sub: `Texto/año/keyword en ${data.stats.fallbackCount.toLocaleString('es-CO')} URLs (menos preciso)`,
-                color: data.stats.fallbackRate > 50 ? 'text-warning-700' : 'text-gray-600',
+                color: data.stats.fallbackRate > 50 ? 'text-warning-700' : 'text-[var(--hp-text-secondary)]',
                 bg: data.stats.fallbackRate > 50 ? 'bg-warning-50' : 'bg-[var(--hp-bg-surface)]',
               },
             ].map(({ label, value, sub, color, bg }) => (
@@ -322,7 +322,7 @@ export function PreflightClient() {
                   <th className="px-4 py-2 w-40"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
                 {REASON_ORDER.map((key) => {
                   const count = data.stats.byReason[key];
                   const pct = data.stats.total > 0
@@ -342,9 +342,9 @@ export function PreflightClient() {
                         {pct}%
                       </td>
                       <td className="px-4 py-2.5">
-                        <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className='h-2 bg-[var(--hp-bg-page)] rounded-full overflow-hidden'>
                           <div
-                            className={`h-full rounded-full ${REASON_BAR_COLOR[key] ?? 'bg-gray-300'}`}
+                            className={`h-full rounded-full ${REASON_BAR_COLOR[key] ?? 'bg-[var(--hp-bg-surface)]'}`}
                             style={{ width: barWidth(count, data.stats.total) }}
                           />
                         </div>
@@ -381,7 +381,7 @@ export function PreflightClient() {
                   <th className="px-4 py-2 w-32"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
                 {data.bySource.map((src) => {
                   const isHigh = src.skipRate > 70;
                   const isLow  = src.skipRate < 5 && src.total >= 10;
@@ -390,21 +390,21 @@ export function PreflightClient() {
                       <td className="px-4 py-2 font-mono text-xs text-[var(--hp-text-primary)]">
                         {src.sourceId ?? <span className="italic text-[var(--hp-text-muted)]">(sin fuente)</span>}
                       </td>
-                      <td className="px-4 py-2 text-right text-gray-600">
+                      <td className='px-4 py-2 text-right text-[var(--hp-text-secondary)]'>
                         {src.total.toLocaleString('es-CO')}
                       </td>
-                      <td className="px-4 py-2 text-right text-gray-600">
+                      <td className='px-4 py-2 text-right text-[var(--hp-text-secondary)]'>
                         {src.skipped.toLocaleString('es-CO')}
                       </td>
                       <td className={`px-4 py-2 text-right font-semibold text-xs ${
-                        isHigh ? 'text-error-600' : isLow ? 'text-warning-600' : 'text-gray-600'
+                        isHigh ? 'text-error-600' : isLow ? 'text-warning-600' : 'text-[var(--hp-text-secondary)]'
                       }`}>
                         {src.skipRate}%
                         {isHigh && <span className="ml-1">🔴</span>}
                         {isLow  && <span className="ml-1">⚠️</span>}
                       </td>
                       <td className="px-4 py-2">
-                        <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                        <div className='h-1.5 bg-[var(--hp-bg-page)] rounded-full overflow-hidden'>
                           <div
                             className={`h-full rounded-full ${
                               isHigh ? 'bg-error-400' : isLow ? 'bg-warning-400' : 'bg-brand-400'
@@ -450,7 +450,7 @@ export function PreflightClient() {
                   <th className="px-4 py-3 text-left font-medium">Fecha log</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
                 {data.rows.map((row) => (
                   <tr key={row.id} className="hover:bg-[var(--hp-bg-page)]">
                     {/* URL */}

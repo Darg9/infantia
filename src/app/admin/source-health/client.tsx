@@ -17,7 +17,7 @@ export default function SourceHealthClient() {
   }, []);
 
   if (loading) {
-    return <div className="animate-pulse bg-gray-100 h-96 rounded-xl w-full"></div>;
+    return <div className='animate-pulse bg-[var(--hp-bg-page)] h-96 rounded-xl w-full'></div>;
   }
 
   // Preparando datos para gráfica: distribución de Scores (agrupados por tiempo de actualización es complejo por pocos datos)
@@ -33,7 +33,7 @@ export default function SourceHealthClient() {
       case 'healthy': return 'bg-success-100 text-success-800 border-success-200';
       case 'degraded': return 'bg-warning-100 text-warning-800 border-warning-200';
       case 'critical': return 'bg-error-100 text-error-800 border-error-200';
-      default: return 'bg-gray-100 text-[var(--hp-text-primary)] border-[var(--hp-border)]';
+      default: return 'bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)] border-[var(--hp-border)]';
     }
   };
 
@@ -41,7 +41,6 @@ export default function SourceHealthClient() {
 
   return (
     <div className="space-y-6">
-      
       {/* Alertas Proactivas */}
       {criticalSources > 0 && (
         <div className="bg-error-50 border-l-4 border-error-500 p-4 rounded-md">
@@ -60,9 +59,8 @@ export default function SourceHealthClient() {
           </div>
         </div>
       )}
-
       {/* Gráfica de Score Normalizado */}
-      <div className="bg-[var(--hp-bg-surface)] p-6 rounded-xl border border-[var(--hp-border)] shadow-sm">
+      <div className='bg-[var(--hp-bg-surface)] p-6 rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
         <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Panorama de Scores de Origen</h2>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -78,10 +76,9 @@ export default function SourceHealthClient() {
           </ResponsiveContainer>
         </div>
       </div>
-
       {/* Tabla detallada */}
-      <div className="bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] shadow-sm overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+      <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] overflow-hidden'>
+        <table className='min-w-full divide-y divide-[var(--hp-border-subtle)]'>
           <thead className="bg-[var(--hp-bg-page)]">
             <tr>
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Source</th>
@@ -92,7 +89,7 @@ export default function SourceHealthClient() {
               <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-[var(--hp-text-secondary)] uppercase tracking-wider">Last Success</th>
             </tr>
           </thead>
-          <tbody className="bg-[var(--hp-bg-surface)] divide-y divide-gray-200">
+          <tbody className='bg-[var(--hp-bg-surface)] divide-y divide-[var(--hp-border-subtle)]'>
             {data.map((row) => {
               const total = row.successCount + row.errorCount;
               const sRate = total > 0 ? Math.round((row.successCount / total) * 100) : 0;
@@ -108,7 +105,7 @@ export default function SourceHealthClient() {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--hp-text-secondary)]">
                     <div className="flex items-center">
                       <span className="mr-2">{sRate}%</span>
-                      <div className="relative w-full overflow-hidden bg-gray-200 rounded-full h-2">
+                      <div className='relative w-full overflow-hidden bg-[var(--hp-bg-surface)] rounded-full h-2'>
                          <div style={{width: `${sRate}%`}} className={`h-2 rounded-full ${sRate > 70 ? 'bg-success-500' : sRate > 40 ? 'bg-warning-500' : 'bg-error-500'}`}></div>
                       </div>
                     </div>

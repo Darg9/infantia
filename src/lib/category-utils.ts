@@ -3,8 +3,8 @@
 // =============================================================================
 
 export const CATEGORY_COLORS = [
-  'bg-indigo-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100',
-  'bg-cyan-100', 'bg-violet-100', 'bg-orange-100', 'bg-teal-100',
+  'bg-brand-100', 'bg-success-100', 'bg-amber-100', 'bg-rose-100',
+  'bg-cyan-100', 'bg-violet-100', 'bg-brand-100', 'bg-teal-100',
 ] as const;
 
 // Gradientes por slug de categoría (para placeholder visual cuando no hay og:image)

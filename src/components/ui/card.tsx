@@ -31,7 +31,7 @@ interface CardProps {
 const CARD_VARIANTS: Record<CardVariant, string> = {
   default:  'bg-hp-bg-surface border border-hp-border-subtle',
   flat:     'bg-hp-bg-surface border border-hp-border-subtle',
-  elevated: 'bg-hp-bg-surface border border-hp-border-subtle shadow-md',
+  elevated: 'bg-hp-bg-surface border border-hp-border-subtle shadow-[var(--hp-shadow-md)]',
 }
 
 export function Card({ variant = 'default', className, children, ...props }: CardProps) {

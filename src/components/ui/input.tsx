@@ -72,7 +72,7 @@ export function Input({
           </div>
         )}
 
-        {/* eslint-disable-next-line no-restricted-syntax -- DS primitive, este ES el elemento nativo */}
+        { }
         <input
           id={id}
           required={required}

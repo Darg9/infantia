@@ -48,10 +48,7 @@ export function DownloadPDFButton({ href, label = 'Descargar Documento', filenam
   return (
     <Button
       onClick={handleDownload}
-      className="inline-flex items-center gap-2 shrink-0 rounded-xl
-                 bg-gray-900 text-white text-sm font-medium
-                 px-5 py-2.5 hover:bg-gray-800
-                 transition-colors cursor-pointer"
+      className='inline-flex items-center gap-2 shrink-0 rounded-xl bg-[var(--hp-bg-surface)] text-white text-sm font-medium px-5 py-2.5 hover:bg-[var(--hp-bg-surface)] transition-colors cursor-pointer'
     >
       <span>↓</span>
       <span>{label}</span>

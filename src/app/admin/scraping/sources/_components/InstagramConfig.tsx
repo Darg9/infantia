@@ -60,7 +60,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                   contentMode === mode
                     ? 'bg-brand-500 text-white border-brand-500'
-                    : 'bg-[var(--hp-bg-surface)] text-gray-600 border-[var(--hp-border)] hover:border-brand-300'
+                    : 'bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] border-[var(--hp-border)] hover:border-brand-300'
                 }`}
               >
                 {modeLabels[mode].label}
@@ -76,7 +76,7 @@ export function InstagramConfig({ sourceId, initialConfig }: InstagramConfigProp
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Posts por corrida</label>
           <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            { }
             <input
               type="range"
               min={1}

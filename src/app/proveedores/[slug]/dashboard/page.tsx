@@ -54,13 +54,13 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
         <div>
           <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">{provider.name}</h1>
           <p className="text-sm text-[var(--hp-text-secondary)] mt-1">
-            Dashboard interno · slug: <code className="bg-gray-100 px-1 rounded">{provider.slug}</code>
+            Dashboard interno · slug: <code className='bg-[var(--hp-bg-page)] px-1 rounded'>{provider.slug}</code>
           </p>
         </div>
         <div className="flex gap-2">
           <Link
             href={`/proveedores/${slug}`}
-            className="text-sm text-indigo-600 hover:underline"
+            className="text-sm text-brand-600 hover:underline"
           >
             Ver perfil público →
           </Link>
@@ -70,7 +70,6 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           </Link>
         </div>
       </div>
-
       {/* Estado premium */}
       <div className={`rounded-2xl border p-4 mb-6 flex items-center gap-3 ${provider.isPremium ? 'bg-warning-50 border-warning-200' : 'bg-[var(--hp-bg-page)] border-[var(--hp-border)]'}`}>
         <span className="text-2xl">{provider.isPremium ? '⭐' : '🏷️'}</span>
@@ -88,7 +87,6 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           )}
         </div>
       </div>
-
       {/* Métricas resumen */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         {[
@@ -103,7 +101,6 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
           </div>
         ))}
       </div>
-
       {/* Lista de actividades */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-[var(--hp-border)]">
@@ -121,23 +118,23 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
                 <th className="px-4 py-3 text-right">Vistas</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
               {provider.activities.map((a) => (
                 <tr key={a.id} className="hover:bg-[var(--hp-bg-page)] transition-colors">
                   <td className="px-6 py-3">
                     <Link
                       href={`/actividades/${a.id}`}
-                      className="text-[var(--hp-text-primary)] font-medium hover:text-indigo-600 line-clamp-1"
+                      className="text-[var(--hp-text-primary)] font-medium hover:text-brand-600 line-clamp-1"
                     >
                       {a.title}
                     </Link>
                   </td>
                   <td className="px-4 py-3">
                     <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                      a.status === 'ACTIVE'  ? 'bg-emerald-100 text-emerald-700' :
+                      a.status === 'ACTIVE'  ? 'bg-success-100 text-success-700' :
                       a.status === 'DRAFT'   ? 'bg-brand-100 text-brand-700' :
                       a.status === 'PAUSED'  ? 'bg-warning-100 text-warning-700' :
-                                               'bg-gray-100 text-[var(--hp-text-secondary)]'
+                                               'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]'
                     }`}>
                       {a.status === 'ACTIVE' ? 'Activa' : a.status === 'DRAFT' ? 'Borrador' : a.status === 'PAUSED' ? 'Pausada' : 'Expirada'}
                     </span>
@@ -155,5 +152,5 @@ export default async function ProviderDashboardPage({ params }: PageProps) {
         )}
       </div>
     </div>
-  )
+  );
 }

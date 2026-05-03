@@ -69,14 +69,7 @@ const LEGAL_LINKS = [
 
 export default function SeguridadPage() {
   return (
-    <div className="min-h-screen bg-gray-950 text-white">
-
-      {/* ── Gradiente de fondo sutil ─────────────────────────────── */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_0%,rgba(249,115,22,0.10),transparent)]"
-      />
-
+    <div className="min-h-screen bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]">
       {/* ── Nav superior ─────────────────────────────────────────── */}
       <nav className="relative z-10 mx-auto max-w-5xl px-6 pt-8 flex items-center justify-between">
         <Link
@@ -85,11 +78,10 @@ export default function SeguridadPage() {
         >
           ← Volver a HabitaPlan
         </Link>
-        <span className="text-xs text-gray-600 hidden sm:block tracking-widest uppercase">
+        <span className='text-xs text-[var(--hp-text-secondary)] hidden sm:block tracking-widest uppercase'>
           Centro de Confianza
         </span>
       </nav>
-
       {/* ── Contenido principal ───────────────────────────────────── */}
       <main className="relative z-10 max-w-5xl mx-auto px-6 py-16">
 
@@ -99,7 +91,7 @@ export default function SeguridadPage() {
             Legal
           </p>
 
-          <h1 className="text-4xl font-semibold mt-3 mb-5 flex items-center gap-3 text-white">
+          <h1 className="text-4xl font-semibold mt-3 mb-5 flex items-center gap-3 text-[var(--hp-text-primary)]">
             🛡️ Centro de Confianza
           </h1>
 
@@ -113,14 +105,12 @@ export default function SeguridadPage() {
           {CARDS.map(({ icon, title, subtitle, items }) => (
             <div
               key={title}
-              className="rounded-2xl border border-gray-800 p-6 bg-black/40
-                         hover:border-gray-700 hover:bg-black/60
-                         transition-all duration-200"
+              className='rounded-2xl border border-[var(--hp-border-subtle)] p-6 bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:border-[var(--hp-border)] hover:bg-[var(--hp-bg-subtle)] transition-all duration-200'
             >
               {/* Icono + título */}
               <div className="flex items-start gap-3 mb-1">
                 <span className="text-2xl mt-0.5">{icon}</span>
-                <h3 className="text-xl font-semibold text-white">{title}</h3>
+                <h3 className="text-xl font-semibold text-[var(--hp-text-primary)]">{title}</h3>
               </div>
 
               {/* Subtítulo */}
@@ -140,11 +130,11 @@ export default function SeguridadPage() {
         </div>
 
         {/* ── Separador ────────────────────────────────────────────── */}
-        <div className="mt-14 border-t border-gray-800" />
+        <div className="mt-14 border-t border-[var(--hp-border-subtle)]" />
 
         {/* ── Navegación a documentos legales ─────────────────────── */}
         <div className="mt-10">
-          <p className="text-xs text-gray-600 uppercase tracking-widest mb-5">
+          <p className='text-xs text-[var(--hp-text-secondary)] uppercase tracking-widest mb-5'>
             Documentos legales
           </p>
           <div className="flex flex-wrap gap-6 text-sm">
@@ -161,7 +151,7 @@ export default function SeguridadPage() {
         </div>
 
         {/* ── Footer interno ───────────────────────────────────────── */}
-        <div className="mt-16 pt-6 border-t border-gray-800/50 flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
+        <div className="mt-16 pt-6 border-t border-[var(--hp-border-subtle)] flex flex-col sm:flex-row gap-2 justify-between items-start sm:items-center">
           <p className="text-xs text-[var(--hp-text-primary)]">
             © {new Date().getFullYear()} HabitaPlan · Bogotá, Colombia
           </p>

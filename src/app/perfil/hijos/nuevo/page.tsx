@@ -68,14 +68,14 @@ export default function NuevoHijoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre <span className="text-error-500">*</span>
           </label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
             maxLength={100}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent'
             placeholder="Nombre de la niña o niño"
           />
         </div>
@@ -85,7 +85,7 @@ export default function NuevoHijoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Fecha de nacimiento <span className="text-error-500">*</span>
           </label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="date"
             value={birthDate}
@@ -93,7 +93,7 @@ export default function NuevoHijoPage() {
             required
             min={minDate}
             max={maxDate}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent'
           />
           <p className="text-xs text-[var(--hp-text-muted)] mt-1">Solo perfiles de menores de 18 años</p>
         </div>
@@ -106,7 +106,7 @@ export default function NuevoHijoPage() {
           <select
             value={gender}
             onChange={(e) => setGender(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className='w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent'
           >
             <option value="">Prefiero no indicar</option>
             <option value="niño">Niño</option>
@@ -120,7 +120,7 @@ export default function NuevoHijoPage() {
           <h2 className="text-sm font-semibold text-brand-800 mb-2">
             Autorización de tratamiento de datos personales
           </h2>
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">{CONSENT_TEXT}</p>
+          <p className='text-xs text-[var(--hp-text-secondary)] leading-relaxed mb-3'>{CONSENT_TEXT}</p>
           <p className="text-xs text-[var(--hp-text-secondary)] mb-3">
             Conforme a la{' '}
             <Link
@@ -138,7 +138,7 @@ export default function NuevoHijoPage() {
               id="consent"
               checked={consentAccepted}
               onChange={(e) => setConsentAccepted(e.target.checked)}
-              className="mt-0.5 h-4 w-4 rounded border-gray-300 text-brand-500 focus:ring-brand-500"
+              className='mt-0.5 h-4 w-4 rounded border-[var(--hp-border-subtle)] text-brand-500 focus:ring-brand-500'
             />
             <label htmlFor="consent" className="text-xs text-[var(--hp-text-primary)] font-medium leading-relaxed">
               Confirmo que soy el padre, madre o tutor legal de este menor y acepto la autorización
@@ -156,14 +156,14 @@ export default function NuevoHijoPage() {
         <div className="flex gap-3">
           <Link
             href="/perfil/hijos"
-            className="flex-1 text-center py-2.5 border border-gray-300 rounded-lg text-sm text-gray-600 hover:bg-[var(--hp-bg-page)] transition-colors"
+            className='flex-1 text-center py-2.5 border border-[var(--hp-border-subtle)] rounded-lg text-sm text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] transition-colors'
           >
             Cancelar
           </Link>
           <Button
             type="submit"
             disabled={loading || !consentAccepted}
-            className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+            className="flex-1 bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
           >
             {loading ? 'Guardando...' : 'Guardar perfil'}
           </Button>

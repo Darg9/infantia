@@ -135,9 +135,7 @@ export default async function CiudadLandingPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
-
       <main className="min-h-screen bg-[var(--hp-bg-page)] pb-20">
         
         {/* HERO SECTION */}
@@ -162,7 +160,7 @@ export default async function CiudadLandingPage({ params }: Props) {
             </p>
             
             <div className="pt-4">
-              <Link href={`/actividades?cityId=${city.id}`} className="inline-flex items-center justify-center rounded-full bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-sm hover:bg-brand-500 transition-colors">
+              <Link href={`/actividades?cityId=${city.id}`} className='inline-flex items-center justify-center rounded-full bg-brand-600 px-8 py-3.5 text-base font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-brand-500 transition-colors'>
                 Explorar {totalActivities} actividades en {city.name}
               </Link>
             </div>
@@ -183,7 +181,7 @@ export default async function CiudadLandingPage({ params }: Props) {
             ))}
           </div>
           <div className="mt-10 text-center">
-            <Link href={`/actividades?cityId=${city.id}`} className="inline-flex items-center justify-center rounded-xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] px-6 py-3 text-sm font-semibold text-[var(--hp-text-primary)] shadow-sm hover:bg-[var(--hp-bg-subtle)] transition-colors">
+            <Link href={`/actividades?cityId=${city.id}`} className='inline-flex items-center justify-center rounded-xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] px-6 py-3 text-sm font-semibold text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-[var(--hp-bg-subtle)] transition-colors'>
               Explorar el catálogo completo
             </Link>
           </div>
@@ -195,7 +193,7 @@ export default async function CiudadLandingPage({ params }: Props) {
             <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] text-center mb-10">Explora por categoría</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {popularCategories.map((cat) => (
-                <Link key={cat.id} href={`/actividades/categoria/${cat.slug}?cityId=${city.id}`} className="flex flex-col items-center justify-center gap-3 bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] hover:border-brand-300 hover:shadow-md transition-all group">
+                <Link key={cat.id} href={`/actividades/categoria/${cat.slug}?cityId=${city.id}`} className='flex flex-col items-center justify-center gap-3 bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all group'>
                   <span className="text-4xl group-hover:scale-110 transition-transform">{getCategoryEmoji(cat.name)}</span>
                   <span className="text-sm font-semibold text-[var(--hp-text-primary)] text-center leading-tight">
                     {cat.name} en {city.name}

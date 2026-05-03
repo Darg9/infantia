@@ -90,8 +90,8 @@ function getPasswordStrength(pass: string): number {
 }
 
 const STRENGTH_LABEL      = ['', 'Débil', 'Regular', 'Buena', 'Fuerte']
-const STRENGTH_TEXT_COLOR = ['', 'text-error-500', 'text-brand-500', 'text-warning-500', 'text-emerald-600 dark:text-emerald-400']
-const STRENGTH_BAR_COLOR  = ['', 'bg-error-400', 'bg-brand-400', 'bg-warning-400', 'bg-emerald-500']
+const STRENGTH_TEXT_COLOR = ['', 'text-error-500', 'text-brand-500', 'text-warning-500', 'text-success-600 dark:text-success-400']
+const STRENGTH_BAR_COLOR  = ['', 'bg-error-400', 'bg-brand-400', 'bg-warning-400', 'bg-success-500']
 
 // ─── InputField component ──────────────────────────────────────────────────────
 // Componente local: no se importa del DS porque necesita onChange:(string)=>void
@@ -148,23 +148,23 @@ function InputField({
           aria-describedby={error ? `${id}-error` : undefined}
           aria-invalid={error ? true : undefined}
           className={[
-            'w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[var(--hp-bg-surface)] dark:bg-gray-800',
+            'w-full px-3.5 py-2.5 text-sm rounded-xl border bg-[var(--hp-bg-surface)] bg-[var(--hp-bg-surface)]',
             'text-[var(--hp-text-primary)] dark:text-white placeholder:text-[var(--hp-text-muted)] dark:placeholder:text-[var(--hp-text-secondary)]',
             'transition-colors focus:outline-none focus:ring-2 focus:ring-offset-0',
             rightSlot ? 'pr-10' : '',
             error
-              ? 'border-error-400 dark:border-red-500 focus:ring-error-400/30 focus:border-error-400'
-              : 'border-[var(--hp-border)] dark:border-gray-700 focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
+              ? 'border-error-400 dark:border-error-500 focus:ring-error-400/30 focus:border-error-400'
+              : 'border-[var(--hp-border)] dark:border-[var(--hp-border-subtle)] focus:ring-brand-500/25 focus:border-brand-500 dark:focus:border-brand-400',
           ]
             .filter(Boolean)
-            .join(' ')}
+            .join('')}
         />
         {rightSlot && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">{rightSlot}</div>
         )}
       </div>
       {error && (
-        <p id={`${id}-error`} role="alert" className="text-xs text-error-600 dark:text-red-400 flex items-center gap-1">
+        <p id={`${id}-error`} role="alert" className="text-xs text-error-600 dark:text-error-400 flex items-center gap-1">
           <span aria-hidden="true">⚠</span>
           {error}
         </p>
@@ -452,7 +452,7 @@ export default function EditarPerfilPage() {
       ══════════════════════════════════════════════════════════════ */}
       <section
         aria-labelledby="basic-info-heading"
-        className="bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+        className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] border-[var(--hp-border-subtle)] rounded-2xl p-6 sm:p-8'
       >
         <div className="mb-6">
           <h2
@@ -476,24 +476,18 @@ export default function EditarPerfilPage() {
               aria-label="Cambiar foto de perfil"
               onClick={() => fileInputRef.current?.click()}
               onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
-              className="group/avatar relative w-20 h-20 shrink-0 rounded-full cursor-pointer
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2"
+              className='group/avatar relative w-20 h-20 shrink-0 rounded-full cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
             >
               {/* Avatar image or initials placeholder */}
               {avatarPreview ? (
                 <img
                   src={avatarPreview}
                   alt="Foto de perfil"
-                  className="w-20 h-20 rounded-full object-cover ring-2 ring-gray-200 dark:ring-gray-700
-                             group-hover/avatar:ring-orange-400 transition-all"
+                  className='w-20 h-20 rounded-full object-cover ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)] group-hover/avatar:ring-brand-400 transition-all'
                 />
               ) : (
                 <div
-                  className="w-20 h-20 rounded-full bg-brand-100 dark:bg-orange-900/30
-                               text-brand-600 dark:text-orange-400 font-bold text-2xl
-                               flex items-center justify-center select-none
-                               ring-2 ring-gray-200 dark:ring-gray-700
-                               group-hover/avatar:ring-orange-400 transition-all"
+                  className='w-20 h-20 rounded-full bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 font-bold text-2xl flex items-center justify-center select-none ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)] group-hover/avatar:ring-brand-400 transition-all'
                 >
                   {(name?.[0] ?? '?').toUpperCase()}
                 </div>
@@ -510,10 +504,7 @@ export default function EditarPerfilPage() {
               ) : (
                 /* Hover overlay — cámara + texto */
                 (<div
-                  className="absolute inset-0 rounded-full bg-black/50 opacity-0
-                               group-hover/avatar:opacity-100 transition-opacity
-                               flex flex-col items-center justify-center gap-1
-                               pointer-events-none"
+                  className='absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 pointer-events-none'
                   aria-hidden="true"
                 >
                   <CameraIcon className="w-5 h-5 text-white" />
@@ -539,13 +530,13 @@ export default function EditarPerfilPage() {
                 </p>
               )}
               {!uploadingAvatar && avatarFile && !avatarUploadError && (
-                <p className="text-xs text-brand-600 dark:text-orange-400 mt-1.5 font-medium flex items-center gap-1">
+                <p className="text-xs text-brand-600 dark:text-brand-400 mt-1.5 font-medium flex items-center gap-1">
                   <CheckIcon className="w-3 h-3 shrink-0" />
                   Nueva foto lista para guardar
                 </p>
               )}
               {avatarUploadError && (
-                <p className="text-xs text-error-600 dark:text-red-400 mt-1.5 flex items-center gap-1">
+                <p className="text-xs text-error-600 dark:text-error-400 mt-1.5 flex items-center gap-1">
                   <ExclamationIcon className="w-3 h-3 shrink-0" />
                   {avatarUploadError}
                   {/* Retry dispara el submit del form para reintentar upload + save */}
@@ -590,10 +581,10 @@ export default function EditarPerfilPage() {
           />
 
           {/* CTA único */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] dark:border-gray-800">
+          <div className='flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] border-[var(--hp-border-subtle)]'>
             {basicSaved && !isDirty && (
-              <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
-                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+              <span aria-live="polite" className="text-sm font-medium text-success-600 dark:text-success-400 flex items-center gap-1 mr-1">
+                <CheckCircleIcon className="w-4 h-4 text-success-500" />
                 Cambios guardados
               </span>
             )}
@@ -601,11 +592,7 @@ export default function EditarPerfilPage() {
               type="submit"
               disabled={!isDirty || basicLoading || !nameLoaded}
               aria-busy={basicLoading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                         bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white
-                         disabled:opacity-50 disabled:cursor-not-allowed
-                         transition-colors focus:outline-none focus:ring-2
-                         focus:ring-brand-500 focus:ring-offset-2"
+              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2'
             >
               {basicLoading ? (
                 <>
@@ -624,7 +611,7 @@ export default function EditarPerfilPage() {
       ══════════════════════════════════════════════════════════════ */}
       <section
         aria-labelledby="security-heading"
-        className="bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 rounded-2xl p-6 sm:p-8"
+        className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] border-[var(--hp-border-subtle)] rounded-2xl p-6 sm:p-8'
       >
         <div className="mb-6">
           <h2
@@ -659,8 +646,7 @@ export default function EditarPerfilPage() {
                 <Button
                   type="button"
                   onClick={() => setShowNew((v) => !v)}
-                  className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] dark:hover:text-[var(--hp-text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded'
                   aria-label={showNew ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
                 >
                   {showNew ? (
@@ -684,8 +670,8 @@ export default function EditarPerfilPage() {
                         'h-1.5 flex-1 rounded-full transition-colors',
                         pwStrength >= level
                           ? STRENGTH_BAR_COLOR[pwStrength]
-                          : 'bg-gray-200 dark:bg-gray-700',
-                      ].join(' ')}
+                          : 'bg-[var(--hp-bg-surface)] bg-[var(--hp-bg-surface)]',
+                      ].join('')}
                     />
                   ))}
                 </div>
@@ -705,7 +691,7 @@ export default function EditarPerfilPage() {
                       key={label}
                       className={`flex items-center gap-1.5 text-xs transition-colors ${
                         ok
-                          ? 'text-emerald-600 dark:text-emerald-400'
+                          ? 'text-success-600 dark:text-success-400'
                           : 'text-[var(--hp-text-muted)] dark:text-[var(--hp-text-secondary)]'
                       }`}
                     >
@@ -739,8 +725,7 @@ export default function EditarPerfilPage() {
                 <Button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className="text-[var(--hp-text-muted)] hover:text-gray-600 dark:hover:text-[var(--hp-text-muted)] transition-colors
-                             focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded"
+                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] dark:hover:text-[var(--hp-text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded'
                   aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
                 >
                   {showConfirm ? (
@@ -758,8 +743,8 @@ export default function EditarPerfilPage() {
                 aria-live="polite"
                 className={`text-xs flex items-center gap-1 pt-0.5 ${
                   confirmPassword === newPassword
-                    ? 'text-emerald-600 dark:text-emerald-400'
-                    : 'text-error-500 dark:text-red-400'
+                    ? 'text-success-600 dark:text-success-400'
+                    : 'text-error-500 dark:text-error-400'
                 }`}
               >
                 <CheckCircleIcon className="w-3 h-3 shrink-0" />
@@ -771,10 +756,10 @@ export default function EditarPerfilPage() {
           </div>
 
           {/* CTA seguridad */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] dark:border-gray-800">
+          <div className='flex items-center justify-end gap-3 pt-2 border-t border-[var(--hp-border)] border-[var(--hp-border-subtle)]'>
             {passSaved && (
-              <span aria-live="polite" className="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1 mr-1">
-                <CheckCircleIcon className="w-4 h-4 text-emerald-500" />
+              <span aria-live="polite" className="text-sm font-medium text-success-600 dark:text-success-400 flex items-center gap-1 mr-1">
+                <CheckCircleIcon className="w-4 h-4 text-success-500" />
                 Contraseña actualizada
               </span>
             )}
@@ -782,14 +767,7 @@ export default function EditarPerfilPage() {
               type="submit"
               disabled={passLoading || !newPassword || !confirmPassword}
               aria-busy={passLoading}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
-                         border-2 border-gray-800 dark:border-gray-500
-                         text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)]
-                         hover:bg-gray-800 hover:text-white
-                         dark:hover:bg-gray-700 dark:hover:text-white dark:hover:border-gray-700
-                         disabled:opacity-40 disabled:cursor-not-allowed
-                         transition-colors focus:outline-none focus:ring-2
-                         focus:ring-gray-800 dark:focus:ring-gray-500 focus:ring-offset-2"
+              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border-2 border-[var(--hp-border-subtle)] text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-surface)] hover:text-white dark:hover:text-white hover:border-[var(--hp-border-subtle)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--hp-border)] dark:focus:ring-[var(--hp-border)] focus:ring-offset-2'
             >
               {passLoading ? (
                 <>

@@ -105,7 +105,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${montserrat.variable} font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}
+        className={`${montserrat.variable}font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}
       >
         <AnalyticsTracker />
         <ThemeProvider>
@@ -113,7 +113,7 @@ export default function RootLayout({
             <ToastProvider>
               <IntentResolver />
               <div className="flex flex-col min-h-screen">
-                <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-hp-action-primary text-white rounded-xl shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hp-action-primary">
+                <a href="#main-content" className='sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-hp-action-primary text-white rounded-xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hp-action-primary'>
                   Saltar al contenido
                 </a>
                 <Header />

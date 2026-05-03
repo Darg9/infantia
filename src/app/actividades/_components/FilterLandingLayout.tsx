@@ -47,7 +47,6 @@ export function FilterLandingLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
-
       <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
         {/* Breadcrumb */}
@@ -57,11 +56,11 @@ export function FilterLandingLayout({
               <span key={crumb.href} className="flex items-center gap-1.5">
                 {i > 0 && <span>/</span>}
                 {i < breadcrumbs.length - 1 ? (
-                  <Link href={crumb.href} className="hover:text-gray-600 transition-colors">
+                  <Link href={crumb.href} className='hover:text-[var(--hp-text-secondary)] transition-colors'>
                     {crumb.name}
                   </Link>
                 ) : (
-                  <span className="text-gray-600">{crumb.name}</span>
+                  <span className='text-[var(--hp-text-secondary)]'>{crumb.name}</span>
                 )}
               </span>
             ))}
@@ -90,7 +89,7 @@ export function FilterLandingLayout({
               <div className="mt-8 flex justify-center">
                 <Link
                   href={filterUrl}
-                  className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700 transition-colors"
+                  className='inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-brand-700 transition-colors'
                 >
                   {filterLabel}
                   <span>→</span>
@@ -101,7 +100,7 @@ export function FilterLandingLayout({
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <span className="text-5xl mb-4">🔍</span>
               <p className="text-[var(--hp-text-secondary)] text-base">No encontramos actividades en esta categoría todavía.</p>
-              <Link href="/actividades" className="mt-4 text-sm text-indigo-600 hover:underline">
+              <Link href="/actividades" className="mt-4 text-sm text-brand-600 hover:underline">
                 Ver todas las actividades
               </Link>
             </div>

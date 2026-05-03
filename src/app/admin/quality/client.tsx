@@ -82,10 +82,10 @@ export default function QualityDashboardClient() {
           ← Volver a Admin
         </Link>
       </div>
-      <div className="bg-[var(--hp-bg-surface)] p-4 rounded-xl border border-[var(--hp-border)] shadow-sm mb-8 flex flex-wrap gap-4 items-end">
+      <div className='bg-[var(--hp-bg-surface)] p-4 rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] mb-8 flex flex-wrap gap-4 items-end'>
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Desde</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
@@ -95,7 +95,7 @@ export default function QualityDashboardClient() {
         </div>
         <div>
           <label className="block text-xs text-[var(--hp-text-secondary)] mb-1">Hasta</label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input 
             type="date" 
             className="border border-[var(--hp-border)] rounded px-3 py-1.5 text-sm"
@@ -123,7 +123,7 @@ export default function QualityDashboardClient() {
         </Button>
       </div>
       {status === 'over' && (
-        <div className="bg-error-50 border-l-4 border-error-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className='bg-error-50 border-l-4 border-error-500 p-4 mb-8 rounded-md shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
           <div className="flex">
             <div className="flex-shrink-0 text-xl">🚨</div>
             <div className="ml-3">
@@ -134,7 +134,7 @@ export default function QualityDashboardClient() {
         </div>
       )}
       {status === 'under' && (
-        <div className="bg-warning-50 border-l-4 border-warning-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className='bg-warning-50 border-l-4 border-warning-500 p-4 mb-8 rounded-md shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
           <div className="flex">
             <div className="flex-shrink-0 text-xl">⚠️</div>
             <div className="ml-3">
@@ -145,7 +145,7 @@ export default function QualityDashboardClient() {
         </div>
       )}
       {status === 'healthy' && (
-        <div className="bg-success-50 border-l-4 border-success-500 p-4 mb-8 rounded-md shadow-sm">
+        <div className='bg-success-50 border-l-4 border-success-500 p-4 mb-8 rounded-md shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
           <div className="flex">
             <div className="flex-shrink-0 text-xl">✅</div>
             <div className="ml-3">
@@ -157,11 +157,11 @@ export default function QualityDashboardClient() {
       )}
       {latest && (
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm flex flex-col justify-center">
+          <div className='bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] flex flex-col justify-center'>
             <h3 className="text-sm font-medium text-[var(--hp-text-secondary)]">Discard Rate (Actual)</h3>
             <p className="text-3xl font-bold text-brand-500 mt-2">{percentFormatter(latest.discardRate)}</p>
           </div>
-          <div className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm flex flex-col justify-center">
+          <div className='bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] flex flex-col justify-center'>
             <h3 className="text-sm font-medium text-[var(--hp-text-secondary)]">Avg Length (Actual)</h3>
             <p className="text-3xl font-bold text-brand-500 mt-2">{latest.avgLength}</p>
           </div>
@@ -170,18 +170,18 @@ export default function QualityDashboardClient() {
       {loading ? (
         <div className="animate-pulse flex space-x-4">
           <div className="flex-1 space-y-6 py-1">
-            <div className="h-40 bg-gray-200 rounded-xl"></div>
-            <div className="h-40 bg-gray-200 rounded-xl"></div>
+            <div className='h-40 bg-[var(--hp-bg-surface)] rounded-xl'></div>
+            <div className='h-40 bg-[var(--hp-bg-surface)] rounded-xl'></div>
           </div>
         </div>
       ) : data.length === 0 ? (
-        <div className="bg-[var(--hp-bg-page)] text-center py-16 rounded-2xl border border-[var(--hp-border)] shadow-sm text-[var(--hp-text-secondary)]">
+        <div className='bg-[var(--hp-bg-page)] text-center py-16 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] text-[var(--hp-text-secondary)]'>
            No hay métricas recopiladas todavía. Corre el script de backfill primero.
         </div>
       ) : (
         <div className="space-y-8">
           
-          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
+          <section className='bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Discard Rate Timeline</h2>
               <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Presión del filtro y volumen denegado a BD.</p>
@@ -202,7 +202,7 @@ export default function QualityDashboardClient() {
             </div>
           </section>
 
-          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
+          <section className='bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Average Min-Length Timeline</h2>
               <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Longitud de string dinámicamente aprobada.</p>
@@ -223,7 +223,7 @@ export default function QualityDashboardClient() {
             </div>
           </section>
 
-          <section className="bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-sm">
+          <section className='bg-[var(--hp-bg-surface)] p-6 rounded-2xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
             <div className="mb-6">
               <h2 className="text-lg font-semibold text-[var(--hp-text-primary)]">Quality Metrics Raw</h2>
               <p className="text-sm text-[var(--hp-text-secondary)] text-pretty">Señales históricas consolidadas.</p>

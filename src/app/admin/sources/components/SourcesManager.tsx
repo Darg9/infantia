@@ -173,8 +173,8 @@ export function SourcesManager({ cities, verticals }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Name */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Nombre</label>
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Nombre</label>
+              { }
               <input
                 type="text"
                 required
@@ -183,31 +183,31 @@ export function SourcesManager({ cities, verticals }: Props) {
                 value={form.name}
                 onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
                 placeholder="BibloRed Bogotá"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               />
             </div>
 
             {/* URL */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">URL</label>
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>URL</label>
+              { }
               <input
                 type="url"
                 required
                 value={form.url}
                 onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
                 placeholder="https://ejemplo.com/actividades"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               />
             </div>
 
             {/* Platform */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Plataforma</label>
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Plataforma</label>
               <select
                 value={form.platform}
                 onChange={(e) => setForm((f) => ({ ...f, platform: e.target.value }))}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               >
                 {PLATFORMS.map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -217,11 +217,11 @@ export function SourcesManager({ cities, verticals }: Props) {
 
             {/* ScraperType */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Tipo de scraper</label>
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Tipo de scraper</label>
               <select
                 value={form.scraperType}
                 onChange={(e) => setForm((f) => ({ ...f, scraperType: e.target.value }))}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               >
                 <option value="cheerio">cheerio</option>
                 <option value="playwright">playwright</option>
@@ -232,12 +232,12 @@ export function SourcesManager({ cities, verticals }: Props) {
 
             {/* City */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Ciudad</label>
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Ciudad</label>
               <select
                 required
                 value={form.cityId}
                 onChange={(e) => setForm((f) => ({ ...f, cityId: e.target.value }))}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               >
                 <option value="">Seleccionar ciudad…</option>
                 {cities.map((c) => (
@@ -248,12 +248,12 @@ export function SourcesManager({ cities, verticals }: Props) {
 
             {/* Vertical */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Vertical</label>
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Vertical</label>
               <select
                 required
                 value={form.verticalId}
                 onChange={(e) => setForm((f) => ({ ...f, verticalId: e.target.value }))}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               >
                 <option value="">Seleccionar vertical…</option>
                 {verticals.map((v) => (
@@ -264,35 +264,35 @@ export function SourcesManager({ cities, verticals }: Props) {
 
             {/* Schedule */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Cron (schedule)</label>
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Cron (schedule)</label>
+              { }
               <input
                 type="text"
                 value={form.scheduleCron}
                 onChange={(e) => setForm((f) => ({ ...f, scheduleCron: e.target.value }))}
                 placeholder="0 6 * * *"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-500'
               />
             </div>
 
             {/* Notes */}
             <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium text-gray-600">Notas (opcional)</label>
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              <label className='text-xs font-medium text-[var(--hp-text-secondary)]'>Notas (opcional)</label>
+              { }
               <input
                 type="text"
                 maxLength={1000}
                 value={form.notes}
                 onChange={(e) => setForm((f) => ({ ...f, notes: e.target.value }))}
                 placeholder="Contexto o instrucciones especiales"
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className='rounded-lg border border-[var(--hp-border-subtle)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
               />
             </div>
           </div>
 
           <div className="flex items-center gap-4 pt-2">
             <label className="flex items-center gap-2 text-sm text-[var(--hp-text-primary)] cursor-pointer">
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              { }
               <input
                 type="checkbox"
                 checked={form.isActive}
@@ -325,15 +325,15 @@ export function SourcesManager({ cities, verticals }: Props) {
           <table className="w-full text-sm">
             <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
               <tr>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Fuente / URL</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Plataforma</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Ciudad</th>
-                <th className="px-4 py-3 text-left font-medium text-gray-600">Último run</th>
-                <th className="px-4 py-3 text-center font-medium text-gray-600">Estado</th>
-                <th className="px-4 py-3 text-right font-medium text-gray-600">Acciones</th>
+                <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Fuente / URL</th>
+                <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Plataforma</th>
+                <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Ciudad</th>
+                <th className='px-4 py-3 text-left font-medium text-[var(--hp-text-secondary)]'>Último run</th>
+                <th className='px-4 py-3 text-center font-medium text-[var(--hp-text-secondary)]'>Estado</th>
+                <th className='px-4 py-3 text-right font-medium text-[var(--hp-text-secondary)]'>Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
               {sources.map((source) => (
                 <tr key={source.id} className="hover:bg-[var(--hp-bg-page)]">
                   {/* Name + URL */}
@@ -350,12 +350,12 @@ export function SourcesManager({ cities, verticals }: Props) {
                   </td>
 
                   {/* Platform */}
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                  <td className='px-4 py-3 text-[var(--hp-text-secondary)] whitespace-nowrap'>
                     {source.platform}
                   </td>
 
                   {/* City */}
-                  <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
+                  <td className='px-4 py-3 text-[var(--hp-text-secondary)] whitespace-nowrap'>
                     {source.city?.name ?? '—'}
                   </td>
 

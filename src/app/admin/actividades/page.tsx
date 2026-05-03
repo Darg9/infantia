@@ -29,7 +29,7 @@ const STATUS_LABELS: Record<Status, string> = {
 const STATUS_COLORS: Record<Status, string> = {
   ACTIVE: 'bg-success-100 text-success-700',
   PAUSED: 'bg-warning-100 text-warning-700',
-  DRAFT: 'bg-gray-100 text-gray-600',
+  DRAFT: 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]',
   EXPIRED: 'bg-error-100 text-error-600',
 }
 
@@ -93,7 +93,7 @@ export default function AdminActividadesPage() {
       </div>
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 mb-5">
-        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        { }
         <input
           type="text"
           placeholder="Buscar por título..."
@@ -123,15 +123,15 @@ export default function AdminActividadesPage() {
           <table className="w-full text-sm">
             <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
               <tr>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Título</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Proveedor</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Estado</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Tipo</th>
-                <th className="text-left px-4 py-3 font-medium text-gray-600">Precio</th>
-                <th className="text-right px-4 py-3 font-medium text-gray-600">Acciones</th>
+                <th className='text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Título</th>
+                <th className='text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Proveedor</th>
+                <th className='text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Estado</th>
+                <th className='text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Tipo</th>
+                <th className='text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Precio</th>
+                <th className='text-right px-4 py-3 font-medium text-[var(--hp-text-secondary)]'>Acciones</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
               {activities.map((act) => (
                 <tr key={act.id} className="hover:bg-[var(--hp-bg-page)] transition-colors">
                   <td className="px-4 py-3 max-w-xs">
@@ -156,7 +156,7 @@ export default function AdminActividadesPage() {
                     <div className="flex items-center justify-end gap-2">
                       <Link
                         href={`/admin/actividades/${act.id}/editar`}
-                        className="text-xs px-3 py-1 rounded-lg border border-[var(--hp-border)] text-gray-600 hover:border-brand-400 hover:text-brand-600 transition-colors"
+                        className='text-xs px-3 py-1 rounded-lg border border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-brand-400 hover:text-brand-600 transition-colors'
                       >
                         Editar
                       </Link>

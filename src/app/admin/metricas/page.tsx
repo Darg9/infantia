@@ -124,16 +124,13 @@ export default async function MetricasPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-10 space-y-10">
-
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-sm text-[var(--hp-text-secondary)]">
         <Link href="/admin" className="hover:text-[var(--hp-text-primary)]">Admin</Link>
         <span>›</span>
         <span className="text-[var(--hp-text-primary)] font-medium">Métricas</span>
       </div>
-
       <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">📊 Panel de métricas</h1>
-
       {/* ── STATS GENERALES ──────────────────────────────────────────────── */}
       <section>
         <SectionTitle>Resumen general</SectionTitle>
@@ -145,7 +142,6 @@ export default async function MetricasPage() {
           <StatCard label="Proveedores"       value={totalProviders} />
         </div>
       </section>
-
       {/* ── VISTAS ───────────────────────────────────────────────────────── */}
       <section>
         <SectionTitle>Vistas de actividades</SectionTitle>
@@ -155,7 +151,6 @@ export default async function MetricasPage() {
           <StatCard label="Últimos 30 días" value={viewsMonth} />
         </div>
       </section>
-
       {/* ── TOP ACTIVIDADES ──────────────────────────────────────────────── */}
       <section>
         <SectionTitle>Actividades más vistas — últimos 30 días</SectionTitle>
@@ -172,7 +167,7 @@ export default async function MetricasPage() {
                   <th className="px-4 py-3 text-right font-medium text-[var(--hp-text-secondary)]">Vistas</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className='divide-y divide-[var(--hp-border-subtle)]'>
                 {topActivities.map((row, i) => {
                   const act = nameMap[row.activityId];
                   return (
@@ -206,7 +201,6 @@ export default async function MetricasPage() {
           </div>
         )}
       </section>
-
       {/* ── BÚSQUEDAS FRECUENTES ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
@@ -216,7 +210,7 @@ export default async function MetricasPage() {
             <EmptyMsg>Aún no hay búsquedas registradas.</EmptyMsg>
           ) : (
             <div className="rounded-2xl border border-[var(--hp-border)] overflow-hidden bg-[var(--hp-bg-surface)]">
-              <ul className="divide-y divide-gray-100">
+              <ul className='divide-y divide-[var(--hp-border-subtle)]'>
                 {topSearches.map((row, i) => (
                   <li
                     key={row.query}
@@ -232,7 +226,7 @@ export default async function MetricasPage() {
                         {row.query}
                       </Link>
                     </div>
-                    <span className="text-xs font-semibold text-[var(--hp-text-secondary)] bg-gray-100 rounded-full px-2 py-0.5">
+                    <span className='text-xs font-semibold text-[var(--hp-text-secondary)] bg-[var(--hp-bg-page)] rounded-full px-2 py-0.5'>
                       {row._count.query ?? 0}×
                     </span>
                   </li>
@@ -248,7 +242,7 @@ export default async function MetricasPage() {
             <EmptyMsg>¡Todas las búsquedas encontraron resultados!</EmptyMsg>
           ) : (
             <div className="rounded-2xl border border-error-100 overflow-hidden bg-[var(--hp-bg-surface)]">
-              <ul className="divide-y divide-gray-100">
+              <ul className='divide-y divide-[var(--hp-border-subtle)]'>
                 {zeroResultSearches.map((row, i) => (
                   <li
                     key={row.query}
@@ -268,7 +262,6 @@ export default async function MetricasPage() {
           )}
         </section>
       </div>
-
       {/* ── DISTRIBUCIÓN POR TIPO ─────────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
 
@@ -283,7 +276,7 @@ export default async function MetricasPage() {
                   </span>
                   <span className="text-[var(--hp-text-secondary)]">{row._count.type ?? 0}</span>
                 </div>
-                <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                <div className='h-2 rounded-full bg-[var(--hp-bg-page)] overflow-hidden'>
                   <div
                     className="h-full rounded-full bg-brand-500 transition-all"
                     style={{ width: `${((row._count.type ?? 0) / maxTypeCount) * 100}%` }}
@@ -297,7 +290,7 @@ export default async function MetricasPage() {
         <section>
           <SectionTitle>Top proveedores</SectionTitle>
           <div className="rounded-2xl border border-[var(--hp-border)] overflow-hidden bg-[var(--hp-bg-surface)]">
-            <ul className="divide-y divide-gray-100">
+            <ul className='divide-y divide-[var(--hp-border-subtle)]'>
               {activitiesByProvider.map((row, i) => (
                 <li
                   key={row.providerId}
@@ -309,7 +302,7 @@ export default async function MetricasPage() {
                       {providerMap[row.providerId] ?? 'Desconocido'}
                     </span>
                   </div>
-                  <span className="text-sm font-semibold text-gray-600">
+                  <span className='text-sm font-semibold text-[var(--hp-text-secondary)]'>
                     {row._count.providerId ?? 0} actividades
                   </span>
                 </li>
@@ -318,7 +311,6 @@ export default async function MetricasPage() {
           </div>
         </section>
       </div>
-
     </div>
   );
 }
@@ -350,7 +342,7 @@ function StatusBadge({ status }: { status: string }) {
   const cfg: Record<string, string> = {
     ACTIVE:  'bg-success-100 text-success-700',
     EXPIRED: 'bg-warning-100 text-warning-700',
-    DRAFT:   'bg-gray-100 text-gray-600',
+    DRAFT:   'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]',
     PAUSED:  'bg-warning-100 text-warning-700',
   };
   return (

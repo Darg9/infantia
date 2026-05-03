@@ -99,7 +99,7 @@ export function EmptyState({
         <ul className="text-sm text-[var(--hp-text-secondary)] flex flex-col gap-1.5 text-left max-w-xs">
           {tips.map((tip, i) => (
             <li key={i} className="flex items-start gap-2">
-              <span className="text-indigo-400 mt-0.5">→</span>
+              <span className="text-brand-400 mt-0.5">→</span>
               {tip}
             </li>
           ))}
@@ -110,7 +110,7 @@ export function EmptyState({
       {hasFilters && (
         <a
           href="/actividades"
-          className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors"
+          className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
         >
           Limpiar filtros y ver todo
         </a>
@@ -127,7 +127,7 @@ export function EmptyState({
               <a
                 key={cat.id}
                 href={`/actividades?categoryId=${cat.id}`}
-                className="flex items-center gap-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-[var(--hp-text-primary)] hover:border-indigo-300 hover:text-indigo-700 transition-colors"
+                className="flex items-center gap-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm text-[var(--hp-text-primary)] hover:border-brand-300 hover:text-brand-700 transition-colors"
               >
                 <span>{getCategoryEmoji(cat.name)}</span>
                 {cat.name}

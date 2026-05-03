@@ -36,7 +36,7 @@ export default function ContribuirPage() {
       </div>
       <div className="mx-auto max-w-2xl px-4 py-10">
         <h1 className="text-3xl font-bold text-[var(--hp-text-primary)] mb-3">Ayúdanos a crecer</h1>
-        <p className="text-gray-600 mb-8">
+        <p className='text-[var(--hp-text-secondary)] mb-8'>
           HabitaPlan funciona gracias a familias como la tuya. Si conoces una actividad o institución que debería estar
           aquí, ¡cuéntanos!
         </p>
@@ -47,7 +47,7 @@ export default function ContribuirPage() {
             <ActionCard onClick={() => setTipo('actividad')}>
               <div className="absolute top-4 right-4 text-2xl">📝</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una actividad</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className='text-sm text-[var(--hp-text-secondary)] mb-4'>
                 ¿Conoces un taller, club, campamento o evento que no aparece en HabitaPlan?
               </p>
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
@@ -58,7 +58,7 @@ export default function ContribuirPage() {
             <ActionCard onClick={() => setTipo('institucion')}>
               <div className="absolute top-4 right-4 text-2xl">🏢</div>
               <h2 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una institución</h2>
-              <p className="text-sm text-gray-600 mb-4">
+              <p className='text-sm text-[var(--hp-text-secondary)] mb-4'>
                 ¿Hay una academia, biblioteca o centro comunitario que ofrezca actividades?
               </p>
               <span className="inline-flex items-center gap-1 text-sm text-brand-600 group-hover:translate-x-1 transition-transform">
@@ -78,7 +78,7 @@ export default function ContribuirPage() {
             {tipo === 'actividad' ? (
               <>
                 <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una actividad</h2>
-                <p className="text-gray-600 mb-6">
+                <p className='text-[var(--hp-text-secondary)] mb-6'>
                   Completa el formulario abajo. Te enviaremos un email con los detalles que necesitamos.
                 </p>
                 <form
@@ -138,7 +138,7 @@ export default function ContribuirPage() {
             ) : (
               <>
                 <h2 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Sugerir una institución</h2>
-                <p className="text-gray-600 mb-6">
+                <p className='text-[var(--hp-text-secondary)] mb-6'>
                   Ayúdanos a encontrar nuevos proveedores de actividades. Cuéntanos sobre una academia, centro comunitario o institución que ofrezca actividades para niños.
                 </p>
                 <form
@@ -198,7 +198,7 @@ export default function ContribuirPage() {
         )}
 
         {/* Nota informativa */}
-        <div className="mt-12 rounded-xl bg-[var(--hp-bg-subtle)] border border-indigo-100 p-4 text-xs text-indigo-700">
+        <div className="mt-12 rounded-xl bg-[var(--hp-bg-subtle)] border border-brand-100 p-4 text-xs text-brand-700">
           <p className="font-semibold mb-1">📬 ¿Qué pasa después?</p>
           <p>Revisaremos tu sugerencia en máximo 5 días hábiles. Si la actividad o institución cumple con nuestros criterios, aparecerá pronto en HabitaPlan.</p>
         </div>

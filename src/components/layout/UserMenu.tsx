@@ -40,7 +40,7 @@ export function UserMenu({ email, avatarUrl, isAdmin, providerSlug }: UserMenuPr
         )}
         {providerSlug && (
           <Link href={`/proveedores/${providerSlug}/dashboard`} tabIndex={-1}>
-            <Dropdown.Item className="text-indigo-600 font-medium hover:text-indigo-700">
+            <Dropdown.Item className="text-brand-600 font-medium hover:text-brand-700">
               Panel
             </Dropdown.Item>
           </Link>

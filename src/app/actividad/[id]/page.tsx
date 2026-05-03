@@ -293,7 +293,7 @@ export default async function ActividadDetallePage({
                   {priceLabel !== 'No disponible' && (
                     <span className={clsx(
                       'rounded-full px-3 py-1 text-xs font-semibold',
-                      priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'
+                      priceLabel === 'Gratis' ? 'bg-success-100 text-success-700' : 'bg-brand-50 text-brand-700'
                     )}>
                       {priceLabel}
                     </span>
@@ -342,7 +342,7 @@ export default async function ActividadDetallePage({
                 {priceLabel !== 'No disponible' && (
                   <span className={clsx(
                     'rounded-full px-3 py-1 text-xs font-semibold',
-                    priceLabel === 'Gratis' ? 'bg-emerald-100 text-emerald-700' : 'bg-brand-50 text-brand-700'
+                    priceLabel === 'Gratis' ? 'bg-success-100 text-success-700' : 'bg-brand-50 text-brand-700'
                   )}>
                     {priceLabel}
                   </span>
@@ -491,14 +491,14 @@ export default async function ActividadDetallePage({
                       {r.user.avatarUrl ? (
                         // Avatar de OAuth (Google/GitHub/Supabase) — dominio variable.
                         // unoptimized evita registrar cada proveedor en remotePatterns.
-                        <Image
+                        (<Image
                           src={r.user.avatarUrl}
                           alt=""
                           width={32}
                           height={32}
                           className="w-8 h-8 rounded-full object-cover"
                           unoptimized
-                        />
+                        />)
                       ) : (
                         <div className="w-8 h-8 bg-[var(--hp-bg-subtle)] text-[var(--hp-text-secondary)] rounded-full flex items-center justify-center text-xs font-semibold">
                           {r.user.name[0]?.toUpperCase() ?? '?'}
@@ -533,7 +533,7 @@ export default async function ActividadDetallePage({
                 <span className={clsx(
                   'font-semibold',
                   priceLabel === 'Gratis'
-                    ? 'text-emerald-600'
+                    ? 'text-success-600'
                     : priceLabel === 'No disponible'
                     ? 'text-[var(--hp-text-muted)]'
                     : 'text-[var(--hp-text-primary)]'
@@ -595,7 +595,7 @@ export default async function ActividadDetallePage({
               <OutboundLink
                 activityId={id}
                 href={activity.sourceUrl}
-                className="flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-sm hover:bg-[var(--hp-action-primary-hover)] transition-colors"
+                className='flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-[var(--hp-action-primary-hover)] transition-colors'
               >
               Ver sitio oficial
                 <span>↗</span>
@@ -681,7 +681,6 @@ export default async function ActividadDetallePage({
         </div>
       </div>
       </div>
-      
       {/* ── SEO Interlinking (Silos Semánticos) ────────────────────────────── */}
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="border-t border-[var(--hp-border)] pt-8">

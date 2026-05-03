@@ -436,11 +436,11 @@ function BottomNav({ session }: { session: MobileNavProps['session'] }) {
                 {tab.label}
               </span>
             </Link>
-          )
+          );
         })}
       </div>
     </nav>
-  )
+  );
 }
 
 // ─── Mobile Header (sticky top) ──────────────────────────────────────────────

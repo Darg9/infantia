@@ -79,7 +79,7 @@ export default function HistorialPage() {
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Historial</h1>
           {history.length > 0 && (
-            <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-600">
+            <span className='rounded-full bg-[var(--hp-bg-page)] px-2.5 py-0.5 text-xs font-semibold text-[var(--hp-text-secondary)]'>
               {history.length}
             </span>
           )}
@@ -94,11 +94,10 @@ export default function HistorialPage() {
           </Button>
         )}
       </div>
-
       {history.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 gap-4 text-center">
           <span className="text-6xl">🕐</span>
-          <p className="text-gray-600 font-medium text-lg">No has visto actividades recientemente</p>
+          <p className='text-[var(--hp-text-secondary)] font-medium text-lg'>No has visto actividades recientemente</p>
           <p className="text-sm text-[var(--hp-text-muted)] max-w-sm">
             Cuando visites una actividad, aparecerá aquí para que puedas volver a encontrarla.
           </p>
@@ -119,11 +118,11 @@ export default function HistorialPage() {
             >
               {entry.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img
+                (<img
                   src={entry.imageUrl}
                   alt=""
                   className="w-12 h-12 rounded-xl object-cover shrink-0"
-                />
+                />)
               ) : (
                 <div className="w-12 h-12 rounded-xl bg-[var(--hp-bg-page)] flex items-center justify-center text-xl shrink-0">
                   🎨
@@ -137,7 +136,7 @@ export default function HistorialPage() {
               </div>
               <button
                 type="button"
-                className="p-2 text-gray-400 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500/50"
+                className='p-2 text-[var(--hp-text-tertiary)] hover:text-error-500 hover:bg-error-50 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-error-500/50'
                 aria-label="Eliminar del historial"
                 onClick={(e) => handleRemoveItem(e, entry)}
               >

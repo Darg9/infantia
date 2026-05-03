@@ -49,10 +49,10 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
 
   if (success) {
     return (
-      <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-8 text-center">
+      <div className="bg-success-50 border border-success-200 rounded-2xl p-8 text-center">
         <div className="text-4xl mb-3">✅</div>
-        <h2 className="font-semibold text-emerald-800 text-lg">¡Solicitud enviada!</h2>
-        <p className="text-sm text-emerald-700 mt-2">
+        <h2 className="font-semibold text-success-800 text-lg">¡Solicitud enviada!</h2>
+        <p className="text-sm text-success-700 mt-2">
           El equipo de HabitaPlan revisará tu solicitud en menos de 48 horas
           y te contactará a <strong>{userEmail}</strong>.
         </p>
@@ -71,12 +71,12 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       {/* Nombre */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Tu nombre</label>
-        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        { }
         <input
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400"
+          className='w-full border border-[var(--hp-border-subtle)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400'
           placeholder="Nombre completo"
           required
         />
@@ -84,7 +84,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
       {/* Email — solo lectura */}
       <div>
         <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">Email de tu cuenta</label>
-        {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+        { }
         <input
           type="email"
           value={userEmail}
@@ -102,7 +102,7 @@ export default function ClaimForm({ providerSlug, providerName, userEmail, userN
           onChange={(e) => setMessage(e.target.value)}
           maxLength={1000}
           rows={4}
-          className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none"
+          className='w-full border border-[var(--hp-border-subtle)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 resize-none'
           placeholder="Ej: Soy el director de la academia, mi email corporativo es..."
         />
         <p className="text-xs text-[var(--hp-text-muted)] mt-1 text-right">{message.length}/1000</p>

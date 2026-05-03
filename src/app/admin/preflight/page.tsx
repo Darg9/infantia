@@ -30,13 +30,12 @@ export default async function PreflightPage() {
           por rango de fechas.
         </p>
       </div>
-
       {/* Leyenda de razones */}
       <div className="flex flex-wrap gap-3 mb-6">
         {[
           { label: 'Procesada → Gemini', cls: 'bg-success-100 text-success-700' },
           { label: 'Pasada (datetime)', cls: 'bg-warning-100 text-warning-700' },
-          { label: 'Pasada (texto/año/keyword)', cls: 'bg-orange-100 text-orange-700' },
+          { label: 'Pasada (texto/año/keyword)', cls: 'bg-brand-100 text-brand-700' },
         ].map(({ label, cls }) => (
           <span
             key={label}
@@ -49,7 +48,6 @@ export default async function PreflightPage() {
           · TTL recomendado: 14 días
         </span>
       </div>
-
       <PreflightClient />
     </div>
   );

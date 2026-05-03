@@ -42,7 +42,6 @@ export default async function HijosPage() {
           + Agregar
         </Link>
       </div>
-
       {children.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-[var(--hp-border)] rounded-2xl">
           <p className="text-4xl mb-3">👶</p>
@@ -86,14 +85,13 @@ export default async function HijosPage() {
           })}
         </ul>
       )}
-
       <p className="text-xs text-[var(--hp-text-muted)] mt-6 leading-relaxed">
         Los datos de tus hijos se tratan conforme a nuestra{' '}
-        <Link href="/seguridad/datos" className="underline hover:text-gray-600">
+        <Link href="/seguridad/datos" className='underline hover:text-[var(--hp-text-secondary)]'>
           Politica de Tratamiento de Datos
         </Link>
         . Puedes eliminar cualquier perfil en cualquier momento.
       </p>
     </div>
-  )
+  );
 }

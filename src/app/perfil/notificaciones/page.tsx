@@ -44,10 +44,10 @@ function Toggle({
       onClick={() => onChange(!checked)}
       className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${
         disabled
-          ? 'bg-gray-200 cursor-not-allowed'
+          ? 'bg-[var(--hp-bg-surface)] cursor-not-allowed'
           : checked
           ? 'bg-brand-500 cursor-pointer'
-          : 'bg-gray-300 cursor-pointer'
+          : 'bg-[var(--hp-bg-surface)] cursor-pointer'
       }`}
     >
       <span
@@ -104,11 +104,11 @@ export default function NotificacionesPage() {
       <div className="max-w-lg mx-auto px-4 py-8">
         <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-6">Notificaciones</h1>
         <div className="animate-pulse space-y-4">
-          <div className="h-16 bg-gray-100 rounded-2xl" />
-          <div className="h-16 bg-gray-100 rounded-2xl" />
+          <div className='h-16 bg-[var(--hp-bg-page)] rounded-2xl' />
+          <div className='h-16 bg-[var(--hp-bg-page)] rounded-2xl' />
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -120,7 +120,7 @@ export default function NotificacionesPage() {
       {msg && (
         <div className={`text-sm px-3 py-2 rounded-lg mb-4 ${
           msg.type === 'success'
-            ? 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+            ? 'text-success-700 bg-success-50 border border-success-200'
             : 'text-error-600 bg-error-50 border border-error-200'
         }`}>
           {msg.text}
@@ -168,7 +168,7 @@ export default function NotificacionesPage() {
                   : 'border border-transparent hover:bg-[var(--hp-bg-page)]'
               }`}
             >
-              {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+              { }
               <input
                 type="radio"
                 name="frequency"

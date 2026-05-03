@@ -94,9 +94,7 @@ export function PushButton() {
   }
 
   if (state === 'loading') {
-    return (
-      <div className="h-6 w-11 rounded-full bg-gray-200 animate-pulse" />
-    )
+    return (<div className='h-6 w-11 rounded-full bg-[var(--hp-bg-surface)] animate-pulse' />);
   }
 
   if (state === 'unsupported') {
@@ -123,10 +121,10 @@ export function PushButton() {
       onClick={checked ? unsubscribe : subscribe}
       className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${
         busy
-          ? 'bg-gray-200 cursor-wait'
+          ? 'bg-[var(--hp-bg-surface)] cursor-wait'
           : checked
           ? 'bg-brand-500 cursor-pointer'
-          : 'bg-gray-300 cursor-pointer'
+          : 'bg-[var(--hp-bg-surface)] cursor-pointer'
       }`}
     >
       <span

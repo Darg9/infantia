@@ -85,10 +85,10 @@ export default function SponsorsAdminPage() {
   const field = (k: keyof typeof form, label: string, type = 'text') => (
     <div>
       <label className="block text-xs font-medium text-[var(--hp-text-primary)] mb-1">{label}</label>
-      {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+      { }
       <input
         type={type}
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        className='w-full border border-[var(--hp-border-subtle)] rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500'
         value={form[k] as string}
         onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
       />
@@ -157,7 +157,7 @@ export default function SponsorsAdminPage() {
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-semibold text-[var(--hp-text-primary)]">{s.name}</span>
-                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-success-100 text-success-700' : 'bg-gray-100 text-[var(--hp-text-secondary)]'}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${s.isActive ? 'bg-success-100 text-success-700' : 'bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)]'}`}>
                     {s.isActive ? 'Activo' : 'Inactivo'}
                   </span>
                 </div>

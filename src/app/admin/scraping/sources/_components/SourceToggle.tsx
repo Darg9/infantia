@@ -41,17 +41,10 @@ export function SourceToggle({ sourceId, sourceName, isActive }: SourceTogglePro
       onClick={toggle}
       disabled={loading}
       title={active ? 'Desactivar fuente' : 'Activar fuente'}
-      className={`
-        relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none
-        ${active ? 'bg-success-500' : 'bg-gray-300'}
-        ${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}
-      `}
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${active ? 'bg-success-500' : 'bg-[var(--hp-bg-surface)]'}${loading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
     >
       <span
-        className={`
-          inline-block h-4 w-4 transform rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform
-          ${active ? 'translate-x-6' : 'translate-x-1'}
-        `}
+        className={`inline-block h-4 w-4 transform rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform ${active ? 'translate-x-6' : 'translate-x-1'}`}
       />
     </Button>
   );

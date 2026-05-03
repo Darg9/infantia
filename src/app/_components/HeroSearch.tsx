@@ -331,7 +331,6 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-
       {/* ── Input + dropdown ───────────────────────────────────────────── */}
       <div className="relative" ref={containerRef}>
         <Input
@@ -360,7 +359,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
           className={
             unified
               ? "rounded-none shadow-none border-0 py-4 text-base md:text-lg md:py-5 bg-transparent focus:ring-0 cursor-text"
-              : "rounded-2xl shadow-lg py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text"
+              : 'rounded-2xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text'
           }
           rightSlot={
             <div className="p-1 pr-1 mr-1">
@@ -462,7 +461,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
                           ? 'bg-violet-50 text-violet-600 dark:bg-violet-900 dark:text-violet-200'
-                          : 'bg-emerald-50 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-200'
+                          : 'bg-success-50 text-success-600 dark:bg-success-900 dark:text-success-200'
                       }`}>
                         {s.type === 'category' ? 'Categoría' : 'Ciudad'}
                       </span>
@@ -484,7 +483,6 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
           </div>
         )}
       </div>
-
       {/* Chips rápidos — solo en modo standalone (en modo unified los renderiza page.tsx) */}
       {!unified && (
         <div className="flex gap-2.5 justify-center mt-4 flex-wrap">
@@ -495,7 +493,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
               size="sm"
               disabled={isSubmitting}
               onClick={() => router.push(chip.href)}
-              className="rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-sm font-medium transition-all"
+              className='rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] font-medium transition-all'
             >
               {chip.label}
             </Button>

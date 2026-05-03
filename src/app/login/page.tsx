@@ -103,13 +103,11 @@ function LoginForm() {
     <Card className="w-full max-w-md p-8">
       <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mb-2">Inicia sesión</h1>
       <p className="text-[var(--hp-text-secondary)] text-sm mb-6">Bienvenido de vuelta a HabitaPlan</p>
-
       {error && (
         <p className="mb-4 text-sm text-error-600 bg-error-50 border border-error-200 rounded-lg px-3 py-2">
           {error}
         </p>
       )}
-
       {/* SSO — Siempre visible */}
       <div className="space-y-3 mb-6">
         <Button
@@ -159,7 +157,6 @@ function LoginForm() {
           </div>
         )}
       </div>
-
       {/* Divider */}
       <div className="relative mb-6">
         <div className="absolute inset-0 flex items-center">
@@ -169,7 +166,6 @@ function LoginForm() {
           <span className="bg-[var(--hp-bg-surface)] px-2 text-[var(--hp-text-muted)]">O usa tu correo-e</span>
         </div>
       </div>
-
       {/* Bloque de correo-e */}
       {status === 'sent' ? (
         <div className="rounded-xl bg-success-50 border border-success-200 text-center space-y-3 py-6 px-4">
@@ -214,7 +210,7 @@ function LoginForm() {
         </div>
       ) : !showPassword ? (
         /* Magic Link (primario) */
-        <form onSubmit={handleMagicLink} className="space-y-3">
+        (<form onSubmit={handleMagicLink} className="space-y-3">
           <Input
             id="login-email"
             label="Correo electrónico"
@@ -243,10 +239,10 @@ function LoginForm() {
           >
             ¿Tienes contraseña? Inicia sesión
           </button>
-        </form>
+        </form>)
       ) : (
         /* Contraseña (fallback) */
-        <form onSubmit={handleEmailPassword} className="space-y-3">
+        (<form onSubmit={handleEmailPassword} className="space-y-3">
           <Input
             id="login-email-pw"
             label="Correo electrónico"
@@ -275,9 +271,8 @@ function LoginForm() {
           >
             Volver al enlace de acceso
           </button>
-        </form>
+        </form>)
       )}
-
       <p className="mt-6 text-center text-sm text-[var(--hp-text-secondary)]">
         ¿No tienes cuenta?{' '}
         <Link href="/registro" className="text-brand-600 font-medium hover:underline">
@@ -285,7 +280,7 @@ function LoginForm() {
         </Link>
       </p>
     </Card>
-  )
+  );
 }
 
 export default function LoginPage() {

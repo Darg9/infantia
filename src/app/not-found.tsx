@@ -18,7 +18,7 @@ export default function NotFound() {
         <div className="flex flex-col items-center gap-2">
           <span className="text-8xl select-none">🗺️</span>
           <div className="flex flex-col gap-1">
-            <span className="text-6xl font-extrabold text-gray-200 leading-none">404</span>
+            <span className='text-6xl font-extrabold text-[var(--hp-text-muted)] leading-none'>404</span>
           </div>
         </div>
 
@@ -37,7 +37,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <a
             href="/actividades"
-            className="rounded-xl bg-indigo-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 transition-colors text-center"
+            className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors text-center"
           >
             Ver actividades
           </a>

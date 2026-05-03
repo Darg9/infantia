@@ -75,7 +75,7 @@ export function Avatar({
           className={clsx(
             wrapper,
             'rounded-full object-cover',
-            'ring-2 ring-gray-200 dark:ring-gray-700',
+            'ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)]',
             isInteractive && 'group-hover/avatar:ring-brand-400 transition-all'
           )}
         />
@@ -85,7 +85,7 @@ export function Avatar({
             wrapper,
             'rounded-full flex items-center justify-center font-bold select-none',
             'bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400',
-            'ring-2 ring-gray-200 dark:ring-gray-700',
+            'ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)]',
             isInteractive && 'group-hover/avatar:ring-brand-400 transition-all',
             text
           )}
@@ -104,10 +104,7 @@ export function Avatar({
       {/* Editable hover overlay */}
       {isInteractive && !uploading && (
         <div
-          className="absolute inset-0 rounded-full bg-black/50 opacity-0
-                     group-hover/avatar:opacity-100 transition-opacity
-                     flex flex-col items-center justify-center gap-1
-                     pointer-events-none"
+          className='absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 pointer-events-none'
         >
           <CameraIcon className={clsx('text-white', icon)} />
           {size !== 'xs' && size !== 'sm' && (

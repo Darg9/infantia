@@ -24,17 +24,7 @@ export function ThemeToggle() {
       onClick={toggleTheme}
       aria-label={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
       title={`Activar modo ${isDark ? 'claro' : 'oscuro'}`}
-      className="
-        w-8 h-8 flex items-center justify-center
-        rounded-[var(--hp-radius-md)]
-        border border-[var(--hp-border-subtle)]
-        text-[var(--hp-text-secondary)]
-        hover:text-[var(--hp-text-primary)]
-        hover:bg-[var(--hp-bg-subtle)]
-        hover:border-[var(--hp-border-subtle)]
-        transition-colors
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500
-      "
+      className='w-8 h-8 flex items-center justify-center rounded-[var(--hp-radius-md)] border border-[var(--hp-border-subtle)] text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-[var(--hp-border-subtle)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500'
     >
       {isDark ? <SunIcon /> : <MoonIcon />}
     </Button>

@@ -16,9 +16,9 @@ const meta: Meta<typeof Card> = {
         description="Escribe los datos básicos de tu nuevo proyecto. Esto lo guardará en el catálogo general."
       />
       <Card.Body>
-        <div className="flex flex-col space-y-1.5 h-20 justify-center items-center bg-gray-50 dark:bg-gray-800 rounded-md">
+        <div className='flex flex-col space-y-1.5 h-20 justify-center items-center bg-[var(--hp-bg-page)] bg-[var(--hp-bg-surface)] rounded-md'>
           {/* Mock Content */}
-          <span className="text-sm text-gray-500">Contenido Dinámico</span>
+          <span className='text-sm text-[var(--hp-text-tertiary)]'>Contenido Dinámico</span>
         </div>
       </Card.Body>
       <Card.Footer>

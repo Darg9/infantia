@@ -88,10 +88,10 @@ export default function ContactoPage() {
   if (enviado) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
-        <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-8">
+        <div className="rounded-2xl bg-success-50 border border-success-200 p-8">
           <span className="text-4xl block mb-4">✓</span>
           <h1 className="text-xl font-bold text-[var(--hp-text-primary)] mb-2">Mensaje enviado</h1>
-          <p className="text-gray-600">
+          <p className='text-[var(--hp-text-secondary)]'>
             Recibimos tu solicitud y te enviamos una confirmación a <strong>{email}</strong>.
             Si no llega en unos minutos, revisa la carpeta de spam.
           </p>
@@ -135,7 +135,7 @@ export default function ContactoPage() {
             value={category}
             onChange={(e) => setCategory(e.target.value as ContactCategory)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
           >
             <option value="">Seleccione un motivo</option>
             {CONTACT_CATEGORIES.map((c) => (
@@ -154,7 +154,7 @@ export default function ContactoPage() {
               value={tipoDerecho}
               onChange={(e) => setTipoDerecho(e.target.value as DataRightType)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             >
               <option value="">Seleccione el tipo de derecho</option>
               {DATA_RIGHT_TYPES.map((t) => (
@@ -169,12 +169,12 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Nombre completo (Opcional)
           </label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="Tu nombre"
           />
         </div>
@@ -184,13 +184,13 @@ export default function ContactoPage() {
           <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
             Correo electrónico <span className="text-error-500">*</span>
           </label>
-          {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+          { }
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
             placeholder="tu@correo.com"
           />
         </div>
@@ -201,13 +201,13 @@ export default function ContactoPage() {
             <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
               URL de la actividad en HabitaPlan {isTakedown && <span className="text-error-500">*</span>}
             </label>
-            {/* eslint-disable-next-line no-restricted-syntax -- formulario interno, DS Input requiere id+label */}
+            { }
             <input
               type="url"
               value={actividadUrl}
               onChange={(e) => setActividadUrl(e.target.value)}
               required={isTakedown}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
               placeholder="https://habitaplan.com/actividades/..."
             />
             <p className="text-xs text-[var(--hp-text-muted)] mt-1">Copie la URL de la actividad desde la barra de su navegador</p>
@@ -216,7 +216,7 @@ export default function ContactoPage() {
 
         {/* Info adicional for takedown */}
         {isTakedown && (
-          <div className="bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-gray-600">
+          <div className='bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-[var(--hp-text-secondary)]'>
             <p className="font-medium text-[var(--hp-text-primary)] mb-1">Para procesar su solicitud necesitamos:</p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Nombre de la organización que representa</li>
@@ -229,7 +229,7 @@ export default function ContactoPage() {
 
         {/* Info adicional for derechos */}
         {isDerechos && (
-          <div className="bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-gray-600">
+          <div className='bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg p-3 text-sm text-[var(--hp-text-secondary)]'>
             <p className="font-medium text-[var(--hp-text-primary)] mb-1">Para ejercer sus derechos (Ley 1581 de 2012):</p>
             <ul className="list-disc pl-4 space-y-0.5">
               <li>Indique qué derecho desea ejercer (acceso, rectificación, cancelación, oposición)</li>
@@ -250,7 +250,7 @@ export default function ContactoPage() {
             onChange={(e) => setMensaje(e.target.value)}
             required
             rows={5}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-y"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-y"
             placeholder="Describe tu consulta o solicitud..."
           />
         </div>
@@ -268,7 +268,7 @@ export default function ContactoPage() {
         <Button
           type="submit"
           disabled={loading}
-          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-orange-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+          className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
         >
           {loading ? 'Enviando...' : 'Enviar solicitud'}
         </Button>

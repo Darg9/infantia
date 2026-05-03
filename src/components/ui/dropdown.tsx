@@ -180,7 +180,7 @@ export function DropdownMenu({ children, className }: { children: ReactNode; cla
       aria-orientation="vertical"
       aria-labelledby={ctx.triggerId}
       className={clsx(
-        'absolute right-0 mt-2 w-48 rounded-xl bg-[var(--hp-bg-surface)] dark:bg-gray-900 border border-[var(--hp-border)] dark:border-gray-800 shadow-lg py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
+        'absolute right-0 mt-2 w-48 rounded-xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] border-[var(--hp-border-subtle)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
         className
       )}
       onKeyDown={(e) => {
@@ -200,7 +200,7 @@ export function DropdownMenu({ children, className }: { children: ReactNode; cla
     >
       {children}
     </div>
-  )
+  );
 }
 
 // --- Item ---
@@ -257,19 +257,19 @@ export function DropdownItem({
       className={clsx(
         'block px-4 py-2 text-sm font-medium cursor-pointer transition-colors outline-none',
         danger
-          ? 'text-gray-600 dark:text-[var(--hp-text-muted)] hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30'
-          : 'text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] focus:bg-[var(--hp-bg-page)] dark:hover:bg-gray-800 dark:focus:bg-gray-800',
+          ? 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-900/30'
+          : 'text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-page)] focus:bg-[var(--hp-bg-page)] hover:bg-[var(--hp-bg-surface)] focus:bg-[var(--hp-bg-surface)]',
         className
       )}
     >
       {children}
     </div>
-  )
+  );
 }
 
 // --- Divider ---
 export function DropdownDivider() {
-  return <div className="my-1 border-t border-[var(--hp-border)] dark:border-gray-800" role="separator" />
+  return <div className='my-1 border-t border-[var(--hp-border)] border-[var(--hp-border-subtle)]' role="separator" />;
 }
 
 Dropdown.Trigger = DropdownTrigger

@@ -27,7 +27,6 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="max-w-4xl mx-auto px-6 py-12">
-
       {/* ── Volver al Centro de Seguridad ──────────────────────────── */}
       <Link
         href="/seguridad"
@@ -35,19 +34,16 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
       >
         ← Centro de Seguridad
       </Link>
-
       {/* ── Label superior ─────────────────────────────────────────── */}
       <p className="text-sm font-medium text-[var(--hp-text-muted)] uppercase tracking-widest mb-2">
         Legal
       </p>
-
       {/* ── Título ─────────────────────────────────────────────────── */}
       <h1 className="text-3xl font-semibold text-[var(--hp-text-primary)] mb-6 flex items-center gap-2">
         🛡️ Centro de Seguridad
       </h1>
-
       {/* ── Navegación interna con tab activo ──────────────────────── */}
-      <nav className="flex gap-1 mb-10 border-b border-[var(--hp-border)]">
+      <nav className="flex gap-1 mb-10 border-b border-[var(--hp-border-subtle)]">
         {NAV_LINKS.map(({ href, label }) => {
           const isActive = pathname === href;
           return (
@@ -58,20 +54,18 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
                 'px-4 py-2 text-sm font-medium border-b-2 -mb-px transition-colors',
                 isActive
                   ? 'border-brand-500 text-brand-600'
-                  : 'border-transparent text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:border-gray-300',
-              ].join(' ')}
+                  : 'border-transparent text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:border-[var(--hp-border-subtle)]',
+              ].join('')}
             >
               {label}
             </Link>
           );
         })}
       </nav>
-
       {/* ── Contenido de cada sub-ruta ─────────────────────────────── */}
-      <div className="prose max-w-none text-gray-600 leading-relaxed">
+      <div className='prose max-w-none text-[var(--hp-text-secondary)] leading-relaxed'>
         {children}
       </div>
-
     </div>
   );
 }

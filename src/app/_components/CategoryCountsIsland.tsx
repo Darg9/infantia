@@ -70,7 +70,7 @@ export function CategoryCountsIsland({ categories }: Props) {
           <Link
             key={cat.id}
             href={`/actividades?categoryId=${cat.id}`}
-            className="group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-md transition-all"
+            className='group flex flex-col items-center gap-2.5 rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5 text-center hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all'
           >
             {/* Ícono con gradiente de la categoría */}
             <div
@@ -88,8 +88,8 @@ export function CategoryCountsIsland({ categories }: Props) {
               {' '}{count === 1 ? 'actividad' : 'actividades'}
             </span>
           </Link>
-        )
+        );
       })}
     </div>
-  )
+  );
 }

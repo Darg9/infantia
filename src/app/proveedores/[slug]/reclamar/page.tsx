@@ -34,7 +34,7 @@ export default async function ReclamarPage({ params }: PageProps) {
   return (
     <main className="max-w-lg mx-auto px-4 py-12">
       <div className="mb-8">
-        <a href={`/proveedores/${slug}`} className="text-sm text-[var(--hp-text-muted)] hover:text-gray-600">
+        <a href={`/proveedores/${slug}`} className='text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)]'>
           ← {provider.name}
         </a>
         <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mt-3">Reclamar perfil</h1>
@@ -42,7 +42,6 @@ export default async function ReclamarPage({ params }: PageProps) {
           ¿Representas a <strong>{provider.name}</strong>? Envíanos tu solicitud y la revisaremos en menos de 48 horas.
         </p>
       </div>
-
       <ClaimForm
         providerSlug={slug}
         providerName={provider.name}

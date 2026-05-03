@@ -568,10 +568,7 @@ export default function Filters({
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
           aria-haspopup="listbox"
-          className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base
-            placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2
-            transition-all shadow-sm
-            ${isPending
+          className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 transition-all shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]${isPending
               ? 'border-brand-300 opacity-80 focus:ring-brand-100'
               : 'border-[var(--hp-border)] hover:border-[var(--hp-border-subtle)] focus:border-brand-500 focus:ring-brand-100'
             }`}
@@ -675,7 +672,7 @@ export default function Filters({
                     {/* Texto principal + sublabel */}
                     <span className="flex-1 min-w-0">
                       <span className={`block truncate font-medium ${
-                        i === activeIndex ? 'text-indigo-900' : 'text-[var(--hp-text-primary)]'
+                        i === activeIndex ? 'text-brand-900' : 'text-[var(--hp-text-primary)]'
                       }`}>
                         {highlightMatch(s.label, searchValue)}
                       </span>
@@ -691,7 +688,7 @@ export default function Filters({
                       <span className={`shrink-0 text-xs rounded-full px-2 py-0.5 font-medium ${
                         s.type === 'category'
                           ? 'bg-violet-50 text-violet-600'
-                          : 'bg-emerald-50 text-emerald-600'
+                          : 'bg-success-50 text-success-600'
                       }`}>
                         {s.type === 'category' ? 'Categoría' : 'Ciudad'}
                       </span>

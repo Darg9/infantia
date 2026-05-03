@@ -84,6 +84,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "husky": "^8.0.0",
+    "jscodeshift": "^17.3.0",
     "jsdom": "^29.0.1",
     "lint-staged": "^16.4.0",
     "node-fetch": "^3.3.2",

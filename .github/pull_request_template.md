@@ -24,6 +24,11 @@
 - [ ] Se agregaron/actualizaron tests para el código nuevo o modificado
 - [ ] La cobertura no bajó del threshold del día (`npm run test:coverage`)
 
+### Design System & UI (si aplica)
+- [ ] Usa exclusivamente tokens del DS (`var(--hp-*)` o utilidades permitidas)
+- [ ] No introduce anti-patrones (ej. colores hardcodeados, themes vía JS)
+- [ ] Respeta estrictamente la jerarquía de CTAs
+
 ### Documentación funcional
 - [ ] Se actualizó `docs/modules/<módulo>.md` si se modificó ese módulo
 - [ ] Se agregó entrada en `CHANGELOG.md` bajo `[Unreleased]`

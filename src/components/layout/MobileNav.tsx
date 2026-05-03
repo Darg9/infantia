@@ -170,6 +170,13 @@ const BOTTOM_TABS = [
 function MobileThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   const dark = theme === 'dark'
+  // isMounted previene hydration mismatch: el icono del tema solo se conoce
+  // en el cliente. Se omite en SSR y se muestra tras el primer montaje.
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setIsMounted(true)
+  }, [])
 
   return (
     <Button
@@ -179,7 +186,8 @@ function MobileThemeToggle() {
       aria-label={dark ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
       className="w-9 h-9 flex items-center justify-center rounded-lg border border-[var(--hp-border-subtle)] text-[var(--hp-text-secondary)] hover:text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
     >
-      <Icon icon={dark ? Sun : Moon} size="lg" />
+      {/* Icono omitido en SSR, presente tras montaje — evita hydration mismatch */}
+      {isMounted && <Icon icon={dark ? Sun : Moon} size="lg" />}
     </Button>
   )
 }

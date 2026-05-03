@@ -76,9 +76,6 @@ export default function RootLayout({
           El fallback hardened evita valores corruptos en localStorage. */}
       <head>
         <meta name="color-scheme" content="light dark" />
-        <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
-        <link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -88,11 +85,25 @@ export default function RootLayout({
                 var theme = saved === 'dark' || saved === 'light'
                   ? saved
                   : (systemDark ? 'dark' : 'light');
-                document.documentElement.classList.toggle('dark', theme === 'dark');
+                // Suprimir transiciones CSS durante la inicializaci\u00f3n del tema
+                // Evita el flash dark\u2192light causado por la transici\u00f3n global de 180ms
+                document.documentElement.classList.add('no-transition');
+                if (theme === 'dark') {
+                  document.documentElement.classList.add('dark');
+                } else {
+                  document.documentElement.classList.remove('dark');
+                }
+                // Restaurar transiciones en el siguiente frame (despu\u00e9s del primer paint)
+                setTimeout(function() {
+                  document.documentElement.classList.remove('no-transition');
+                }, 0);
               } catch(e) {}
             `,
           }}
         />
+        <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
         className={`${montserrat.variable} font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}

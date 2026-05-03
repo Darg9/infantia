@@ -127,6 +127,13 @@
               border-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* ── Anti-flash: elimina transiciones durante inicialización del tema ── */
+/* El script inline del <head> añade esta clase antes del primer paint   */
+/* y la elimina en el siguiente frame con setTimeout(fn, 0).             */
+.no-transition * {
+  transition: none !important;
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

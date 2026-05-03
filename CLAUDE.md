@@ -48,7 +48,9 @@ src/
 - All dates stored in UTC, displayed in local timezone
 - Spanish for user-facing content, English for code (variable names, comments)
 - No hardcoded cities, countries, or currencies — always dynamic from database
-- **Design System Enforcement:**
+- **Design System Enforcement & Workflow:**
+  - 🛑 **ACUERDO CRÍTICO (Modificaciones UI):** Siempre que ocurra una modificación de interfaz gráfica (UI), layout, color o estructura visual, **el primer paso** debe ser revisar `docs/modules/design-system.md` para garantizar que el cambio cumple con lo ya establecido.
+  - ✍️ **Documentación Síncrona:** Si la modificación introduce un patrón visual nuevo válido y aprobado, el Design System debe actualizarse inmediatamente en esa misma iteración para incluir el nuevo patrón (no dejarlo como deuda técnica).
   - Only use `useToast` for feedback
   - Never introduce new notification libraries
   - Prefer non-blocking UX (toast) over blocking dialogs

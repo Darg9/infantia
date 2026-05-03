@@ -42,20 +42,20 @@ export function Footer() {
 
           {/* Columna 1 — Brand */}
           <div className="col-span-2 sm:col-span-1">
-            <Image 
-              src="/logo.svg" 
-              alt="HabitaPlan Logo" 
-              width={160} 
-              height={40} 
-              className="h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity dark:hidden"
-            />
-            <Image 
-              src="/logo-dark.svg" 
-              alt="HabitaPlan Logo" 
-              width={160} 
-              height={40} 
-              className="h-8 w-auto object-contain opacity-90 hover:opacity-100 transition-opacity hidden dark:block"
-            />
+            <Link href="/" aria-label="HabitaPlan — Inicio" className="block w-[120px] h-8 relative">
+              <Image 
+                src="/logo.svg" 
+                alt="HabitaPlan Logo" 
+                fill
+                className="object-contain opacity-90 hover:opacity-100 transition-opacity dark:hidden"
+              />
+              <Image 
+                src="/logo-dark.svg" 
+                alt="HabitaPlan Logo" 
+                fill
+                className="object-contain opacity-90 hover:opacity-100 transition-opacity hidden dark:block"
+              />
+            </Link>
             <p className="text-sm text-[var(--hp-text-secondary)] mt-2 leading-relaxed max-w-xs">
               Encuentra actividades para disfrutar en familia
             </p>

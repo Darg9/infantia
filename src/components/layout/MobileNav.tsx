@@ -268,20 +268,18 @@ function MobileDrawer({
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-4 py-4 border-b border-[var(--hp-border)]">
-          <Link href="/" onClick={onClose} className="flex items-center gap-2">
+          <Link href="/" onClick={onClose} className="flex items-center gap-2 relative w-[105px] h-7">
             <Image
               src="/logo.svg"
               alt="HabitaPlan"
-              width={130}
-              height={32}
-              className="h-7 w-auto object-contain dark:hidden"
+              fill
+              className="object-contain dark:hidden"
             />
             <Image
               src="/logo-dark.svg"
               alt="HabitaPlan"
-              width={130}
-              height={32}
-              className="h-7 w-auto object-contain hidden dark:block"
+              fill
+              className="object-contain hidden dark:block"
             />
           </Link>
           <Button
@@ -464,22 +462,20 @@ function MobileHeader({
         <Link
           href="/"
           aria-label="HabitaPlan — Inicio"
-          className="flex items-center"
+          className="flex items-center relative w-[120px] h-8 md:w-[150px] md:h-10"
         >
           <Image
             src="/logo.svg"
             alt="HabitaPlan"
-            width={140}
-            height={36}
-            className="h-8 md:h-10 w-auto object-contain dark:hidden"
+            fill
+            className="object-contain dark:hidden"
             priority
           />
           <Image
             src="/logo-dark.svg"
             alt="HabitaPlan"
-            width={140}
-            height={36}
-            className="h-8 md:h-10 w-auto object-contain hidden dark:block"
+            fill
+            className="object-contain hidden dark:block"
             priority
           />
         </Link>

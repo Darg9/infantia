@@ -418,3 +418,14 @@ La navegación base en dispositivos móviles está delegada a un *Bottom Bar* er
 - Debe aplicar padding de seguridad inferior (`pb-safe`) para soportar iOS Home Indicators sin glitchear la zona táctil.
 - Debe tener íconos con un "hit-target" suficientemente grande y semánticamente claro.
 - La jerarquía activa se comunica a través del token interactivo primario (`text-[var(--hp-action-primary)]`), en oposición directa a los destinos inactivos (`text-[var(--hp-text-muted)]`).
+
+---
+
+## 9. Anti-Patrones Explícitos (Evitar Regresiones)
+
+Para acelerar el onboarding y blindar la consistencia de UI, queda **estrictamente prohibido**:
+
+- ❌ **Colores estructurales puros:** Usar clases como `bg-orange-500` o `bg-blue-600` en bloques o fondos *full-width*. Todo fondo principal debe usar variables de superficie (`--hp-bg-surface`, `--hp-bg-elevated`).
+- ❌ **Hardcoding de valores:** Usar hexadecimales fijos (`#ffffff`, `#000000`, `black`, `white`) en lugar de depender de los tokens adaptables contextuales (`var(--hp-text-primary)`).
+- ❌ **Theming en JavaScript:** Duplicar la lógica de Light/Dark Mode mediante JS asíncrono o hidratación en el cliente (`isDark ? <LogoDark/> : <LogoLight/>`); es CSS el que debe resolver la variante visual para evitar el *Flash of Incorrect Theme*.
+- ❌ **Jerarquía plana de CTAs:** Crear múltiples botones de llamado a la acción secundarios en una misma vista que compitan visualmente (mismo peso y color primario) contra el CTA principal de la página.

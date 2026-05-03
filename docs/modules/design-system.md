@@ -1,8 +1,8 @@
 # HabitaPlan Design System (v2 — v0.18.0-stable)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
-**Versión actual:** v0.18.0-stable
-**Última actualización:** 1 de mayo de 2026
+**Versión actual:** v0.19.1-stable
+**Última actualización:** 2 de mayo de 2026
 
 ## 1. Principios Core
 
@@ -54,9 +54,10 @@ HabitaPlan utiliza dos variantes oficiales del logo según el contexto visual pa
 ### Reglas de Implementación
 - El logo **nunca se modifica dinámicamente** mediante CSS (nada de filtros, ni opacidad, ni `invert()`).
 - La adaptación al modo oscuro se realiza **únicamente por reemplazo físico de asset**.
-- La única diferencia formal permitida entre los SVGs es el color del texto de la palabra "Habita":
-  - Light Mode: Azul Navy (`#0F1D38`)
-  - Dark Mode: Blanco Puro (`#FFFFFF`)
+- Tailwind v4 debe ser capaz de alternarlo (vía `@custom-variant dark (&:is(.dark *));`) sin depender de mutación JS asíncrona en cliente para evitar "flicker" de hidratación.
+- Diferencias de color permitidas entre los SVGs:
+  - Light Mode: Texto "Habita" y fondo del Pin en Azul Navy (`#0F1D38`).
+  - Dark Mode: Texto "Habita" y cuerpo externo del Pin en Blanco Puro (`#FFFFFF`); ventanas internas del pin caladas con la superficie del modo oscuro (`#111827`).
 - El color acento de la palabra "Plan" (`#F57321`) y la composición base del isotipo **nunca cambian**.
 
 ### Implementación Obligatoria
@@ -396,3 +397,24 @@ toast.warning('Acción irreversible')
 
 ### Regla
 El diseño está gobernado por snapshots visuales (SSOT automatizado), no por opinión.
+
+---
+
+## 8. Patrones Estructurales (Layout, CTA & Footer)
+
+### Call to Actions Secundarios (B2B CTA)
+Los bloques de llamado a la acción integrados al final de una página (ej. captación de organizadores en el Home) no deben interrumpir bruscamente el diseño:
+- ❌ **Prohibido:** Usar franjas "edge-to-edge" de extremo a extremo con fondos saturados puros que compitan con el header o footer.
+- ✔ **Regla de oro:** Modularizar como "Tarjeta Elevada" (`bg-[var(--hp-bg-elevated)] border-[var(--hp-border-subtle)] shadow-[0_8px_24px_rgba(0,0,0,0.06)]`) restringiendo su anchura máxima (`max-w-2xl` o `max-w-3xl`) y margin centrado.
+- El botón disparador principal dentro del CTA debe portar la máxima jerarquía (`bg-hp-action-primary text-white hover:bg-hp-action-primary-hover`), contrastando potentemente contra la tarjeta.
+
+### Conexión de Footer
+- El footer debe sentirse conectado fluidamente con el bloque que lo antecede.
+- Si el último elemento de la página es una tarjeta CTA aislada, se deben reducir los márgenes verticales colindantes (ej. reducir el bottom-padding de la sección a `pb-8` y el top-padding del footer a `pt-8`) para anclar la tarjeta y evitar "agujeros blancos" de espaciado excesivo.
+
+### Mobile Bottom Navigation (Botonera)
+La navegación base en dispositivos móviles está delegada a un *Bottom Bar* ergonómico:
+- Debe renderizarse de forma fija y con prioridad visual superior al footer (`fixed bottom-0 z-50`).
+- Debe aplicar padding de seguridad inferior (`pb-safe`) para soportar iOS Home Indicators sin glitchear la zona táctil.
+- Debe tener íconos con un "hit-target" suficientemente grande y semánticamente claro.
+- La jerarquía activa se comunica a través del token interactivo primario (`text-[var(--hp-action-primary)]`), en oposición directa a los destinos inactivos (`text-[var(--hp-text-muted)]`).

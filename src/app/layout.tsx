@@ -69,10 +69,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const surfacesEnabled = process.env.NEXT_PUBLIC_UI_SURFACES === 'true';
-
   return (
-    <html lang="es" className={surfacesEnabled ? 'hp-surfaces-v1' : ''}>
+    <html lang="es">
       {/* ── Script anti-flash: se ejecuta de forma síncrona antes del render ──
           Prioridad: localStorage.theme > prefers-color-scheme del sistema.
           El fallback hardened evita valores corruptos en localStorage. */}
@@ -115,7 +113,7 @@ export default function RootLayout({
             <ToastProvider>
               <IntentResolver />
               <div className="flex flex-col min-h-screen">
-                <a href="#main-content" className='sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-hp-action-primary text-white rounded-xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hp-action-primary'>
+                <a href="#main-content" className='sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-hp-action-primary text-white rounded-xl shadow-[var(--hp-shadow-md)] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-hp-action-primary'>
                   Saltar al contenido
                 </a>
                 <Header />

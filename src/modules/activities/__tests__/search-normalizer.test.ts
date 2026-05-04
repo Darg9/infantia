@@ -1,3 +1,4 @@
+/// <reference types="vitest/globals" />
 import { normalizeQuery, STOP_WORDS } from '../search-normalizer';
 
 describe('Search Normalizer', () => {

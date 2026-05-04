@@ -31,9 +31,8 @@ export function ShareButton({
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
-  useEffect(() => {
-    setSupportsWebShare(!!navigator.share)
-  }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- inicialización one-shot para detectar soporte del browser en mount
+  useEffect(() => { setSupportsWebShare(!!navigator.share) }, [])
 
   const ageLabel =
     ageMin != null && ageMax != null
@@ -142,7 +141,7 @@ export function ShareButton({
         Compartir
       </Button>
       {isOpen && (
-        <div className='absolute right-0 mt-2 w-48 rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] z-50'>
+        <div className='absolute right-0 mt-2 w-48 rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] z-50'>
           {/* Copiar vínculo (siempre al inicio) */}
           <Button
             onClick={() => {

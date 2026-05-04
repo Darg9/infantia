@@ -60,7 +60,7 @@ export default function SourceHealthClient() {
         </div>
       )}
       {/* Gráfica de Score Normalizado */}
-      <div className='bg-[var(--hp-bg-surface)] p-6 rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+      <div className='bg-[var(--hp-bg-surface)] p-6 rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-md)]'>
         <h2 className="text-lg font-semibold text-[var(--hp-text-primary)] mb-4">Panorama de Scores de Origen</h2>
         <div className="h-64 w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -77,7 +77,7 @@ export default function SourceHealthClient() {
         </div>
       </div>
       {/* Tabla detallada */}
-      <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] overflow-hidden'>
+      <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] shadow-[var(--hp-shadow-md)] overflow-hidden'>
         <table className='min-w-full divide-y divide-[var(--hp-border-subtle)]'>
           <thead className="bg-[var(--hp-bg-page)]">
             <tr>

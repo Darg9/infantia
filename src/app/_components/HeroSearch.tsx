@@ -359,7 +359,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
           className={
             unified
               ? "rounded-none shadow-none border-0 py-4 text-base md:text-lg md:py-5 bg-transparent focus:ring-0 cursor-text"
-              : 'rounded-2xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text'
+              : 'rounded-2xl shadow-[var(--hp-shadow-md)] py-4 text-base md:text-lg md:py-5 bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] focus:ring-2 focus:ring-brand-500 focus:border-brand-500 cursor-text'
           }
           rightSlot={
             <div className="p-1 pr-1 mr-1">
@@ -493,7 +493,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
               size="sm"
               disabled={isSubmitting}
               onClick={() => router.push(chip.href)}
-              className='rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] font-medium transition-all'
+              className='rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] focus:bg-[var(--hp-bg-subtle)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all'
             >
               {chip.label}
             </Button>

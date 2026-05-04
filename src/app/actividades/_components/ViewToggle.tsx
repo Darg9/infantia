@@ -28,7 +28,7 @@ export function ViewToggle({ view }: Props) {
   const inactive = `${base} text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)]`;
 
   return (
-    <div className='flex items-center gap-1 rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-1 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+    <div className='flex items-center gap-1 rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] p-1 shadow-[var(--hp-shadow-md)]'>
       <Button onClick={() => setView('list')} className={view === 'list' ? active : inactive}>
         📋 Lista
       </Button>

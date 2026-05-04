@@ -96,8 +96,10 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
   const ageLabel = formatAge(activity.ageMin, activity.ageMax);
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
   const locationLabel = activity.location?.neighborhood ?? activity.location?.city?.name ?? '';
+  // eslint-disable-next-line react-hooks/purity -- Date.now() aquí es seguro: badge "Nuevo" tolera staleness entre renders
+  const nowMs = Date.now();
   const isNew = activity.status !== 'EXPIRED'
-    && Date.now() - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
+    && nowMs - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
 
   // ── Product Trust Signals ──
   const isFeatured = (activity.duplicatesCount ?? 0) >= 1;
@@ -112,7 +114,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
   const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowOfficial;
 
   const cardContent = (
-    <div className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all duration-200 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:-translate-y-0.5 overflow-hidden h-full'>
+    <div className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] transition-all duration-200 hover:shadow-[var(--hp-shadow-md)] hover:-translate-y-0.5 overflow-hidden h-full'>
 
       {/* ── Strip visual ─────────────────────────────────────────────── */}
       <div
@@ -137,7 +139,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Badge tipo — oculto en compact */}
         {!compact && !shouldShowFeatured && !shouldShowOfficial && !shouldShowPopular && (
-          <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+          <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-md)]'>
             {TYPE_LABELS[activity.type] ?? activity.type}
           </span>
         )}
@@ -150,7 +152,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             </span>
           )}
           {shouldShowOfficial && (
-            <span className='rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-900 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] border border-brand-200'>
+            <span className='rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-900 shadow-[var(--hp-shadow-md)] border border-brand-200'>
               🛡️ Oficial
             </span>
           )}
@@ -164,7 +166,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         {/* Badge precio */}
         {priceLabel !== 'No disponible' && (
           <span className={clsx(
-            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]',
+            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-[var(--hp-shadow-md)]',
             priceLabel === 'Gratis' ? 'bg-success-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
           )}>
             {priceLabel}
@@ -173,21 +175,21 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* Badge expirada */}
         {activity.status === 'EXPIRED' && (
-          <span className='absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+          <span className='absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-md)]'>
             Verificar disponibilidad
           </span>
         )}
 
         {/* Badge Destacado — proveedor premium puro (se quita si isFeatured manda arriba, para no sobrecargar) */}
         {activity.provider?.isPremium && !shouldShowFeatured && (
-          <span className='absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+          <span className='absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[var(--hp-shadow-md)]'>
             ⭐ Sponsor
           </span>
         )}
 
         {/* Badge Nuevo — últimos 7 días */}
         {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowOfficial && (
-          <span className='absolute bottom-1.5 left-2 rounded-full bg-info-500 px-2 py-0.5 text-xs font-bold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+          <span className='absolute bottom-1.5 left-2 rounded-full bg-info-500 px-2 py-0.5 text-xs font-bold text-white shadow-[var(--hp-shadow-md)]'>
             🆕 Nuevo
           </span>
         )}

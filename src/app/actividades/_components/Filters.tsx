@@ -568,7 +568,7 @@ export default function Filters({
           aria-autocomplete="list"
           aria-expanded={dropdownVisible}
           aria-haspopup="listbox"
-          className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 transition-all shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]${isPending
+          className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 transition-all shadow-[var(--hp-shadow-md)]${isPending
               ? 'border-brand-300 opacity-80 focus:ring-brand-100'
               : 'border-[var(--hp-border)] hover:border-[var(--hp-border-subtle)] focus:border-brand-500 focus:ring-brand-100'
             }`}

@@ -105,7 +105,7 @@ export default function SeguridadPage() {
           {CARDS.map(({ icon, title, subtitle, items }) => (
             <div
               key={title}
-              className='rounded-2xl border border-[var(--hp-border-subtle)] p-6 bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:border-[var(--hp-border)] hover:bg-[var(--hp-bg-subtle)] transition-all duration-200'
+              className='rounded-2xl border border-[var(--hp-border-subtle)] p-6 bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] hover:border-[var(--hp-border)] hover:bg-[var(--hp-bg-subtle)] transition-all duration-200'
             >
               {/* Icono + título */}
               <div className="flex items-start gap-3 mb-1">

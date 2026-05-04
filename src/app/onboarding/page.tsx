@@ -236,7 +236,7 @@ export default function OnboardingPage() {
           <p className="text-xs text-[var(--hp-text-muted)] mt-1">Configura tu cuenta en 2 minutos</p>
         </div>
 
-        <div className='bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] p-7 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+        <div className='bg-[var(--hp-bg-surface)] rounded-2xl border border-[var(--hp-border)] p-7 shadow-[var(--hp-shadow-md)]'>
           <StepDots step={step} />
 
           {step === 1 && (

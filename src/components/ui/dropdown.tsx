@@ -48,8 +48,9 @@ export function Dropdown({ children, className }: { children: ReactNode; classNa
   const triggerId = useId()
   const ref = useRef<HTMLDivElement>(null)
 
-  // Registro de items para la nevagación por teclado
+  // Registro de items para la navegación por teclado
   const itemsRef = useRef<HTMLElement[]>([])
+  const [itemCount, setItemCount] = useState(0)
 
   const registerItem = (el: HTMLElement) => {
     if (!itemsRef.current.includes(el)) {
@@ -59,12 +60,14 @@ export function Dropdown({ children, className }: { children: ReactNode; classNa
         (a, b) =>
           a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_PRECEDING ? 1 : -1
       )
+      setItemCount(itemsRef.current.length)
     }
     return itemsRef.current.indexOf(el)
   }
 
   const unregisterItem = (el: HTMLElement) => {
     itemsRef.current = itemsRef.current.filter((i) => i !== el)
+    setItemCount(itemsRef.current.length)
   }
 
   const toggle = () => {
@@ -114,7 +117,7 @@ export function Dropdown({ children, className }: { children: ReactNode; classNa
         triggerId,
         focusIndex,
         setFocusIndex,
-        itemCount: itemsRef.current.length,
+        itemCount,
         registerItem,
         unregisterItem,
       }}
@@ -180,7 +183,7 @@ export function DropdownMenu({ children, className }: { children: ReactNode; cla
       aria-orientation="vertical"
       aria-labelledby={ctx.triggerId}
       className={clsx(
-        'absolute right-0 mt-2 w-48 rounded-xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] border-[var(--hp-border-subtle)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
+        'absolute right-0 mt-2 w-48 rounded-xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] border-[var(--hp-border-subtle)] shadow-[var(--hp-shadow-md)] py-1 z-50 animate-in fade-in zoom-in-95 origin-top-right duration-100',
         className
       )}
       onKeyDown={(e) => {

@@ -595,7 +595,7 @@ export default async function ActividadDetallePage({
               <OutboundLink
                 activityId={id}
                 href={activity.sourceUrl}
-                className='flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-[var(--hp-action-primary-hover)] transition-colors'
+                className='flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-md)] hover:bg-[var(--hp-action-primary-hover)] transition-colors'
               >
               Ver sitio oficial
                 <span>↗</span>

@@ -37,7 +37,7 @@ export async function SimilarActivities({ activityId }: Props) {
             <Link
               key={act.id}
               href={activityPath(act.id, act.title)}
-              className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all overflow-hidden'
+              className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] hover:border-brand-300 hover:shadow-[var(--hp-shadow-md)] transition-all overflow-hidden'
             >
               {/* Imagen o gradiente */}
               <div

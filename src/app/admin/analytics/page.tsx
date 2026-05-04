@@ -85,7 +85,7 @@ export default function AnalyticsPage() {
         <p className="text-[var(--hp-text-secondary)] mt-1">Monitoreo de Discovery, Inventario y Navegación Multi-Ciudad.</p>
       </div>
       {/* Radiografía de Supply y Navegación (Tabla Principal) */}
-      <div className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] overflow-hidden'>
+      <div className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-md)] overflow-hidden'>
         <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)] flex justify-between items-center">
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Radiografía de Inventario (Vivo) y Discovery</h2>
           <div className="flex bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-lg p-1">
@@ -162,7 +162,7 @@ export default function AnalyticsPage() {
       {/* KPI Cards (Globales) */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* CTR Card */}
-        <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] p-6 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+        <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] p-6 shadow-[var(--hp-shadow-md)]'>
           <div className="text-sm font-semibold text-[var(--hp-text-secondary)] mb-1 tracking-wide uppercase">CTR Global (Exploración)</div>
           <div className="flex items-end gap-3">
             <span className="text-4xl font-extrabold text-[var(--hp-text-primary)]">{ctrRatio}%</span>
@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Conversion Card */}
-        <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] p-6 shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'>
+        <div className='bg-[var(--hp-bg-surface)] rounded-xl border border-[var(--hp-border)] p-6 shadow-[var(--hp-shadow-md)]'>
           <div className="text-sm font-semibold text-[var(--hp-text-primary)] mb-1 tracking-wide uppercase">Conversión a Fuente</div>
           <div className="flex items-end gap-3">
             <span className="text-4xl font-extrabold text-[var(--hp-text-primary)]">{convRatio}%</span>
@@ -186,7 +186,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
       {/* Raw Event Volumes */}
-      <div className='bg-[var(--hp-bg-surface)] border text-sm border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] overflow-hidden'>
+      <div className='bg-[var(--hp-bg-surface)] border text-sm border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-md)] overflow-hidden'>
         <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Tráfico Bruto por Evento</h2>
         </div>
@@ -206,7 +206,7 @@ export default function AnalyticsPage() {
         </div>
       </div>
       {/* Filter Analytics */}
-      <div className='bg-[var(--hp-bg-surface)] border text-sm border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] overflow-hidden'>
+      <div className='bg-[var(--hp-bg-surface)] border text-sm border-[var(--hp-border)] rounded-xl shadow-[var(--hp-shadow-md)] overflow-hidden'>
         <div className="px-6 py-4 border-b border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Intención y Refinamiento (Filtros)</h2>
           <p className="text-xs text-[var(--hp-text-muted)] mt-1">Uso de filtros facetados, tasa de fallos (0 resultados) y cruce con búsquedas de texto.</p>

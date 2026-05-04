@@ -63,7 +63,7 @@ export default async function PerfilPage() {
           Estructura: Avatar + datos | CTA "Editar perfil"
           El botón está visible sin scroll y es el único CTA principal.
       ─────────────────────────────────────────────────────────────────── */}
-      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius-xl)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] p-6">
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-[var(--hp-radius-xl)] shadow-[var(--hp-shadow-md)] p-6">
         <div className="flex items-start justify-between gap-4">
 
           {/* Avatar + datos */}
@@ -106,7 +106,7 @@ export default async function PerfilPage() {
           {/* CTA principal — único, visible sin scroll */}
           <Link
             href="/perfil/editar"
-            className='shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-sm font-semibold rounded-[var(--hp-radius-md)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-colors duration-[var(--hp-transition)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
+            className='shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white text-sm font-semibold rounded-[var(--hp-radius-md)] shadow-[var(--hp-shadow-md)] hover:shadow-[var(--hp-shadow-md)] transition-colors duration-[var(--hp-transition)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2'
           >
             <EditIcon />
             Editar información
@@ -124,7 +124,7 @@ export default async function PerfilPage() {
             (<Link
               key={stat.href}
               href={stat.href}
-              className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border-subtle)] rounded-[var(--hp-radius-lg)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] p-5 hover:border-brand-300 hover:shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] transition-all duration-[var(--hp-transition)] group'
+              className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border-subtle)] rounded-[var(--hp-radius-lg)] shadow-[var(--hp-shadow-md)] p-5 hover:border-brand-300 hover:shadow-[var(--hp-shadow-md)] transition-all duration-[var(--hp-transition)] group'
             >
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-2xl">{stat.icon}</span>

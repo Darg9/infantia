@@ -178,7 +178,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
 
   return (
     <div
-      className='relative rounded-2xl overflow-hidden border border-[var(--hp-border)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])]'
+      className='relative rounded-2xl overflow-hidden border border-[var(--hp-border)] shadow-[var(--hp-shadow-md)]'
       style={{ height }}
     >
       {/* Overlay: loading */}
@@ -203,7 +203,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       )}
       {/* Contador flotante */}
       {!loading && !error && markers.length > 0 && (
-        <div className='absolute bottom-4 left-4 z-20 rounded-full bg-[var(--hp-bg-surface)]/90 px-3 py-1.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] backdrop-blur-sm'>
+        <div className='absolute bottom-4 left-4 z-20 rounded-full bg-[var(--hp-bg-surface)]/90 px-3 py-1.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-md)] backdrop-blur-sm'>
           {markers.length} {markers.length === 1 ? 'actividad' : 'actividades'} en el mapa
         </div>
       )}

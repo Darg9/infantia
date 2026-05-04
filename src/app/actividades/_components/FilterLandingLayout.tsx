@@ -89,7 +89,7 @@ export function FilterLandingLayout({
               <div className="mt-8 flex justify-center">
                 <Link
                   href={filterUrl}
-                  className='inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-[var(--hp-shadow-md)])] hover:bg-brand-700 transition-colors'
+                  className='inline-flex items-center gap-2 rounded-xl bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-md)] hover:bg-brand-700 transition-colors'
                 >
                   {filterLabel}
                   <span>→</span>

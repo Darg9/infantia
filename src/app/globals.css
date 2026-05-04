@@ -182,10 +182,8 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   FEATURE FLAG: Surface System v1
-   Usado para validar contrastes suaves entre secciones sin romper el UI actual.
-   Solo se activa si <html className="hp-surfaces-v1"> está presente.
+   Surface System: fondo sutil para secciones alternadas en el Home.
 ───────────────────────────────────────────────────────────────────────────── */
-.hp-surfaces-v1 .hp-section-alt {
+.hp-section-alt {
   background-color: var(--hp-bg-subtle);
 }

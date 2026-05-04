@@ -64,6 +64,10 @@ export type DiscoveredLink = {
   anchorText: string;
   /** ISO date string extraída del <lastmod> del sitemap. Presente solo en fuentes XML. */
   lastmod?: string;
+  /** Título explícito del recurso, cuando el extractor lo puede inferir del HTML. */
+  title?: string;
+  /** Fragmento de texto descriptivo del recurso, extraído del HTML circundante. */
+  snippet?: string;
 };
 
 export const discoveredActivityUrlsSchema = z.object({

@@ -194,7 +194,9 @@ describe('ActivityCard', () => {
     it('muestra emoji cuando no hay imageUrl', () => {
       const { container } = render(<ActivityCard activity={baseActivity} />);
       // Sin imagen, se muestra un span con emoji y gradiente en el strip
-      const emojiSpan = container.querySelector('span.drop-shadow-[var(--hp-shadow-md)]');
+      // Nota: jsdom no puede parsear clases Tailwind con valores arbitrarios [var(...)],
+      // por eso usamos las clases base text-4xl y select-none que son selectores CSS válidos
+      const emojiSpan = container.querySelector('span.text-4xl.select-none');
       expect(emojiSpan).toBeInTheDocument();
     });
 

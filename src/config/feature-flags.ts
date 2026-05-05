@@ -30,7 +30,18 @@ export const FEATURE_FLAGS = {
    * Capa de optimización pre-Gemini para filtrar URLs basura.
    * - ENABLED: Activa la evaluación del ranking.
    * - MODE: 'shadow' (calcula pero usa baseline), 'hard' (aplica el ranking).
+   * - MODE_BY_SOURCE: override por dominio hostname (sin www).
+   *   Formato JSON en env: '{"culturarecreacionydeporte.gov.co":"hard"}'
+   *   Default en código: SCRD en hard (alta diferencia shadow vs baseline).
    */
   DISCOVERY_RANKING_ENABLED: process.env.DISCOVERY_RANKING_ENABLED !== 'false', // Default: true
   DISCOVERY_RANKING_MODE: (process.env.DISCOVERY_RANKING_MODE === 'hard' ? 'hard' : 'shadow') as 'hard' | 'shadow',
+  DISCOVERY_RANKING_MODE_BY_SOURCE: (() => {
+    const defaults: Record<string, 'hard' | 'shadow'> = {
+      'culturarecreacionydeporte.gov.co': 'hard',
+    };
+    const raw = process.env.DISCOVERY_RANKING_MODE_BY_SOURCE;
+    if (!raw) return defaults;
+    try { return JSON.parse(raw) as Record<string, 'hard' | 'shadow'>; } catch { return defaults; }
+  })(),
 } as const;

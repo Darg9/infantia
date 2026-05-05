@@ -313,21 +313,26 @@ export class ScrapingPipeline {
       linksForGemini = baseline;
     } else {
       // Antes de enviar a Gemini, ordenamos y seleccionamos el top según probabilidad
-      const { rankedPool, selected: rankedSelected, maxScore } = rankCandidates(allLinks, { maxPagesLimit: maxPages });
-      
-      if (FEATURE_FLAGS.DISCOVERY_RANKING_MODE === 'shadow') {
+      const { rankedPool, selected: rankedSelected, maxScore, zeroScorePct } = rankCandidates(allLinks, { maxPagesLimit: maxPages });
+
+      // Override por fuente tiene prioridad sobre el flag global
+      const effectiveMode: 'hard' | 'shadow' =
+        FEATURE_FLAGS.DISCOVERY_RANKING_MODE_BY_SOURCE[host] ?? FEATURE_FLAGS.DISCOVERY_RANKING_MODE;
+
+      if (effectiveMode === 'shadow') {
         linksForGemini = baseline;
-        
-        // Calcular overlap
+
+        // Calcular overlap entre selección rankeada y baseline sin ranking
         const baselineUrls = new Set(baseline.map(x => x.url));
         const overlap = rankedSelected.filter(x => baselineUrls.has(x.url)).length;
-        
+
         log.info(`[DISCOVERY:RANKING:SHADOW]`, {
-          source: new URL(listingUrl).hostname,
+          source: host,
           discovered: allLinks.length,
           maxPages,
           overlap,
-          overlapPct: `${((overlap / maxPages) * 100).toFixed(1)}%`,
+          overlapPct: `${((overlap / Math.max(maxPages, 1)) * 100).toFixed(1)}%`,
+          zeroScorePct: `${zeroScorePct}%`,
           avgScoreTop: rankedSelected.reduce((sum, x) => sum + x.score, 0) / (rankedSelected.length || 1),
           topScore: maxScore,
         });
@@ -340,10 +345,12 @@ export class ScrapingPipeline {
           linksForGemini = rankedSelected;
           const selectionEfficiency = rankedSelected.length / (allLinks.length || 1);
           log.info(`[DISCOVERY:RANKING:HARD]`, {
+            source: host,
             discovered: allLinks.length,
             rankedPool: rankedPool.length,
             selected: rankedSelected.length,
             topScore: maxScore,
+            zeroScorePct: `${zeroScorePct}%`,
             avgScoreSelected: rankedSelected.reduce((sum, x) => sum + x.score, 0) / (rankedSelected.length || 1),
             selectionEfficiency: `${(selectionEfficiency * 100).toFixed(1)}%`,
           });

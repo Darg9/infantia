@@ -80,8 +80,10 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
 
         {/* Cerrar */}
         <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className='absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] transition-colors'
+          className='absolute top-4 right-4 text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)]'
           aria-label="Cerrar"
         >
           ✕
@@ -97,6 +99,7 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               Una vez confirmado, vuelve aquí para enviar tu calificación.
             </p>
             <Button
+              variant="ghost"
               onClick={onClose}
               className="mt-4 text-sm text-brand-600 hover:underline font-medium"
             >
@@ -147,8 +150,9 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
 
               <Button
                 type="submit"
+                variant="primary"
                 disabled={loading}
-                className="w-full bg-brand-500 hover:bg-brand-600 disabled:bg-brand-300 text-white font-semibold py-2 px-4 rounded-lg text-sm transition-colors"
+                className="w-full py-2 rounded-lg text-sm font-semibold disabled:opacity-60"
               >
                 {loading
                   ? 'Un momento...'
@@ -163,8 +167,9 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               {mode === 'login' ? (
                 <>¿No tienes cuenta?{' '}
                   <Button
+                    variant="ghost"
                     onClick={() => { setMode('register'); setError(null) }}
-                    className="text-brand-600 font-medium hover:underline"
+                    className="p-0 h-auto text-brand-600 font-medium hover:underline"
                   >
                     Regístrate
                   </Button>
@@ -172,8 +177,9 @@ function LoginModal({ onSuccess, onClose }: LoginModalProps) {
               ) : (
                 <>¿Ya tienes cuenta?{' '}
                   <Button
+                    variant="ghost"
                     onClick={() => { setMode('login'); setError(null) }}
-                    className="text-brand-600 font-medium hover:underline"
+                    className="p-0 h-auto text-brand-600 font-medium hover:underline"
                   >
                     Inicia sesión
                   </Button>

@@ -77,12 +77,16 @@
   --hp-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --hp-shadow-md: 0 4px 8px rgba(0,0,0,0.08);
 
-  /* CATEGORY ACCENT
-     Opacidad del gradiente de categoría usado como contexto (no protagonista).
-     Light: 0.08 sobre blanco — tinte suave.
-     Dark: 0.12 (ver .dark) — compensa el fondo oscuro.
-     Uso: <div class="hp-category-accent" style={{ background: gradient }} /> */
-  --hp-category-accent-opacity: 0.08;
+  /* CONTEXT ACCENT
+     Opacidad para cualquier fondo de acento contextual (categoría, sección, estado).
+     Semántica: señal de contexto subordinada al contenido — nunca protagonista.
+     Light: 0.08  |  Dark: 0.12 (ver .dark) — compensa el fondo oscuro.
+
+     ✅ Permitido: cards en listados, heroes de detalle, secciones de discovery.
+     ❌ No usar: formularios, modales críticos, áreas donde afecte legibilidad.
+
+     Uso: <div class="hp-context-accent" style={{ background: gradient }} aria-hidden="true" /> */
+  --hp-context-accent-opacity: 0.08;
 }
 
 /* DARK */
@@ -107,7 +111,7 @@
   --hp-badge-provider-bg: rgba(99, 102, 241, 0.1);
   --hp-badge-provider-text: #818cf8;
 
-  --hp-category-accent-opacity: 0.12;
+  --hp-context-accent-opacity: 0.12;
 }
 
 /* ── Mapping a Tailwind v4 Utilities ── */
@@ -134,10 +138,13 @@
 
 /* ── Utilidades DS ── */
 
-/* Gradiente de categoría como contexto, no protagonista.
-   Opacidad ajustada por tema: 0.08 light / 0.12 dark. */
-.hp-category-accent {
-  opacity: var(--hp-category-accent-opacity);
+/* Fondo de acento contextual — cualquier gradiente o color como señal subordinada.
+   Self-contained: pointer-events y mix-blend-mode protegidos por defecto.
+   Opacidad por tema: 0.08 light / 0.12 dark. */
+.hp-context-accent {
+  opacity: var(--hp-context-accent-opacity);
+  pointer-events: none;
+  mix-blend-mode: normal;
 }
 
 /* ── Base ── */

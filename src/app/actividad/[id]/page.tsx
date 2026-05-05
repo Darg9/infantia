@@ -335,7 +335,7 @@ export default async function ActividadDetallePage({
 
             {/* Capa de gradiente a baja opacidad — contexto de categoría, no protagonista */}
             <div
-              className="absolute inset-0 pointer-events-none hp-category-accent"
+              className="absolute inset-0 hp-context-accent"
               style={{ background: gradient }}
               aria-hidden="true"
             />

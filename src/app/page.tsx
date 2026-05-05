@@ -226,24 +226,29 @@ export default async function HomePage() {
           {/* ================================================================ */}
           {/* B2B CTA — Captación de organizadores                            */}
           {/* ================================================================ */}
-          {/* Spacer: separa visualmente el flujo B2C (explorar) del B2B (publicar) */}
-          <div className="mt-16 md:mt-20" />
-          <div className="text-center max-w-2xl mx-auto bg-[var(--hp-bg-elevated)] border border-[var(--hp-border-subtle)] shadow-[0_8px_24px_rgba(0,0,0,0.06)] rounded-2xl p-6 md:p-8">
-            <h3 className="text-base md:text-lg font-semibold text-[var(--hp-text-primary)]">
-              ¿Ofreces actividades para niños y familias?
-            </h3>
-            <p className="text-sm text-[var(--hp-text-muted)] mt-1.5">
-              Llega a más interesados cerca de ti.
-            </p>
-            <Link
-              href="https://www.habitaplan.com/anunciate"
-              className='inline-flex items-center gap-1.5 mt-5 px-6 py-2.5 rounded-full bg-hp-action-primary text-white text-sm font-semibold hover:bg-hp-action-primary-hover shadow-[var(--hp-shadow-md)] transition-all'
-            >
-              Publica tu plan →
-            </Link>
-          </div>
         </div>
       </section>
+
+      {/* Franja full-width — contrasta en light y dark */}
+      <section className="w-full bg-gradient-to-r from-brand-600 to-brand-500 py-12 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-center sm:text-left">
+          <div>
+            <h3 className="text-lg md:text-xl font-bold text-white">
+              ¿Ofreces actividades para niños y familias?
+            </h3>
+            <p className="text-sm text-white/80 mt-1">
+              Llega a más interesados cerca de ti.
+            </p>
+          </div>
+          <Link
+            href="https://www.habitaplan.com/anunciate"
+            className="inline-flex items-center gap-1.5 shrink-0 px-6 py-3 rounded-full bg-white text-brand-600 text-sm font-bold hover:bg-brand-50 shadow-[var(--hp-shadow-md)] transition-all"
+          >
+            Publica tu plan →
+          </Link>
+        </div>
+      </section>
+
     </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
-import { Button } from '@/components/ui';
 
 import { useState } from 'react'
+import { Button } from '@/components/ui'
 
 interface StarRatingProps {
   value: number
@@ -31,14 +31,16 @@ export function StarRating({ value, onChange, readonly = false, size = 'md' }: S
           <Button
             key={star}
             type="button"
+            variant="ghost"
+            size="icon"
             disabled={readonly}
             onClick={() => onChange?.(star)}
             onMouseEnter={() => !readonly && setHovered(star)}
-            className={`${readonly ? 'cursor-default' : 'cursor-pointer'}transition-colors`}
+            className={`p-0.5 rounded ${readonly ? 'cursor-default' : 'cursor-pointer'}`}
             aria-label={`${star} estrella${star > 1 ? 's' : ''}`}
           >
             <svg
-              className={`${sizeClass}${active ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'}`}
+              className={`${sizeClass} transition-colors ${active ? 'text-brand-400' : 'text-[var(--hp-text-muted)]'}`}
               fill="currentColor"
               viewBox="0 0 20 20"
             >

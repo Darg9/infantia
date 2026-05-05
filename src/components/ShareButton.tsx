@@ -123,19 +123,21 @@ export function ShareButton({
   if (supportsWebShare) {
     return (
       <Button
+        variant="secondary"
         onClick={handleWebShare}
-        className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-200 transition-colors"
+        className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium"
       >
         <span>📤</span>Compartir
-              </Button>
+      </Button>
     );
   }
 
   return (
     <div className="relative w-full">
       <Button
+        variant="secondary"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-center gap-2 rounded-lg bg-brand-100 px-4 py-2.5 text-sm font-medium text-brand-600 hover:bg-brand-200 transition-colors"
+        className="w-full flex items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium"
       >
         <span>📤</span>
         Compartir

@@ -94,7 +94,9 @@ export function FavoriteButton({
       disabled={isLoading}
       aria-label={isFavorited ? 'Quitar de favoritos' : 'Guardar en favoritos'}
       title={isFavorited ? 'Quitar de favoritos' : 'Guardar en favoritos'}
-      className={`flex items-center justify-center rounded-full transition-all duration-150 ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'}${isFavorited
+      variant="ghost"
+      size="icon"
+      className={`flex items-center justify-center rounded-full transition-all duration-150 ${isLoading ? 'opacity-50 cursor-wait' : 'cursor-pointer'} ${isFavorited
           ? 'text-error-500 hover:text-error-400'
           : 'text-[var(--hp-text-muted)] hover:text-error-400'
         }`}

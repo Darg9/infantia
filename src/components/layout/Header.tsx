@@ -48,7 +48,7 @@ export async function Header() {
         aria-label="Sitio principal"
         className="hidden md:block bg-[var(--hp-bg-surface)] border-b border-[var(--hp-border)] transition-colors duration-[var(--hp-transition)]"
       >
-        <div className="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 relative w-[150px] h-10">
             <Image

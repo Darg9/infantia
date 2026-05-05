@@ -19,6 +19,7 @@ import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
 import { ActivityDetailMap } from '@/components/ActivityDetailMap';
 import OutboundLink from '@/components/OutboundLink';
+import { buttonVariants } from '@/components/ui';
 import ActivityViewTracker from '@/components/ActivityViewTracker';
 import clsx from 'clsx';
 import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
@@ -242,7 +243,7 @@ export default async function ActividadDetallePage({
       {/* JSON-LD: evento + breadcrumb */}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-      <div className="min-h-screen bg-[var(--hp-bg-page)]">
+      <div className="bg-[var(--hp-bg-page)]">
 
       {/* Breadcrumb visual */}
       <div className="mx-auto max-w-4xl px-4 pt-4">
@@ -329,24 +330,32 @@ export default async function ActividadDetallePage({
 
         ) : (
 
-          /* CASO 2: sin imagen → título protagonista, acento de color por categoría */
+          /* CASO 2: sin imagen → hero strip de color con emoji */
           (<div className="rounded-2xl overflow-hidden border border-[var(--hp-border)]">
-            {/* Barra de color de categoría */}
-            <div className="h-1.5 w-full" style={{ background: gradient }} />
-            <div className="bg-[var(--hp-bg-surface)] rounded-b-2xl p-6 sm:p-8 flex flex-col gap-3">
+
+            {/* Hero strip — fondo de gradiente de categoría + emoji centrado */}
+            <div
+              className="relative flex items-center justify-center h-36 sm:h-44"
+              style={{ background: gradient }}
+            >
+              <span className="text-7xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>
+              {/* Badge precio flotante */}
+              {priceLabel !== 'No disponible' && (
+                <span className={clsx(
+                  'absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-semibold shadow-[var(--hp-shadow-md)]',
+                  priceLabel === 'Gratis' ? 'bg-success-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
+                )}>
+                  {priceLabel}
+                </span>
+              )}
+            </div>
+
+            <div className="bg-[var(--hp-bg-surface)] p-6 sm:p-8 flex flex-col gap-3">
               {/* Chips de contexto */}
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-secondary)]">
                   {TYPE_LABELS[activity.type] ?? activity.type}
                 </span>
-                {priceLabel !== 'No disponible' && (
-                  <span className={clsx(
-                    'rounded-full px-3 py-1 text-xs font-semibold',
-                    priceLabel === 'Gratis' ? 'bg-success-100 text-success-700' : 'bg-brand-50 text-brand-700'
-                  )}>
-                    {priceLabel}
-                  </span>
-                )}
                 {activity.categories.map(({ category }) => (
                   <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-primary)]">
                     {category.name}
@@ -358,14 +367,6 @@ export default async function ActividadDetallePage({
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--hp-text-primary)] leading-tight">
                 {activity.title}
               </h1>
-
-              {/* Emoji + categoría como detalle visual secundario */}
-              <div className="flex items-center gap-2">
-                <span className="text-2xl select-none">{categoryEmoji}</span>
-                {mainCategory && (
-                  <span className="text-sm text-[var(--hp-text-secondary)]">{mainCategory.name}</span>
-                )}
-              </div>
 
               {/* Proveedor */}
               {activity.provider && (
@@ -427,7 +428,7 @@ export default async function ActividadDetallePage({
             {/* Proveedor */}
             {activity.provider && (
               <div className="rounded-2xl bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] p-5">
-                <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Organiza</h2>
+                <h2 className="text-sm font-semibold text-[var(--hp-text-secondary)] tracking-wide mb-3">Publicado por</h2>
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--hp-bg-subtle)] text-lg font-bold text-[var(--hp-text-primary)]">
                     {(activity.provider.name.match(/[a-zA-ZÀ-ÿ]/)?.[0] ?? activity.provider.name[0]).toUpperCase()}
@@ -595,10 +596,12 @@ export default async function ActividadDetallePage({
               <OutboundLink
                 activityId={id}
                 href={activity.sourceUrl}
-                className='flex items-center justify-center gap-2 rounded-2xl bg-[var(--hp-action-primary)] px-4 py-3 text-sm font-semibold text-white shadow-[var(--hp-shadow-md)] hover:bg-[var(--hp-action-primary-hover)] transition-colors'
+                target="_blank"
+                rel="noopener noreferrer"
+                className={buttonVariants({ variant: 'secondary', className: 'w-full rounded-2xl py-3' })}
               >
-              Ver sitio oficial
-                <span>↗</span>
+                Ver sitio oficial
+                <span aria-hidden="true">↗</span>
               </OutboundLink>
             )}
 

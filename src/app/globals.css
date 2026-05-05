@@ -76,6 +76,13 @@
   /* SHADOW */
   --hp-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
   --hp-shadow-md: 0 4px 8px rgba(0,0,0,0.08);
+
+  /* CATEGORY ACCENT
+     Opacidad del gradiente de categoría usado como contexto (no protagonista).
+     Light: 0.08 sobre blanco — tinte suave.
+     Dark: 0.12 (ver .dark) — compensa el fondo oscuro.
+     Uso: <div class="hp-category-accent" style={{ background: gradient }} /> */
+  --hp-category-accent-opacity: 0.08;
 }
 
 /* DARK */
@@ -99,6 +106,8 @@
 
   --hp-badge-provider-bg: rgba(99, 102, 241, 0.1);
   --hp-badge-provider-text: #818cf8;
+
+  --hp-category-accent-opacity: 0.12;
 }
 
 /* ── Mapping a Tailwind v4 Utilities ── */
@@ -121,6 +130,14 @@
 
   --color-hp-action-primary: var(--hp-action-primary);
   --color-hp-action-primary-hover: var(--hp-action-primary-hover);
+}
+
+/* ── Utilidades DS ── */
+
+/* Gradiente de categoría como contexto, no protagonista.
+   Opacidad ajustada por tema: 0.08 light / 0.12 dark. */
+.hp-category-accent {
+  opacity: var(--hp-category-accent-opacity);
 }
 
 /* ── Base ── */

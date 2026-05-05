@@ -1,6 +1,7 @@
 export type Intent =
   | { type: 'NAVIGATE'; to: string }
   | { type: 'TOGGLE_FAVORITE'; targetId: string; targetType: 'activity' | 'place'; returnTo: string }
+  | { type: 'RATE'; activityId: string; score: number; comment?: string; returnTo: string }
   | { type: 'GENERIC_ACTION'; name: string; payload?: Record<string, unknown>; returnTo?: string }
 
 const STORAGE_KEY = 'hp_intent'

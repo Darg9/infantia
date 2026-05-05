@@ -43,6 +43,25 @@ export default function IntentResolver() {
             return
           }
 
+          case 'RATE': {
+            const res = await fetch('/api/ratings', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                activityId: intent.activityId,
+                score: intent.score,
+                comment: intent.comment ?? null,
+              }),
+            })
+            if (res.ok) {
+              toast.success('¡Calificación enviada! ✓')
+            } else {
+              toast.error('No se pudo guardar la calificación')
+            }
+            router.replace(intent.returnTo)
+            return
+          }
+
           case 'GENERIC_ACTION': {
             router.replace(intent.returnTo ?? '/')
             return

@@ -24,4 +24,13 @@ export const FEATURE_FLAGS = {
    * Default: true (activo en producción)
    */
   PARSER_FALLBACK_ENABLED: process.env.PARSER_FALLBACK !== 'false',
+
+  /**
+   * Discovery Ranking (S53):
+   * Capa de optimización pre-Gemini para filtrar URLs basura.
+   * - ENABLED: Activa la evaluación del ranking.
+   * - MODE: 'shadow' (calcula pero usa baseline), 'hard' (aplica el ranking).
+   */
+  DISCOVERY_RANKING_ENABLED: process.env.DISCOVERY_RANKING_ENABLED !== 'false', // Default: true
+  DISCOVERY_RANKING_MODE: (process.env.DISCOVERY_RANKING_MODE === 'hard' ? 'hard' : 'shadow') as 'hard' | 'shadow',
 } as const;

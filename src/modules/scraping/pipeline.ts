@@ -14,6 +14,7 @@ import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
 import { evaluateActivityGate } from './quality/activity-gate';
 import { ScrapingStatus } from '../../generated/prisma/client';
+import { rankCandidates } from './ranking';
 
 const log = createLogger('scraping:pipeline');
 
@@ -303,11 +304,58 @@ export class ScrapingPipeline {
       return { sourceUrl: listingUrl, discoveredLinks: 0, filteredLinks: 0, results: [] };
     }
 
+    // ── DISCOVERY RANKING (Optimización de Presupuesto) ─────────────────────
+    let linksForGemini = allLinks;
+    const baseline = allLinks.slice(0, maxPages);
+
+    if (!FEATURE_FLAGS.DISCOVERY_RANKING_ENABLED) {
+      log.info(`[DISCOVERY:RANKING] Disabled. Using baseline (top ${maxPages}).`);
+      linksForGemini = baseline;
+    } else {
+      // Antes de enviar a Gemini, ordenamos y seleccionamos el top según probabilidad
+      const { rankedPool, selected: rankedSelected, maxScore } = rankCandidates(allLinks, { maxPagesLimit: maxPages });
+      
+      if (FEATURE_FLAGS.DISCOVERY_RANKING_MODE === 'shadow') {
+        linksForGemini = baseline;
+        
+        // Calcular overlap
+        const baselineUrls = new Set(baseline.map(x => x.url));
+        const overlap = rankedSelected.filter(x => baselineUrls.has(x.url)).length;
+        
+        log.info(`[DISCOVERY:RANKING:SHADOW]`, {
+          source: new URL(listingUrl).hostname,
+          discovered: allLinks.length,
+          maxPages,
+          overlap,
+          overlapPct: `${((overlap / maxPages) * 100).toFixed(1)}%`,
+          avgScoreTop: rankedSelected.reduce((sum, x) => sum + x.score, 0) / (rankedSelected.length || 1),
+          topScore: maxScore,
+        });
+      } else {
+        // HARD MODE
+        if (maxScore < 2) {
+          log.warn(`[DISCOVERY:RANKING] maxScore = ${maxScore} < 2. Aplicando fallback al orden original (baseline) para evitar under-selection.`);
+          linksForGemini = baseline;
+        } else {
+          linksForGemini = rankedSelected;
+          const selectionEfficiency = rankedSelected.length / (allLinks.length || 1);
+          log.info(`[DISCOVERY:RANKING:HARD]`, {
+            discovered: allLinks.length,
+            rankedPool: rankedPool.length,
+            selected: rankedSelected.length,
+            topScore: maxScore,
+            avgScoreSelected: rankedSelected.reduce((sum, x) => sum + x.score, 0) / (rankedSelected.length || 1),
+            selectionEfficiency: `${(selectionEfficiency * 100).toFixed(1)}%`,
+          });
+        }
+      }
+    }
+
     // Fase 2: Filtrar con Gemini cuáles son actividades
     log.info(`Fase 2: Filtrando links con IA... (fallback=${FEATURE_FLAGS.PARSER_FALLBACK_ENABLED})`);
     const activityUrls = FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
-      ? await discoverWithFallback(allLinks, listingUrl, this.analyzer)
-      : await this.analyzer.discoverActivityLinks(allLinks, listingUrl);
+      ? await discoverWithFallback(linksForGemini, listingUrl, this.analyzer)
+      : await this.analyzer.discoverActivityLinks(linksForGemini, listingUrl);
     log.info(`Links identificados como actividades: ${activityUrls.length}`);
 
     if (activityUrls.length === 0) {

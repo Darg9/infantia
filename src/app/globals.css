@@ -138,10 +138,20 @@
 
 /* ── Utilidades DS ── */
 
-/* Fondo de acento contextual — cualquier gradiente o color como señal subordinada.
-   Self-contained: pointer-events y mix-blend-mode protegidos por defecto.
-   Opacidad por tema: 0.08 light / 0.12 dark. */
+/* Fondo de acento contextual — señal visual subordinada al contenido, nunca protagonista.
+   Self-contained: position, inset, pointer-events y mix-blend-mode incluidos.
+   El padre solo necesita position:relative y overflow:hidden.
+   Opacidad por tema: 0.08 light / 0.12 dark.
+
+   ✅ Permitido: cards en listados, PDP solo como capa de fondo contextual, secciones de discovery.
+   ⚠️  Restringido: no superar opacidad que afecte legibilidad; no competir con imagen o título.
+   ❌  Prohibido: formularios, estados críticos (error/pago/confirmación), overlays, modales.
+
+   Regla clave: si eliminas el acento, el diseño debe seguir funcionando perfectamente.
+   Si no → está haciendo demasiado. */
 .hp-context-accent {
+  position: absolute;
+  inset: 0;
   opacity: var(--hp-context-accent-opacity);
   pointer-events: none;
   mix-blend-mode: normal;

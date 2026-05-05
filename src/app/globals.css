@@ -152,6 +152,7 @@
 .hp-context-accent {
   position: absolute;
   inset: 0;
+  z-index: 0;
   opacity: var(--hp-context-accent-opacity);
   pointer-events: none;
   mix-blend-mode: normal;

@@ -330,32 +330,32 @@ export default async function ActividadDetallePage({
 
         ) : (
 
-          /* CASO 2: sin imagen → hero strip de color con emoji */
-          (<div className="rounded-2xl overflow-hidden border border-[var(--hp-border)]">
+          /* CASO 2: sin imagen → gradiente sutil + emoji inline */
+          (<div className="relative rounded-2xl overflow-hidden border border-[var(--hp-border)]">
 
-            {/* Hero strip — fondo de gradiente de categoría + emoji centrado */}
+            {/* Capa de gradiente a baja opacidad — contexto de categoría, no protagonista */}
             <div
-              className="relative flex items-center justify-center h-36 sm:h-44"
-              style={{ background: gradient }}
-            >
-              <span className="text-7xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>
-              {/* Badge precio flotante */}
-              {priceLabel !== 'No disponible' && (
-                <span className={clsx(
-                  'absolute top-3 right-3 rounded-full px-3 py-1 text-xs font-semibold shadow-[var(--hp-shadow-md)]',
-                  priceLabel === 'Gratis' ? 'bg-success-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
-                )}>
-                  {priceLabel}
-                </span>
-              )}
-            </div>
+              className="absolute inset-0 pointer-events-none"
+              style={{ background: gradient, opacity: 0.08 }}
+              aria-hidden="true"
+            />
 
-            <div className="bg-[var(--hp-bg-surface)] p-6 sm:p-8 flex flex-col gap-3">
-              {/* Chips de contexto */}
+            {/* Contenido — sobre la capa de gradiente */}
+            <div className="relative p-6 sm:p-8 flex flex-col gap-3">
+
+              {/* Chips de contexto + precio */}
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-secondary)]">
                   {TYPE_LABELS[activity.type] ?? activity.type}
                 </span>
+                {priceLabel !== 'No disponible' && (
+                  <span className={clsx(
+                    'rounded-full px-3 py-1 text-xs font-semibold',
+                    priceLabel === 'Gratis' ? 'bg-success-100 text-success-700' : 'bg-brand-50 text-brand-700'
+                  )}>
+                    {priceLabel}
+                  </span>
+                )}
                 {activity.categories.map(({ category }) => (
                   <span key={category.id} className="rounded-full bg-[var(--hp-bg-subtle)] px-3 py-1 text-xs font-medium text-[var(--hp-text-primary)]">
                     {category.name}
@@ -363,8 +363,9 @@ export default async function ActividadDetallePage({
                 ))}
               </div>
 
-              {/* H1 — protagonista */}
+              {/* H1 — emoji inline como señal ligera de categoría */}
               <h1 className="text-3xl sm:text-4xl font-bold text-[var(--hp-text-primary)] leading-tight">
+                <span className="text-xl mr-2 select-none" aria-hidden="true">{categoryEmoji}</span>
                 {activity.title}
               </h1>
 

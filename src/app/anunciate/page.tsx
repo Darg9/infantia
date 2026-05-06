@@ -17,9 +17,9 @@ export default async function AnunciatePage() {
   ]);
 
   const stats = [
-    { label: 'Actividades indexadas', value: `${totalActivities}+` },
+    { label: 'Actividades publicadas', value: `${totalActivities}+` },
     { label: 'Fuentes activas', value: activeSources.toString() },
-    { label: 'Ciudades cubiertas', value: activeCities.toString() },
+    { label: 'Ciudades en expansión', value: activeCities.toString() },
   ];
 
   return (

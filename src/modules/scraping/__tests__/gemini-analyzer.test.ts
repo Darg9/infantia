@@ -406,7 +406,8 @@ describe('GeminiAnalyzer', () => {
       const assertion = expect(promise).rejects.toThrow('429 Too Many Requests');
       await vi.runAllTimersAsync();
       await assertion;
-      expect(mockGenerateContent).toHaveBeenCalledTimes(3); // MAX_RETRIES = 3
+      // Con rotación de keys: 3 key attempts × 3 MAX_RETRIES = 9 calls máximo
+      expect(mockGenerateContent).toHaveBeenCalledTimes(9);
     });
 
     it('no reintenta en error no retryable (400)', async () => {

@@ -15,7 +15,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { SmartLink } from '@/components/ui/smart-link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
@@ -285,9 +285,10 @@ function MobileDrawer({
             />
           </Link>
           <Button
+            variant="ghost"
+            size="icon"
             onClick={onClose}
             aria-label="Cerrar menú"
-            className="p-2 rounded-lg text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
           >
             <Icon icon={X} size="lg" />
           </Button>
@@ -363,25 +364,25 @@ function MobileDrawer({
         {/* Session footer */}
         <div className="border-t border-[var(--hp-border)] px-4 py-4">
           {session ? (
-            <Button
+            <button
               onClick={handleLogout}
               className="w-full px-3 py-2.5 rounded-lg text-sm font-medium text-error-500 hover:bg-error-50 dark:hover:bg-error-500/10 transition-colors text-left"
             >
               Cerrar sesión
-            </Button>
+            </button>
           ) : (
             <div className="space-y-2">
               <Link
                 href="/login"
                 onClick={onClose}
-                className="block w-full px-3 py-2.5 rounded-lg text-sm font-medium text-center border border-[var(--hp-border)] text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] transition-colors"
+                className={buttonVariants({ variant: 'secondary', size: 'md' }) + ' w-full justify-center'}
               >
                 Iniciar sesión
               </Link>
               <Link
                 href="/registro"
                 onClick={onClose}
-                className="block w-full px-3 py-2.5 rounded-lg text-sm font-medium text-center bg-brand-500 text-white hover:bg-brand-600 transition-colors"
+                className={buttonVariants({ variant: 'primary', size: 'md' }) + ' w-full justify-center'}
               >
                 Registrarse
               </Link>

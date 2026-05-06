@@ -145,21 +145,21 @@ export function ShareButton({
       {isOpen && (
         <div className='absolute right-0 mt-2 w-48 rounded-lg border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] z-50'>
           {/* Copiar vínculo (siempre al inicio) */}
-          <Button
+          <button
             onClick={() => {
               copyToClipboard()
               setIsOpen(false)
             }}
-            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-[var(--hp-bg-page)] transition-colors border-b border-[var(--hp-border)]${copied ? 'text-success-600' : 'text-[var(--hp-text-primary)]'}`}
+            className={`w-full px-4 py-2.5 text-left text-sm font-medium flex items-center gap-2 hover:bg-[var(--hp-bg-page)] transition-colors border-b border-[var(--hp-border)] ${copied ? 'text-success-600' : 'text-[var(--hp-text-primary)]'}`}
           >
             <span>{copied ? '✓' : '🔗'}</span>
             {copied ? 'Vínculo copiado' : 'Copiar vínculo'}
-          </Button>
+          </button>
 
           {/* Redes sociales en grid 2 columnas */}
           <div className="grid grid-cols-2 gap-0">
             {shareLinks.map((link) => (
-              <Button
+              <button
                 key={link.name}
                 onClick={() => {
                   if (link.onClick) {
@@ -169,11 +169,11 @@ export function ShareButton({
                   }
                   setIsOpen(false)
                 }}
-                className='px-3 py-2.5 text-xs font-medium text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] transition-colors border-r border-b border-[var(--hp-border)] last:border-r-0 flex items-center gap-1.5 justify-center'
+                className="px-3 py-2.5 text-xs font-medium text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] transition-colors border-r border-b border-[var(--hp-border)] last:border-r-0 flex items-center gap-1.5 justify-center"
               >
                 <span>{link.icon}</span>
-                <span className="hidden sm:inline">{link.name}</span>
-              </Button>
+                <span>{link.name}</span>
+              </button>
             ))}
           </div>
         </div>

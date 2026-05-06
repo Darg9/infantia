@@ -223,93 +223,118 @@ export class GeminiAnalyzer {
   }
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
-    const modelResult = await this.getModel({ systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 8192 });
-    if (!modelResult) {
-      log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
-      return this.mockAnalysis(url);
-    }
-
     const truncatedText = sourceText.substring(0, 6000);
     const userMessage = `URL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
 
-    try {
-      const { model, apiKey } = modelResult;
+    // Intenta hasta 3 veces (una por key disponible) rotando entre keys en caso de 429
+    const MAX_KEY_ATTEMPTS = 3;
+    let lastError: unknown;
 
-      await this.enforceRateLimit();
-      const result = await callWithRetry(
-        () => model.generateContent(userMessage),
-        'GEMINI',
-        apiKey,
-      );
-      const rawText = result.response.text();
-
-      // Limpiar posible markdown wrapping o whitespace
-      const jsonStr = rawText
-        .replace(/^```(?:json)?\s*/i, '')
-        .replace(/\s*```\s*$/, '')
-        .trim();
-
-      log.info(`Respuesta raw (primeros 500 chars): ${rawText.substring(0, 500)}`);
-
-      let parsed: unknown;
+    for (let keyAttempt = 1; keyAttempt <= MAX_KEY_ATTEMPTS; keyAttempt++) {
       try {
-        parsed = JSON.parse(jsonStr);
-      } catch (parseErr: unknown) {
-        const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
-        throw new Error(`Gemini retornó JSON inválido (${msg}): ${jsonStr.substring(0, 300)}`);
-      }
+        const modelResult = await this.getModel({ systemInstruction: SYSTEM_PROMPT, maxOutputTokens: 8192 });
+        if (!modelResult) {
+          log.warn('⚠️ GOOGLE_AI_STUDIO_KEY no encontrada. Usando resultado MOCK.');
+          return this.mockAnalysis(url);
+        }
 
-      // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
-      if (Array.isArray(parsed)) {
-        log.warn('Respuesta es array, tomando primer elemento.');
-        parsed = parsed[0];
-      }
+        const { model, apiKey } = modelResult;
 
-      // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
-      const rawParsed = parsed as Record<string, unknown>;
-
-      // Rechazo semántico temprano: Gemini NO declaró explícitamente que es una actividad (incluye null/undefined)
-      // Esto frena noticias, convocatorias, PQRS, y actúa como fail-safe si el schema se corrompe
-      if (rawParsed.isActivity !== true) {
-        log.info(`[GEMINI:isActivity=false] Contenido rechazado semánticamente (fail-safe): ${url}`);
-        return {
-          title: 'No es actividad',
-          description: '',
-          categories: ['General'],
-          audience: 'ALL' as const,
-          isActivity: false,
-          confidenceScore: 0,
-          currency: 'COP',
-        };
-      }
-
-      if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
-        log.warn('Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
-        return {
-          isActivity: false,
-          title: 'No identificado',
-          description: `No se encontró información de actividad infantil en ${url}`,
-          categories: ['Sin categoría'],
-          audience: 'ALL' as const,
-          confidenceScore: 0,
-          currency: 'COP',
-        };
-      }
-
-      const sanitized = sanitizeGeminiResponse(parsed as Record<string, unknown>);
-      const validated = activityNLPResultSchema.safeParse(sanitized);
-      if (!validated.success) {
-        log.error('Zod validation errors', { issues: validated.error.issues, raw: JSON.stringify(sanitized).substring(0, 300) });
-        throw new Error(
-          `Respuesta de Gemini no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+        await this.enforceRateLimit();
+        const result = await callWithRetry(
+          () => model.generateContent(userMessage),
+          'GEMINI',
+          apiKey,
         );
-      }
+        const rawText = result.response.text();
 
-      return validated.data;
-    } catch (error: unknown) {
-      log.error('Error en GeminiAnalyzer', { error });
-      throw error;
+        // Limpiar posible markdown wrapping o whitespace
+        const jsonStr = rawText
+          .replace(/^```(?:json)?\s*/i, '')
+          .replace(/\s*```\s*$/, '')
+          .trim();
+
+        log.info(`Respuesta raw (primeros 500 chars): ${rawText.substring(0, 500)}`);
+
+        let parsed: unknown;
+        try {
+          parsed = JSON.parse(jsonStr);
+        } catch (parseErr: unknown) {
+          const msg = parseErr instanceof Error ? parseErr.message : String(parseErr);
+          throw new Error(`Gemini retornó JSON inválido (${msg}): ${jsonStr.substring(0, 300)}`);
+        }
+
+        // Gemini a veces devuelve array en lugar de objeto — tomar el primer elemento
+        if (Array.isArray(parsed)) {
+          log.warn('Respuesta es array, tomando primer elemento.');
+          parsed = parsed[0];
+        }
+
+        // Si Gemini indica baja confianza (nada útil encontrado), devolver resultado vacío válido
+        const rawParsed = parsed as Record<string, unknown>;
+
+        // Rechazo semántico temprano: Gemini NO declaró explícitamente que es una actividad (incluye null/undefined)
+        // Esto frena noticias, convocatorias, PQRS, y actúa como fail-safe si el schema se corrompe
+        if (rawParsed.isActivity !== true) {
+          log.info(`[GEMINI:isActivity=false] Contenido rechazado semánticamente (fail-safe): ${url}`);
+          return {
+            title: 'No es actividad',
+            description: '',
+            categories: ['General'],
+            audience: 'ALL' as const,
+            isActivity: false,
+            confidenceScore: 0,
+            currency: 'COP',
+          };
+        }
+
+        if (rawParsed.confidenceScore !== undefined && Number(rawParsed.confidenceScore) < 0.1) {
+          log.warn('Confianza < 0.1 — el contenido no parece ser una actividad infantil.');
+          return {
+            isActivity: false,
+            title: 'No identificado',
+            description: `No se encontró información de actividad infantil en ${url}`,
+            categories: ['Sin categoría'],
+            audience: 'ALL' as const,
+            confidenceScore: 0,
+            currency: 'COP',
+          };
+        }
+
+        const sanitized = sanitizeGeminiResponse(parsed as Record<string, unknown>);
+        const validated = activityNLPResultSchema.safeParse(sanitized);
+        if (!validated.success) {
+          log.error('Zod validation errors', { issues: validated.error.issues, raw: JSON.stringify(sanitized).substring(0, 300) });
+          throw new Error(
+            `Respuesta de Gemini no cumple el schema: ${validated.error.issues.map((i) => `${i.path.join('.')}: ${i.message}`).join(', ')}`,
+          );
+        }
+
+        return validated.data;
+      } catch (error: unknown) {
+        lastError = error;
+        const err = error as { status?: number; httpStatusCode?: number; message?: string };
+        const status = err?.status ?? err?.httpStatusCode ?? 0;
+        const is429 = status === 429 || err?.message?.includes('429');
+
+        if (is429 && keyAttempt < MAX_KEY_ATTEMPTS) {
+          log.warn(
+            `[GEMINI] Error 429 con intento de key ${keyAttempt}/${MAX_KEY_ATTEMPTS}. ` +
+            `Rotando a siguiente key disponible...`,
+          );
+          // Continúa al siguiente intento con otra key
+          continue;
+        }
+
+        // Si no es 429 o es el último intento, lanzar error
+        log.error('Error en GeminiAnalyzer', { error, keyAttempt, maxAttempts: MAX_KEY_ATTEMPTS });
+        throw error;
+      }
     }
+
+    // Si llegamos aquí, agotamos todos los intentos de key
+    log.error('Agotados todos los intentos de key', { error: lastError });
+    throw lastError;
   }
 
   async discoverActivityLinks(links: DiscoveredLink[], sourceUrl: string): Promise<string[]> {

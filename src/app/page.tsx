@@ -144,9 +144,12 @@ export default async function HomePage() {
               Mobile: stack — ciudad arriba (border-b), buscador abajo (ancho completo)
               Desktop (sm+): fila — [Colombia ▼ |] [Buscar...] con divisor vertical
               focus-within: el ring se aplica en la cápsula, no en el input interno */}
-          <div className='mb-2 max-w-2xl mx-auto rounded-2xl shadow-[var(--hp-shadow-md)] border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] overflow-hidden flex flex-col sm:flex-row focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500 transition-all'>
+          <div className='mb-2 max-w-2xl mx-auto rounded-2xl shadow-[var(--hp-shadow-md)] border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] overflow-hidden flex flex-col sm:flex-row transition-all'>
             <CitySwitcher cities={cities} variant="hero" unified />
-            <div className="flex-1 min-w-0">
+            {/* focus-within solo en la sección de búsqueda — evita que el ring
+                abarque también el CitySwitcher. bg-subtle da feedback visual
+                sin necesitar ring (que sería recortado por overflow-hidden). */}
+            <div className="flex-1 min-w-0 focus-within:bg-[var(--hp-bg-subtle)] transition-colors">
               <HeroSearch unified />
             </div>
           </div>

@@ -9,17 +9,20 @@ export const metadata: Metadata = {
 
 const CONTACT_EMAIL = 'info@habitaplan.com';
 
+// Fuentes con yield real (dominios únicos que han producido actividades ACTIVE).
+// Actualizar manualmente cuando se incorpore una fuente nueva productiva.
+const ACTIVE_SOURCES_WITH_YIELD = 12;
+
 export default async function AnunciatePage() {
-  const [totalActivities, activeSources, activeCities] = await Promise.all([
+  const [totalActivities, activeCities] = await Promise.all([
     prisma.activity.count({ where: { status: 'ACTIVE' } }),
-    prisma.scrapingSource.count({ where: { isActive: true } }),
     prisma.city.count({ where: { isActive: true } }),
   ]);
 
   const stats = [
     { label: 'Actividades publicadas', value: `${totalActivities}+` },
-    { label: 'Fuentes activas', value: activeSources.toString() },
-    { label: 'Ciudades en expansión', value: activeCities.toString() },
+    { label: 'Fuentes activas', value: `${ACTIVE_SOURCES_WITH_YIELD}+` },
+    { label: 'Ciudades objetivo', value: activeCities.toString() },
   ];
 
   return (

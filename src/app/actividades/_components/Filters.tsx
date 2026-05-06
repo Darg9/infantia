@@ -904,7 +904,7 @@ export default function Filters({
           {/* Header */}
           <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--hp-border)]">
             <h2 className="text-base font-bold text-[var(--hp-text-primary)]">Filtros</h2>
-            <Button type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
+            <Button variant="ghost" type="button" onClick={() => setMobileOpen(false)} aria-label="Cerrar filtros"
               className="text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors text-xl leading-none w-8 h-8 flex items-center justify-center">
               ✕
             </Button>
@@ -951,14 +951,14 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
               <div className="grid grid-cols-2 gap-2">
                 {AGE_OPTIONS.map((o, i) => (
-                  <Button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
+                  <button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
                     className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
                       mobileAgeIdx === i
                         ? 'border-brand-500 bg-brand-600 text-white'
                         : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-brand-300'
                     }`}>
                     {o.label}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -967,15 +967,15 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ordenar por</label>
               <div className="flex flex-col gap-2">
                 {SORT_OPTIONS.map(o => (
-                  <Button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
-                    className={`rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
+                  <button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
+                    className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
                       mobileSort === o.value
-                        ? 'border-brand-500 bg-[var(--hp-bg-subtle)] text-brand-700'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-[var(--hp-border-subtle)]'
+                        ? 'border-brand-500 bg-brand-50 text-brand-700'
+                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-brand-300'
                     }`}>
                     {o.label}
                     {mobileSort === o.value && <span className="float-right text-brand-500">✓</span>}
-                  </Button>
+                  </button>
                 ))}
               </div>
             </div>
@@ -983,12 +983,12 @@ export default function Filters({
 
           {/* Footer */}
           <div className="border-t border-[var(--hp-border)] px-5 py-4 flex gap-3 bg-[var(--hp-bg-surface)]">
-            <Button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
+            <button type="button" onClick={clearMobile} disabled={!mobileHasChanges}
               className="flex-1 rounded-xl border border-[var(--hp-border)] py-3 text-sm font-medium text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-page)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
               Limpiar
-            </Button>
+            </button>
             <Button type="button" onClick={applyMobile}
-              className="flex-[2] rounded-xl bg-brand-600 py-3 text-sm font-semibold text-white hover:bg-brand-700 active:bg-brand-800 transition-colors">
+              className="flex-[2] rounded-xl py-3 text-sm font-semibold">
               Aplicar filtros
             </Button>
           </div>

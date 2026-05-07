@@ -3,7 +3,7 @@ import { Button, Input } from '@/components/ui';
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import NextImage from 'next/image'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { useToast } from '@/components/ui/toast'
 import { useBeforeUnload } from '@/hooks/useBeforeUnload'
@@ -486,7 +486,7 @@ export default function EditarPerfilPage() {
             >
               {/* Avatar image or initials placeholder */}
               {avatarPreview ? (
-                <Image
+                <NextImage
                   src={avatarPreview}
                   alt="Foto de perfil"
                   width={80}

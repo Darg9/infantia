@@ -3,17 +3,16 @@
 // =============================================================================
 // ThemeProvider — Sistema de tema light/dark (HabitaPlan)
 //
-// Fuente de verdad: la clase "dark" en <html>, que el script anti-flash
-// ya setea correctamente antes del render. No recalculamos el tema aquí,
-// solo lo leemos y exponemos la capacidad de cambiarlo.
+// Fuente de verdad: localStorage.theme (misma prioridad que el script anti-flash).
 //
 // Prioridad:
 //   1. localStorage.theme  → elección manual del usuario
-//   2. prefers-color-scheme → valor inicial del sistema
+//   2. prefers-color-scheme → fallback del sistema
 //
-// Funcionalidades de producción:
-//   - SSR-safe: guard typeof window en initializer (ajuste 2)
-//   - Cross-tab sync: storage event propaga el tema a otras pestañas (ajuste 1)
+// Funcionalidades:
+//   - SSR-safe: guard typeof window en useState initializer
+//   - Cross-tab sync: storage event propaga el tema a otras pestañas
+//   - Sin setState síncrono en effects (eslint react-hooks/set-state-in-effect)
 // =============================================================================
 
 import { createContext, useContext, useEffect, useState, useCallback } from 'react'
@@ -30,34 +29,32 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 })
 
+function resolveTheme(): Theme {
+  if (typeof window === 'undefined') return 'light'
+  const saved = localStorage.getItem('theme')
+  if (saved === 'dark' || saved === 'light') return saved
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+}
+
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  // Leer la fuente de verdad directamente desde <html> (ya seteada por el
-  // script anti-flash). Nunca recalcular para evitar desincronización.
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-  })
+  // Leer fuente de verdad (localStorage) en el initializer — sin efecto síncrono.
+  const [theme, setTheme] = useState<Theme>(resolveTheme)
 
-  // Sincronización inicial + cross-tab:
-  // - En mount, lee el estado real del <html> (defensivo contra hydration gaps)
-  // - Escucha el evento 'storage' para propagar cambios desde otras pestañas
-  //   sin reload. Si el usuario cambia el tema en tab A, tab B lo refleja
-  //   instantáneamente.
+  // Efecto 1: re-aplicar clase CSS si la hidratación la eliminó.
+  // No llama setState — solo opera sobre el DOM.
   useEffect(() => {
-    // SSR guard redundante pero explícito (ajuste 2)
-    if (typeof window === 'undefined') return
+    document.documentElement.classList.toggle('dark', theme === 'dark')
+  }, [theme])
 
-    // Sincronización inicial
-    const current = document.documentElement.classList.contains('dark') ? 'dark' : 'light'
-    setTheme(current)
-
-    // Cross-tab sync (ajuste 1)
+  // Efecto 2: cross-tab sync. setState solo dentro del callback del evento
+  // (no sincrónico en el body del effect) → cumple eslint set-state-in-effect.
+  useEffect(() => {
     function handleStorageChange(e: StorageEvent) {
       if (e.key !== 'theme') return
       const next = e.newValue
       if (next !== 'dark' && next !== 'light') return
       document.documentElement.classList.toggle('dark', next === 'dark')
-      setTheme(next)
+      setTheme(next as Theme)
     }
 
     window.addEventListener('storage', handleStorageChange)

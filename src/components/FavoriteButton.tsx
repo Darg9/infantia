@@ -69,7 +69,7 @@ export function FavoriteButton({
             action: { label: 'Ver favoritos →', href: '/perfil/favoritos' }
           })
         } else {
-          toast.info('Eliminado de favoritos', {
+          toast.success('Eliminado de favoritos', {
             action: { label: 'Deshacer', onClick: () => handleToggle(true) }
           })
         }

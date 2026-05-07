@@ -64,6 +64,9 @@
   --hp-badge-provider-bg: #e0e7ff;
   --hp-badge-provider-text: #4338ca;
 
+  /* INTERACTIVE CONTROLS (toggles, sliders, progress) */
+  --hp-control-track: #cbd5e1;   /* track inactivo — gris slate, visible sobre white */
+
   /* ACTION */
   --hp-action-primary: #ff8c00;
   --hp-action-primary-hover: #e67e00;
@@ -110,6 +113,8 @@
 
   --hp-badge-provider-bg: rgba(99, 102, 241, 0.1);
   --hp-badge-provider-text: #818cf8;
+
+  --hp-control-track: #374151;   /* track inactivo — gris, visible sobre #111827 */
 
   --hp-context-accent-opacity: 0.12;
 }

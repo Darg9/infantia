@@ -1,9 +1,8 @@
 'use client';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
-import type { Metadata } from 'next'
 
 type ContactCategory = 'general' | 'content_removal' | 'data_access' | 'data_claim' | 'report_error' | 'other';
 type DataRightType = 'access' | 'update' | 'rectification' | 'deletion' | 'revocation';
@@ -135,7 +134,7 @@ export default function ContactoPage() {
             value={category}
             onChange={(e) => setCategory(e.target.value as ContactCategory)}
             required
-            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent [color-scheme:light] dark:[color-scheme:dark]"
           >
             <option value="">Seleccione un motivo</option>
             {CONTACT_CATEGORIES.map((c) => (
@@ -154,7 +153,7 @@ export default function ContactoPage() {
               value={tipoDerecho}
               onChange={(e) => setTipoDerecho(e.target.value as DataRightType)}
               required
-              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent [color-scheme:light] dark:[color-scheme:dark]"
             >
               <option value="">Seleccione el tipo de derecho</option>
               {DATA_RIGHT_TYPES.map((t) => (
@@ -174,7 +173,7 @@ export default function ContactoPage() {
             type="text"
             value={nombre}
             onChange={(e) => setNombre(e.target.value)}
-            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent [color-scheme:light] dark:[color-scheme:dark]"
             placeholder="Tu nombre"
           />
         </div>
@@ -190,7 +189,7 @@ export default function ContactoPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent [color-scheme:light] dark:[color-scheme:dark]"
             placeholder="tu@correo.com"
           />
         </div>
@@ -207,7 +206,7 @@ export default function ContactoPage() {
               value={actividadUrl}
               onChange={(e) => setActividadUrl(e.target.value)}
               required={isTakedown}
-              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+              className="w-full px-3 py-2 border border-[var(--hp-border)] rounded-lg text-sm bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent [color-scheme:light] dark:[color-scheme:dark]"
               placeholder="https://habitaplan.com/actividades/..."
             />
             <p className="text-xs text-[var(--hp-text-muted)] mt-1">Copie la URL de la actividad desde la barra de su navegador</p>

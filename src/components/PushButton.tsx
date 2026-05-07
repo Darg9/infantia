@@ -1,5 +1,4 @@
 'use client';
-import { Button } from '@/components/ui';
 
 // =============================================================================
 // PushButton — solicita permiso de notificaciones push y gestiona suscripción
@@ -113,26 +112,30 @@ export function PushButton() {
 
   const checked = state === 'subscribed'
   return (
-    <Button
+    <button
       type="button"
       role="switch"
       aria-checked={checked}
+      aria-label={checked ? 'Desactivar notificaciones push' : 'Activar notificaciones push'}
       disabled={busy}
       onClick={checked ? unsubscribe : subscribe}
-      className={`relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors ${
+      className={[
+        'relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 focus-visible:ring-offset-2',
         busy
-          ? 'bg-[var(--hp-bg-surface)] cursor-wait'
+          ? 'cursor-wait bg-[var(--hp-control-track)]'
           : checked
           ? 'bg-brand-500 cursor-pointer'
-          : 'bg-[var(--hp-bg-surface)] cursor-pointer'
-      }`}
+          : 'bg-[var(--hp-control-track)] cursor-pointer',
+      ].join(' ')}
     >
       <span
-        className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-[var(--hp-bg-surface)] shadow transition-transform ${
-          checked ? 'translate-x-5' : 'translate-x-0'
-        }`}
+        className={[
+          'pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200',
+          checked ? 'translate-x-5' : 'translate-x-0',
+        ].join(' ')}
       />
-    </Button>
+    </button>
   );
 }
 

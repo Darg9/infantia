@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
+import Image from 'next/image'
 import { StarRating } from '@/components/StarRating'
 import { activityPath } from '@/lib/activity-url'
 
@@ -25,7 +26,7 @@ export default async function CalificacionesPage() {
   })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl px-4 py-8">
       <div className="flex items-center gap-3 mb-6">
         <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Calificaciones</h1>
         {ratings.length > 0 && (
@@ -58,9 +59,12 @@ export default async function CalificacionesPage() {
             >
               {/* Image or placeholder */}
               {rating.activity.imageUrl ? (
-                <img
+                <Image
                   src={rating.activity.imageUrl}
                   alt=""
+                  width={64}
+                  height={64}
+                  unoptimized
                   className="w-16 h-16 rounded-xl object-cover shrink-0"
                 />
               ) : (

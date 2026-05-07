@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { DeleteChildButton } from './DeleteChildButton'
+import { buttonVariants } from '@/components/ui/button'
 
 export const metadata: Metadata = {
   title: 'Tu familia | HabitaPlan',
@@ -27,7 +28,7 @@ export default async function HijosPage() {
   })
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div className="max-w-2xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Tu familia</h1>
@@ -37,7 +38,7 @@ export default async function HijosPage() {
         </div>
         <Link
           href="/perfil/hijos/nuevo"
-          className="bg-brand-500 hover:bg-brand-600 text-white text-sm font-medium px-4 py-2 rounded-full transition-colors"
+          className={buttonVariants({ variant: 'primary', size: 'sm' })}
         >
           + Agregar
         </Link>
@@ -45,13 +46,14 @@ export default async function HijosPage() {
       {children.length === 0 ? (
         <div className="text-center py-16 border border-dashed border-[var(--hp-border)] rounded-2xl">
           <p className="text-4xl mb-3">👶</p>
-          <p className="text-[var(--hp-text-secondary)] text-sm mb-1">Aún no has agregado niñas o niños.</p>
-          <p className="text-[var(--hp-text-muted)] text-xs mb-4">Agrega una niña o niño para recibir mejores recomendaciones.</p>
-          <Link
-            href="/perfil/hijos/nuevo"
-            className="text-brand-600 text-sm font-medium hover:underline"
-          >
-            Agregar niña o niño
+          <p className="text-[var(--hp-text-primary)] font-medium text-sm mb-1">
+            Aún no has agregado niñas o niños.
+          </p>
+          <p className="text-[var(--hp-text-muted)] text-xs mb-5">
+            Incluye un menor para recibir mejores recomendaciones.
+          </p>
+          <Link href="/perfil/hijos/nuevo" className={buttonVariants({ variant: 'primary', size: 'sm' })}>
+            + Agregar niña o niño
           </Link>
         </div>
       ) : (

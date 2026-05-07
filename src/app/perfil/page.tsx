@@ -9,6 +9,7 @@ import type { Metadata } from 'next'
 import { requireAuth, getOrCreateDbUser } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import Link from 'next/link'
+import Image from 'next/image'
 
 export const metadata: Metadata = {
   title: 'Tu cuenta | HabitaPlan',
@@ -58,7 +59,7 @@ export default async function PerfilPage() {
   const initial = (displayName?.[0] ?? user.email?.[0] ?? '?').toUpperCase()
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
+    <div className="max-w-3xl px-4 py-8 space-y-6">
       {/* ── Header del perfil ──────────────────────────────────────────────
           Estructura: Avatar + datos | CTA "Editar perfil"
           El botón está visible sin scroll y es el único CTA principal.
@@ -70,9 +71,12 @@ export default async function PerfilPage() {
           <div className="flex items-center gap-4 min-w-0">
             {/* Avatar */}
             {avatarUrl ? (
-              <img
+              <Image
                 src={avatarUrl}
                 alt={displayName}
+                width={64}
+                height={64}
+                unoptimized
                 className="w-16 h-16 rounded-full object-cover ring-2 ring-[var(--hp-border)] shrink-0"
               />
             ) : (

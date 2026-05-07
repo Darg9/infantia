@@ -239,6 +239,7 @@ export default function Filters({
 
     // Actualizar referencia para la siguiente comparación
     prevFiltersRef.current = { categoryId, cityId, price, ageMin, ageMax, type, audience, sort };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search, ageMin, ageMax, categoryId, cityId, price, sort, type, audience, total]);
   // ↑ `total` en las deps es intencional: garantiza que el disparo usa el conteo post-SSR correcto.
 
@@ -511,7 +512,7 @@ export default function Filters({
   // ── Estilos ───────────────────────────────────────────────────────────────
 
   function selectCls(active: boolean) {
-    const base = 'rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer';
+    const base = 'rounded-xl border px-3 py-2 text-sm focus:outline-none focus:ring-2 transition-colors cursor-pointer [color-scheme:light] dark:[color-scheme:dark]';
     return `${base} ${active
       ? 'border-brand-500 bg-[var(--hp-bg-subtle)] text-brand-700 font-medium focus:ring-brand-100'
       : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] hover:border-[var(--hp-border-subtle)] focus:border-brand-400 focus:ring-brand-100'
@@ -533,18 +534,17 @@ export default function Filters({
       <div className="relative" ref={searchContainerRef}>
 
         {/* Lupa — clickeable, dispara búsqueda */}
-        <Button
+        <button
           type="button"
-          size="icon"
           onClick={handleSearchSubmit}
           aria-label="Buscar"
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)] hover:text-brand-500 transition-colors z-10"
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-[var(--hp-text-muted)] hover:text-brand-500 transition-colors z-10 p-1"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
               d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
           </svg>
-        </Button>
+        </button>
 
         {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- aria-expanded en input de búsqueda es patrón combobox estándar */}
         <input
@@ -800,13 +800,13 @@ export default function Filters({
             <span className="text-xs font-bold text-brand-700 bg-[var(--hp-bg-subtle)] px-2.5 py-1 rounded-full">
                {chips.length} activo{chips.length !== 1 ? 's' : ''}
             </span>
-            <Button
+            <button
               type="button"
               onClick={handleReset}
               className="text-sm text-[var(--hp-text-muted)] hover:text-brand-500 underline underline-offset-2 whitespace-nowrap transition-colors"
             >
               Limpiar filtros
-            </Button>
+            </button>
           </>
         )}
       </div>
@@ -814,7 +814,7 @@ export default function Filters({
       {/* CONTROLES MOBILE                                                 */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <div className="flex sm:hidden gap-2">
-        <Button
+        <button
           type="button"
           onClick={openMobile}
           className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-sm font-medium transition-colors ${
@@ -832,15 +832,15 @@ export default function Filters({
               {chips.length}
             </span>
           )}
-        </Button>
+        </button>
         {hasFilters && (
-          <Button
+          <button
             type="button"
             onClick={handleReset}
             className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline underline-offset-2 transition-colors self-center"
           >
             Limpiar
-          </Button>
+          </button>
         )}
       </div>
       {/* ════════════════════════════════════════════════════════════════ */}
@@ -854,14 +854,14 @@ export default function Filters({
               className="inline-flex items-center gap-1.5 rounded-full border border-brand-200 bg-[var(--hp-bg-subtle)] px-3 py-1 text-sm font-medium text-brand-700"
             >
               {chip.label}
-              <Button
+              <button
                 type="button"
                 onClick={chip.onRemove}
                 aria-label={`Quitar filtro ${chip.label}`}
                 className="ml-0.5 text-brand-400 hover:text-brand-700 transition-colors leading-none"
               >
                 ✕
-              </Button>
+              </button>
             </span>
           ))}
         </div>
@@ -879,10 +879,10 @@ export default function Filters({
           <span className="text-[var(--hp-text-secondary)]">
             No hay actividades con estos filtros.{' '}
             {hasFilters && (
-              <Button type="button" onClick={handleReset}
+              <button type="button" onClick={handleReset}
                 className="text-brand-600 hover:underline font-medium">
                 Limpiar filtros
-              </Button>
+              </button>
             )}
           </span>
         ) : (
@@ -916,7 +916,7 @@ export default function Filters({
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Categoría</label>
               <select value={mobileCatId} onChange={e => setMobileCatId(e.target.value)}
-                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none [color-scheme:light] dark:[color-scheme:dark]">
                 <option value="">Todas las categorías</option>
                 {facets.validCategories.map(c => (
                   <option key={c.id} value={c.id}>{c.name} ({c._count.activities})</option>
@@ -927,7 +927,7 @@ export default function Filters({
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Precio</label>
               <select value={mobilePrice} onChange={e => setMobilePrice(e.target.value)}
-                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
+                className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none [color-scheme:light] dark:[color-scheme:dark]">
                 <option value="">Cualquier precio</option>
                 <option value="free">Solo gratis</option>
                 <option value="paid">Con precio visible</option>
@@ -938,7 +938,7 @@ export default function Filters({
               <div>
                 <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ubicación</label>
                 <select value={mobileCityId} onChange={e => setMobileCityId(e.target.value)}
-                  className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none">
+                  className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none [color-scheme:light] dark:[color-scheme:dark]">
                   <option value="">Todas las ciudades</option>
                   {facets.availableCities.map(c => (
                     <option key={c.id} value={c.id}>{c.name}</option>

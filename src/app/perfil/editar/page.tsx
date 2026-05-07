@@ -3,8 +3,10 @@ import { Button, Input } from '@/components/ui';
 
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { useToast } from '@/components/ui/toast'
+import { useBeforeUnload } from '@/hooks/useBeforeUnload'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 // Alineado con Supabase Auth password policy (mínimo 8 caracteres, custom desde S45).
@@ -307,6 +309,10 @@ export default function EditarPerfilPage() {
   }, [toast])
 
   const isDirty = name !== initialName || avatarFile !== null
+  const isPasswordDirty = newPassword !== '' || confirmPassword !== ''
+
+  // Alerta nativa del browser si el usuario intenta salir con cambios sin guardar
+  useBeforeUnload(isDirty || isPasswordDirty)
 
   const handleBasicSave = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
@@ -437,7 +443,7 @@ export default function EditarPerfilPage() {
   ]
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
+    <div className="max-w-2xl px-4 sm:px-6 py-8 sm:py-12 space-y-8">
       {/* ── Page header ── */}
       <div>
         <h1 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[var(--hp-text-primary)] dark:text-white">
@@ -480,10 +486,13 @@ export default function EditarPerfilPage() {
             >
               {/* Avatar image or initials placeholder */}
               {avatarPreview ? (
-                <img
+                <Image
                   src={avatarPreview}
                   alt="Foto de perfil"
-                  className='w-20 h-20 rounded-full object-cover ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)] group-hover/avatar:ring-brand-400 transition-all'
+                  width={80}
+                  height={80}
+                  unoptimized
+                  className='w-20 h-20 rounded-full object-cover ring-2 ring-[var(--hp-border)] group-hover/avatar:ring-brand-400 transition-all'
                 />
               ) : (
                 <div
@@ -590,9 +599,9 @@ export default function EditarPerfilPage() {
             )}
             <Button
               type="submit"
+              variant="primary"
               disabled={!isDirty || basicLoading || !nameLoaded}
               aria-busy={basicLoading}
-              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-brand-500 hover:bg-brand-600 active:bg-brand-700 text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2'
             >
               {basicLoading ? (
                 <>
@@ -643,10 +652,10 @@ export default function EditarPerfilPage() {
               required
               autoComplete="new-password"
               rightSlot={
-                <Button
+                <button
                   type="button"
                   onClick={() => setShowNew((v) => !v)}
-                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] dark:hover:text-[var(--hp-text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded'
+                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded p-1'
                   aria-label={showNew ? 'Ocultar nueva contraseña' : 'Mostrar nueva contraseña'}
                 >
                   {showNew ? (
@@ -654,7 +663,7 @@ export default function EditarPerfilPage() {
                   ) : (
                     <EyeIcon className="w-4 h-4" />
                   )}
-                </Button>
+                </button>
               }
             />
 
@@ -722,10 +731,10 @@ export default function EditarPerfilPage() {
               required
               autoComplete="new-password"
               rightSlot={
-                <Button
+                <button
                   type="button"
                   onClick={() => setShowConfirm((v) => !v)}
-                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] dark:hover:text-[var(--hp-text-muted)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded'
+                  className='text-[var(--hp-text-muted)] hover:text-[var(--hp-text-secondary)] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 rounded p-1'
                   aria-label={showConfirm ? 'Ocultar confirmación de contraseña' : 'Mostrar confirmación de contraseña'}
                 >
                   {showConfirm ? (
@@ -733,7 +742,7 @@ export default function EditarPerfilPage() {
                   ) : (
                     <EyeIcon className="w-4 h-4" />
                   )}
-                </Button>
+                </button>
               }
             />
 
@@ -765,9 +774,9 @@ export default function EditarPerfilPage() {
             )}
             <Button
               type="submit"
+              variant="secondary"
               disabled={passLoading || !newPassword || !confirmPassword}
               aria-busy={passLoading}
-              className='inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold border-2 border-[var(--hp-border-subtle)] text-[var(--hp-text-primary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-surface)] hover:text-white dark:hover:text-white hover:border-[var(--hp-border-subtle)] disabled:opacity-40 disabled:cursor-not-allowed transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--hp-border)] dark:focus:ring-[var(--hp-border)] focus:ring-offset-2'
             >
               {passLoading ? (
                 <>

@@ -12,6 +12,7 @@ import { activityPath } from '@/lib/activity-url';
 import { useActivityHistory } from '@/hooks/useActivityHistory';
 import { useToast } from '@/components/ui/toast';
 import { Trash2 } from 'lucide-react';
+import type { HistoryEntry } from '@/hooks/useActivityHistory';
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -37,10 +38,10 @@ export default function HistorialPage() {
     toast.success('Historial borrado completamente');
   };
 
-  const handleRemoveItem = (e: React.MouseEvent, entry: any) => {
+  const handleRemoveItem = (e: React.MouseEvent, entry: HistoryEntry) => {
     e.preventDefault(); // Prevenir navegación del Link
     removeFromHistory(entry.activityId);
-    toast.info('Eliminado del historial', {
+    toast.success('Eliminado del historial', {
       action: {
         label: 'Deshacer',
         onClick: () => restoreToHistory(entry),
@@ -51,7 +52,7 @@ export default function HistorialPage() {
   // ── Skeleton durante SSR y primer render ─────────────────────────────────
   if (!mounted) {
     return (
-      <div className="max-w-3xl mx-auto px-4 py-8">
+      <div className="max-w-3xl px-4 py-8">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Historial</h1>
         </div>
@@ -74,7 +75,7 @@ export default function HistorialPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8">
+    <div className="max-w-3xl px-4 py-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">Historial</h1>

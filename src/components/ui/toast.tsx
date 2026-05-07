@@ -29,7 +29,6 @@
 
 import { createContext, useCallback, useContext, useReducer, useRef } from 'react'
 import { clsx } from 'clsx'
-import { Button } from '@/components/ui/button'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -211,7 +210,7 @@ const TOAST_STYLES: Record<ToastType, string> = {
   success: 'bg-success-600 text-white',
   error:   'bg-error-600 text-white',
   warning: 'bg-warning-500 text-white',
-  info:    'bg-hp-text-primary text-hp-bg-surface',
+  info:    'bg-slate-700 text-white',
 }
 
 // ─── Region (renderizado) ─────────────────────────────────────────────────────
@@ -265,29 +264,31 @@ function ToastRegion({ items, onDismiss, onPause, onResume }: ToastRegionProps) 
                     {item.action.label}
                   </Link>
                 ) : (
-                  <Button
+                  <button
+                    type="button"
                     onClick={() => {
                       if (item.action?.onClick) item.action.onClick();
                       onDismiss(item.id);
                     }}
-                    className="font-bold hover:opacity-80 transition-opacity"
+                    className="font-bold hover:opacity-80 transition-opacity text-white"
                   >
                     {item.action.label}
-                  </Button>
+                  </button>
                 )}
               </div>
             )}
           </div>
 
-          <Button
+          <button
+            type="button"
             onClick={() => onDismiss(item.id)}
             aria-label="Cerrar notificación"
-            className="p-1 rounded-lg hover:bg-white/20 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-white ml-1"
+            className="p-1 rounded-lg hover:bg-white/20 transition-colors shrink-0 focus-visible:ring-2 focus-visible:ring-white ml-1 text-white"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
             </svg>
-          </Button>
+          </button>
         </div>
       ))}
     </div>

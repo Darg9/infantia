@@ -1,17 +1,27 @@
 export const DOMAIN_NOISE_RULES: Record<string, string[]> = {
   'fce.com.co': [
-    '/producto/', 
-    '/pqrs/', 
-    '/tratamiento-de-datos', 
+    '/producto/',
+    '/pqrs/',
+    '/tratamiento-de-datos',
     '/terminos-y-condiciones',
     '/checkout',
     '/cart',
     '/categoria-producto/'
   ],
   'bogota.gov.co': [
-    '/tramites/', 
+    '/tramites/',
     '/secretarias/',
     '/transparencia'
+  ],
+  'culturarecreacionydeporte.gov.co': [
+    '/transparencia',
+    '/la-secretaria',
+    '/oficina-juridica',
+    '/plan-de-cultura',
+    '/politica-de',
+    '/ultimas-convocatorias',
+    '/podcast',
+    '/sitemap',
   ],
 };
 

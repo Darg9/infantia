@@ -1,7 +1,10 @@
 // =============================================================================
 // /actividades/[id] — Página de detalle de una actividad
+// ISR 24h: Vercel cachea cada página en CDN → TTFB < 50ms → Core Web Vitals
 // Server Component: lee el ID, consulta DB, renderiza todos los datos
 // =============================================================================
+
+export const revalidate = 86400 // 24h — revalida en background
 
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';

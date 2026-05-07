@@ -2,8 +2,9 @@ import { Suspense } from 'react'
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Contacto',
+  title: 'Contacto | HabitaPlan',
   description: 'Contáctanos para consultas, reportar errores, solicitar remoción de contenido o ejercer tus derechos sobre datos personales.',
+  alternates: { canonical: '/contacto' },
 };
 
 export default function ContactoLayout({ children }: { children: React.ReactNode }) {

@@ -20,6 +20,7 @@ export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
   description:
     'Descubre talleres, clubes, campamentos y eventos para niños y familias en Colombia. Todo en un solo lugar, siempre actualizado.',
+  alternates: { canonical: '/' },
 };
 
 function logHomeQueryFailure(queryName: string, reason: unknown) {

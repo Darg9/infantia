@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: 'Anúnciate en HabitaPlan — Llega a familias en Bogotá',
   description:
     'Patrocina el newsletter de HabitaPlan o destaca tu academia en nuestra plataforma. Llega a familias que buscan actividades para sus hijos en Bogotá.',
+  alternates: { canonical: '/anunciate' },
 };
 
 const CONTACT_EMAIL = 'info@habitaplan.com';

@@ -6,6 +6,7 @@ import { PrivacyContent } from '@/modules/legal/components/PrivacyContent';
 export const metadata: Metadata = {
   title: 'Política de Privacidad | HabitaPlan',
   description: 'Política de privacidad de HabitaPlan. Conoce cómo protegemos tu información personal.',
+  alternates: { canonical: '/privacidad' },
 };
 
 export default function PrivacidadPage() {

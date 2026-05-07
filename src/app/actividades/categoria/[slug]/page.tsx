@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { listActivities } from '@/modules/activities';
 import { SITE_URL } from '@/config/site';
+import { activityPath } from '@/lib/activity-url';
 import { FilterLandingLayout } from '../../_components/FilterLandingLayout';
 
 const PAGE_LIMIT = 24;
@@ -72,6 +73,26 @@ export default async function CategoriaLandingPage({ params }: Props) {
     ],
   };
 
+  // ItemList → elegible para rich results en búsquedas de categoría
+  const itemListLd = activities.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: `Actividades de ${category.name} para niños y familias en Colombia`,
+        url: `${SITE_URL}/actividades/categoria/${slug}`,
+        numberOfItems: activities.length,
+        itemListElement: activities.map((act, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          item: {
+            '@type': 'Event',
+            name: act.title,
+            url: `${SITE_URL}${activityPath(act.id, act.title)}`,
+          },
+        })),
+      }
+    : undefined;
+
   return (
     <FilterLandingLayout
       title={`Actividades de ${category.name}`}
@@ -85,6 +106,7 @@ export default async function CategoriaLandingPage({ params }: Props) {
       filterUrl={`/actividades?categoryId=${category.id}`}
       filterLabel={`Ver todas las actividades de ${category.name}`}
       breadcrumbLd={breadcrumbLd}
+      itemListLd={itemListLd}
     />
   );
 }

@@ -30,6 +30,8 @@ interface FilterLandingLayoutProps {
   filterLabel: string;
   /** JSON-LD de breadcrumb (ya serializado) */
   breadcrumbLd: object;
+  /** JSON-LD de ItemList (opcional — rich results en categorías y otras landings) */
+  itemListLd?: object;
 }
 
 export function FilterLandingLayout({
@@ -40,6 +42,7 @@ export function FilterLandingLayout({
   filterUrl,
   filterLabel,
   breadcrumbLd,
+  itemListLd,
 }: FilterLandingLayoutProps) {
   return (
     <>
@@ -47,6 +50,12 @@ export function FilterLandingLayout({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      {itemListLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+        />
+      )}
       <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
         {/* Breadcrumb */}

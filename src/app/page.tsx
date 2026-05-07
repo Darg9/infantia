@@ -120,6 +120,22 @@ export default async function HomePage() {
   const activityHref      = hasRecent ? '/actividades?sort=newest' : '/actividades';
 
   // ── JSON-LD: identidad del sitio + lista de actividades destacadas ───────────
+  // WebSite + SearchAction → Sitelinks Search Box en Google (búsquedas de marca)
+  const websiteLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'HabitaPlan',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/actividades?search={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  };
+
   const organizationLd = {
     '@context': 'https://schema.org',
     '@type': 'Organization',
@@ -156,6 +172,10 @@ export default async function HomePage() {
   return (
     <>
       {/* ── Structured Data ─────────────────────────────────────────────── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}

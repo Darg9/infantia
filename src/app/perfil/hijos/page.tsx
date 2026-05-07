@@ -88,11 +88,12 @@ export default async function HijosPage() {
         </ul>
       )}
       <p className="text-xs text-[var(--hp-text-muted)] mt-6 leading-relaxed">
-        Los datos de tus hijos se tratan conforme a nuestra{' '}
+        La información de tus hijos se trata conforme a nuestra{' '}
         <Link href="/seguridad/datos" className='underline hover:text-[var(--hp-text-secondary)]'>
-          Politica de Tratamiento de Datos
+          Política de Tratamiento de Datos
         </Link>
-        . Puedes eliminar cualquier perfil en cualquier momento.
+        .<br />
+        Puedes eliminar cada uno de los perfiles que crees en cualquier momento.
       </p>
     </div>
   );

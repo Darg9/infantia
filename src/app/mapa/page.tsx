@@ -22,6 +22,9 @@ export const metadata: Metadata = {
   },
 }
 
+// Centro geográfico de Colombia para vista "Toda Colombia"
+const COLOMBIA_CENTER = { lat: 5.5, lng: -74.0, zoom: 6 }
+
 type PageProps = {
   searchParams: Promise<{ cityId?: string }>
 }
@@ -56,15 +59,17 @@ export default async function MapaPage({ searchParams }: PageProps) {
   const defaultCityId = defaultCity?.id ?? cities[0]?.id ?? ''
 
   // Ciudad activa: searchParams primero (URL canónica), luego default
+  // 'all' = sentinel para "Toda Colombia" (sin filtro de ciudad)
   const activeCityId = params.cityId ?? defaultCityId
+  const showAllCities = activeCityId === 'all'
 
-  // ── Query estricto: solo actividades con coords reales de la ciudad ────────
+  // ── Query estricto: solo actividades con coords reales ────────────────────
   // Las actividades sin lat/lng son excluidas del mapa por diseño (no del listado).
   const activities = await prisma.activity.findMany({
     where: {
       status: 'ACTIVE',
       location: {
-        cityId: activeCityId,
+        ...(showAllCities ? {} : { cityId: activeCityId }),
         latitude: { not: 0 },
         longitude: { not: 0 },
       },
@@ -111,13 +116,25 @@ export default async function MapaPage({ searchParams }: PageProps) {
       lng: Number(a.location!.longitude),
     }))
 
-  const cityOptions = cities.map((c) => ({
-    id: c.id,
-    name: c.name,
-    defaultLat: Number(c.defaultLat),
-    defaultLng: Number(c.defaultLng),
-    defaultZoom: c.defaultZoom,
-  }))
+  // "Toda Colombia" aparece primero en el selector
+  const colombiaOption = {
+    id: 'all',
+    name: 'Colombia',
+    defaultLat: COLOMBIA_CENTER.lat,
+    defaultLng: COLOMBIA_CENTER.lng,
+    defaultZoom: COLOMBIA_CENTER.zoom,
+  }
+
+  const cityOptions = [
+    colombiaOption,
+    ...cities.map((c) => ({
+      id: c.id,
+      name: c.name,
+      defaultLat: Number(c.defaultLat),
+      defaultLng: Number(c.defaultLng),
+      defaultZoom: c.defaultZoom ?? 12,
+    })),
+  ]
 
   const activeCity = cityOptions.find((c) => c.id === activeCityId)
 

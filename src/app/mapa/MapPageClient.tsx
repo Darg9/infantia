@@ -6,6 +6,7 @@
 // =============================================================================
 
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import type { MapPoint } from '@/components/ActivityMap'
 import { useCity } from '@/components/providers/CityProvider'
 import type { CityOption } from '@/components/providers/CityProvider'
@@ -50,7 +51,11 @@ export default function MapPageClient({ points, activeCity, totalCount }: Props)
             </h1>
             <p className="text-sm text-[var(--hp-text-secondary)] mt-0.5">
               {totalCount} {totalCount === 1 ? 'actividad' : 'actividades'}
-              {city ? ` en ${city.name}` : activeCity ? ` en ${activeCity.name}` : ''}
+              {(() => {
+                const c = city ?? activeCity
+                if (!c) return ''
+                return c.id === 'all' ? ' en Colombia' : ` en ${c.name}`
+              })()}
               {' '}· Haz clic en un pin para ver detalles
             </p>
           </div>
@@ -66,17 +71,17 @@ export default function MapPageClient({ points, activeCity, totalCount }: Props)
             >
               {cities.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.name}
+                  {c.id === 'all' ? '🇨🇴 Toda Colombia' : c.name}
                 </option>
               ))}
             </select>
 
-            <a
+            <Link
               href="/actividades"
               className="shrink-0 text-sm text-brand-600 hover:text-brand-700 font-medium"
             >
               ← Ver listado
-            </a>
+            </Link>
           </div>
         </div>
       </div>

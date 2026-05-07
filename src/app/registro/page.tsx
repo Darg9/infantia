@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import { Button, Input, Card } from '@/components/ui'
@@ -22,11 +22,10 @@ function RegistroForm() {
   const [loading, setLoading] = useState(false)
   const [authMode, setAuthMode] = useState<'options' | 'email'>('options')
   const [emailSent, setEmailSent] = useState(false)
-  const [isApple, setIsApple] = useState(false)
-
-  useEffect(() => {
-    setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
-  }, [])
+  // Lazy init: detecta plataforma Apple en el primer render (client-only)
+  const [isApple] = useState(() =>
+    typeof navigator !== 'undefined' && /Mac|iPod|iPhone|iPad/.test(navigator.platform)
+  )
 
   const handleOAuth = async (provider: 'google' | 'facebook' | 'apple') => {
     setLoading(true)
@@ -221,7 +220,7 @@ function RegistroForm() {
             <label htmlFor="acepta-terminos" className="text-xs text-[var(--hp-text-secondary)] leading-relaxed">
               Acepto la{' '}
               <Link
-                href="/seguridad/datos"
+                href="/centro-de-confianza/datos"
                 target="_blank"
                 className="text-brand-600 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 rounded-sm"
                 onClick={(e) => e.stopPropagation()}

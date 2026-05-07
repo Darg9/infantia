@@ -92,13 +92,13 @@ export function DataTreatmentContent() {
       {/* ── Navegación inferior ──────────────────────────────── */}
       <div className="flex flex-wrap gap-6 text-sm mt-8 pt-4 border-t border-[var(--hp-border-subtle)]">
         <Link
-          href="/seguridad/privacidad"
+          href="/centro-de-confianza/privacidad"
           className="text-[var(--hp-text-secondary)] hover:text-brand-600 transition-colors"
         >
           Privacidad →
         </Link>
         <Link
-          href="/seguridad/terminos"
+          href="/centro-de-confianza/terminos"
           className="text-[var(--hp-text-secondary)] hover:text-brand-600 transition-colors"
         >
           Términos →

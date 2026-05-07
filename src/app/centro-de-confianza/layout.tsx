@@ -29,10 +29,10 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
     <div className="max-w-4xl mx-auto px-6 py-12">
       {/* ── Volver al Centro de Seguridad ──────────────────────────── */}
       <Link
-        href="/seguridad"
+        href="/centro-de-confianza"
         className="inline-flex items-center gap-1 text-sm text-brand-600 hover:text-brand-700 mb-8 transition-colors"
       >
-        ← Centro de Seguridad
+        ← Centro de Confianza
       </Link>
       {/* ── Label superior ─────────────────────────────────────────── */}
       <p className="text-sm font-medium text-[var(--hp-text-muted)] uppercase tracking-widest mb-2">
@@ -40,7 +40,7 @@ export default function SeguridadLayout({ children }: { children: ReactNode }) {
       </p>
       {/* ── Título ─────────────────────────────────────────────────── */}
       <h1 className="text-3xl font-semibold text-[var(--hp-text-primary)] mb-6 flex items-center gap-2">
-        🛡️ Centro de Seguridad
+        🛡️ Centro de Confianza
       </h1>
       {/* ── Navegación interna con tab activo ──────────────────────── */}
       <nav className="flex gap-1 mb-10 border-b border-[var(--hp-border-subtle)]">

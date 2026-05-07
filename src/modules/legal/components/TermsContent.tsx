@@ -92,16 +92,16 @@ export function TermsContent() {
       {/* ── Navegación inferior ──────────────────────────────── */}
       <div className="flex flex-wrap gap-6 text-sm mt-8 pt-4 border-t border-[var(--hp-border-subtle)]">
         <Link
-          href="/seguridad/privacidad"
+          href="/centro-de-confianza/privacidad"
           className="text-[var(--hp-text-secondary)] hover:text-brand-600 transition-colors"
         >
           Privacidad →
         </Link>
         <Link
-          href="/seguridad"
+          href="/centro-de-confianza"
           className="text-[var(--hp-text-secondary)] hover:text-brand-600 transition-colors"
         >
-          Centro de Seguridad →
+          Centro de Confianza →
         </Link>
       </div>
     </div>

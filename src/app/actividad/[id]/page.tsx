@@ -278,12 +278,15 @@ export default async function ActividadDetallePage({
             <div className="flex flex-col sm:flex-row">
 
               {/* Imagen: compacta en mobile (arriba), thumbnail en desktop (derecha) */}
-              <div className="h-44 sm:h-auto sm:w-56 sm:shrink-0 sm:order-last">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={activity.imageUrl}
+              {/* Imagen héroe: priority → <link rel="preload"> en <head> → LCP */}
+              <div className="relative h-44 sm:h-auto sm:w-56 sm:shrink-0 sm:order-last">
+                <Image
+                  src={activity.imageUrl!}
                   alt={activity.title}
-                  className="h-full w-full object-cover"
+                  fill
+                  priority
+                  sizes="(max-width: 640px) 100vw, 224px"
+                  className="object-cover"
                 />
               </div>
 

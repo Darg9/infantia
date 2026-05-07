@@ -73,6 +73,38 @@ export default async function CategoriaLandingPage({ params }: Props) {
     ],
   };
 
+  // FAQPage → rich results para búsquedas de categoría (mismo patrón que páginas de ciudad)
+  const faqLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: `¿Cuáles son las mejores actividades de ${category.name} para niños en Colombia?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `HabitaPlan reúne las mejores actividades de ${category.name} para niños y familias en Colombia, incluyendo opciones gratuitas y de pago en Bogotá, Medellín y otras ciudades.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Las actividades de ${category.name} tienen costo?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `Hay opciones gratuitas y de pago. En HabitaPlan puedes filtrar por precio para encontrar ${category.name} gratis o con costo según tu presupuesto.`,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: `¿Cómo encontrar ${category.name} para niños cerca de mí?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: `En HabitaPlan puedes usar el mapa interactivo o el selector de ciudad para encontrar ${category.name} disponibles en tu ciudad en Colombia.`,
+        },
+      },
+    ],
+  };
+
   // ItemList → elegible para rich results en búsquedas de categoría
   const itemListLd = activities.length > 0
     ? {
@@ -107,6 +139,7 @@ export default async function CategoriaLandingPage({ params }: Props) {
       filterLabel={`Ver todas las actividades de ${category.name}`}
       breadcrumbLd={breadcrumbLd}
       itemListLd={itemListLd}
+      faqLd={faqLd}
     />
   );
 }

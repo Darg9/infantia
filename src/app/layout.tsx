@@ -58,6 +58,12 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: '/',
+    // hreflang: señala a Google que el contenido es en español colombiano.
+    // x-default → versión canónica para usuarios sin región específica.
+    languages: {
+      'es-CO': '/',
+      'x-default': '/',
+    },
   },
 };
 

@@ -4,6 +4,16 @@ import { withSentryConfig } from "@sentry/nextjs";
 const nextConfig: NextConfig = {
   // @react-pdf/renderer must run server-side only (uses Node.js APIs)
   serverExternalPackages: ['@react-pdf/renderer'],
+
+  // Optimización de imágenes externas (Supabase Storage + dominios de scraping).
+  // hostname '**' necesario: imágenes vienen de decenas de dominios distintos.
+  // Restringir a dominios específicos cuando el catálogo de fuentes sea estable.
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: '**' },
+    ],
+  },
+
   async redirects() {
     return [
       {

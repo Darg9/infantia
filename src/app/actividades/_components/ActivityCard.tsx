@@ -4,6 +4,7 @@
 // ActivityCard — tarjeta de actividad para el grid de /actividades
 // =============================================================================
 
+import Image from 'next/image';
 import clsx from 'clsx';
 import { getCategoryGradient, getCategoryEmoji } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
@@ -126,12 +127,12 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         style={activity.imageUrl ? undefined : { background: gradient }}
       >
         {activity.imageUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          (<img
+          (<Image
             src={activity.imageUrl}
             alt={activity.title}
-            className="h-full w-full object-cover"
-            loading="lazy"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            className="object-cover"
           />)
         ) : (
           <span className="text-4xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>

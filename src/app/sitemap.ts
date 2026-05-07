@@ -14,55 +14,91 @@ export const revalidate = 3600; // Revalidar cada hora
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = SITE_URL;
 
+  // Fecha de la última actividad creada/modificada → proxy de "cuándo cambió el catálogo"
+  const latestActivity = await prisma.activity.findFirst({
+    where: { status: 'ACTIVE' },
+    orderBy: { updatedAt: 'desc' },
+    select: { updatedAt: true },
+  });
+  const catalogLastMod = latestActivity?.updatedAt ?? new Date();
+
+  // Fechas fijas para páginas que raramente cambian
+  const LEGAL_DATE  = new Date('2026-04-07'); // fecha del rebrand HabitaPlan
+  const STATIC_DATE = new Date('2026-04-07');
+
   // ── Rutas estáticas ──────────────────────────────────────────────────────────
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}/`,                   lastModified: new Date(), changeFrequency: 'daily',   priority: 1.0 },
-    { url: `${baseUrl}/actividades`,         lastModified: new Date(), changeFrequency: 'hourly',  priority: 0.9 },
+    { url: `${baseUrl}/`,         lastModified: catalogLastMod, changeFrequency: 'daily',   priority: 1.0 },
+    { url: `${baseUrl}/actividades`, lastModified: catalogLastMod, changeFrequency: 'hourly', priority: 0.9 },
     // Landings SEO de público
-    { url: `${baseUrl}/actividades/publico/ninos`,   lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
-    { url: `${baseUrl}/actividades/publico/familia`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
-    { url: `${baseUrl}/actividades/publico/adultos`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/actividades/publico/ninos`,   lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/actividades/publico/familia`, lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/actividades/publico/adultos`, lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
     // Landings SEO de precio
-    { url: `${baseUrl}/actividades/precio/gratis`,   lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
-    { url: `${baseUrl}/actividades/precio/pagas`,    lastModified: new Date(), changeFrequency: 'daily', priority: 0.85 },
-    // Páginas legales y contacto
-    { url: `${baseUrl}/contacto`,           lastModified: new Date(), changeFrequency: 'monthly',  priority: 0.7 },
-    { url: `${baseUrl}/contribuir`,         lastModified: new Date(), changeFrequency: 'monthly',  priority: 0.7 },
-    { url: `${baseUrl}/privacidad`,                     lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${baseUrl}/terminos`,                       lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${baseUrl}/centro-de-confianza/datos`,      lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${baseUrl}/centro-de-confianza/privacidad`, lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.5 },
-    { url: `${baseUrl}/centro-de-confianza/terminos`,   lastModified: new Date(), changeFrequency: 'yearly',  priority: 0.5 },
+    { url: `${baseUrl}/actividades/precio/gratis`,   lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
+    { url: `${baseUrl}/actividades/precio/pagas`,    lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
+    // Páginas de contacto/contribución
+    { url: `${baseUrl}/contacto`,    lastModified: STATIC_DATE, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/contribuir`,  lastModified: STATIC_DATE, changeFrequency: 'monthly', priority: 0.7 },
+    // Legales
+    { url: `${baseUrl}/privacidad`,                     lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/terminos`,                       lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/centro-de-confianza/datos`,      lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/centro-de-confianza/privacidad`, lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/centro-de-confianza/terminos`,   lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
   ];
 
-  // ── Landings SEO de categoría ────────────────────────────────────────────────
+  // ── Landings SEO de categoría — lastModified = actividad más reciente ─────────
   const categories = await prisma.category.findMany({
-    select: { slug: true },
+    select: {
+      slug: true,
+      activities: {
+        where: { activity: { status: 'ACTIVE' } },
+        orderBy: { activity: { updatedAt: 'desc' } },
+        take: 1,
+        select: { activity: { select: { updatedAt: true } } },
+      },
+    },
   });
 
   const categoryRoutes: MetadataRoute.Sitemap = categories.map((cat) => ({
     url: `${baseUrl}/actividades/categoria/${cat.slug}`,
-    lastModified: new Date(),
+    lastModified: cat.activities[0]?.activity.updatedAt ?? catalogLastMod,
     changeFrequency: 'daily' as const,
     priority: 0.85,
   }));
 
-  // ── Landings SEO de ciudad — solo ciudades con contenido real ──────���────────
-  // No indexar ciudades vacías: Google penaliza páginas sin contenido relevante.
+  // ── Landings SEO de ciudad — lastModified = actividad más reciente ───────────
   const cities = await prisma.city.findMany({
     where: {
       isActive: true,
       locations: { some: { activities: { some: { status: 'ACTIVE' } } } },
     },
-    select: { name: true },
+    select: {
+      name: true,
+      locations: {
+        select: {
+          activities: {
+            where: { status: 'ACTIVE' },
+            orderBy: { updatedAt: 'desc' },
+            take: 1,
+            select: { updatedAt: true },
+          },
+        },
+        take: 1,
+      },
+    },
   });
 
-  const cityRoutes: MetadataRoute.Sitemap = cities.map((city) => ({
-    url: `${baseUrl}/actividades/${slugify(city.name)}`,
-    lastModified: new Date(),
-    changeFrequency: 'daily' as const,
-    priority: 0.85,
-  }));
+  const cityRoutes: MetadataRoute.Sitemap = cities.map((city) => {
+    const lastMod = city.locations[0]?.activities[0]?.updatedAt ?? catalogLastMod;
+    return {
+      url: `${baseUrl}/actividades/${slugify(city.name)}`,
+      lastModified: lastMod,
+      changeFrequency: 'daily' as const,
+      priority: 0.85,
+    };
+  });
 
   // ── Actividades individuales ─────────────────────────────────────────────────
   const activities = await prisma.activity.findMany({

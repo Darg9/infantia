@@ -1,7 +1,10 @@
 // =============================================================================
 // /actividades/publico/[slug] — Landing SEO por público objetivo
+// ISR 6h — contenido estable, cambia solo cuando entran nuevas actividades.
 // Slugs: ninos | familia | adultos
 // =============================================================================
+
+export const revalidate = 21600 // 6h
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';

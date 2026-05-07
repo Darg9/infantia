@@ -1,7 +1,10 @@
 // =============================================================================
 // /actividades/precio/[slug] — Landing SEO por precio
+// ISR 6h — contenido estable, cambia solo cuando entran nuevas actividades.
 // Slugs: gratis | pagas
 // =============================================================================
+
+export const revalidate = 21600 // 6h
 
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';

@@ -100,6 +100,9 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Preconnect al CDN de imágenes (Supabase Storage) → LCP más rápido */}
+        <link rel="preconnect" href="https://vjfhlrpfubbfnvpthwym.supabase.co" />
+        <link rel="dns-prefetch" href="https://vjfhlrpfubbfnvpthwym.supabase.co" />
         <link rel="icon" href="/favicon.png" type="image/png" sizes="32x32" />
         <link rel="icon" href="/logo-icon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />

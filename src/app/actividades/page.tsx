@@ -1,7 +1,10 @@
 // =============================================================================
 // /actividades — Página principal de actividades
+// ISR 1h: Vercel cachea en CDN, revalida en background cada hora.
 // Server Component: lee searchParams, consulta DB, renderiza grid + filtros
 // =============================================================================
+
+export const revalidate = 3600 // 1h — contenido dinámico, se actualiza frecuente
 
 import { Suspense } from 'react';
 import type { Metadata } from 'next';

@@ -16,6 +16,28 @@
 import type { Prisma } from '@/generated/prisma/client';
 
 // =============================================================================
+// Helpers de fecha — Colombia = UTC-5 (sin horario de verano, offset fijo)
+// =============================================================================
+
+const COL_OFFSET_MS = 5 * 60 * 60 * 1000; // 5h en ms
+
+/**
+ * Devuelve el timestamp UTC que corresponde a la medianoche Colombia
+ * del día actual + offsetDays.
+ *
+ * Ejemplo: si son las 23:00 UTC el 7 may (18:00 COT), today = 7 may Colombia.
+ *   - colombiaDayStartUTC(0)  → 2026-05-07T05:00:00Z  (00:00 COT del 7 may)
+ *   - colombiaDayStartUTC(1)  → 2026-05-08T05:00:00Z  (00:00 COT del 8 may)
+ */
+function colombiaDayStartUTC(offsetDays: number): Date {
+  const nowColombia = new Date(Date.now() - COL_OFFSET_MS);
+  const y  = nowColombia.getUTCFullYear();
+  const mo = nowColombia.getUTCMonth();
+  const d  = nowColombia.getUTCDate() + offsetDays;
+  return new Date(Date.UTC(y, mo, d) + COL_OFFSET_MS);
+}
+
+// =============================================================================
 // Parámetros de filtro
 // =============================================================================
 
@@ -79,6 +101,17 @@ export interface ActivityFilterParams {
    * Cuando están presentes, toman prioridad sobre `search` para el filtro SQL.
    */
   matchingIds?: string[];
+
+  /**
+   * Filtro de rango de fecha (S65):
+   *   'today'   → startDate en el día actual (Colombia UTC-5)
+   *   'weekend' → startDate en el próximo sábado–domingo Colombia
+   *   'week'    → startDate dentro de los próximos 7 días Colombia
+   *
+   * ⚠️ Filtro estricto: excluye actividades sin startDate.
+   * Activar solo cuando haya cobertura de datos suficiente.
+   */
+  dateRange?: 'today' | 'weekend' | 'week';
 
   /**
    * Dominios con sourceHealth.score < 0.1 a excluir.
@@ -206,6 +239,34 @@ export function buildActivityWhere(
         { NOT: { sourceDomain: { in: params.badDomains } } },
       ],
     });
+  }
+
+  // ── Date Range ────────────────────────────────────────────────────────────────
+  // Filtro estricto: solo actividades con startDate en el rango Colombia.
+  // NULL startDate → excluido automáticamente (NULL no satisface >= en SQL).
+  if (params.dateRange && exclude !== 'dateRange') {
+    const today = colombiaDayStartUTC(0);
+
+    if (params.dateRange === 'today') {
+      andConditions.push({
+        startDate: { gte: today, lt: colombiaDayStartUTC(1) },
+      });
+    } else if (params.dateRange === 'week') {
+      andConditions.push({
+        startDate: { gte: today, lt: colombiaDayStartUTC(7) },
+      });
+    } else if (params.dateRange === 'weekend') {
+      // Calcula días al próximo sábado (o el actual si hoy es sáb/dom)
+      const nowCol  = new Date(Date.now() - COL_OFFSET_MS);
+      const dow     = nowCol.getUTCDay();           // 0=Dom, 6=Sáb
+      const toSat   = dow === 6 ? 0 : dow === 0 ? -1 : 6 - dow;
+      andConditions.push({
+        startDate: {
+          gte: colombiaDayStartUTC(toSat),
+          lt:  colombiaDayStartUTC(toSat + 2), // hasta fin del domingo
+        },
+      });
+    }
   }
 
   // ── Merge AND ─────────────────────────────────────────────────────────────────

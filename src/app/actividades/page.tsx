@@ -20,6 +20,7 @@ import { EmptyState } from './_components/EmptyState';
 import { MapView } from './_components/MapView';
 import { ViewToggle } from './_components/ViewToggle';
 import { ACTIVITY_DISCLAIMER_SHORT } from '@/modules/legal/constants/legal-disclaimers';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { serializeActivity } from '@/lib/prisma-serialize';
 
 export const metadata: Metadata = {
@@ -50,6 +51,8 @@ interface SearchParams {
   sort?: string;
   view?: string;
   page?: string;
+  /** Rango de fecha: 'today' | 'weekend' | 'week' (S65, gated por DATE_FILTER_ENABLED) */
+  dateRange?: string;
 }
 
 interface ActiveFilters {
@@ -61,6 +64,8 @@ interface ActiveFilters {
   type?: string;
   audience?: string;
   price?: string; // 'free' | 'paid' | ''
+  /** Rango de fecha (solo si DATE_FILTER_ENABLED) */
+  dateRange?: 'today' | 'weekend' | 'week';
 }
 
 // =============================================================================
@@ -186,6 +191,9 @@ export default async function ActividadesPage({
 
   const view = params.view === 'map' ? 'map' : 'list';
 
+  const VALID_DATE_RANGES = ['today', 'weekend', 'week'] as const;
+  type DateRangeValue = typeof VALID_DATE_RANGES[number];
+
   const filters: ActiveFilters = {
     search: params.search?.trim() || undefined,
     ageMin: parseAge(params.ageMin),
@@ -195,6 +203,10 @@ export default async function ActividadesPage({
     type: params.type && VALID_TYPES.includes(params.type) ? params.type : undefined,
     audience: params.audience && VALID_AUDIENCES.includes(params.audience) ? params.audience : undefined,
     price: params.price && VALID_PRICES.includes(params.price) ? params.price : undefined,
+    // dateRange: solo se acepta si el feature flag está activo
+    dateRange: FEATURE_FLAGS.DATE_FILTER_ENABLED && params.dateRange && (VALID_DATE_RANGES as readonly string[]).includes(params.dateRange)
+      ? params.dateRange as DateRangeValue
+      : undefined,
   };
 
   // Cargar actividades, facets, sesión y categorías populares en paralelo
@@ -280,6 +292,8 @@ export default async function ActividadesPage({
               audience={params.audience ?? ''}
               price={params.price ?? ''}
               sort={sortBy}
+              dateRange={filters.dateRange ?? ''}
+              dateFilterEnabled={FEATURE_FLAGS.DATE_FILTER_ENABLED}
               facets={facets}
               total={total}
               selectedCategoryName={selectedCategory?.name}

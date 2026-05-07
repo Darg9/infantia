@@ -50,6 +50,10 @@ interface FiltersProps {
   audience: string;
   price: string;
   sort: string;
+  /** Rango de fecha activo: 'today' | 'weekend' | 'week' | '' */
+  dateRange: string;
+  /** true si el feature flag DATE_FILTER_ENABLED está activo en el servidor */
+  dateFilterEnabled?: boolean;
   facets: Facets;
   total: number;
   /** Nombre estable de la categoría seleccionada (desde el servidor, no de la lista facetada) */
@@ -87,6 +91,19 @@ const AUDIENCE_LABELS: Record<string, string> = {
   KIDS:   'Solo niños',
   FAMILY: 'Familias',
   ADULTS: 'Adultos',
+};
+
+/** Opciones de chips de rango de fecha */
+const DATE_RANGE_OPTIONS = [
+  { value: 'today',   label: 'Hoy'         },
+  { value: 'weekend', label: 'Este finde'  },
+  { value: 'week',    label: 'Esta semana' },
+] as const;
+
+const DATE_RANGE_LABELS: Record<string, string> = {
+  today:   'Hoy',
+  weekend: 'Este finde',
+  week:    'Esta semana',
 };
 
 const HISTORY_KEY = 'hp_recent_searches';
@@ -148,8 +165,9 @@ function Spinner({ className = '' }: { className?: string }) {
 // ── Componente principal ──────────────────────────────────────────────────────
 
 export default function Filters({
-  search, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, facets, total,
-  selectedCategoryName, selectedCityName,
+  search, ageMin, ageMax, categoryId, cityId, type, audience, price, sort,
+  dateRange, dateFilterEnabled,
+  facets, total, selectedCategoryName, selectedCityName,
 }: FiltersProps) {
   const router   = useRouter();
   const pathname = usePathname();
@@ -289,7 +307,7 @@ export default function Filters({
   function selectHistory(term: string) {
     setSearchValue(term);
     closeDropdown();
-    navigate({ search: term, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+    navigate({ search: term, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, dateRange });
   }
 
   // ── Navegación ────────────────────────────────────────────────────────────
@@ -383,7 +401,7 @@ export default function Filters({
   function handleSearchSubmit() {
     closeDropdown();
     saveToHistory(searchValue);
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, dateRange });
   }
 
   function handleSearchChange(value: string) {
@@ -394,7 +412,7 @@ export default function Filters({
     if (debounceRef.current) clearTimeout(debounceRef.current);
     if (value.length > 0 && value.length < 3) return; // esperar más caracteres
     debounceRef.current = setTimeout(() => {
-      navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort });
+      navigate({ search: value, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, dateRange });
       if (value.trim().length >= 3) {
         fetch('/api/search/log', {
           method: 'POST',
@@ -440,25 +458,30 @@ export default function Filters({
 
   function handleAge(index: number) {
     const o = AGE_OPTIONS[index];
-    navigate({ search: searchValue, ageMin: o.min, ageMax: o.max, categoryId, cityId, type, audience, price, sort });
+    navigate({ search: searchValue, ageMin: o.min, ageMax: o.max, categoryId, cityId, type, audience, price, sort, dateRange });
   }
   function handleCategory(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, cityId, type, audience, price, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId: value, cityId, type, audience, price, sort, dateRange });
   }
   function handleCity(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId: value, type, audience, price, sort, dateRange });
   }
   function handlePrice(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price: value, sort, dateRange });
   }
   function handleSort(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort: value });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort: value, dateRange });
   }
   function handleType(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type: value, audience, price, sort, dateRange });
   }
   function handleAudience(value: string) {
-    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price, sort });
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience: value, price, sort, dateRange });
+  }
+  function handleDateRange(value: string) {
+    // Toggle: si ya estaba activo, lo apaga; si no, lo activa
+    const next = dateRange === value ? '' : value;
+    navigate({ search: searchValue, ageMin, ageMax, categoryId, cityId, type, audience, price, sort, dateRange: next });
   }
   function handleReset() {
     setSearchValue('');
@@ -480,7 +503,7 @@ export default function Filters({
   }
   function applyMobile() {
     const o = AGE_OPTIONS[mobileAgeIdx];
-    navigate({ search: searchValue, ageMin: o.min, ageMax: o.max, categoryId: mobileCatId, cityId: mobileCityId, type, audience, price: mobilePrice, sort: mobileSort });
+    navigate({ search: searchValue, ageMin: o.min, ageMax: o.max, categoryId: mobileCatId, cityId: mobileCityId, type, audience, price: mobilePrice, sort: mobileSort, dateRange });
     setMobileOpen(false);
   }
 
@@ -489,24 +512,26 @@ export default function Filters({
   // IMPORTANT: Usamos los nombres estables del servidor (selectedCategoryName/selectedCityName)
   // para evitar que el chip desaparezca cuando la lista facetada restringe las opciones.
   // Fallback a la búsqueda en facets por compatibilidad.
-  const categoryName = selectedCategoryName ?? facets.validCategories.find(c => c.id === categoryId)?.name;
-  const cityName     = selectedCityName     ?? facets.availableCities.find(c => c.id === cityId)?.name;
-  const ageName      = ageIndex !== 0 ? AGE_OPTIONS[ageIndex]?.label : null;
-  const priceName    = price === 'free' ? 'Gratis' : price === 'paid' ? 'De pago' : null;
-  const typeName     = type ? (TYPE_LABELS[type] ?? type) : null;
-  const audienceName = audience ? (AUDIENCE_LABELS[audience] ?? audience) : null;
+  const categoryName   = selectedCategoryName ?? facets.validCategories.find(c => c.id === categoryId)?.name;
+  const cityName       = selectedCityName     ?? facets.availableCities.find(c => c.id === cityId)?.name;
+  const ageName        = ageIndex !== 0 ? AGE_OPTIONS[ageIndex]?.label : null;
+  const priceName      = price === 'free' ? 'Gratis' : price === 'paid' ? 'De pago' : null;
+  const typeName       = type ? (TYPE_LABELS[type] ?? type) : null;
+  const audienceName   = audience ? (AUDIENCE_LABELS[audience] ?? audience) : null;
+  const dateRangeName  = dateRange ? (DATE_RANGE_LABELS[dateRange] ?? null) : null;
 
   type Chip = { key: string; label: string; onRemove: () => void };
   const chips: Chip[] = ([
-    cityName     && { key: 'city',     label: cityName,     onRemove: () => handleCity('')       },
-    categoryName && { key: 'category', label: categoryName, onRemove: () => handleCategory('')   },
-    priceName    && { key: 'price',    label: priceName,    onRemove: () => handlePrice('')      },
-    ageName      && { key: 'age',      label: ageName,      onRemove: () => handleAge(0)         },
-    typeName     && { key: 'type',     label: typeName,     onRemove: () => handleType('')       },
-    audienceName && { key: 'audience', label: audienceName, onRemove: () => handleAudience('')   },
+    dateRangeName && { key: 'dateRange', label: dateRangeName, onRemove: () => handleDateRange(dateRange) },
+    cityName      && { key: 'city',      label: cityName,      onRemove: () => handleCity('')             },
+    categoryName  && { key: 'category',  label: categoryName,  onRemove: () => handleCategory('')         },
+    priceName     && { key: 'price',     label: priceName,     onRemove: () => handlePrice('')            },
+    ageName       && { key: 'age',       label: ageName,       onRemove: () => handleAge(0)               },
+    typeName      && { key: 'type',      label: typeName,      onRemove: () => handleType('')             },
+    audienceName  && { key: 'audience',  label: audienceName,  onRemove: () => handleAudience('')         },
   ] as (Chip | false)[]).filter((c): c is Chip => Boolean(c));
 
-  const hasFilters = !!(search || ageMin || ageMax || categoryId || cityId || price || type || audience || (sort && sort !== 'relevance'));
+  const hasFilters = !!(search || ageMin || ageMax || categoryId || cityId || price || type || audience || dateRange || (sort && sort !== 'relevance'));
   const mobileHasChanges = !!(mobileCatId || mobileCityId || mobilePrice || mobileAgeIdx !== 0 || mobileSort !== 'relevance');
 
   // ── Estilos ───────────────────────────────────────────────────────────────
@@ -719,6 +744,29 @@ export default function Filters({
           </div>
         )}
       </div>
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {/* CHIPS DE FECHA (solo si DATE_FILTER_ENABLED)                    */}
+      {/* ════════════════════════════════════════════════════════════════ */}
+      {dateFilterEnabled && (
+        <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="Filtrar por fecha">
+          <span className="text-xs font-medium text-[var(--hp-text-muted)] shrink-0">¿Cuándo?</span>
+          {DATE_RANGE_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => handleDateRange(opt.value)}
+              aria-pressed={dateRange === opt.value}
+              className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
+                dateRange === opt.value
+                  ? 'border-brand-500 bg-brand-600 text-white shadow-[var(--hp-shadow-md)]'
+                  : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] hover:border-brand-300 hover:text-brand-600'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      )}
       {/* ════════════════════════════════════════════════════════════════ */}
       {/* CONTROLES DESKTOP                                               */}
       {/* ════════════════════════════════════════════════════════════════ */}

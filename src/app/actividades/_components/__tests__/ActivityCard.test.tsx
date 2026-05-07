@@ -204,7 +204,8 @@ describe('ActivityCard', () => {
       render(<ActivityCard activity={{ ...baseActivity, imageUrl: 'https://example.com/img.jpg' }} />);
       const img = screen.getByRole('img', { name: 'Taller de Pintura' });
       expect(img).toBeInTheDocument();
-      expect(img).toHaveAttribute('src', 'https://example.com/img.jpg');
+      // next/image transforma la URL a /_next/image?url=... — verificamos que contiene el dominio original
+      expect(img).toHaveAttribute('src', expect.stringContaining('example.com'));
     });
   });
 });

@@ -44,4 +44,16 @@ export const FEATURE_FLAGS = {
     if (!raw) return defaults;
     try { return JSON.parse(raw) as Record<string, 'hard' | 'shadow'>; } catch { return defaults; }
   })(),
+
+  /**
+   * Filtro de fecha (S65):
+   * Chips "Hoy", "Este finde", "Esta semana" en /actividades.
+   *
+   * OFF por defecto — startDate incompleto en catálogo (~60% actividades sin fecha).
+   * Activar en Vercel: DATE_FILTER_ENABLED=true (no requiere redeploy).
+   *
+   * Filtro es estricto: solo muestra actividades con startDate en el rango.
+   * Cuando se active, se recomienda priorizar ingest de fuentes con fecha.
+   */
+  DATE_FILTER_ENABLED: process.env.DATE_FILTER_ENABLED === 'true',
 } as const;

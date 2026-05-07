@@ -106,6 +106,8 @@ interface ListParams {
   search?: string;
   /** 'relevance' | 'date' | 'price_asc' | 'price_desc' | 'newest' */
   sortBy?: SortValue;
+  /** Filtro de rango de fecha (S65) */
+  dateRange?: 'today' | 'weekend' | 'week';
 }
 
 function buildOrderBy(sortBy?: SortValue): Prisma.ActivityOrderByWithRelationInput[] {

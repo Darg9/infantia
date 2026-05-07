@@ -2,24 +2,47 @@ import { describe, it, expect, vi } from 'vitest';
 import { SITE_URL } from '@/config/site';
 
 // vi.hoisted garantiza que las variables estén disponibles dentro del factory de vi.mock
-const { mockActivityFindMany, mockCategoryFindMany, mockCityFindMany } = vi.hoisted(() => {
+const { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockCityFindMany } = vi.hoisted(() => {
+  // findFirst → obtener la actividad más reciente para catalogLastMod
+  const mockActivityFindFirst = vi.fn().mockResolvedValue({
+    updatedAt: new Date('2026-03-21'),
+  });
+
+  // findMany → rutas individuales de actividad
   const mockActivityFindMany = vi.fn().mockResolvedValue([
     { id: 'act-1', title: 'Taller de Pintura', updatedAt: new Date('2026-03-20') },
-    { id: 'act-2', title: 'Club de Lectura', updatedAt: new Date('2026-03-21') },
+    { id: 'act-2', title: 'Club de Lectura',    updatedAt: new Date('2026-03-21') },
   ]);
+
+  // Categorías con nested activities (shape del sitemap S65)
   const mockCategoryFindMany = vi.fn().mockResolvedValue([
-    { slug: 'arte-y-creatividad', updatedAt: new Date('2026-03-20') },
+    {
+      slug: 'arte-y-creatividad',
+      activities: [{ activity: { updatedAt: new Date('2026-03-20') } }],
+    },
   ]);
+
+  // Ciudades con nested locations.activities (shape del sitemap S65)
   const mockCityFindMany = vi.fn().mockResolvedValue([
-    { name: 'Bogotá' },
-    { name: 'Medellín' },
+    {
+      name: 'Bogotá',
+      locations: [{ activities: [{ updatedAt: new Date('2026-03-20') }] }],
+    },
+    {
+      name: 'Medellín',
+      locations: [],
+    },
   ]);
-  return { mockActivityFindMany, mockCategoryFindMany, mockCityFindMany };
+
+  return { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockCityFindMany };
 });
 
 vi.mock('@/lib/db', () => ({
   prisma: {
-    activity: { findMany: mockActivityFindMany },
+    activity: {
+      findFirst: mockActivityFindFirst,
+      findMany:  mockActivityFindMany,
+    },
     category: { findMany: mockCategoryFindMany },
     city:     { findMany: mockCityFindMany },
   },
@@ -48,12 +71,15 @@ describe('sitemap()', () => {
     expect(actividades?.priority).toBe(0.9);
   });
 
-  it('incluye rutas legales', async () => {
+  it('incluye rutas legales (Centro de Confianza)', async () => {
     const result = await sitemap();
     const urls = result.map(r => r.url);
     expect(urls).toContain(`${SITE_URL}/privacidad`);
     expect(urls).toContain(`${SITE_URL}/terminos`);
-    expect(urls).toContain(`${SITE_URL}/seguridad/datos`);
+    // Rutas actualizadas post-rebrand S65 (antes: /seguridad/datos)
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/datos`);
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/privacidad`);
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/terminos`);
   });
 
   it('incluye rutas dinámicas de actividades', async () => {
@@ -80,6 +106,19 @@ describe('sitemap()', () => {
     const result = await sitemap();
     const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
     expect(actRoute?.lastModified).toEqual(new Date('2026-03-20'));
+  });
+
+  it('incluye rutas de categoría con slug correcto', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls).toContain(`${SITE_URL}/actividades/categoria/arte-y-creatividad`);
+  });
+
+  it('incluye rutas de ciudad con slug correcto', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls).toContain(`${SITE_URL}/actividades/bogota`);
+    expect(urls).toContain(`${SITE_URL}/actividades/medellin`);
   });
 
   it('NO incluye rutas privadas (/admin, /perfil, /login)', async () => {

@@ -1,5 +1,5 @@
 'use client';
-import { Button } from '@/components/ui';
+import { Button, ToggleChip } from '@/components/ui';
 
 // =============================================================================
 // Filters — cabecera de resultados de /actividades
@@ -751,19 +751,14 @@ export default function Filters({
         <div className="flex items-center gap-2 flex-wrap" role="group" aria-label="Filtrar por fecha">
           <span className="text-xs font-medium text-[var(--hp-text-muted)] shrink-0">¿Cuándo?</span>
           {DATE_RANGE_OPTIONS.map(opt => (
-            <button
+            <ToggleChip
               key={opt.value}
-              type="button"
+              variant="pill"
+              pressed={dateRange === opt.value}
               onClick={() => handleDateRange(opt.value)}
-              aria-pressed={dateRange === opt.value}
-              className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
-                dateRange === opt.value
-                  ? 'border-brand-500 bg-brand-600 text-white shadow-[var(--hp-shadow-md)]'
-                  : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-secondary)] hover:border-brand-300 hover:text-brand-600'
-              }`}
             >
               {opt.label}
-            </button>
+            </ToggleChip>
           ))}
         </div>
       )}
@@ -999,14 +994,15 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
               <div className="grid grid-cols-2 gap-2">
                 {AGE_OPTIONS.map((o, i) => (
-                  <button key={i} type="button" onClick={() => setMobileAgeIdx(i)}
-                    className={`rounded-xl border py-2.5 text-sm font-medium transition-colors ${
-                      mobileAgeIdx === i
-                        ? 'border-brand-500 bg-brand-600 text-white'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-brand-300'
-                    }`}>
+                  <ToggleChip
+                    key={i}
+                    variant="tile"
+                    pressed={mobileAgeIdx === i}
+                    onClick={() => setMobileAgeIdx(i)}
+                    className="justify-center py-2.5"
+                  >
                     {o.label}
-                  </button>
+                  </ToggleChip>
                 ))}
               </div>
             </div>
@@ -1015,15 +1011,16 @@ export default function Filters({
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ordenar por</label>
               <div className="flex flex-col gap-2">
                 {SORT_OPTIONS.map(o => (
-                  <button key={o.value} type="button" onClick={() => setMobileSort(o.value)}
-                    className={`w-full rounded-xl border px-4 py-2.5 text-sm font-medium text-left transition-colors ${
-                      mobileSort === o.value
-                        ? 'border-brand-500 bg-brand-50 text-brand-700'
-                        : 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] hover:border-brand-300'
-                    }`}>
+                  <ToggleChip
+                    key={o.value}
+                    variant="tile"
+                    fullWidth
+                    pressed={mobileSort === o.value}
+                    onClick={() => setMobileSort(o.value)}
+                  >
                     {o.label}
-                    {mobileSort === o.value && <span className="float-right text-brand-500">✓</span>}
-                  </button>
+                    {mobileSort === o.value && <span aria-hidden>✓</span>}
+                  </ToggleChip>
                 ))}
               </div>
             </div>

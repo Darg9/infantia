@@ -50,13 +50,17 @@ export default function MapPageClient({ points, activeCity, totalCount }: Props)
               Mapa de actividades
             </h1>
             <p className="text-sm text-[var(--hp-text-secondary)] mt-0.5">
-              {totalCount} {totalCount === 1 ? 'actividad' : 'actividades'}
+              <span className="font-semibold text-[var(--hp-text-primary)]">{totalCount}</span>
+              {' '}{totalCount === 1 ? 'actividad con ubicación verificada' : 'actividades con ubicación verificada'}
               {(() => {
                 const c = city ?? activeCity
                 if (!c) return ''
                 return c.id === 'all' ? ' en Colombia' : ` en ${c.name}`
               })()}
-              {' '}· Haz clic en un pin para ver detalles
+              {' '}·{' '}
+              <Link href="/actividades" className="text-brand-600 hover:text-brand-500 hover:underline">
+                ver listado completo →
+              </Link>
             </p>
           </div>
 
@@ -93,10 +97,6 @@ export default function MapPageClient({ points, activeCity, totalCount }: Props)
         </div>
       </div>
 
-      {/* Nota coordenadas */}
-      <p className="text-center text-xs text-[var(--hp-text-muted)] pb-3 px-4">
-        Solo se muestran actividades con ubicación verificada. Las demás están disponibles en el listado.
-      </p>
     </div>
   )
 }

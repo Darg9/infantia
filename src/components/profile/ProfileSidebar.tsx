@@ -67,7 +67,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                   'relative flex items-center gap-3 px-4 py-2.5 mx-2 rounded-xl text-sm transition-colors overflow-hidden',
                   active
                     ? 'bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 font-semibold'
-                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-subtle)] hover:text-[var(--hp-text-primary)] dark:hover:text-white',
+                    : 'text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] hover:text-[var(--hp-text-primary)] dark:hover:text-white',
                 ].join(' ')}
               >
                 {/* Active indicator bar — requiere relative en el Link padre */}
@@ -99,7 +99,7 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
                   'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors',
                   active
                     ? 'bg-brand-100 dark:bg-brand-900/30 text-brand-700 dark:text-brand-400 font-semibold'
-                    : 'text-[var(--hp-text-secondary)] dark:text-[var(--hp-text-muted)] hover:bg-[var(--hp-bg-subtle)] hover:text-[var(--hp-text-primary)] dark:hover:text-white',
+                    : 'text-[var(--hp-text-secondary)] hover:bg-[var(--hp-bg-subtle)] hover:text-[var(--hp-text-primary)] dark:hover:text-white',
                 ].join(' ')}
               >
                 <span>{item.icon}</span>

@@ -21,7 +21,7 @@ import { getAccountTypeLabel } from '@/lib/utils'
 // ── Empty states por KPI ─────────────────────────────────────────────────────
 const EMPTY_LABELS: Record<string, string> = {
   Favoritos: 'Aún no tienes favoritos',
-  Hijos: 'Aún no has agregado niñas o niños',
+  Familia: 'Aún no has agregado niñas o niños',
   Calificaciones: 'Aún no tienes calificaciones',
 }
 
@@ -46,9 +46,9 @@ export default async function PerfilPage() {
   ])
 
   const stats = [
-    { label: 'Favoritos', count: favoritesCount, href: '/perfil/favoritos', icon: '❤️', ctaHref: '/actividades' },
-    { label: 'Hijos', count: childrenCount, href: '/perfil/hijos', icon: '👶', ctaHref: '/perfil/hijos' },
-    { label: 'Calificaciones', count: ratingsCount, href: '/perfil/calificaciones', icon: '⭐', ctaHref: '/actividades' },
+    { label: 'Favoritos', count: favoritesCount, href: '/perfil/favoritos', icon: '❤️', ctaHref: '/actividades', ctaLabel: 'Explorar actividades →' },
+    { label: 'Familia', count: childrenCount, href: '/perfil/hijos', icon: '👶', ctaHref: '/perfil/hijos/nuevo', ctaLabel: 'Agregar niña o niño →' },
+    { label: 'Calificaciones', count: ratingsCount, href: '/perfil/calificaciones', icon: '⭐', ctaHref: '/actividades', ctaLabel: 'Calificar actividades →' },
   ]
 
   const displayName = dbUserWithCity?.name ?? user.user_metadata?.name ?? ''
@@ -141,24 +141,20 @@ export default async function PerfilPage() {
               </p>
             </Link>)
           ) : (
-            // Empty state — texto + CTA para explorar
-            (<div
+            // Empty state — card clickeable con CTA
+            (<Link
               key={stat.href}
-              className='bg-[var(--hp-bg-subtle)] border border-dashed border-[var(--hp-border)] rounded-[var(--hp-radius-lg)] p-5 flex flex-col gap-2'
+              href={stat.ctaHref}
+              className='bg-[var(--hp-bg-surface)] border border-dashed border-[var(--hp-border)] rounded-[var(--hp-radius-lg)] p-5 flex flex-col gap-2 hover:border-brand-400 transition-colors group'
             >
-              <span className="text-2xl opacity-40">{stat.icon}</span>
-              <p className="text-sm text-[var(--hp-text-muted)]">
+              <span className="text-2xl">{stat.icon}</span>
+              <p className="text-sm text-[var(--hp-text-secondary)]">
                 {EMPTY_LABELS[stat.label]}
               </p>
-              {stat.label === 'Favoritos' && (
-                <Link
-                  href={stat.ctaHref}
-                  className="text-xs text-brand-600 hover:text-brand-700 font-medium mt-0.5"
-                >
-                  Explorar actividades →
-                </Link>
-              )}
-            </div>)
+              <span className="text-xs text-brand-600 group-hover:text-brand-500 font-medium mt-0.5">
+                {stat.ctaLabel}
+              </span>
+            </Link>)
           )
         )}
       </div>

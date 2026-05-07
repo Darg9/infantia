@@ -89,7 +89,7 @@ export default async function HijosPage() {
       )}
       <p className="text-xs text-[var(--hp-text-muted)] mt-6 leading-relaxed">
         La información de tus hijos se trata conforme a nuestra{' '}
-        <Link href="/seguridad/datos" className='underline hover:text-[var(--hp-text-secondary)]'>
+        <Link href="/centro-de-confianza/datos" target="_blank" rel="noopener noreferrer" className='underline hover:text-[var(--hp-text-secondary)]'>
           Política de Tratamiento de Datos
         </Link>
         .<br />

@@ -148,8 +148,9 @@ export default function NuevoHijoPage() {
           <p className="text-xs text-[var(--hp-text-secondary)] mb-3">
             Conforme a la{' '}
             <Link
-              href="/seguridad/datos"
+              href="/centro-de-confianza/datos"
               target="_blank"
+              rel="noopener noreferrer"
               className="text-brand-600 dark:text-brand-400 hover:underline"
             >
               Política de Tratamiento de Datos Personales

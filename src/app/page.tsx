@@ -14,6 +14,7 @@ import { serializeActivity } from '@/lib/prisma-serialize';
 import { CitySwitcher } from '@/components/layout/CitySwitcher';
 import { CategoryCountsIsland } from '@/app/_components/CategoryCountsIsland';
 import { getCitiesForSelector } from '@/lib/cities';
+import { SITE_URL } from '@/config/site';
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
@@ -118,7 +119,53 @@ export default async function HomePage() {
   const activitySubtitle  = hasRecent ? 'Las más recientes' : 'Las más populares';
   const activityHref      = hasRecent ? '/actividades?sort=newest' : '/actividades';
 
+  // ── JSON-LD: identidad del sitio + lista de actividades destacadas ───────────
+  const organizationLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'HabitaPlan',
+    url: SITE_URL,
+    logo: `${SITE_URL}/logo.png`,
+    description:
+      'Plataforma de descubrimiento de actividades para niños y familias en Colombia. Talleres, campamentos, eventos culturales y planes gratis.',
+    sameAs: [],
+    areaServed: {
+      '@type': 'Country',
+      name: 'Colombia',
+    },
+  };
+
+  const itemListLd = displayActivities.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'ItemList',
+        name: 'Actividades para niños y familias en Colombia',
+        description: 'Descubre los mejores planes y actividades para niños en Colombia.',
+        itemListElement: displayActivities.map((act, idx) => ({
+          '@type': 'ListItem',
+          position: idx + 1,
+          item: {
+            '@type': 'Event',
+            name: act.title,
+            url: `${SITE_URL}/actividad/${act.id}`,
+          },
+        })),
+      }
+    : null;
+
   return (
+    <>
+      {/* ── Structured Data ─────────────────────────────────────────────── */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+      />
+      {itemListLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+        />
+      )}
     <div>
       {/* ================================================================ */}
       {/* HERO                                                              */}
@@ -253,6 +300,7 @@ export default async function HomePage() {
       </section>
 
     </div>
+    </>
   );
 }
 

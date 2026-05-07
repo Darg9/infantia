@@ -1,8 +1,7 @@
 // =============================================================================
 // /actividades/[citySlug] — Landing SEO por ciudad
-// ISR: se construye en el primer request y se cachea 1h.
-// generateStaticParams eliminado para evitar EMAXCONN en build
-// (Supabase free tier: límite 200 conexiones simultáneas).
+// generateStaticParams: pre-renderiza las ciudades activas en build (una sola
+// query ligera — no riesgo de EMAXCONN). ISR 1h revalida en background.
 // =============================================================================
 
 export const revalidate = 3600 // 1 hora — revalida en background tras cada hora
@@ -17,6 +16,19 @@ import ActivityCard from '../_components/ActivityCard';
 import { getCategoryEmoji } from '@/lib/category-utils';
 
 const PAGE_LIMIT = 12;
+
+// ── Pre-render en build: una sola query → slugs de ciudades activas ───────────
+// Sin riesgo EMAXCONN: es una query única y ligera, no paralela con las del body.
+export async function generateStaticParams() {
+  const cities = await prisma.city.findMany({
+    where: {
+      isActive: true,
+      locations: { some: { activities: { some: { status: 'ACTIVE' } } } },
+    },
+    select: { name: true },
+  });
+  return cities.map((c) => ({ citySlug: slugify(c.name) }));
+}
 
 async function getCityBySlug(slug: string) {
   const cities = await prisma.city.findMany({

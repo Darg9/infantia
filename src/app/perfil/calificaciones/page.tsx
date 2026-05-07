@@ -55,7 +55,7 @@ export default async function CalificacionesPage() {
             <Link
               key={rating.id}
               href={activityPath(rating.activity.id, rating.activity.title)}
-              className="flex items-start gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-4 hover:border-brand-300 transition-colors group"
+              className="flex items-start gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-4 shadow-[var(--hp-shadow-sm)] hover:shadow-[var(--hp-shadow-md)] hover:border-brand-300 transition-all group"
             >
               {/* Image or placeholder */}
               {rating.activity.imageUrl ? (

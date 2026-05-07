@@ -115,7 +115,7 @@ export default function HistorialPage() {
             <Link
               key={entry.activityId}
               href={activityPath(entry.activityId, entry.title)}
-              className="flex items-center gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-3 hover:border-brand-300 transition-colors group"
+              className="flex items-center gap-4 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-3 shadow-[var(--hp-shadow-sm)] hover:shadow-[var(--hp-shadow-md)] hover:border-brand-300 transition-all group"
             >
               {entry.imageUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element

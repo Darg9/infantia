@@ -63,7 +63,7 @@ export default async function HijosPage() {
             return (
               <li
                 key={child.id}
-                className="flex items-center justify-between bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl px-5 py-4"
+                className="flex items-center justify-between bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl px-5 py-4 shadow-[var(--hp-shadow-sm)]"
               >
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-brand-100 rounded-full flex items-center justify-center text-brand-600 font-bold text-sm">

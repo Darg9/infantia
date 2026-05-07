@@ -45,9 +45,9 @@
   --hp-text-muted: rgba(0, 33, 71, 0.5);
 
   /* BACKGROUNDS */
-  --hp-bg-page: #ffffff;
-  --hp-bg-surface: #ffffff;
-  --hp-bg-subtle: #f1f5f9;
+  --hp-bg-page: #f8fafc;     /* canvas — gris slate-50: las tarjetas blancas flotan sobre él */
+  --hp-bg-surface: #ffffff;  /* superficies elevadas: cards, sidebar, modales */
+  --hp-bg-subtle: #f1f5f9;   /* slate-100: hover en sidebar, fondos secundarios */
   --hp-bg-elevated: #ffffff;
 
   /* BORDER */

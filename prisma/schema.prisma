@@ -392,6 +392,46 @@ enum ActivityStatus {
   EXPIRED
   DRAFT
   DUPLICATE
+  PENDING_REVIEW  // Pipeline V2: esperando revisión editorial
+}
+
+// =============================================================================
+// Pipeline V2 — Aprendizaje editorial
+// =============================================================================
+
+model SourceLearning {
+  id             BigInt   @id @default(autoincrement())
+  source         String   @unique @db.VarChar(255)
+  isInstitutional Boolean @default(false) @map("is_institutional")
+  approved       Int      @default(0)
+  rejected       Int      @default(0)
+  trustScore     Float    @default(0.5) @map("trust_score")
+  threshold      Float    @default(0.40)
+  lastUpdated    DateTime @default(now()) @map("last_updated")
+
+  @@map("source_learning")
+}
+
+model ReviewDecision {
+  id             BigInt    @id @default(autoincrement())
+  activityId     String    @map("activity_id") @db.VarChar(36)
+  source         String    @db.VarChar(255)
+  isInstitutional Boolean  @default(false) @map("is_institutional")
+  gateScore      Float?    @map("gate_score")
+  gateReason     String?   @map("gate_reason") @db.VarChar(255)
+  gateSignals    Json?     @map("gate_signals")
+  sourceTrust    Float?    @map("source_trust")
+  decision       String?   @db.VarChar(20)      // 'approved' | 'rejected' | null (pendiente)
+  decisionReason String?   @map("decision_reason") @db.VarChar(500)
+  reviewedAt     DateTime? @map("reviewed_at")
+  reviewedBy     String?   @map("reviewed_by") @db.VarChar(255)
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  @@index([activityId], map: "idx_rd_activity")
+  @@index([source],     map: "idx_rd_source")
+  @@index([decision],   map: "idx_rd_decision")
+  @@index([createdAt],  map: "idx_rd_created")
+  @@map("review_decisions")
 }
 
 enum PricePeriod {

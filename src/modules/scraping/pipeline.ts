@@ -13,6 +13,9 @@ import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetri
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
 import { evaluateActivityGate } from './quality/activity-gate';
+import { evaluateActivityGateV2 } from './quality/activity-gate-v2';
+import { saveActivityV2 } from './pipeline-v2/save-activity-v2';
+import { getSourceTrust } from './quality/source-trust';
 import { ScrapingStatus } from '../../generated/prisma/client';
 import { rankCandidates } from './ranking';
 
@@ -88,8 +91,9 @@ export class ScrapingPipeline {
   private logger: ScrapingLogger | null;
   private readonly cityName: string;
   private readonly verticalSlug: string;
+  private readonly useGateV2: boolean;
 
-  constructor(options?: { saveToDb?: boolean; cityName?: string; verticalSlug?: string }) {
+  constructor(options?: { saveToDb?: boolean; cityName?: string; verticalSlug?: string; useGateV2?: boolean }) {
     this.extractor = new CheerioExtractor();
     this.analyzer = new GeminiAnalyzer();
     this.cache = new ScrapingCache();
@@ -97,6 +101,7 @@ export class ScrapingPipeline {
     this.logger = options?.saveToDb ? new ScrapingLogger() : null;
     this.cityName = options?.cityName ?? 'Bogotá';
     this.verticalSlug = options?.verticalSlug ?? 'kids';
+    this.useGateV2 = options?.useGateV2 ?? false;
   }
 
   async runPipeline(url: string, sourceHost?: string, opts?: { skipPreflight?: boolean }): Promise<ActivityNLPResult> {
@@ -495,6 +500,19 @@ export class ScrapingPipeline {
             log.warn(`[discard:llm] Rechazado por LLM fail-safe: "${data.title}"`, { url: actUrl });
           } else {
           // ── Activity Gate: valida contenido antes de persistir ──────────────
+          if (this.useGateV2) {
+            // ── Gate V2: recall-first, fuentes institucionales → PENDING_REVIEW ──
+            const trust = await getSourceTrust(actUrl);
+            const gateV2 = evaluateActivityGateV2(data, actUrl, trust.trustScore);
+            log.info(`[GATE_V2] "${data.title}" → ${gateV2.decision} (score=${gateV2.score.toFixed(2)}, inst=${gateV2.isInstitutional})`);
+            if (gateV2.decision !== 'DROP' && this.storage) {
+              try {
+                await saveActivityV2(data, actUrl, gateV2, { verticalSlug: this.verticalSlug });
+              } catch (err: unknown) {
+                log.warn(`[GATE_V2] Error save (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+              }
+            }
+          } else {
           const gate = evaluateActivityGate(data, actUrl);
           if (!gate.pass) {
             log.warn(`[discard:gate] Rechazado por heurística: "${data.title}" | reason=${gate.reason}`, { url: actUrl, score: gate.score });
@@ -512,6 +530,7 @@ export class ScrapingPipeline {
             }
           }
           } // end gate.pass check
+          } // end useGateV2 else
           } // end isActivity check
           results.push({ url: actUrl, data });
         } catch (error: unknown) {
@@ -536,6 +555,17 @@ export class ScrapingPipeline {
             // ── Activity Gate — paralelo ──────────────────────────────────────
             if (data.isActivity !== true) {
               log.warn(`[discard:llm] Rechazado por LLM fail-safe: "${data.title}"`, { url: actUrl });
+            } else if (this.useGateV2) {
+              const trust = await getSourceTrust(actUrl);
+              const gateV2 = evaluateActivityGateV2(data, actUrl, trust.trustScore);
+              log.info(`[GATE_V2] "${data.title}" → ${gateV2.decision} (score=${gateV2.score.toFixed(2)}, inst=${gateV2.isInstitutional})`);
+              if (gateV2.decision !== 'DROP' && this.storage) {
+                try {
+                  await saveActivityV2(data, actUrl, gateV2, { verticalSlug: this.verticalSlug });
+                } catch (err: unknown) {
+                  log.warn(`[GATE_V2] Error save (non-fatal): ${err instanceof Error ? err.message : String(err)}`);
+                }
+              }
             } else {
             const gate = evaluateActivityGate(data, actUrl);
             if (!gate.pass) {
@@ -553,7 +583,7 @@ export class ScrapingPipeline {
               }
             } // end storage check
             } // end gate else
-            } // end isActivity else
+            } // end isActivity else / useGateV2
             return { url: actUrl, data };
           } catch (error: unknown) {
             const msg = error instanceof Error ? error.message : String(error);

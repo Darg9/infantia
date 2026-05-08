@@ -108,6 +108,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-[var(--hp-text-primary)]">PQRS</h2>
           <p className="text-sm text-[var(--hp-text-secondary)] mt-1">Gestión de solicitudes de contacto (Ley 1581 / SIC)</p>
         </Link>
+
+        <Link
+          href="/admin/pending-review"
+          className='bg-[var(--hp-bg-surface)] border-2 border-brand-300 rounded-2xl p-6 hover:border-brand-500 hover:shadow-[var(--hp-shadow-md)] transition-all'
+        >
+          <div className="text-2xl mb-2">🔍</div>
+          <h2 className="font-semibold text-[var(--hp-text-primary)]">Revisión Pipeline V2</h2>
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">Aprueba o rechaza actividades pendientes · A / R</p>
+        </Link>
       </div>
     </div>
   );

@@ -60,7 +60,7 @@ REGLAS:
 - Si el texto está en otro idioma, traduce título y descripción al español.
 - Si no encuentras un campo, omítelo o usa null.
 - confidenceScore: 0.0 (nada útil encontrado) a 1.0 (toda la información clara y completa).
-- categories: usa nombres genéricos en español (Deportes, Música, Arte, Danza, Idiomas, Tecnología, Lúdico, Campamentos, Ciencia, Teatro, Cocina, etc.)
+- categories: usa nombres genéricos en español (Deportes, Música, Arte y Creatividad, Danza, Idiomas, Tecnología, Lúdico, Campamentos, Ciencias, Teatro, Cocina, Lectura, Naturaleza, Artes Marciales, etc.)
 - price: número sin símbolo de moneda. Si dice "gratis", usa 0.
 - pricePeriod: PER_SESSION, MONTHLY, TOTAL, o FREE.
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.

@@ -48,12 +48,11 @@ const KEYWORD_CATEGORIES: Array<{ keywords: string[]; category: string }> = [
   { keywords: ['música', 'concierto', 'banda', 'coro', 'orquesta'], category: 'Música' },
   { keywords: ['teatro', 'obra', 'dramaturg', 'escena', 'actuación'], category: 'Teatro' },
   { keywords: ['danza', 'baile', 'ballet', 'coreografía'], category: 'Danza' },
-  { keywords: ['taller', 'workshop', 'curso', 'aprend', 'capacitación'], category: 'Talleres' },
-  { keywords: ['deporte', 'fútbol', 'natación', 'atletismo', 'torneo'], category: 'Deporte' },
-  { keywords: ['arte', 'pintura', 'dibujo', 'escultura', 'exposición', 'galería'], category: 'Arte' },
-  { keywords: ['cine', 'película', 'film', 'cinemateca'], category: 'Cine' },
-  { keywords: ['lectura', 'libro', 'biblioteca', 'literatur', 'cuento'], category: 'Literatura' },
-  { keywords: ['ciencia', 'tecnología', 'robótica', 'stem', 'astronomía'], category: 'Ciencia' },
+  { keywords: ['deporte', 'fútbol', 'natación', 'atletismo', 'torneo'], category: 'Deportes' },
+  { keywords: ['arte', 'pintura', 'dibujo', 'escultura', 'exposición', 'galería',
+               'taller', 'workshop', 'lúdico', 'circo', 'magia', 'títere', 'cine', 'film'], category: 'Arte y Creatividad' },
+  { keywords: ['lectura', 'libro', 'biblioteca', 'literatur', 'cuento'], category: 'Lectura' },
+  { keywords: ['ciencia', 'tecnología', 'robótica', 'stem', 'astronomía'], category: 'Ciencias' },
   { keywords: ['naturaleza', 'parque', 'jardín', 'ecología', 'ambiental'], category: 'Naturaleza' },
 ];
 

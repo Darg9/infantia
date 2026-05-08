@@ -217,13 +217,13 @@ describe('ScrapingStorage.saveBatchResults()', () => {
   });
 
   it('vincula categorías cuando hay match por nombre', async () => {
-    const categoriasMock = [{ id: 'cat-001', name: 'Arte', verticalId: 'vert-001' }];
+    const categoriasMock = [{ id: 'cat-001', name: 'Arte y Creatividad', verticalId: 'vert-001' }];
     mocks.mockCategoryFindMany.mockResolvedValue(categoriasMock);
     const batch = makeBatchResult([{
-      data: { ...actividadNLPBase, categories: ['Arte', 'Música'] },
+      data: { ...actividadNLPBase, categories: ['Arte y Creatividad', 'Música'] },
     }]);
     await storage.saveBatchResults(batch);
-    // Arte hace match exacto → upsert en ActivityCategory
+    // 'Arte y Creatividad' hace match exacto → upsert en ActivityCategory
     expect(mocks.mockActivityCategoryUpsert).toHaveBeenCalledTimes(1);
   });
 

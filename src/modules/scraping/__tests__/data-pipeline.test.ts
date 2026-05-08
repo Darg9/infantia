@@ -126,7 +126,7 @@ describe('runDataPipeline — transformaciones en datos válidos', () => {
   it('no duplica categorías si dos inputs mapean al mismo bucket', () => {
     const r = runDataPipeline({ ...base, categories: ['arte', 'artes', 'pintura'] });
     expect(r.valid).toBe(true);
-    expect(r.data.categories.filter((c) => c === 'Arte')).toHaveLength(1);
+    expect(r.data.categories.filter((c) => c === 'Arte y Creatividad')).toHaveLength(1);
   });
 
   it('swapea minAge/maxAge cuando están invertidos (línea 76)', () => {

@@ -155,7 +155,7 @@ describe('parseActivity', () => {
 
     const parsed = await parseActivity(raw.html!, raw.url, raw, { analyze: mockAnalyze })
 
-    expect(parsed.result.categories).toContain('Arte')
+    expect(parsed.result.categories).toContain('Arte y Creatividad')
   })
 
   it('el fallback usa "General" si no hay keywords de categoría', async () => {

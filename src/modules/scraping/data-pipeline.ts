@@ -5,7 +5,15 @@ import { ActivityNLPResult } from './types';
 // Mapea ruido natural inferido por LLM hacia buckets definidos
 // =============================================================================
 const CATEGORY_MAP: Record<string, string> = {
-  'arte': 'Arte', 'artes': 'Arte', 'manualidades': 'Arte', 'pintura': 'Arte', 'dibujo': 'Arte',
+  // Arte y Creatividad — incluye variantes genéricas + categorías propias de Idartes/SCRD
+  'arte': 'Arte y Creatividad', 'artes': 'Arte y Creatividad',
+  'arte y creatividad': 'Arte y Creatividad',
+  'manualidades': 'Arte y Creatividad', 'pintura': 'Arte y Creatividad', 'dibujo': 'Arte y Creatividad',
+  'talleres': 'Arte y Creatividad', 'taller': 'Arte y Creatividad', 'workshop': 'Arte y Creatividad',
+  'artes audiovisuales': 'Arte y Creatividad', 'audiovisual': 'Arte y Creatividad', 'cine': 'Arte y Creatividad',
+  // Lúdico — "Artes Lúdicas" en Idartes/SCRD: circo, magia, títeres, juegos creativos
+  'lúdico': 'Arte y Creatividad', 'ludico': 'Arte y Creatividad',
+  'artes lúdicas': 'Arte y Creatividad', 'artes ludicas': 'Arte y Creatividad',
   'danza': 'Danza', 'teatro': 'Teatro',
   'musica': 'Música', 'música': 'Música', 'concierto': 'Música',
   'deporte': 'Deportes', 'deportes': 'Deportes', 'futbol': 'Deportes', 'fútbol': 'Deportes',
@@ -16,11 +24,10 @@ const CATEGORY_MAP: Record<string, string> = {
   'programacion': 'Tecnología', 'programación': 'Tecnología',
   'aire libre': 'Naturaleza', 'naturaleza': 'Naturaleza', 'campamento': 'Naturaleza', 'parque': 'Naturaleza',
   'idiomas': 'Idiomas', 'ingles': 'Idiomas', 'inglés': 'Idiomas', 'frances': 'Idiomas', 'francés': 'Idiomas',
-  'juegos': 'Juegos', 'gamification': 'Juegos', 'juegos de mesa': 'Juegos',
-  'talleres': 'Arte', 'taller': 'Arte', 'workshop': 'Arte',
+  'juegos': 'Arte y Creatividad', 'gamification': 'Arte y Creatividad', 'juegos de mesa': 'Arte y Creatividad',
   'lectura': 'Lectura', 'literatura': 'Lectura',
-  'eventos': 'General', 'show': 'General', 'espectaculo': 'General', 'espectáculo': 'General',
-  'general': 'General',
+  'eventos': 'Teatro', 'show': 'Teatro', 'espectaculo': 'Teatro', 'espectáculo': 'Teatro',
+  'general': 'Arte y Creatividad',
 };
 
 function standardizeCategory(raw: string): string {

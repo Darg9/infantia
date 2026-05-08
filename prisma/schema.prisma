@@ -611,3 +611,26 @@ model ContactRequest {
   @@index([status])
   @@map("contact_requests")
 }
+
+// =============================================================================
+// URL Rejections — registro de URLs descartadas en cada etapa del pipeline
+// Permite auditar qué se pierde antes de llegar a Gemini NLP o a la BD.
+// Etapas:
+//   CLASSIFIER_S1     → query params, binarios, protocolos inválidos
+//   CLASSIFIER_S2     → URL classifier score < umbral (ruido institucional, etc.)
+//   GEMINI_DISCOVER   → Gemini dijo "no es actividad" en la fase de discovery
+// =============================================================================
+model UrlRejection {
+  id          BigInt   @id @default(autoincrement())
+  url         String   @db.VarChar(2048)
+  source      String   @db.VarChar(255)
+  stage       String   @db.VarChar(30)   // CLASSIFIER_S1 | CLASSIFIER_S2 | GEMINI_DISCOVER
+  reason      String   @db.VarChar(100)  // query_params | binary | low_score | not_activity | invalid_protocol
+  score       Int?                        // score del URL classifier (solo Stage 2)
+  rejectedAt  DateTime @default(now())   @map("rejected_at")
+
+  @@index([source])
+  @@index([stage])
+  @@index([rejectedAt])
+  @@map("url_rejections")
+}

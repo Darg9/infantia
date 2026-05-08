@@ -4,8 +4,41 @@ import { createLogger } from '../../../lib/logger';
 import { preFilterUrls } from '../../../lib/url-classifier';
 import { isRetryableError } from '../parser/parser.types';
 import { quota, getAvailableKey } from '../../../lib/quota-tracker';
+import { prisma } from '../../../lib/db';
 
 const log = createLogger('scraping:gemini');
+
+// ── URL Rejection Logger ────────────────────────────────────────────────────
+// Fire-and-forget: guarda URLs rechazadas en url_rejections sin bloquear pipeline.
+// stage: CLASSIFIER_S1 | CLASSIFIER_S2 | GEMINI_DISCOVER
+async function persistRejections(
+  urls: { url: string; reason: string; score?: number }[],
+  source: string,
+  stage: 'CLASSIFIER_S1' | 'CLASSIFIER_S2' | 'GEMINI_DISCOVER',
+): Promise<void> {
+  if (urls.length === 0) return;
+  try {
+    // Batch insert en lotes de 200 para no sobrecargar
+    const BATCH = 200;
+    for (let i = 0; i < urls.length; i += BATCH) {
+      const chunk = urls.slice(i, i + BATCH);
+      const values = chunk
+        .map((_, j) => `($${j * 5 + 1}, $${j * 5 + 2}, $${j * 5 + 3}, $${j * 5 + 4}, $${j * 5 + 5})`)
+        .join(', ');
+      const params: (string | number | null)[] = chunk.flatMap((r) => [
+        r.url, source, stage, r.reason, r.score ?? null,
+      ]);
+      await prisma.$executeRawUnsafe(
+        `INSERT INTO url_rejections (url, source, stage, reason, score)
+         VALUES ${values}
+         ON CONFLICT DO NOTHING`,
+        ...params,
+      );
+    }
+  } catch {
+    // Best-effort: nunca bloquear el pipeline por un fallo de logging
+  }
+}
 
 /**
  * Limpia patrones problemáticos de respuestas de Gemini antes de pasar a Zod.
@@ -340,23 +373,26 @@ export class GeminiAnalyzer {
   async discoverActivityLinks(links: DiscoveredLink[], sourceUrl: string): Promise<string[]> {
     // Extensiones de archivo que nunca son páginas de actividades
     const IMAGE_OR_BINARY_EXT = /\.(jpe?g|png|gif|webp|svg|bmp|tiff?|pdf|mp4|mp3|zip|doc[x]?|xls[x]?|ppt[x]?)$/i;
+    const sourceDomain = (() => { try { return new URL(sourceUrl).hostname.replace('www.', ''); } catch { return sourceUrl; } })();
 
     // Pre-filtro Stage 1: URLs que son claramente navegación/filtro/archivos
+    const stage1Rejected: { url: string; reason: string }[] = [];
     const stage1Filtered = links.filter((l) => {
       try {
         const u = new URL(l.url);
-        if (!['http:', 'https:'].includes(u.protocol)) return false; // mailto:, tel:, javascript:
-        if (u.search.length > 0) return false;                        // query params
-        if (u.hash && u.pathname === '/' || u.hash.length > 0 && u.pathname === u.hash) return false; // hash-only
-        if (IMAGE_OR_BINARY_EXT.test(u.pathname)) return false;       // archivos binarios
+        if (!['http:', 'https:'].includes(u.protocol)) { stage1Rejected.push({ url: l.url, reason: 'invalid_protocol' }); return false; }
+        if (u.search.length > 0) { stage1Rejected.push({ url: l.url, reason: 'query_params' }); return false; }
+        if (u.hash && u.pathname === '/' || u.hash.length > 0 && u.pathname === u.hash) { stage1Rejected.push({ url: l.url, reason: 'hash_only' }); return false; }
+        if (IMAGE_OR_BINARY_EXT.test(u.pathname)) { stage1Rejected.push({ url: l.url, reason: 'binary_file' }); return false; }
         return true;
       } catch {
+        stage1Rejected.push({ url: l.url, reason: 'invalid_url' });
         return false;
       }
     });
-    const stage1Excluded = links.length - stage1Filtered.length;
-    if (stage1Excluded > 0) {
-      log.info(`Pre-filtro Stage 1: ${stage1Excluded} URLs excluidas (query params o archivos binarios).`);
+    if (stage1Rejected.length > 0) {
+      log.info(`Pre-filtro Stage 1: ${stage1Rejected.length} URLs excluidas (query params o archivos binarios).`);
+      void persistRejections(stage1Rejected, sourceDomain, 'CLASSIFIER_S1');
     }
 
     // Pre-filtro Stage 2: análisis de URL productividad (nuevo — S34)
@@ -365,15 +401,12 @@ export class GeminiAnalyzer {
 
     if (stage2Excluded > 0) {
       log.info(`Pre-filtro Stage 2 (URL classifier): ${stage2Excluded} URLs excluidas (patrón no productivo).`);
-      // Log algunos ejemplos de URLs excluidas
-      const examples = urlClassifierResult.stats.scores
+      const stage2Rejected = urlClassifierResult.stats.scores
         .filter((s) => !urlClassifierResult.kept.includes(s.url))
-        .slice(0, 3)
-        .map((s) => `${s.url} (score ${s.score})`)
-        .join('; ');
-      if (examples) {
-        log.debug(`Ejemplos excluidos: ${examples}`);
-      }
+        .map((s) => ({ url: s.url, reason: 'low_score', score: s.score }));
+      const examples = stage2Rejected.slice(0, 3).map((s) => `${s.url} (score ${s.score})`).join('; ');
+      if (examples) log.debug(`Ejemplos excluidos: ${examples}`);
+      void persistRejections(stage2Rejected, sourceDomain, 'CLASSIFIER_S2');
     }
 
     // Filtrar links basado en URLs que pasaron ambos filtros
@@ -464,11 +497,19 @@ ${linksText}`;
         }
 
         // Mapear índices (1-based) de vuelta a URLs
-        const found = validated.data.indices
-          .filter((idx) => idx >= 1 && idx <= chunk.length)
-          .map((idx) => chunk[idx - 1].url);
+        const foundSet = new Set(
+          validated.data.indices
+            .filter((idx) => idx >= 1 && idx <= chunk.length)
+            .map((idx) => chunk[idx - 1].url),
+        );
+        const found = [...foundSet];
         log.info(`Lote ${chunkIndex + 1}/${chunks.length}: ${found.length} actividades encontradas`);
         allActivityUrls.push(...found);
+        // Guardar las rechazadas por Gemini en este lote
+        const geminiRejected = chunk
+          .filter((l) => !foundSet.has(l.url))
+          .map((l) => ({ url: l.url, reason: 'not_activity' }));
+        void persistRejections(geminiRejected, sourceDomain, 'GEMINI_DISCOVER');
       } catch (error: unknown) {
         if (isRetryableError(error)) {
           // Guardar para re-lanzar al final si no hay resultados (permite fallback en parser.ts)

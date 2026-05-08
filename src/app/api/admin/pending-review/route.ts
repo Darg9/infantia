@@ -95,6 +95,24 @@ export async function GET(req: NextRequest) {
     gate: snapshotMap[a.id] ?? null,
   }));
 
+  // Queue Health — últimas 24h
+  const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  type QueueRow = { entered: string; reviewed: string };
+  const [queueRows] = await Promise.all([
+    prisma.$queryRawUnsafe<QueueRow[]>(
+      `SELECT
+         COUNT(*) FILTER (WHERE created_at >= $1) AS entered,
+         COUNT(*) FILTER (WHERE reviewed_at >= $1 AND decision IS NOT NULL) AS reviewed
+       FROM review_decisions`,
+      since24h,
+    ),
+  ]);
+  const queueHealth = {
+    enteredLast24h:  parseInt(String(queueRows[0]?.entered  ?? 0)),
+    reviewedLast24h: parseInt(String(queueRows[0]?.reviewed ?? 0)),
+    totalPending:    totalInstitutional + totalOther,
+  };
+
   return NextResponse.json({
     activities: enriched,
     pagination: {
@@ -106,6 +124,7 @@ export async function GET(req: NextRequest) {
            : type === 'other'         ? totalOther
            : totalInstitutional + totalOther,
     },
+    queueHealth,
   });
 }
 
@@ -140,10 +159,13 @@ export async function PATCH(req: NextRequest) {
   const newStatus = decision === 'approve' ? 'ACTIVE' : 'PAUSED';
   const userEmail = adminSession.user?.email ?? 'admin';
 
-  // 1. Actualizar status de la actividad
+  // 1. Actualizar status + marcar como verificada humana si se aprueba
   await prisma.activity.update({
     where: { id },
-    data: { status: newStatus as 'ACTIVE' | 'PAUSED' },
+    data: {
+      status:     newStatus as 'ACTIVE' | 'PAUSED',
+      isVerified: decision === 'approve', // human_verified = señal fuerte para ranking futuro
+    },
   });
 
   // 2. Registrar decisión en review_decisions

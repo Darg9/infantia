@@ -42,6 +42,12 @@ interface PendingActivity {
   gate: GateSnapshot | null;
 }
 
+interface QueueHealth {
+  enteredLast24h: number;
+  reviewedLast24h: number;
+  totalPending: number;
+}
+
 interface PaginationInfo {
   page: number;
   pageSize: number;
@@ -49,6 +55,17 @@ interface PaginationInfo {
   totalOther: number;
   total: number;
 }
+
+const REJECT_REASONS = [
+  'irrelevante',
+  'duplicado',
+  'mal parseado',
+  'no familiar',
+  'expirado',
+  'falso evento',
+  'otro',
+] as const;
+type RejectReason = typeof REJECT_REASONS[number];
 
 // ── Componente Card ────────────────────────────────────────────────────────────
 
@@ -62,7 +79,7 @@ function ActivityCard({
   activity: PendingActivity;
   isSelected: boolean;
   onApprove: (id: string) => void;
-  onReject: (id: string) => void;
+  onReject: (id: string, reason?: RejectReason) => void;
   busy: string | null;
 }) {
   const isBusy = busy === activity.id;
@@ -147,13 +164,27 @@ function ActivityCard({
         >
           {isBusy ? '...' : '✅ Aprobar (A)'}
         </button>
-        <button
-          onClick={() => onReject(activity.id)}
-          disabled={!!busy}
-          className="flex-1 py-1.5 rounded-lg bg-error-50 text-error-600 text-xs font-bold hover:bg-error-100 disabled:opacity-40 transition-colors"
-        >
-          {isBusy ? '...' : '❌ Rechazar (R)'}
-        </button>
+        <div className="relative flex-1 group">
+          <button
+            onClick={() => onReject(activity.id)}
+            disabled={!!busy}
+            className="w-full py-1.5 rounded-lg bg-error-50 text-error-600 text-xs font-bold hover:bg-error-100 disabled:opacity-40 transition-colors"
+          >
+            {isBusy ? '...' : '❌ Rechazar (R)'}
+          </button>
+          {/* Dropdown de razones — aparece al hover sobre el botón */}
+          <div className="absolute bottom-full left-0 mb-1 hidden group-hover:flex flex-col bg-[var(--hp-bg-elevated)] border border-[var(--hp-border)] rounded-xl shadow-lg z-10 w-44 overflow-hidden">
+            {REJECT_REASONS.map((r) => (
+              <button
+                key={r}
+                onClick={() => onReject(activity.id, r)}
+                className="text-left px-3 py-1.5 text-xs text-[var(--hp-text-secondary)] hover:bg-error-50 hover:text-error-700 transition-colors"
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        </div>
         <a
           href={activity.sourceUrl}
           target="_blank"
@@ -179,6 +210,7 @@ export default function PendingReviewPage() {
   const [busy,             setBusy]    = useState<string | null>(null);
   const [selectedIdx,      setSelected] = useState(0);
   const [toast,            setToast]   = useState<{ msg: string; type: 'ok' | 'err' } | null>(null);
+  const [queueHealth,      setQHealth] = useState<QueueHealth | null>(null);
 
   const listRef = useRef<PendingActivity[]>([]);
   listRef.current = activities;
@@ -188,9 +220,10 @@ export default function PendingReviewPage() {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/pending-review?type=${tab}&page=${page}`);
-      const json = await res.json() as { activities: PendingActivity[]; pagination: PaginationInfo };
+      const json = await res.json() as { activities: PendingActivity[]; pagination: PaginationInfo; queueHealth: QueueHealth };
       setActs(json.activities);
       setPag(json.pagination);
+      setQHealth(json.queueHealth);
       setSelected(0);
     } catch {
       showToast('Error cargando actividades', 'err');
@@ -208,13 +241,13 @@ export default function PendingReviewPage() {
   }
 
   // ── Decisión ───────────────────────────────────────────────────────────────
-  const decide = useCallback(async (id: string, decision: 'approve' | 'reject') => {
+  const decide = useCallback(async (id: string, decision: 'approve' | 'reject', reason?: string) => {
     setBusy(id);
     try {
       const res = await fetch('/api/admin/pending-review', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, decision }),
+        body: JSON.stringify({ id, decision, reason }),
       });
       const json = await res.json() as { message?: string; error?: string };
       if (!res.ok) throw new Error(json.error ?? 'Error');
@@ -246,7 +279,7 @@ export default function PendingReviewPage() {
         if (act && !busy) void decide(act.id, 'approve');
       } else if (e.key === 'r' || e.key === 'R') {
         const act = acts[selectedIdx];
-        if (act && !busy) void decide(act.id, 'reject');
+        if (act && !busy) void decide(act.id, 'reject'); // sin razón desde teclado → "otro"
       }
     }
     window.addEventListener('keydown', onKey);
@@ -283,6 +316,23 @@ export default function PendingReviewPage() {
             ← Admin
           </Link>
         </div>
+
+        {/* Queue Health */}
+        {queueHealth && (
+          <div className={`
+            flex gap-4 mb-5 p-3 rounded-xl text-sm border
+            ${queueHealth.enteredLast24h > queueHealth.reviewedLast24h * 2
+              ? 'bg-error-50 border-error-200 text-error-800'
+              : 'bg-[var(--hp-bg-elevated)] border-[var(--hp-border)] text-[var(--hp-text-secondary)]'}
+          `}>
+            <span>📥 <strong>{queueHealth.enteredLast24h}</strong> entraron hoy</span>
+            <span>✅ <strong>{queueHealth.reviewedLast24h}</strong> revisadas hoy</span>
+            <span>⏳ <strong>{queueHealth.totalPending}</strong> pendientes total</span>
+            {queueHealth.enteredLast24h > queueHealth.reviewedLast24h * 2 && (
+              <span className="font-semibold">⚠ La cola crece más rápido de lo que se revisa</span>
+            )}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-[var(--hp-bg-elevated)] p-1 rounded-xl w-fit">
@@ -332,7 +382,7 @@ export default function PendingReviewPage() {
                   activity={act}
                   isSelected={idx === selectedIdx}
                   onApprove={(id) => void decide(id, 'approve')}
-                  onReject={(id)  => void decide(id, 'reject')}
+                  onReject={(id, reason) => void decide(id, 'reject', reason)}
                   busy={busy}
                 />
               ))}

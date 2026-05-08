@@ -221,12 +221,13 @@ export default async function HomePage() {
               <HeroSearch unified />
             </div>
           </div>
-          {/* Chips rápidos — fuera de la cápsula para no quedar dentro del borde */}
-          <div className="flex gap-2.5 justify-center mt-3 flex-wrap">
-            <Link href="/actividades?sort=date" className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Hoy</Link>
-            <Link href="/actividades?price=free" className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Gratis</Link>
-            <Link href="/actividades?search=conversatorios" className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Conversatorios</Link>
-            <Link href="/mapa" className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Cerca de ti</Link>
+          {/* Chips rápidos — 4 accesos directos, diseñados para caber en 1 línea en mobile */}
+          {/* TODO: cuando DATE_FILTER_ENABLED=true, cambiar Hoy → ?dateRange=today */}
+          <div className="flex gap-2 justify-center mt-3 flex-nowrap">
+            <Link href="/actividades?sort=date"        className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Hoy</Link>
+            <Link href="/actividades?price=free"       className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Gratis</Link>
+            <Link href="/actividades?search=talleres"  className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Talleres</Link>
+            <Link href="/mapa"                         className='inline-flex items-center px-3 py-1.5 rounded-full border border-[var(--hp-border-subtle)] bg-[var(--hp-bg-elevated)] text-sm text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-subtle)] hover:border-brand-400 hover:text-brand-600 shadow-[var(--hp-shadow-md)] font-medium transition-all whitespace-nowrap'>Cercanos</Link>
           </div>
         </div>
       </section>

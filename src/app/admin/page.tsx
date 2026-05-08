@@ -99,6 +99,15 @@ export default async function AdminPage() {
           <h2 className="font-semibold text-[var(--hp-text-primary)]">Date Preflight</h2>
           <p className="text-sm text-[var(--hp-text-secondary)] mt-1">Análisis de filtrado previo a Gemini por rango de fechas</p>
         </Link>
+
+        <Link
+          href="/admin/pqrs"
+          className='bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-6 hover:border-brand-300 hover:shadow-[var(--hp-shadow-md)] transition-all'
+        >
+          <div className="text-2xl mb-2">📨</div>
+          <h2 className="font-semibold text-[var(--hp-text-primary)]">PQRS</h2>
+          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">Gestión de solicitudes de contacto (Ley 1581 / SIC)</p>
+        </Link>
       </div>
     </div>
   );

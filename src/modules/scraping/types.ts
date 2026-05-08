@@ -28,8 +28,9 @@ export const activityNLPResultSchema = z.object({
   // Gemini puede devolver null o [] en categories — normalizamos a ['General']
   categories: z.union([z.array(z.string()), z.null()])
     .transform((v) => (v && v.length > 0) ? v : ['General']),
-  minAge: z.number().int().min(0).max(120).nullable().optional(),
-  maxAge: z.number().int().min(0).max(120).nullable().optional(),
+  // z.preprocess redondea floats que Gemini devuelve ocasionalmente (ej. 0.5)
+  minAge: z.preprocess(v => typeof v === 'number' ? Math.round(v) : v, z.number().int().min(0).max(120)).nullable().optional(),
+  maxAge: z.preprocess(v => typeof v === 'number' ? Math.round(v) : v, z.number().int().min(0).max(120)).nullable().optional(),
   price: z.number().min(0).nullable().optional(),
   pricePeriod: z.enum(['PER_SESSION', 'MONTHLY', 'TOTAL', 'FREE']).nullable().optional(),
   currency: z.string().length(3).nullable().default('COP'),

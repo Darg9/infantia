@@ -101,6 +101,17 @@ export async function saveActivityV2(
     }
     const normalized = pipeline.data;
 
+    // ── 1b. Validación de fecha pasada (igual que publish_validator en V1) ──
+    // Actividades con fecha de inicio > 60 días en el pasado → descartar
+    if (normalized.schedules?.[0]?.startDate) {
+      const startDate = new Date(normalized.schedules[0].startDate);
+      const cutoff = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000); // 60 días atrás
+      if (startDate < cutoff) {
+        log.warn(`[V2:date] Descartada por fecha pasada: "${normalized.title}" | startDate=${normalized.schedules[0].startDate}`);
+        return { id: null, action: 'DISCARDED', decision: 'DROP' };
+      }
+    }
+
     let domain = 'unknown';
     try { domain = new URL(sourceUrl).hostname.replace(/^www\./, ''); } catch { /* */ }
 

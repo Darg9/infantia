@@ -39,6 +39,9 @@ export const FEATURE_FLAGS = {
   DISCOVERY_RANKING_MODE_BY_SOURCE: (() => {
     const defaults: Record<string, 'hard' | 'shadow'> = {
       'culturarecreacionydeporte.gov.co': 'hard',
+      'biblored.gov.co':                  'hard',
+      'idartes.gov.co':                   'hard',
+      'planetariodebogota.gov.co':        'hard',
     };
     const raw = process.env.DISCOVERY_RANKING_MODE_BY_SOURCE;
     if (!raw) return defaults;

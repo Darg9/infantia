@@ -25,14 +25,15 @@ interface Source {
   cityName?:     string;
   verticalSlug?: string;
   sitemapPatterns?: string[];
+  maxPages?:     number; // límite paginación + presupuesto Gemini (K)
 }
 
 // ── Catálogo de fuentes (institucionales primero) ─────────────────────────────
 // V2 usa las mismas fuentes que V1 — la diferencia está en el gate, no en las fuentes.
 const ALL_SOURCES: Source[] = [
   // ── Bogotá Institucionales ─────────────────────────────────────────────────
-  { name: 'BibloRed',          channel: 'web', url: 'https://biblored.gov.co',                 cityName: 'Bogotá' },
-  { name: 'Idartes',           channel: 'web', url: 'https://idartes.gov.co/en/agenda',        cityName: 'Bogotá' },
+  { name: 'BibloRed',          channel: 'web', url: 'https://www.biblored.gov.co/eventos',      cityName: 'Bogotá', maxPages: 50 },
+  { name: 'Idartes',           channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',    cityName: 'Bogotá', maxPages: 50 },
   { name: 'Planetario',        channel: 'web', url: 'https://planetariodebogota.gov.co',       cityName: 'Bogotá' },
   { name: 'Cinemateca',        channel: 'web', url: 'https://cinematecadebogota.gov.co',       cityName: 'Bogotá' },
   { name: 'Banrep Bogotá',     channel: 'web', url: 'https://www.banrepcultural.org/bogota',   cityName: 'Bogotá' },
@@ -139,7 +140,7 @@ async function main() {
         totalNew += saved;
       } else {
         const result = await pipeline.runBatchPipeline(source.url, {
-          maxPages: maxPagesArg,
+          maxPages: source.maxPages ?? maxPagesArg,
           sitemapPatterns: source.sitemapPatterns,
         });
         // Estimar PENDING_REVIEW como actividades detectadas menos las guardadas directamente

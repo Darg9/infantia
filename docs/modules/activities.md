@@ -1,7 +1,8 @@
 # Módulo: Activities
 
-**Versión:** ✅ v0.19.0-stable
-**Última actualización:** 1 de mayo de 2026
+**Versión:** ✅ v0.20.0
+**Última actualización:** 9 de mayo de 2026
+
 
 ## ¿Qué hace?
 
@@ -225,7 +226,79 @@ extractActivityId(param) // → UUID (desde param con o sin slug)
 - UTM en CTA "Ver todas": mismo parámetro
 - Bloque sponsor opcional (prop `sponsor?`): link con `utm_campaign=newsletter`
 
-## Geocoding por actividad
+## Diversity Control — Anti-Dominancia Institucional (NUEVO v0.20.0)
+
+Con Pipeline V3 cargando cientos de actividades de fuentes `.gov.co`, el feed de relevancia sin control se convertiría en una agenda gubernamental monótona. El **Diversity Controller** en `activities.service.ts` protege la experiencia.
+
+### Lógica
+
+```
+Pool global (over-fetch hasta 500 items, ordenado por rankingScore desc)
+  │
+  ▼
+  Para cada item en el pool:
+    si domainCount[sourceDomain] < MAX_PER_DOMAIN:
+      → diversePool (aparece en slice de página)
+    else:
+      → overflowPool (fluye al final del pool)
+  │
+  ▼
+  diversified = [...diversePool, ...overflowPool]
+  pagedActivities = diversified.slice(skip, skip + pageSize)
+```
+
+**Invariantes:**
+- `MAX_DIVERSITY_PER_DOMAIN=4` (default). En pageSize=12: máx 33% por fuente en la primera página.
+- El overflow **nunca desaparece**: aparece en páginas más profundas. Preservation-first.
+- Solo aplica en `sort=relevance`. `sort=date`, `price_asc`, etc. no se ven afectados.
+- Configurable via env `MAX_DIVERSITY_PER_DOMAIN`.
+
+### Log de monitoreo
+
+```json
+{ "event": "ranking_applied", "diversePool": 8, "overflowPool": 4, "afterDiversity": 12, "maxPerDomain": 4 }
+```
+
+### Comportamiento por página con dominancia de BibloRed (ejemplo)
+
+| Página | Contenido del slice |
+|--------|---------------------|
+| 1 | 4 BibloRed + 4 Idartes + 4 otros |
+| 2 | 4 BibloRed overflow + resto overflow |
+| 3+ | Long tail institucional |
+
+## Soft Suppression — Sin Hard Hide (NUEVO v0.20.0)
+
+Eliminado el hard hide de `sourceHealth < 0.1`. El sistema aplica **supresión suave** vía ranking score.
+
+### Antes (hard hide)
+```
+sourceHealth < 0.1 → badDomains → buildActivityWhere filtra → actividad invisible
+```
+
+### Ahora (soft suppression)
+```
+sourceHealth < 0.1 → trustScore bajo → rankingScore bajo → cae a páginas 5+
+```
+
+### Tabla de comportamiento
+
+| sourceHealth | Efecto en feed | Páginas típicas |
+|---|---|---|
+| > 0.7 | boost natural | 1–2 |
+| 0.3–0.7 | neutral | 2–3 |
+| 0.1–0.3 | penalización suave | 3–5 |
+| < 0.1 | fuerte penalización | 5+ (visible, recuperable) |
+
+**Por qué:** Ninguna fuente desaparece. El diversity cap ya previene dominación de feed incluso para fuentes de baja calidad. Consistente con la filosofía preservation-first de V2/V3.
+
+### Invariantes de tests (congelados)
+
+| Test | Comportamiento |
+|------|----------------|
+| Diversity max 4 por dominio | 8 biblored + 4 idartes, pageSize=6 → biblored.length ≤ 4 |
+| Overflow preservation | 8 biblored, pageSize=4 → página 2 tiene exactamente 4 |
+
 
 Cada actividad en detalle y mapa expone `location.latitude` / `location.longitude`. El pipeline garantiza coords reales via:
 

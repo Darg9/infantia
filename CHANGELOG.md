@@ -9,26 +9,53 @@ Relación con Documento Fundacional:
 
 ---
 
-## [Unreleased] — Estabilización DEBT-06 + E-01
+## [v0.20.0] — 2026-05-09 (Pipeline V3 — Cobertura Institucional Total + Feed Diversity)
 
-### Fixed
-- **`classifyError` — ETIMEDOUT (E-01):** Agrega `etimedout` a la condición de clasificación de timeout en `src/modules/scraping/resilience/classify-error.ts`. Node.js lanza `'connect ETIMEDOUT'` (sin la palabra `timeout`) causando que el clasificador retornara `'unknown'` en lugar de `'timeout'`. Afectaba observabilidad de SourceHealth scoring.
-- **Tests de integración de pipeline (DEBT-06):** 7 tests en 3 archivos alineados con el comportamiento real del módulo `resilience/` post-refactor v0.18.0:
-  - `pipeline.llm-invalid.test.ts`: Las aserciones de `saveBatchResults` actualizadas para reflejar que recibe `BatchPipelineResult` (objeto), no un array. Los rechazos LLM producen `{ isActivity: false }`, no `data: null` — `null` solo ocurre en errores de red.
-  - `pipeline.network-error.test.ts`: Aserciones del logger envueltas en condicional — el logger es opcional/non-fatal cuando `getCityId` o `getVerticalId` retornan null.
-  - `pipeline.success.test.ts`: Flujo del logger envuelto condicionalmente; aserciones del core (resultados, `saveBatchResults`) permanecen estrictas.
-- **Workflow (E-03):** Este fix se desarrolló en rama `fix/stabilization-debt06-e01` y mergeado a master con `--no-ff`. Primer uso del workflow de ramas conforme a CLAUDE.md después de identificar la violación.
+### Features — Pipeline V3
 
-### Features & Analytics
-- **Filter Applied Analytics (FEAT-6.8-3):** Implementada instrumentación para rastrear la interacción de los usuarios con los filtros facetados en `/actividades`.
-  - Evento `filter_applied` atómico disparado a través de `trackFilterApplied` en `src/lib/track.ts`.
-  - Disparo basado en `useEffect` post-navegación en `Filters.tsx` para asegurar que el conteo de resultados refleje el estado post-SSR correcto.
-  - El payload captura `{ filterType, filterValue, resultsCount, query | null }` habilitando la posibilidad de cruzar intención y refinamiento.
-  - Añadido un throttle de 2000ms a nivel del tracker subyacente para prevenir doble-conteo en ajustes rápidos de filtros.
-  - Implementadas pruebas exhaustivas (aislamiento de tests, fail-silent behavior, keepalive).
+- **`ingest-sources-v3.ts` (Pipeline V3):** Nuevo script de ingesta de cobertura total para fuentes institucionales. Todas las fuentes clasificadas como `PURE_LISTING` con `processAllLinks: true` — bypass del ranking heurístico, procesamiento del universo completo de URLs.
+  - Fuentes cubiertas: BibloRed (310+ URLs), Idartes, Planetario de Bogotá, Cinemateca de Bogotá, Banrepcultural, FCE, Jardín Botánico (2 endpoints), SCRD (2 endpoints), Parque Explora.
+  - Instagram (FCE) se mantiene como `SOCIAL` con modo exploratorio.
+
+- **`processAllLinks` en `pipeline.ts`:** Nueva opción en `runBatchPipeline()`. Cuando `processAllLinks=true`, el sistema omite el ranking heurístico y envía el universo completo de URLs a Gemini sin corte por `maxPages`. Diseñado específicamente para fuentes de listado puro (agendas institucionales `.gov.co`).
+
+- **Cap de seguridad 500 URLs:** Guardrail crítico integrado en `processAllLinks`. Si una fuente descubre >500 URLs (paginación infinita, loops, sitios extraños), el sistema limita automáticamente a 500 emitiendo log `[DISCOVERY:ALL] Cap de seguridad activado`. Protege throughput de Gemini y créditos de cuota.
+
+### Features — Ranking & Feed
+
+- **Diversity Control (`MAX_DIVERSITY_PER_DOMAIN=4`):** Capa de control de diversidad en `activities.service.ts`. Con V3 cargando cientos de actividades institucionales, el feed sin control se volvería una agenda gubernamental monótona.
+  - Implementación: pool global ordenado por score → máx 4 items por `sourceDomain` en `diversePool` → excedente pasa a `overflowPool`.
+  - **Overflow no se descarta:** fluye al final del pool combinado. Aparece en páginas más profundas para usuarios que quieren más de la misma fuente. Preservation-first.
+  - `MAX_DIVERSITY_PER_DOMAIN` configurable via env (default: 4). Solo aplica en `sort=relevance`.
+  - Log enriquecido: `ranking_applied` incluye `diversePool`, `overflowPool`, `maxPerDomain`.
+
+- **Soft Suppression (reemplaza hard hide):** Eliminado el hard hide de `sourceHealth < 0.1`. El sistema ahora aplica **supresión suave**: fuentes con sourceHealth bajo obtienen ranking score bajo (caen a páginas profundas) pero nunca desaparecen del catálogo.
+  - Arquitectura: `badDomains: []` siempre vacío → `buildActivityWhere` no filtra por dominio → el diversity cap previene dominación de feed incluso para fuentes de baja calidad.
+  - Eliminados: `badDomains`, grace period, excepciones de scope, paths especiales. **-32 líneas netas de código**.
+  - Comportamiento resultante: sourceHealth >0.7 → páginas 1-2 | 0.3-0.7 → páginas 2-3 | 0.1-0.3 → páginas 3-5 | <0.1 → páginas 5+ (visible, recuperable).
+
+### Estabilización — [Unreleased anterior]
+
+- **`classifyError` — ETIMEDOUT (E-01):** Agrega `etimedout` a la condición de timeout en `resilience/classify-error.ts`. Node.js lanza `'connect ETIMEDOUT'` (sin la palabra `timeout`) causando clasificación `'unknown'`. Afectaba observabilidad de SourceHealth.
+- **Tests de integración de pipeline (DEBT-06):** 7 tests alineados con el módulo `resilience/` post-refactor v0.18.0.
+- **Filter Applied Analytics (FEAT-6.8-3):** Evento `filter_applied` con payload `{ filterType, filterValue, resultsCount }` via `trackFilterApplied`. Throttle 2000ms anti-doble-conteo.
 
 ### Tests
-- **83 archivos / 1332 passed | 0 failed | exit code 0** ✅
+
+- **4 nuevos tests — Invariantes arquitectónicos V3** (`pipeline.test.ts` + `service.test.ts`):
+  1. `processAllLinks=true` envía todos los links a Gemini sin aplicar ranking (congelado)
+  2. Cap de 500 URLs se respeta cuando hay >500 links (guardrail crítico)
+  3. Máx 4 items por dominio en el slice de página (MAX_DIVERSITY_PER_DOMAIN=4)
+  4. Overflow no desaparece: fluye a páginas más profundas (preservation-first)
+- **Suite total: 84 archivos / 1360 passed | 0 failed | exit code 0** ✅
+
+### Despliegue
+
+- **Rama:** `master`
+- **Commit:** `bda52c5`
+- **Hora:** 2026-05-09 23:12 COL (04:12 UTC 2026-05-10)
+- **Plataforma:** Vercel (auto-deploy)
+- **Versión:** v0.20.0
 
 ---
 

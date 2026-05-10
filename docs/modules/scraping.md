@@ -1,7 +1,8 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.18.0-stable
-**Última actualización:** 1 de mayo de 2026
+**Versión actual:** v0.20.0
+**Última actualización:** 9 de mayo de 2026
+
 
 ## ¿Qué hace?
 
@@ -261,10 +262,79 @@ Estado: **PROTOTIPO (no productivo)**
 No considerado parte del pipeline oficial.
 El extractor y la conexión MTProto existen en código, pero no hay fuentes `TELEGRAM` registradas en la base de datos, por lo que el Scheduler y el Cron nunca lo ejecutarán en producción.
 
+## Pipeline V3 — Cobertura Institucional Total (NUEVO v0.20.0)
+
+### Diseño
+
+Mientras el Pipeline V2 optimiza el **gasto de cuota** (ranking heurístico, top-N), el Pipeline V3 optimiza la **cobertura**. Aplica únicamente a fuentes de listado puro donde cada URL es un candidato de actividad institucional.
+
+```
+ingest-sources-v3.ts
+  → Fuentes PURE_LISTING: processAllLinks=true, maxPages=50
+  → ScrapingPipeline.runBatchPipeline({ processAllLinks: true })
+      │
+      ▼
+  extractLinksAllPages() → allLinks (universo completo)
+      │
+      ▼
+  [DISCOVERY:ALL] — NO rankCandidates, NO top-N
+  Cap de seguridad: min(allLinks.length, 500)
+      │
+      ▼
+  discoverActivityLinks(linksForGemini)
+      │
+      ▼
+  Flujo estándar V2: filterNew → extract → analyze → saveActivity
+```
+
+### Fuentes V3 (PURE_LISTING)
+
+| Fuente | URL principal | Notas |
+|--------|---------------|-------|
+| BibloRed | `https://www.biblored.gov.co/actividades` | 310+ actividades estimadas |
+| Idartes | `https://idartes.gov.co/es/agendas` | Agenda cultural |
+| Planetario de Bogotá | `https://planetariodebogota.gov.co/programate` | Prog. científico |
+| Cinemateca de Bogotá | `https://cinematecadebogota.gov.co/cine/11` | Programación de cine |
+| Banrepcultural | `https://www.banrepcultural.org/actividades` | Banco de la República |
+| FCE | `https://fce.com.co/programacion-cultural/` | Fondo de Cultura Económica |
+| Jardín Botánico (agenda) | `https://jbb.gov.co/eventos/agenda-cultural-academica/` | Eventos académicos |
+| Jardín Botánico (eventos) | `https://jbb.gov.co/eventos/` | Eventos generales |
+| SCRD (cultura) | `https://www.culturarecreacionydeporte.gov.co/es/eventos` | Secretaría Cultura |
+| SCRD (felicidad) | `https://www.culturarecreacionydeporte.gov.co/es/centro-felicidad-chapinero/eventos` | Centro de Felicidad |
+| Parque Explora | `https://www.parqueexplora.org/en/programate` | Ciencia interactiva |
+| FCE Instagram | `https://www.instagram.com/fcecolombia/` | SOCIAL (exploratorio) |
+
+### Guardrails V3
+
+- **Cap 500 URLs:** Nunca más de 500 URLs por fuente por ejecución. Log: `[DISCOVERY:ALL] Cap de seguridad activado: N → 500`.
+- **maxPages: 50:** Límite de páginas de paginación (no de URLs procesadas). Previene loops.
+- `processAllLinks` solo bypass el **ranking** — el resto del pipeline (Gemini, Trust Layer, deduplicación) opera normal.
+
+### Variables de entorno V3
+
+```bash
+# Controla diversity cap del feed post-ingesta
+MAX_DIVERSITY_PER_DOMAIN=4   # default: 4
+
+# Kill switch de ranking (desactiva sorting algoritmico)
+FORCE_CHRONO=true            # fuerza sort=newest si hay inestabilidad
+```
+
+### Invariantes V3 (congelados por tests)
+
+| Test | Archivo | Comportamiento |
+|------|---------|----------------|
+| `processAllLinks=true` bypass | `pipeline.test.ts` | 10 links disponibles, maxPages=2 → los 10 llegan a Gemini |
+| Cap 500 URLs | `pipeline.test.ts` | 600 links → Gemini recibe exactamente 500 |
+
 ## Comandos
 
 ```bash
-# Telegram — canal separado (requiere TELEGRAM_SESSION en .env)
+# Pipeline V3 — Cobertura total institucional
+npx tsx scripts/ingest-sources-v3.ts              # todas las fuentes PURE_LISTING
+npx tsx scripts/ingest-sources-v3.ts --dry-run    # sin guardar en DB
+
+# Pipeline V2 — Ingesta estándar (cuota optimizada)
 npx tsx scripts/telegram-auth.ts                          # genera TELEGRAM_SESSION (interactivo)
 npx tsx scripts/ingest-telegram.ts                        # todos los canales
 npx tsx scripts/ingest-telegram.ts --dry-run              # sin guardar

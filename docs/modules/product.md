@@ -1,7 +1,8 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.19.0-stable
-**Última actualización:** 1 de mayo de 2026
+**Versión:** ✅ v0.20.0
+**Última actualización:** 9 de mayo de 2026
+
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
 
@@ -77,8 +78,36 @@ hybridScore = (textScore × 0.50) + (healthScore × 0.25) + (ctrBoost × 0.15) +
 - **Interacción CTR (15%)**: Desempeño real de clic frente a impresiones.
 - **Recencia (10%)**: Se le quita peso a la fecha de publicación para dar prioridad absoluta al término buscado.
 
+### 🛡️ Control de Diversidad de Feed (v0.20.0)
+
+Con Pipeline V3 proveyendo cobertura institucional total (BibloRed, Idartes, SCRD, etc.), el feed de relevancia sin control sería monotemático. El **Diversity Controller** garantiza mezcla editorial:
+
+- **`MAX_DIVERSITY_PER_DOMAIN=4`** items por fuente en el slice visible. Configurable via env.
+- El excedente fluye a páginas más profundas (**overflow no descartado** — preservation-first).
+- Solo aplica en `sort=relevance` — el ordering por fecha/precio no se altera.
+
+```
+Resultado por página (pageSize=12, dominancia de BibloRed sin cap):
+sin cap: [BibloRed x 12]
+con cap: [BibloRed x 4, Idartes x 4, Otros x 4]  ✓
+```
+
+### 🛡️ Soft Suppression (v0.20.0)
+
+El sistema ya **no oculta fuentes por sourceHealth bajo**. Aplica supresión suave: el ranking score bajo las mueve a páginas profundas sin hacerlas invisibles.
+
+| sourceHealth | UX |
+|---|---|
+| > 0.7 | Feed principal (páginas 1-2) |
+| 0.3–0.7 | Descubrimiento normal |
+| 0.1–0.3 | Exploración profunda |
+| < 0.1 | Long tail recuperable |
+
+**Razón:** El diversity cap ya protege al usuario del ruido. Hard hide era inconsistente con la filosofía preservation-first de V2/V3 y ocultaba problemas reales (una fuente mala invisible es un problema invisible).
+
 - **Completeness Boost (+15%)**: Actividades ricas en metadata reciben una bonificación sumatoria sin ocultar las incompletas: `+5%` por Precio estriado, `+5%` por Rango de Edad explícito, y `+5%` por Geolocalización exacta (`locationId`). 
 - **Penalización por Edad Nula (-15%)**: Actividades sin `ageMin`/`ageMax` parseados reciben `score *= 0.85`, garantizando calidad algorítmica en el tope del motor (combinado con el completeness boost, esto genera un delta significativo).
+
 
 ## 🧩 Eventos UX Trackeados (Vínculo al módulo Analytics)
 

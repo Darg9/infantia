@@ -2,19 +2,17 @@
 // Pipeline V3 — Cobertura completa de fuentes de listado puro.
 //
 // Diferencias vs V2:
-//   - processAllLinks: true para fuentes PURE_LISTING (BibloRed, Idartes, Alcaldía agenda)
-//     → bypass del ranking: todos los links van a Gemini discover sin cap por presupuesto
-//     → cap duro de 500 URLs como guardrail operacional
-//   - processAllLinks: false para MIXED → mismo comportamiento que V2 (ranking activo)
-//   - Métricas de cobertura post-run por fuente: discovered, processed, persisted,
+//   - processAllLinks: true para fuentes PURE_LISTING (todas las institucionales)
+//     -> bypass del ranking: todos los links van a Gemini discover sin cap por presupuesto
+//     -> cap duro de 500 URLs como guardrail operacional
+//   - Metricas de cobertura post-run: discovered, processed, persisted,
 //     review_queue, db_delta, avg_parse_time
 //
 // V1 (ingest-sources.ts) y V2 (ingest-sources-v2.ts) NO son modificados.
-// El gate V2 sigue activo: recall-first, institucionales → PENDING_REVIEW si score bajo.
+// El gate V2 sigue activo: recall-first, institucionales -> PENDING_REVIEW si score bajo.
 //
-// Clasificación de fuentes:
+// Clasificacion de fuentes:
 //   PURE_LISTING : listado editorialmente curado, >90% links son eventos. processAllLinks=true.
-//   MIXED        : homepage o sección con nav + noticias + eventos mezclados. ranking activo.
 //   SOCIAL       : Instagram/redes. Discovery exploratorio, gates fuertes.
 //
 // Uso:
@@ -31,7 +29,7 @@ import { PrismaClient } from '../src/generated/prisma/client';
 import { quota } from '../src/lib/quota-tracker';
 
 type Channel    = 'web' | 'instagram' | 'tiktok' | 'facebook' | 'telegram';
-type SourceType = 'pure_listing' | 'mixed' | 'social';
+type SourceType = 'pure_listing' | 'social';
 
 const SOCIAL_CHANNELS: Channel[] = ['instagram', 'tiktok', 'facebook'];
 
@@ -47,29 +45,25 @@ interface Source {
   sourceType:       SourceType;
 }
 
-// ── Catálogo de fuentes V3 ────────────────────────────────────────────────────
+// --------------------------------------------------------------------------
+// Catalogo de fuentes V3
 //
-// PURE_LISTING → processAllLinks: true
-//   El ranking fue diseñado para páginas mixtas (nav + noticias + eventos).
-//   En un listado puro, el 100% de los links ya son eventos por construcción —
-//   el ranking no filtra ruido sino que se convierte en limitador de cobertura.
+// PURE_LISTING: paginas de listado editorialmente curadas donde >90% de los
+// links son eventos. El ranking fue disenado para paginas mixtas — aqui solo
+// limita cobertura sin agregar valor. processAllLinks=true.
 //
-// MIXED → ranking activo (processAllLinks: false)
-//   Páginas con nav, contenido institucional y eventos mezclados.
-//   El ranking sigue siendo útil para filtrar ruido antes de gastar cuota Gemini.
-//
-// SOCIAL → discovery exploratorio
-//   Instagram/redes sociales. El filtro isLikelyInstagramEvent ya pre-filtra.
+// SOCIAL: Instagram/redes sociales. Discovery exploratorio, gates fuertes.
+// --------------------------------------------------------------------------
 
 const ALL_SOURCES: Source[] = [
 
-  // ── PURE_LISTING ──────────────────────────────────────────────────────────
+  // ── PURE_LISTING — Bogota institucionales ─────────────────────────────────
   {
     name:            'BibloRed',
     channel:         'web',
     url:             'https://www.biblored.gov.co/eventos',
-    cityName:        'Bogotá',
-    maxPages:        50,   // BibloRed tiene 9 páginas reales — 50 cubre holgado
+    cityName:        'Bogota',
+    maxPages:        50,
     processAllLinks: true,
     sourceType:      'pure_listing',
   },
@@ -77,71 +71,102 @@ const ALL_SOURCES: Source[] = [
     name:            'Idartes',
     channel:         'web',
     url:             'https://www.idartes.gov.co/es/agenda',
-    cityName:        'Bogotá',
+    cityName:        'Bogota',
     maxPages:        50,
     processAllLinks: true,
     sourceType:      'pure_listing',
   },
   {
-    // Solo esta ruta exacta — el resto de bogota.gov.co es contenido mixto
-    name:            'Alcaldía de Bogotá — Agenda Cultural',
+    name:            'Alcaldia de Bogota — Agenda Cultural',
     channel:         'web',
     url:             'https://bogota.gov.co/que-hacer/agenda-cultural',
-    cityName:        'Bogotá',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'Planetario',
+    channel:         'web',
+    url:             'https://planetariodebogota.gov.co/programate',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'Cinemateca',
+    channel:         'web',
+    url:             'https://cinematecadebogota.gov.co/cine/11',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'Banrep Bogota',
+    channel:         'web',
+    url:             'https://www.banrepcultural.org/actividades',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'FCE Bogota',
+    channel:         'web',
+    url:             'https://fce.com.co/programacion-cultural/',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'JBB — Agenda Cultural y Academica',
+    channel:         'web',
+    url:             'https://jbb.gov.co/eventos/agenda-cultural-academica/',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'JBB — Eventos',
+    channel:         'web',
+    url:             'https://jbb.gov.co/eventos/',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'SCRD — Eventos',
+    channel:         'web',
+    url:             'https://www.culturarecreacionydeporte.gov.co/es/eventos',
+    cityName:        'Bogota',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
+  },
+  {
+    name:            'SCRD — Centro Felicidad Chapinero',
+    channel:         'web',
+    url:             'https://www.culturarecreacionydeporte.gov.co/es/centro-felicidad-chapinero/eventos',
+    cityName:        'Bogota',
     maxPages:        50,
     processAllLinks: true,
     sourceType:      'pure_listing',
   },
 
-  // ── MIXED ─────────────────────────────────────────────────────────────────
+  // ── PURE_LISTING — Medellin institucionales ───────────────────────────────
   {
-    name:       'Planetario',
-    channel:    'web',
-    url:        'https://planetariodebogota.gov.co',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'Cinemateca',
-    channel:    'web',
-    url:        'https://cinematecadebogota.gov.co',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'Banrep Bogotá',
-    channel:    'web',
-    url:        'https://www.banrepcultural.org/bogota',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'FCE Bogotá',
-    channel:    'web',
-    url:        'https://fce.com.co/programacion-cultural',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'JBB',
-    channel:    'web',
-    url:        'https://jbb.gov.co',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'SCRD',
-    channel:    'web',
-    url:        'https://www.culturarecreacionydeporte.gov.co/es/agenda-cultural',
-    cityName:   'Bogotá',
-    sourceType: 'mixed',
-  },
-  {
-    name:       'Parque Explora',
-    channel:    'web',
-    url:        'https://parqueexplora.org',
-    cityName:   'Medellín',
-    sourceType: 'mixed',
+    name:            'Parque Explora',
+    channel:         'web',
+    url:             'https://www.parqueexplora.org/en/programate',
+    cityName:        'Medellin',
+    maxPages:        50,
+    processAllLinks: true,
+    sourceType:      'pure_listing',
   },
 
   // ── SOCIAL ────────────────────────────────────────────────────────────────
@@ -149,14 +174,14 @@ const ALL_SOURCES: Source[] = [
     name:       'IG: quehaypahacerenbogota',
     channel:    'instagram',
     url:        'https://www.instagram.com/quehaypahacerenbogota',
-    cityName:   'Bogotá',
+    cityName:   'Bogota',
     sourceType: 'social',
   },
   {
     name:       'IG: quehacerenmedellin',
     channel:    'instagram',
     url:        'https://www.instagram.com/quehacerenmedellin',
-    cityName:   'Medellín',
+    cityName:   'Medellin',
     sourceType: 'social',
   },
 ];
@@ -188,18 +213,17 @@ function matchesFilter(s: Source): boolean {
 
 // ── List mode ─────────────────────────────────────────────────────────────────
 if (listMode) {
-  console.log('\n📋 Fuentes disponibles — Pipeline V3\n');
-  const labels: Record<SourceType, string> = {
-    pure_listing: '🎯 PURE_LISTING (processAllLinks=true, cap 500)',
-    mixed:        '🔀 MIXED (ranking activo)',
-    social:       '📱 SOCIAL (discovery exploratorio)',
+  console.log('\nFuentes disponibles — Pipeline V3\n');
+  const groups: Record<SourceType, string> = {
+    pure_listing: 'PURE_LISTING (processAllLinks=true, cap 500)',
+    social:       'SOCIAL (discovery exploratorio)',
   };
-  for (const type of ['pure_listing', 'mixed', 'social'] as SourceType[]) {
+  for (const type of ['pure_listing', 'social'] as SourceType[]) {
     const group = ALL_SOURCES.filter(s => s.sourceType === type);
     if (group.length === 0) continue;
-    console.log(`\n${labels[type]}`);
+    console.log(`\n${groups[type]}`);
     for (const s of group) {
-      console.log(`  • ${s.name} (${s.cityName ?? 'N/A'})`);
+      console.log(`  * ${s.name} (${s.cityName ?? 'N/A'}) — ${s.url}`);
     }
   }
   console.log();
@@ -208,28 +232,26 @@ if (listMode) {
 
 // ── Main ──────────────────────────────────────────────────────────────────────
 async function main() {
-  const adapter    = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  const adapter     = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
   const prismaLocal = new PrismaClient({ adapter });
 
   const selected = ALL_SOURCES.filter(matchesFilter);
   if (selected.length === 0) {
-    console.error('❌ Ninguna fuente coincide con los filtros.');
+    console.error('No hay fuentes que coincidan con los filtros.');
     process.exit(1);
   }
 
   const remaining = await quota.getRemaining();
-  console.log(`\n🤖 Pipeline V3 — ${selected.length} fuente(s) | Cuota Gemini: ${remaining} req restantes`);
+  console.log(`\nPipeline V3 — ${selected.length} fuente(s) | Cuota Gemini: ${remaining} req restantes`);
   if (remaining <= 0) {
-    console.error('❌ Cuota Gemini agotada. Espera el reset (08:00 UTC).');
+    console.error('Cuota Gemini agotada. Espera el reset (08:00 UTC).');
     process.exit(1);
   }
 
-  if (dryRun)  console.log('🔍 Modo DRY-RUN: descubriendo sin guardar');
-  if (!saveDb) console.log('ℹ️  Sin --save-db: no se guarda en BD');
+  if (dryRun)  console.log('DRY-RUN: descubriendo sin guardar');
+  if (!saveDb) console.log('Sin --save-db: no se guarda en BD');
+  console.log('Gate V2 activo | PURE_LISTING=cobertura completa (cap 500)\n');
 
-  console.log('🔁 Gate V2 activo | PURE_LISTING=cobertura completa | MIXED=ranking\n');
-
-  // Métricas acumuladas de la sesión completa
   let totalDiscovered = 0;
   let totalProcessed  = 0;
   let totalPersisted  = 0;
@@ -237,20 +259,18 @@ async function main() {
   let totalDbDelta    = 0;
 
   for (const source of selected) {
-    const typeIcon = { pure_listing: '🎯', mixed: '🔀', social: '📱' }[source.sourceType];
-    console.log(`\n▶ ${typeIcon} ${source.name} (${source.channel}) — ${source.url}`);
+    console.log(`\n> ${source.name} (${source.channel}) — ${source.url}`);
     if (source.processAllLinks) {
-      console.log(`  📌 processAllLinks=true — cobertura completa (cap 500)`);
+      console.log(`  processAllLinks=true — cobertura completa (cap 500)`);
     }
 
     const pipeline = new ScrapingPipeline({
       saveToDb:     saveDb,
-      cityName:     source.cityName ?? 'Bogotá',
+      cityName:     source.cityName ?? 'Bogota',
       verticalSlug: source.verticalSlug ?? 'kids',
       useGateV2:    true,
     });
 
-    // Snapshot pre-run para calcular db_delta real
     let beforeCount = 0;
     if (saveDb) {
       try {
@@ -265,7 +285,7 @@ async function main() {
       if (source.channel === 'instagram') {
         const result = await pipeline.runInstagramPipeline(source.url, { maxPosts: 20 });
         const saved = result.savedCount ?? 0;
-        console.log(`  ✅ Instagram: ${saved} guardadas`);
+        console.log(`  Instagram: ${saved} guardadas`);
         totalPersisted += saved;
 
       } else {
@@ -283,7 +303,6 @@ async function main() {
         const pending    = Math.max(0, detected - saved);
         const avgParseMs = processed > 0 ? Math.round((elapsedSec * 1000) / processed) : 0;
 
-        // db_delta: actividades realmente nuevas en BD (fuente de verdad)
         let dbDelta = 0;
         if (saveDb) {
           try {
@@ -293,14 +312,14 @@ async function main() {
           } catch { /* non-fatal */ }
         }
 
-        console.log(`  📊 Métricas:`);
-        console.log(`     discovered_total : ${discovered}`);
-        console.log(`     processed_total  : ${processed}`);
-        console.log(`     persisted_total  : ${saved}`);
-        console.log(`     review_queue     : ~${pending}`);
-        console.log(`     db_delta         : +${dbDelta} nuevas en BD`);
-        console.log(`     avg_parse_time   : ${avgParseMs}ms/URL`);
-        console.log(`     elapsed          : ${elapsedSec.toFixed(1)}s`);
+        console.log(`  Metricas:`);
+        console.log(`    discovered_total : ${discovered}`);
+        console.log(`    processed_total  : ${processed}`);
+        console.log(`    persisted_total  : ${saved}`);
+        console.log(`    review_queue     : ~${pending}`);
+        console.log(`    db_delta         : +${dbDelta} nuevas en BD`);
+        console.log(`    avg_parse_time   : ${avgParseMs}ms/URL`);
+        console.log(`    elapsed          : ${elapsedSec.toFixed(1)}s`);
 
         totalDiscovered += discovered;
         totalProcessed  += processed;
@@ -309,7 +328,7 @@ async function main() {
         totalDbDelta    += dbDelta;
       }
     } catch (err) {
-      console.error(`  ❌ Error en ${source.name}:`, err instanceof Error ? err.message : err);
+      console.error(`  Error en ${source.name}:`, err instanceof Error ? err.message : err);
     } finally {
       await pipeline.disconnect();
     }
@@ -317,15 +336,15 @@ async function main() {
 
   await prismaLocal.$disconnect();
 
-  console.log(`\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`);
-  console.log(`✅ V3 completado`);
-  console.log(`   discovered_total  : ${totalDiscovered}`);
-  console.log(`   processed_total   : ${totalProcessed}`);
-  console.log(`   persisted_total   : ${totalPersisted}`);
-  console.log(`   review_queue      : ~${totalPending}`);
-  console.log(`   db_delta          : +${totalDbDelta} nuevas en BD (neto sesión)`);
-  console.log(`   Pendientes humanos: /admin/pending-review`);
-  console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`);
+  console.log(`\n${'='.repeat(50)}`);
+  console.log(`V3 completado`);
+  console.log(`  discovered_total  : ${totalDiscovered}`);
+  console.log(`  processed_total   : ${totalProcessed}`);
+  console.log(`  persisted_total   : ${totalPersisted}`);
+  console.log(`  review_queue      : ~${totalPending}`);
+  console.log(`  db_delta          : +${totalDbDelta} nuevas en BD (neto sesion)`);
+  console.log(`  Pendientes humanos: /admin/pending-review`);
+  console.log(`${'='.repeat(50)}\n`);
 }
 
-main().catch(e => { console.error('❌', e); process.exit(1); });
+main().catch(e => { console.error('Error:', e); process.exit(1); });

@@ -215,14 +215,48 @@ export async function listActivities(params: ListParams) {
   const healthDict: Record<string, number> = {};
   const badDomains: string[] = [];
 
+  // Grace period: evita falsos negativos en fuentes nuevas que aún no tienen señal suficiente.
+  // Expira cuando: age >= 21 días OR activityCount >= 50 (lo que ocurra primero).
+  // Solo aplica a dominios con score < 0.1 (prácticamente muertos) — conjunto típicamente vacío.
+  const GRACE_DAYS = 21;
+  const GRACE_ACTIVITIES = 50;
+  const GRACE_MS = GRACE_DAYS * 24 * 60 * 60 * 1000;
+
+  const potentialBad = healthData.filter(h => h.score < 0.1).map(h => h.source);
+  const graceSet = new Set<string>();
+
+  if (potentialBad.length > 0) {
+    const stats = await Promise.all(
+      potentialBad.map(async domain => {
+        const [count, oldest] = await Promise.all([
+          prisma.activity.count({ where: { sourceDomain: domain } }),
+          prisma.activity.findFirst({
+            where: { sourceDomain: domain },
+            orderBy: { createdAt: 'asc' },
+            select: { createdAt: true },
+          }),
+        ]);
+        return { domain, count, oldestAt: oldest?.createdAt };
+      })
+    );
+
+    for (const { domain, count, oldestAt } of stats) {
+      const ageMs = oldestAt ? Date.now() - oldestAt.getTime() : Infinity;
+      const graceExpired = ageMs >= GRACE_MS || count >= GRACE_ACTIVITIES;
+      if (!graceExpired) graceSet.add(domain); // aún en período de gracia → no ocultar
+    }
+  }
+
   for (const h of healthData) {
     healthDict[h.source] = h.score;
     // Threshold conservador: solo ocultar fuentes con score < 0.1 (prácticamente muertas).
     // Entre 0.1–0.3 el ranking score bajo ya las empuja al fondo sin ocultarlas.
-    if (h.score < 0.1) {
+    // Excepción: grace period activo (< 21 días y < 50 actividades).
+    if (h.score < 0.1 && !graceSet.has(h.source)) {
       badDomains.push(h.source);
     }
   }
+
 
   // ── 3. WHERE — SSOT via buildActivityWhere ────────────────────────────────────
   // badDomains solo en relevance (otros sorts como 'date' muestran todo sin filtro de calidad).
@@ -250,6 +284,7 @@ export async function listActivities(params: ListParams) {
   type ActivityWithScore = Awaited<ReturnType<typeof prisma.activity.findMany<{ include: typeof activityIncludes }>>>[number] & { rankingScore: number; _domainTemp: string };
   let rawActivities: Awaited<ReturnType<typeof prisma.activity.findMany<{ include: typeof activityIncludes }>>> = [];
   let finalTotal: number = 0;
+
 
   // Ejecución asíncrona paralela: Obtener el pull y su metadata de conteo nativo con TTL Cacheado
   [rawActivities, finalTotal] = await Promise.all([
@@ -312,6 +347,9 @@ export async function listActivities(params: ListParams) {
   // los primeros N items consumen toda la cuota y las páginas 2+ quedan vacías).
   let totalHidden = 0;
   let diversified: ActivityWithScore[] = processedActivities; // fallback para sort no-relevance
+  // Declaradas aquí para que el bloque de logging (scope externo) pueda referenciarlas
+  let diversePool: ActivityWithScore[] = [];
+  let overflowPool: ActivityWithScore[] = [];
 
   if (isRelevanceSort) {
     const initialCount = processedActivities.length;
@@ -331,10 +369,40 @@ export async function listActivities(params: ListParams) {
     processedActivities = filteredActivities;
     totalHidden = initialCount - processedActivities.length;
 
-    // Ordenar por score descendente y tomar el slice de la página
+    // Ordenar por score descendente
     processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);
-    diversified = processedActivities.slice(params.skip, params.skip + params.pageSize);
+
+    // ── Diversity control ─────────────────────────────────────────────────────
+    // Previene dominancia institucional: con V3 cargando 300+ BibloRed, 90+ Idartes,
+    // 150+ Alcaldía, el feed sin control parecería una agenda gubernamental infinita.
+    //
+    // Estrategia: max MAX_PER_DOMAIN items por source domain en el pool global.
+    // El overflow NO se descarta — fluye al final del pool y aparece en páginas más
+    // profundas para usuarios que quieren más de la misma fuente.
+    //
+    // MAX_DIVERSITY_PER_DOMAIN configurable vía env (default: 4).
+    // En un pageSize=12, cap=4 → máx 33% por fuente por página.
+    // ─────────────────────────────────────────────────────────────────────────
+    const MAX_PER_DOMAIN = parseInt(process.env.MAX_DIVERSITY_PER_DOMAIN ?? '4');
+    const domainBucket = new Map<string, number>();
+    diversePool = [];
+    overflowPool = [];
+
+
+    for (const act of processedActivities) {
+      const count = domainBucket.get(act._domainTemp) ?? 0;
+      if (count < MAX_PER_DOMAIN) {
+        diversePool.push(act);
+        domainBucket.set(act._domainTemp, count + 1);
+      } else {
+        overflowPool.push(act);
+      }
+    }
+
+    // Diverse first (ordenados por score), overflow llena páginas más profundas
+    diversified = [...diversePool, ...overflowPool].slice(params.skip, params.skip + params.pageSize);
   }
+
 
   // 6. Resultado final
   // — relevance: `diversified` ya contiene exactamente el slice de la página actual
@@ -348,12 +416,16 @@ export async function listActivities(params: ListParams) {
         event: "ranking_applied",
         fetched: rawActivities.length,
         afterFilter: processedActivities.length,
+        diversePool: diversePool.length,
+        overflowPool: overflowPool.length,
         afterDiversity: diversified.length,
         returned: pagedActivities.length,
         ctrDomainsActive: domainsWithCTR,
+        maxPerDomain: parseInt(process.env.MAX_DIVERSITY_PER_DOMAIN ?? '4'),
         timestamp: new Date().toISOString()
       }));
   }
+
 
   if (params.search) {
     log.info('Búsqueda de actividades completada', { action: 'activity_search', result: 'success', results: finalTotal });

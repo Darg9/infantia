@@ -5,6 +5,7 @@
 
 import { getCategoryEmoji } from '@/lib/category-utils';
 import ActivityCard from './ActivityCard';
+import { ZeroResultsTracker } from '@/components/analytics/ZeroResultsTracker';
 
 interface PopularCategory {
   id: string;
@@ -85,6 +86,10 @@ export function EmptyState({
 
   return (
     <div className="flex flex-col items-center py-20 gap-6 text-center">
+      <ZeroResultsTracker 
+        query={search} 
+        filters={{ ageMin: ageMin?.toString() || '', ageMax: ageMax?.toString() || '', categoryId: categoryId || '', type: type || '', audience: audience || '' }}
+      />
       {/* Ilustración */}
       <div className="flex flex-col items-center gap-2">
         <span className="text-6xl select-none">🔍</span>

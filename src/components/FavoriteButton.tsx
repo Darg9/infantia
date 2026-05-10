@@ -13,6 +13,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { useToast } from '@/components/ui/toast'
 import { requireAuth } from '@/lib/require-auth'
 import { toggleFavorite } from '@/modules/favorites/toggle-favorite'
+import { trackEvent } from '@/lib/track'
 
 interface FavoriteButtonProps {
   targetId: string
@@ -63,6 +64,13 @@ export function FavoriteButton({
         // Error del servidor — revertir
         setIsFavorited(!expectLike)
       } else {
+        // Tracker de Producto (Growth)
+        void trackEvent({
+          type: 'save_favorite',
+          activityId: targetType === 'activity' ? targetId : undefined,
+          metadata: { action: expectLike ? 'add' : 'remove', targetType }
+        });
+
         // Toast notifications en SUCCESS
         if (expectLike) {
           toast.success('Guardado en favoritos', {

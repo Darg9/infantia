@@ -6,6 +6,7 @@ import { SITE_URL } from '@/config/site'
 import { activityPath } from '@/lib/activity-url'
 import { createLogger } from '@/lib/logger';
 import { useToast } from '@/components/ui/toast';
+import { trackEvent } from '@/lib/track';
 
 const log = createLogger('share-button');
 
@@ -55,6 +56,11 @@ export function ShareButton({
           url: shareUrl,
           ...(imageUrl && { files: [] }), // OG meta tags serán usados por el navegador
         })
+        void trackEvent({
+          type: 'share_click',
+          activityId: id,
+          metadata: { method: 'web_share' }
+        });
       } catch (err) {
         // Usuario canceló el share
         if ((err as Error).name !== 'AbortError') {
@@ -69,6 +75,11 @@ export function ShareButton({
       await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+      void trackEvent({
+        type: 'share_click',
+        activityId: id,
+        metadata: { method: 'copy_link' }
+      });
     } catch (err) {
       toast.error('No se pudo copiar al portapapeles')
       log.error(String(err), { error: err })
@@ -166,6 +177,11 @@ export function ShareButton({
                     link.onClick()
                   } else {
                     window.open(link.url, '_blank', 'noopener,noreferrer')
+                    void trackEvent({
+                      type: 'share_click',
+                      activityId: id,
+                      metadata: { method: link.name.toLowerCase() }
+                    });
                   }
                   setIsOpen(false)
                 }}

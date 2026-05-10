@@ -69,6 +69,7 @@ export const metadata: Metadata = {
 
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import IntentResolver from "@/components/IntentResolver";
+import { TimeToFirstActivityTracker } from "@/components/analytics/TimeToFirstActivityTracker";
 
 export default function RootLayout({
   children,
@@ -117,6 +118,7 @@ export default function RootLayout({
         className={`${montserrat.variable}font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}
       >
         <AnalyticsTracker />
+        <TimeToFirstActivityTracker />
         <ThemeProvider>
           <AuthProvider>
             <ToastProvider>

@@ -129,20 +129,21 @@ describe('ActivityCard', () => {
     });
   });
 
-  describe('rango de edad', () => {
-    it('muestra rango completo cuando hay ageMin y ageMax', () => {
+  describe('rango de edad (editorial)', () => {
+    it('muestra "Niños" en lugar de "5-12 años" para el target medio', () => {
       render(<ActivityCard activity={baseActivity} />);
-      expect(screen.getByText('5–12 años')).toBeInTheDocument();
+      expect(screen.getByText('Niños')).toBeInTheDocument();
+      expect(screen.queryByText('5–12 años')).not.toBeInTheDocument();
     });
 
-    it('muestra "Desde X años" cuando solo hay ageMin', () => {
-      render(<ActivityCard activity={{ ...baseActivity, ageMin: 3, ageMax: null }} />);
-      expect(screen.getByText('Desde 3 años')).toBeInTheDocument();
+    it('muestra "Bebés" si minAge es <= 2', () => {
+      render(<ActivityCard activity={{ ...baseActivity, ageMin: 1, ageMax: null }} />);
+      expect(screen.getByText('Bebés')).toBeInTheDocument();
     });
 
-    it('NO muestra rango si ageMin y ageMax son null', () => {
-      render(<ActivityCard activity={{ ...baseActivity, ageMin: null, ageMax: null }} />);
-      expect(screen.queryByText(/años/)).not.toBeInTheDocument();
+    it('muestra "Familia" como fallback si ageMin y ageMax son null y no es familia', () => {
+      render(<ActivityCard activity={{ ...baseActivity, ageMin: null, ageMax: null, audience: 'ALL' }} />);
+      expect(screen.getByText('Familia')).toBeInTheDocument();
     });
   });
 

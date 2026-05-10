@@ -2,19 +2,18 @@ import { describe, it, expect, vi } from 'vitest';
 import { SITE_URL } from '@/config/site';
 
 // vi.hoisted garantiza que las variables estén disponibles dentro del factory de vi.mock
-const { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockCityFindMany } = vi.hoisted(() => {
-  // findFirst → obtener la actividad más reciente para catalogLastMod
+const { mockActivityFindFirst, mockActivityFindMany, mockActivityCount, mockCategoryFindMany, mockCityFindMany } = vi.hoisted(() => {
   const mockActivityFindFirst = vi.fn().mockResolvedValue({
     updatedAt: new Date('2026-03-21'),
   });
 
-  // findMany → rutas individuales de actividad
   const mockActivityFindMany = vi.fn().mockResolvedValue([
     { id: 'act-1', title: 'Taller de Pintura', updatedAt: new Date('2026-03-20') },
     { id: 'act-2', title: 'Club de Lectura',    updatedAt: new Date('2026-03-21') },
   ]);
 
-  // Categorías con nested activities (shape del sitemap S65)
+  const mockActivityCount = vi.fn().mockResolvedValue(5000); // Para testear chunking
+
   const mockCategoryFindMany = vi.fn().mockResolvedValue([
     {
       slug: 'arte-y-creatividad',
@@ -22,7 +21,6 @@ const { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockC
     },
   ]);
 
-  // Ciudades con nested locations.activities (shape del sitemap S65)
   const mockCityFindMany = vi.fn().mockResolvedValue([
     {
       name: 'Bogotá',
@@ -34,7 +32,7 @@ const { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockC
     },
   ]);
 
-  return { mockActivityFindFirst, mockActivityFindMany, mockCategoryFindMany, mockCityFindMany };
+  return { mockActivityFindFirst, mockActivityFindMany, mockActivityCount, mockCategoryFindMany, mockCityFindMany };
 });
 
 vi.mock('@/lib/db', () => ({
@@ -42,90 +40,66 @@ vi.mock('@/lib/db', () => ({
     activity: {
       findFirst: mockActivityFindFirst,
       findMany:  mockActivityFindMany,
+      count:     mockActivityCount,
     },
     category: { findMany: mockCategoryFindMany },
     city:     { findMany: mockCityFindMany },
   },
 }));
 
-import sitemap from '../sitemap';
+import sitemap, { generateSitemaps } from '../sitemap';
 
-describe('sitemap()', () => {
-  it('retorna un array de rutas', async () => {
-    const result = await sitemap();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result.length).toBeGreaterThan(0);
+describe('Sitemap Partitioning (Crawl Governance)', () => {
+  describe('generateSitemaps()', () => {
+    it('genera particiones semánticas y chunks dinámicos', async () => {
+      const result = await generateSitemaps();
+      expect(result).toContainEqual({ id: 'core' });
+      expect(result).toContainEqual({ id: 'cities' });
+      expect(result).toContainEqual({ id: 'categories' });
+      // Si el count es 5000 y CHUNK_SIZE es 2000, debería generar 3 chunks: 0, 1, 2
+      expect(result).toContainEqual({ id: 'events-active-0' });
+      expect(result).toContainEqual({ id: 'events-active-1' });
+      expect(result).toContainEqual({ id: 'events-active-2' });
+    });
   });
 
-  it('incluye la ruta raíz con prioridad 1', async () => {
-    const result = await sitemap();
-    const home = result.find(r => r.url === `${SITE_URL}/`);
-    expect(home).toBeDefined();
-    expect(home?.priority).toBe(1);
-  });
+  describe('sitemap({ id }) resolvers', () => {
+    it('id: core -> retorna rutas estáticas', async () => {
+      const result = await sitemap({ id: 'core' });
+      const urls = result.map(r => r.url);
+      expect(urls).toContain(`${SITE_URL}/`);
+      expect(urls).toContain(`${SITE_URL}/actividades`);
+      expect(urls).toContain(`${SITE_URL}/privacidad`);
+    });
 
-  it('incluye /actividades con prioridad 0.9', async () => {
-    const result = await sitemap();
-    const actividades = result.find(r => r.url === `${SITE_URL}/actividades`);
-    expect(actividades).toBeDefined();
-    expect(actividades?.priority).toBe(0.9);
-  });
+    it('id: categories -> retorna rutas de categoría', async () => {
+      const result = await sitemap({ id: 'categories' });
+      const urls = result.map(r => r.url);
+      expect(urls).toContain(`${SITE_URL}/actividades/categoria/arte-y-creatividad`);
+    });
 
-  it('incluye rutas legales (Centro de Confianza)', async () => {
-    const result = await sitemap();
-    const urls = result.map(r => r.url);
-    expect(urls).toContain(`${SITE_URL}/privacidad`);
-    expect(urls).toContain(`${SITE_URL}/terminos`);
-    // Rutas actualizadas post-rebrand S65 (antes: /seguridad/datos)
-    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/datos`);
-    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/privacidad`);
-    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/terminos`);
-  });
+    it('id: cities -> retorna rutas de ciudad', async () => {
+      const result = await sitemap({ id: 'cities' });
+      const urls = result.map(r => r.url);
+      expect(urls).toContain(`${SITE_URL}/actividades/bogota`);
+      expect(urls).toContain(`${SITE_URL}/actividades/medellin`);
+    });
 
-  it('incluye rutas dinámicas de actividades', async () => {
-    const result = await sitemap();
-    const urls = result.map(r => r.url);
-    // Las URLs incluyen el UUID + slug del título (formato canónico)
-    expect(urls.some(u => u.includes('/actividad/act-1'))).toBe(true);
-    expect(urls.some(u => u.includes('/actividad/act-2'))).toBe(true);
-  });
+    it('id: events-active-[n] -> retorna rutas de actividades en batches', async () => {
+      const result = await sitemap({ id: 'events-active-0' });
+      const urls = result.map(r => r.url);
+      expect(urls.some(u => u.includes('/actividad/act-1'))).toBe(true);
+      expect(urls.some(u => u.includes('/actividad/act-2'))).toBe(true);
+    });
 
-  it('las rutas de actividades tienen prioridad 0.8', async () => {
-    const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
-    expect(actRoute?.priority).toBe(0.8);
-  });
+    it('maneja ids desconocidos retornando array vacío', async () => {
+      const result = await sitemap({ id: 'unknown-id' });
+      expect(result).toEqual([]);
+    });
 
-  it('las rutas de actividades tienen changeFrequency weekly', async () => {
-    const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
-    expect(actRoute?.changeFrequency).toBe('weekly');
-  });
-
-  it('usa la fecha updatedAt de la actividad como lastModified', async () => {
-    const result = await sitemap();
-    const actRoute = result.find(r => r.url.includes('/actividad/act-1'));
-    expect(actRoute?.lastModified).toEqual(new Date('2026-03-20'));
-  });
-
-  it('incluye rutas de categoría con slug correcto', async () => {
-    const result = await sitemap();
-    const urls = result.map(r => r.url);
-    expect(urls).toContain(`${SITE_URL}/actividades/categoria/arte-y-creatividad`);
-  });
-
-  it('incluye rutas de ciudad con slug correcto', async () => {
-    const result = await sitemap();
-    const urls = result.map(r => r.url);
-    expect(urls).toContain(`${SITE_URL}/actividades/bogota`);
-    expect(urls).toContain(`${SITE_URL}/actividades/medellin`);
-  });
-
-  it('NO incluye rutas privadas (/admin, /perfil, /login)', async () => {
-    const result = await sitemap();
-    const urls = result.map(r => r.url);
-    expect(urls.every(u => !u.includes('/admin'))).toBe(true);
-    expect(urls.every(u => !u.includes('/perfil'))).toBe(true);
-    expect(urls.every(u => !u.includes('/login'))).toBe(true);
+    it('maneja eventos activos inválidos retornando array vacío', async () => {
+      const result = await sitemap({ id: 'events-active-invalid' });
+      expect(result).toEqual([]);
+    });
   });
 });

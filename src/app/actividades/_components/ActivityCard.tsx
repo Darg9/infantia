@@ -12,6 +12,8 @@ import { activityPath } from '@/lib/activity-url';
 import { trackEvent } from '@/lib/track';
 import { normalizePrice } from '@/lib/decimal';
 import { highlightText } from '@/lib/highlight';
+import { FeedImpressionTracker } from '@/components/analytics/FeedImpressionTracker';
+import { getEditorialAudience, getAudienceEmoji } from '@/lib/audience-utils';
 
 // Tipo local inferido desde lo que devuelve listActivities.
 // En producción puede llegar como number, string o Decimal serializado.
@@ -60,12 +62,6 @@ interface ActivityCardProps {
 }
 
 
-function formatAge(ageMin: number | null, ageMax: number | null): string {
-  if (ageMin === null && ageMax === null) return '';
-  if (ageMin !== null && ageMax !== null) return `${ageMin}–${ageMax} años`;
-  if (ageMin !== null) return `Desde ${ageMin} años`;
-  return `Hasta ${ageMax} años`;
-}
 
 function formatPrice(price: PrismaPrice, currency: string, period: string | null): string {
   const numPrice = normalizePrice(price);
@@ -90,11 +86,21 @@ const TYPE_LABELS: Record<string, string> = {
 
 const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
 
+const VERIFIED_SOURCES = [
+  'biblored.gov.co',
+  'idartes.gov.co',
+  'maloka.org',
+  'planetariodebogota.gov.co'
+];
+
 export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '' }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
-  const ageLabel = formatAge(activity.ageMin, activity.ageMax);
+  
+  const editorialAudience = getEditorialAudience(activity.ageMin, activity.ageMax, activity.audience);
+  const audienceEmoji = getAudienceEmoji(editorialAudience);
+  
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
   const locationLabel = activity.location?.neighborhood ?? activity.location?.city?.name ?? '';
   // eslint-disable-next-line react-hooks/purity -- Date.now() aquí es seguro: badge "Nuevo" tolera staleness entre renders
@@ -104,15 +110,14 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
   // ── Product Trust Signals ──
   const isFeatured = (activity.duplicatesCount ?? 0) >= 1;
-  const OFFICIAL_DOMAINS = ['.gov.co', 'biblored.gov.co', 'idartes.gov.co', 'planetariodebogota.gov.co'];
-  const isOfficial = OFFICIAL_DOMAINS.some(d => activity.sourceDomain?.endsWith(d));
   const isPopular = (activity._count?.views ?? 0) >= 10;
+  const isVerifiedSource = VERIFIED_SOURCES.some(d => activity.sourceDomain?.endsWith(d));
 
-  // Resolver visibilidad de overlays prioritarios (Permitir hasta 2 si son Featured y Official)
+  // Resolver visibilidad de overlays prioritarios (Permitir hasta 2)
   const shouldShowFeatured = isFeatured;
-  const shouldShowOfficial = isOfficial;
-  // Popular solo se muestra si no hay otros badges para no saturar 3 al mismo tiempo
-  const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowOfficial;
+  const shouldShowVerified = isVerifiedSource;
+  // Popular solo se muestra si no hay otros badges para no saturar
+  const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowVerified;
 
   const cardContent = (
     <div className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] transition-all duration-200 hover:shadow-[var(--hp-shadow-md)] hover:-translate-y-0.5 overflow-hidden h-full'>
@@ -139,7 +144,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         )}
 
         {/* Badge tipo — oculto en compact */}
-        {!compact && !shouldShowFeatured && !shouldShowOfficial && !shouldShowPopular && (
+        {!compact && !shouldShowFeatured && !shouldShowVerified && !shouldShowPopular && (
           <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-md)]'>
             {TYPE_LABELS[activity.type] ?? activity.type}
           </span>
@@ -152,9 +157,9 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
               ⭐ Destacado
             </span>
           )}
-          {shouldShowOfficial && (
+          {shouldShowVerified && (
             <span className='rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-900 shadow-[var(--hp-shadow-md)] border border-brand-200'>
-              🛡️ Oficial
+              ✓ Verificado
             </span>
           )}
           {shouldShowPopular && (
@@ -189,7 +194,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         )}
 
         {/* Badge Nuevo — últimos 7 días */}
-        {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowOfficial && (
+        {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowVerified && (
           <span className='absolute bottom-1.5 left-2 rounded-full bg-info-500 px-2 py-0.5 text-xs font-bold text-white shadow-[var(--hp-shadow-md)]'>
             🆕 Nuevo
           </span>
@@ -239,21 +244,9 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           {/* Vista completa: audience + age + location + provider */}
           {!compact && (
             <>
-              {activity.audience === 'KIDS' && (
-                <span className="flex items-center gap-1 text-xs text-brand-700 font-medium">
-                  <span>👶</span> Niños
-                </span>
-              )}
-              {activity.audience === 'FAMILY' && (
-                <span className="flex items-center gap-1 text-xs text-success-700 font-medium">
-                  <span>👨‍👩‍👧</span> Familia
-                </span>
-              )}
-              {ageLabel && (
-                <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
-                  <span>👧</span> {ageLabel}
-                </span>
-              )}
+              <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)] font-medium">
+                <span>{audienceEmoji}</span> <span className="text-[var(--hp-text-primary)]">{editorialAudience}</span>
+              </span>
               {locationLabel && (
                 <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                   <span>📍</span> {locationLabel}
@@ -301,18 +294,22 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
   // La tarjeta siempre enlaza a la página de detalle interna (URL canónica)
   return (
-    <a 
-      href={activityPath(activity.id, activity.title)} 
-      className="block h-full"
-      onClick={() => {
-        trackEvent({
-          type: "activity_click",
-          activityId: activity.id
-        });
-      }}
-    >
-      {cardContent}
-    </a>
+    <FeedImpressionTracker activityId={activity.id}>
+      <a 
+        href={activityPath(activity.id, activity.title)} 
+        className="block h-full"
+        data-activity-target="true"
+        data-activity-id={activity.id}
+        onClick={() => {
+          trackEvent({
+            type: "activity_click",
+            activityId: activity.id
+          });
+        }}
+      >
+        {cardContent}
+      </a>
+    </FeedImpressionTracker>
   );
 }
 

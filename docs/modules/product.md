@@ -10,7 +10,7 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
 
 1. **Onboarding Contextual** (`/onboarding`): Sistema rápido de 3 pasos (Ubicación -> Dependientes/Niños -> Configuración Base). Define la visualización del contenido.
 2. **Hero Capsule & Search** (Búsqueda Principal): Un ecosistema unificado en una "cápsula" visual (`HeroSearch` + `CitySwitcher`) capaz de devolver predicciones mixtas. El Hero implementa un patrón "hydration island" SSR-safe que saluda de forma genérica ("Toda Colombia") y se hidrata en cliente con la ciudad activa ("Bogotá") sin layout shifts. Integra visualmente la selección de ciudad y la búsqueda en un único bloque redondeado, evitando componentes visualmente desconectados. Enlaza con el listado `/actividades`.
-3. **Listado de Actividades y Filtros (SSOT protegido)**: Experiencia de filtros facetados en tiempo real. La lógica central (`buildActivityWhere`) actúa como Single Source of Truth, protegida por una amplia barrera de tests automatizados que impiden violar las reglas de filtrado geográfico, de edad, público objetivo, precio o bloqueo por reputación de dominio (`badDomains`).
+3. **Listado de Actividades y Filtros (SSOT protegido)**: Experiencia de filtros facetados en tiempo real. La lógica central (`buildActivityWhere`) actúa como Single Source of Truth, protegida por una amplia barrera de tests automatizados que impiden violar las reglas de filtrado geográfico, de edad, público objetivo y precio.
    - **Ciudad como Contexto Global:** La ciudad dejó de ser un filtro redundante y ahora rige el contexto global del listado, informando dinámicamente el catálogo real local (ej. "1,234 actividades encontradas en Bogotá").
    - **Desktop (`>= md`)**: Filtros persistentes (sidebar o topbar). Actualización en tiempo real (sin CTA explícito).
    - **Mobile (`< md`)**: Filtros en Drawer / Bottom Sheet. Requiere acción explícita: "Aplicar filtros". El estado no debe mutar hasta confirmar (evita cambios inesperados).
@@ -50,7 +50,7 @@ rankingScore = (relevance × 0.5) + (recency × 0.2) + (trustScore × 0.3) + ctr
 
 - **50% Relevancia (`relevance`)**: Score base de afinidad con el contenido. Inicialmente 0.7 uniforme; en búsqueda textual se enriquece con `pg_trgm` (`+5.0` exact match, `+3.0` prefix ilike) ponderado 0.7/0.3 + prefix boost +0.10.
 - **20% Recencia (`recency`)**: Freshness de la actividad en BD. ≤3 días = 1.0 | ≤7 días = 0.8 | ≤30 días = 0.5 | >30 días = 0.2.
-- **30% Confianza de Fuente (`trustScore`)**: Extraído del `SourceHealth`. Fuentes inestables pierden posicionamiento global. Dominio con ratio < 0.3 → bloqueado. Score neutral 0.5 si el dominio aún no ha sido medido.
+- **30% Confianza de Fuente (`trustScore`)**: Extraído del `SourceHealth`. Fuentes inestables pierden posicionamiento global. Dominio con ratio bajo pierde relevancia pero nunca desaparece (Soft Suppression). Score neutral 0.5 si el dominio aún no ha sido medido.
 - **CTR Boost (`ctrBoost`)**: Señal aditiva real de comportamiento de usuario — `outbound_click / activity_view` por dominio. Valor máx +0.15. **No reemplaza** las señales base, las complementa.
 
   | CTR del dominio | Boost aplicado |

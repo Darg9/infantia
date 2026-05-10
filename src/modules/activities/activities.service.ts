@@ -213,49 +213,16 @@ export async function listActivities(params: ListParams) {
     getCachedCTR(),
   ]);
   const healthDict: Record<string, number> = {};
-  const badDomains: string[] = [];
-
-  // Grace period: evita falsos negativos en fuentes nuevas que aún no tienen señal suficiente.
-  // Expira cuando: age >= 21 días OR activityCount >= 50 (lo que ocurra primero).
-  // Solo aplica a dominios con score < 0.1 (prácticamente muertos) — conjunto típicamente vacío.
-  const GRACE_DAYS = 21;
-  const GRACE_ACTIVITIES = 50;
-  const GRACE_MS = GRACE_DAYS * 24 * 60 * 60 * 1000;
-
-  const potentialBad = healthData.filter(h => h.score < 0.1).map(h => h.source);
-  const graceSet = new Set<string>();
-
-  if (potentialBad.length > 0) {
-    const stats = await Promise.all(
-      potentialBad.map(async domain => {
-        const [count, oldest] = await Promise.all([
-          prisma.activity.count({ where: { sourceDomain: domain } }),
-          prisma.activity.findFirst({
-            where: { sourceDomain: domain },
-            orderBy: { createdAt: 'asc' },
-            select: { createdAt: true },
-          }),
-        ]);
-        return { domain, count, oldestAt: oldest?.createdAt };
-      })
-    );
-
-    for (const { domain, count, oldestAt } of stats) {
-      const ageMs = oldestAt ? Date.now() - oldestAt.getTime() : Infinity;
-      const graceExpired = ageMs >= GRACE_MS || count >= GRACE_ACTIVITIES;
-      if (!graceExpired) graceSet.add(domain); // aún en período de gracia → no ocultar
-    }
-  }
 
   for (const h of healthData) {
     healthDict[h.source] = h.score;
-    // Threshold conservador: solo ocultar fuentes con score < 0.1 (prácticamente muertas).
-    // Entre 0.1–0.3 el ranking score bajo ya las empuja al fondo sin ocultarlas.
-    // Excepción: grace period activo (< 21 días y < 50 actividades).
-    if (h.score < 0.1 && !graceSet.has(h.source)) {
-      badDomains.push(h.source);
-    }
   }
+
+  // Soft suppression (no hard hide):
+  // Las fuentes con sourceHealth bajo reciben ranking score bajo → caen a páginas profundas.
+  // El diversity cap (max 4/dominio) garantiza que no dominen el feed aunque suban.
+  // Hard hide queda eliminado: inconsistente con la filosofía preservation-first de V2/V3.
+  // badDomains siempre vacío → buildActivityWhere no filtra por dominio.
 
 
   // ── 3. WHERE — SSOT via buildActivityWhere ────────────────────────────────────
@@ -264,8 +231,9 @@ export async function listActivities(params: ListParams) {
   const where = buildActivityWhere({
     ...params,
     matchingIds,
-    badDomains: isRelevanceSort ? badDomains : [],
+    badDomains: [], // soft suppression: nunca filtra por dominio — el ranking score lo gestiona
   });
+
 
   const orderBy: Prisma.ActivityOrderByWithRelationInput[] = buildOrderBy(effectiveSort);
 

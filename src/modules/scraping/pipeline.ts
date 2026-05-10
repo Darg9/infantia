@@ -201,8 +201,8 @@ export class ScrapingPipeline {
     return { ...parsed.result, parserSource: parsed.source };
   }
 
-  async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number } = {}): Promise<BatchPipelineResult> {
-    const { maxPages = 50, sitemapPatterns = [], concurrency = 1 } = opts;
+  async runBatchPipeline(listingUrl: string, opts: { maxPages?: number; sitemapPatterns?: string[]; concurrency?: number; processAllLinks?: boolean } = {}): Promise<BatchPipelineResult> {
+    const { maxPages = 50, sitemapPatterns = [], concurrency = 1, processAllLinks = false } = opts;
     resetPreflightStats();
     resetParserMetrics();
 
@@ -313,7 +313,19 @@ export class ScrapingPipeline {
     let linksForGemini = allLinks;
     const baseline = allLinks.slice(0, maxPages);
 
-    if (!FEATURE_FLAGS.DISCOVERY_RANKING_ENABLED) {
+    if (processAllLinks) {
+      // Fuentes de listado puro (ej: /eventos, /es/agenda): todos los links son candidatos.
+      // No se aplica ranking ni corte — se procesa el universo completo.
+      // Cap de seguridad: previene explosión de throughput ante paginación inesperada o loops.
+      const MAX_PROCESS_ALL = 500;
+      linksForGemini = allLinks.length > MAX_PROCESS_ALL
+        ? allLinks.slice(0, MAX_PROCESS_ALL)
+        : allLinks;
+      if (allLinks.length > MAX_PROCESS_ALL) {
+        log.warn(`[DISCOVERY:ALL] Cap de seguridad activado: ${allLinks.length} → ${MAX_PROCESS_ALL} URLs. Ajusta maxPages si necesitas más.`);
+      }
+      log.info(`[DISCOVERY:ALL] processAllLinks=true. Procesando ${linksForGemini.length} links sin ranking.`);
+    } else if (!FEATURE_FLAGS.DISCOVERY_RANKING_ENABLED) {
       log.info(`[DISCOVERY:RANKING] Disabled. Using baseline (top ${maxPages}).`);
       linksForGemini = baseline;
     } else {

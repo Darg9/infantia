@@ -283,6 +283,58 @@ describe('listActivities()', () => {
     expect(VALID_SORT_VALUES).toContain('newest');
     expect(VALID_SORT_VALUES).toHaveLength(5);
   });
+
+  // ── Diversity control — V3 invariants ───────────────────────────────────────
+  // Congelan el comportamiento del MAX_DIVERSITY_PER_DOMAIN cap (default=4):
+  //   1. Un dominio nunca domina más de 4 slots en el slice de la página
+  //   2. El overflow NO se descarta — fluye a páginas más profundas (preservation-first)
+
+  describe('diversity control (sort=relevance)', () => {
+    const makeAct = (id: string, sourceDomain: string) => ({
+      ...actividadMock,
+      id,
+      sourceDomain,
+      sourceUrl: `https://${sourceDomain}/evento-${id}`,
+      _count: { views: 0 },
+    });
+
+    it('max 4 items por dominio en el slice de página (MAX_DIVERSITY_PER_DOMAIN=4)', async () => {
+      // 8 biblored + 4 idartes = 12 actividades
+      // Sin cap: el slice de pageSize=6 tendría 6 biblored (los mejor rankeados)
+      // Con cap: máx 4 biblored + 2 idartes en el slice
+      const activities = [
+        ...Array.from({ length: 8 }, (_, i) => makeAct(`b-${i}`, 'biblored.gov.co')),
+        ...Array.from({ length: 4 }, (_, i) => makeAct(`i-${i}`, 'idartes.gov.co')),
+      ];
+      mockFindMany.mockResolvedValue(activities);
+      mockCount.mockResolvedValue(12);
+
+      const result = await listActivities({ skip: 0, pageSize: 6 });
+
+      const biblored = result.activities.filter((a: any) => a.sourceDomain === 'biblored.gov.co');
+      // Invariante: ningún dominio ocupa más de 4 slots en el slice
+      expect(biblored.length).toBeLessThanOrEqual(4);
+    });
+
+    it('overflow no se descarta: los items extra fluyen a páginas más profundas', async () => {
+      // 8 actividades del mismo dominio, pageSize=4
+      // Página 1: las 4 del diversePool (primeras 4 por score)
+      // Página 2: las 4 del overflowPool — NO deben desaparecer
+      const activities = Array.from({ length: 8 }, (_, i) => makeAct(`b-${i}`, 'biblored.gov.co'));
+      mockFindMany.mockResolvedValue(activities);
+      mockCount.mockResolvedValue(8);
+
+      const page1 = await listActivities({ skip: 0, pageSize: 4 });
+      expect(page1.activities).toHaveLength(4);
+
+      // Página 2: los overflow items deben aparecer (preservation-first)
+      clearCountCacheForTests();
+      mockFindMany.mockResolvedValue(activities);
+      const page2 = await listActivities({ skip: 4, pageSize: 4 });
+      // Invariante: los 4 overflow biblored están en página 2, no desaparecieron
+      expect(page2.activities).toHaveLength(4);
+    });
+  });
 });
 
 describe('getActivityById()', () => {

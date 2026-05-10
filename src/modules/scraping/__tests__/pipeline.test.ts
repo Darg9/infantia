@@ -388,6 +388,60 @@ describe('ScrapingPipeline.runBatchPipeline()', () => {
   });
 });
 
+// ── processAllLinks — V3 invariants ───────────────────────────────────────────
+// Estos tests congelan los dos guardrails clave de Pipeline V3:
+//   1. processAllLinks=true → todos los links van a Gemini sin ranking
+//   2. Cap de 500 URLs — guardrail crítico contra explosión de throughput
+
+describe('ScrapingPipeline.runBatchPipeline() — processAllLinks (V3)', () => {
+  const listingUrl = 'https://biblored.gov.co/eventos';
+
+  it('processAllLinks=true envía todos los links a Gemini sin aplicar ranking', async () => {
+    // 10 links disponibles, maxPages=2 (sin processAllLinks solo 2 pasarían el ranking)
+    const links = Array.from({ length: 10 }, (_, i) => ({
+      url: `https://biblored.gov.co/evento-${i + 1}`,
+      anchorText: 'Evento',
+    }));
+    mockExtractLinksAllPages.mockResolvedValue(links);
+    // Gemini identifica todos como actividades — queremos verificar que recibe los 10
+    mockDiscoverActivityLinks.mockResolvedValue(links.map(l => l.url));
+    mockExtract.mockResolvedValue({ sourceText: 'Texto del evento', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue({
+      title: 'Taller', description: 'Desc', categories: [], confidenceScore: 0.9, currency: 'COP',
+    });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runBatchPipeline(listingUrl, {
+      maxPages: 2,          // con ranking solo 2 irían a Gemini
+      processAllLinks: true, // V3: bypass ranking
+    });
+
+    // Invariante: discoveredLinks = 10 (no 2)
+    expect(result.discoveredLinks).toBe(10);
+    // Invariante: Gemini recibió todos los 10 links para discovery
+    const geminiInput = mockDiscoverActivityLinks.mock.calls[0][0] as Array<{ url: string }>;
+    expect(geminiInput).toHaveLength(10);
+  });
+
+  it('processAllLinks=true aplica cap de 500 URLs como guardrail de seguridad', async () => {
+    // 600 links: deben truncarse a 500 antes de llegar a Gemini
+    const links = Array.from({ length: 600 }, (_, i) => ({
+      url: `https://biblored.gov.co/evento-${i + 1}`,
+      anchorText: 'Evento',
+    }));
+    mockExtractLinksAllPages.mockResolvedValue(links);
+    mockDiscoverActivityLinks.mockResolvedValue([]); // Gemini no identifica nada — solo verificamos el input
+
+    const pipeline = new ScrapingPipeline();
+    await pipeline.runBatchPipeline(listingUrl, { processAllLinks: true });
+
+    // Invariante: el cap de 500 URLs se respeta aunque se descubran 600
+    const geminiInput = mockDiscoverActivityLinks.mock.calls[0][0] as Array<{ url: string }>;
+    expect(geminiInput.length).toBeLessThanOrEqual(500);
+    expect(geminiInput).toHaveLength(500);
+  });
+});
+
 // ── runInstagramPipeline() ─────────────────────────────────────────────────────
 
 const sampleInstagramProfile = {

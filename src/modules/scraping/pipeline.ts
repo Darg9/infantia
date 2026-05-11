@@ -12,6 +12,7 @@ import { savePreflightLog } from './utils/preflight-db';
 import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
+import { quota } from './nlp/gemini.analyzer';
 import { evaluateActivityGate } from './quality/activity-gate';
 import { evaluateActivityGateV2 } from './quality/activity-gate-v2';
 import { saveActivityV2 } from './pipeline-v2/save-activity-v2';
@@ -377,6 +378,20 @@ export class ScrapingPipeline {
 
     // Fase 2: Filtrar con Gemini cuáles son actividades
     log.info(`Fase 2: Filtrando links con IA... (fallback=${FEATURE_FLAGS.PARSER_FALLBACK_ENABLED})`);
+
+    // ── Hard-Stop de Cuota Dinámico ──────────────────────────────────────────
+    const currentRemaining = await quota.getRemaining();
+    const safetyBuffer = 50;
+    // Estimación: 1 req por cada 100 links (discover) + 1 req por posible link (parse).
+    // Es pesimista (asume que TODOS son actividades) para nunca caer en fallback.
+    const estimatedRequests = Math.ceil(linksForGemini.length / 100) + linksForGemini.length;
+
+    if (currentRemaining < estimatedRequests + safetyBuffer) {
+      log.error(`[HARD-STOP] Cuota restante (${currentRemaining}) es menor a la estimada para esta fuente (${estimatedRequests}) + buffer (${safetyBuffer}).`);
+      log.error(`Abortando ejecución para proteger la calidad del feed y evitar fallbacks silenciosos.`);
+      throw new Error('QUOTA_HARD_STOP');
+    }
+
     const activityUrls = FEATURE_FLAGS.PARSER_FALLBACK_ENABLED
       ? await discoverWithFallback(linksForGemini, listingUrl, this.analyzer)
       : await this.analyzer.discoverActivityLinks(linksForGemini, listingUrl);

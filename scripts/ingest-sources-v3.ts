@@ -328,7 +328,12 @@ async function main() {
         totalDbDelta    += dbDelta;
       }
     } catch (err) {
-      console.error(`  Error en ${source.name}:`, err instanceof Error ? err.message : err);
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg === 'QUOTA_HARD_STOP') {
+        console.error(`\n[ABORT] Ingesta masiva detenida por seguridad de cuota en la fuente: ${source.name}`);
+        process.exit(1);
+      }
+      console.error(`  Error en ${source.name}:`, msg);
     } finally {
       await pipeline.disconnect();
     }

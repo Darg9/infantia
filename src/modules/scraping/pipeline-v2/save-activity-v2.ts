@@ -191,6 +191,17 @@ export async function saveActivityV2(
       sourcePlatform:  options?.platform ?? 'WEBSITE',
       sourceConfidence: normalized.confidenceScore,
       sourceCapturedAt: new Date(),
+      extractionMetadata: {
+        mode: data.parserSource || 'gemini',
+        pipelineVersion: 'v3',
+        parser: data.parserSource === 'fallback' ? 'cheerio-fallback' : 'gemini-2.5-flash',
+        parserVersion: '1.2.0',
+        confidence: normalized.confidenceScore,
+        fallbackUsed: data.parserSource === 'fallback',
+        sourceUrl: sourceUrl,
+        extractedAt: new Date().toISOString(),
+        qualityTier: data.parserSource === 'fallback' ? 'degraded' : 'premium'
+      } as Prisma.JsonObject,
     };
 
     // ── 8. Upsert actividad ────────────────────────────────────────────────

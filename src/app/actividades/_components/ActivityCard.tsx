@@ -14,6 +14,7 @@ import { normalizePrice } from '@/lib/decimal';
 import { highlightText } from '@/lib/highlight';
 import { FeedImpressionTracker } from '@/components/analytics/FeedImpressionTracker';
 import { getEditorialAudience, getAudienceEmoji } from '@/lib/audience-utils';
+import { VERIFIED_SOURCES } from '@/config/editorial';
 
 // Tipo local inferido desde lo que devuelve listActivities.
 // En producción puede llegar como number, string o Decimal serializado.
@@ -85,13 +86,6 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
-
-const VERIFIED_SOURCES = [
-  'biblored.gov.co',
-  'idartes.gov.co',
-  'maloka.org',
-  'planetariodebogota.gov.co'
-];
 
 export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '' }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;

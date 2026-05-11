@@ -67,6 +67,7 @@ vi.mock('../../nlp/gemini.analyzer', () => ({
     this.analyzeInstagramPost  = vi.fn();
     this.discoverActivityLinks = mockDiscoverActivityLinks;
   }),
+  quota: { getRemaining: vi.fn().mockResolvedValue(300) },
 }));
 
 vi.mock('../../storage', () => ({

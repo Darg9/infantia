@@ -74,6 +74,7 @@ vi.mock('../nlp/gemini.analyzer', () => ({
     this.analyzeInstagramPost = mockAnalyzeInstagramPost;
     this.discoverActivityLinks = mockDiscoverActivityLinks;
   }),
+  quota: { getRemaining: vi.fn().mockResolvedValue(300) },
 }));
 
 vi.mock('../cache', () => ({
@@ -431,6 +432,10 @@ describe('ScrapingPipeline.runBatchPipeline() — processAllLinks (V3)', () => {
     }));
     mockExtractLinksAllPages.mockResolvedValue(links);
     mockDiscoverActivityLinks.mockResolvedValue([]); // Gemini no identifica nada — solo verificamos el input
+
+    // Cuota alta para que el hard-stop no interfiera con el test del cap
+    const { quota: mockQuota } = await import('../nlp/gemini.analyzer');
+    vi.mocked(mockQuota.getRemaining).mockResolvedValueOnce(9999);
 
     const pipeline = new ScrapingPipeline();
     await pipeline.runBatchPipeline(listingUrl, { processAllLinks: true });

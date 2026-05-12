@@ -12,7 +12,7 @@ const { mockActivityFindFirst, mockActivityFindMany, mockActivityCount, mockCate
     { id: 'act-2', title: 'Club de Lectura',    updatedAt: new Date('2026-03-21') },
   ]);
 
-  const mockActivityCount = vi.fn().mockResolvedValue(5000); // Para testear chunking
+  const mockActivityCount = vi.fn().mockResolvedValue(5000);
 
   const mockCategoryFindMany = vi.fn().mockResolvedValue([
     {
@@ -47,59 +47,45 @@ vi.mock('@/lib/db', () => ({
   },
 }));
 
-import sitemap, { generateSitemaps } from '../sitemap';
+import sitemap from '../sitemap';
 
-describe('Sitemap Partitioning (Crawl Governance)', () => {
-  describe('generateSitemaps()', () => {
-    it('genera particiones semánticas y chunks dinámicos', async () => {
-      const result = await generateSitemaps();
-      expect(result).toContainEqual({ id: 'core' });
-      expect(result).toContainEqual({ id: 'cities' });
-      expect(result).toContainEqual({ id: 'categories' });
-      // Si el count es 5000 y CHUNK_SIZE es 2000, debería generar 3 chunks: 0, 1, 2
-      expect(result).toContainEqual({ id: 'events-active-0' });
-      expect(result).toContainEqual({ id: 'events-active-1' });
-      expect(result).toContainEqual({ id: 'events-active-2' });
-    });
+describe('Sitemap unificado', () => {
+  it('retorna rutas estáticas', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls).toContain(`${SITE_URL}/`);
+    expect(urls).toContain(`${SITE_URL}/actividades`);
+    expect(urls).toContain(`${SITE_URL}/privacidad`);
+    expect(urls).toContain(`${SITE_URL}/terminos`);
+    expect(urls).toContain(`${SITE_URL}/contacto`);
   });
 
-  describe('sitemap({ id }) resolvers', () => {
-    it('id: core -> retorna rutas estáticas', async () => {
-      const result = await sitemap({ id: 'core' });
-      const urls = result.map(r => r.url);
-      expect(urls).toContain(`${SITE_URL}/`);
-      expect(urls).toContain(`${SITE_URL}/actividades`);
-      expect(urls).toContain(`${SITE_URL}/privacidad`);
-    });
+  it('retorna rutas de categoría', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls).toContain(`${SITE_URL}/actividades/categoria/arte-y-creatividad`);
+  });
 
-    it('id: categories -> retorna rutas de categoría', async () => {
-      const result = await sitemap({ id: 'categories' });
-      const urls = result.map(r => r.url);
-      expect(urls).toContain(`${SITE_URL}/actividades/categoria/arte-y-creatividad`);
-    });
+  it('retorna rutas de ciudad', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls).toContain(`${SITE_URL}/actividades/bogota`);
+    expect(urls).toContain(`${SITE_URL}/actividades/medellin`);
+  });
 
-    it('id: cities -> retorna rutas de ciudad', async () => {
-      const result = await sitemap({ id: 'cities' });
-      const urls = result.map(r => r.url);
-      expect(urls).toContain(`${SITE_URL}/actividades/bogota`);
-      expect(urls).toContain(`${SITE_URL}/actividades/medellin`);
-    });
+  it('retorna rutas de actividades individuales', async () => {
+    const result = await sitemap();
+    const urls = result.map(r => r.url);
+    expect(urls.some(u => u.includes('/actividad/act-1'))).toBe(true);
+    expect(urls.some(u => u.includes('/actividad/act-2'))).toBe(true);
+  });
 
-    it('id: events-active-[n] -> retorna rutas de actividades en batches', async () => {
-      const result = await sitemap({ id: 'events-active-0' });
-      const urls = result.map(r => r.url);
-      expect(urls.some(u => u.includes('/actividad/act-1'))).toBe(true);
-      expect(urls.some(u => u.includes('/actividad/act-2'))).toBe(true);
-    });
-
-    it('maneja ids desconocidos retornando array vacío', async () => {
-      const result = await sitemap({ id: 'unknown-id' });
-      expect(result).toEqual([]);
-    });
-
-    it('maneja eventos activos inválidos retornando array vacío', async () => {
-      const result = await sitemap({ id: 'events-active-invalid' });
-      expect(result).toEqual([]);
-    });
+  it('todos los entries tienen url, lastModified y priority', async () => {
+    const result = await sitemap();
+    for (const entry of result) {
+      expect(typeof entry.url).toBe('string');
+      expect(entry.lastModified).toBeDefined();
+      expect(typeof entry.priority).toBe('number');
+    }
   });
 });

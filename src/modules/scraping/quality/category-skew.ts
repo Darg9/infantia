@@ -1,5 +1,4 @@
 import { getErrorMessage } from '../../../lib/error';
-import { PrismaClient } from '../../../generated/prisma/client';
 import { createLogger } from '../../../lib/logger';
 
 const log = createLogger('quality:category-skew');
@@ -64,5 +63,8 @@ export async function runCategorySkewGuardrail(): Promise<void> {
     }
   } catch (err: unknown) {
     log.error('Error in runCategorySkewGuardrail', { error: getErrorMessage(err) });
+  } finally {
+    // Cerrar conexión propia del guardrail para no dejar handles abiertos en scripts
+    await prisma.$disconnect().catch(() => undefined);
   }
 }

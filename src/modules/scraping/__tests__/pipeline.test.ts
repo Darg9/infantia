@@ -77,6 +77,11 @@ vi.mock('../nlp/gemini.analyzer', () => ({
   quota: { getRemaining: vi.fn().mockResolvedValue(300) },
 }));
 
+vi.mock('../../../lib/quota-tracker', () => ({
+  quota: { getRemaining: vi.fn().mockResolvedValue(300) },
+  getAvailableKey: vi.fn().mockResolvedValue('mock-api-key'),
+}));
+
 vi.mock('../cache', () => ({
   ScrapingCache: vi.fn(function(this: Record<string, unknown>) {
     Object.defineProperty(this, 'size', { get: () => 0, configurable: true });
@@ -434,7 +439,7 @@ describe('ScrapingPipeline.runBatchPipeline() — processAllLinks (V3)', () => {
     mockDiscoverActivityLinks.mockResolvedValue([]); // Gemini no identifica nada — solo verificamos el input
 
     // Cuota alta para que el hard-stop no interfiera con el test del cap
-    const { quota: mockQuota } = await import('../nlp/gemini.analyzer');
+    const { quota: mockQuota } = await import('../../../lib/quota-tracker');
     vi.mocked(mockQuota.getRemaining).mockResolvedValueOnce(9999);
 
     const pipeline = new ScrapingPipeline();

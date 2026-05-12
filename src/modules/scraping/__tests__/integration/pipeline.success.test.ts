@@ -103,6 +103,11 @@ vi.mock('../../nlp/gemini.analyzer', () => ({
   quota: { getRemaining: vi.fn().mockResolvedValue(300) },
 }));
 
+vi.mock('../../../../lib/quota-tracker', () => ({
+  quota: { getRemaining: vi.fn().mockResolvedValue(300) },
+  getAvailableKey: vi.fn().mockResolvedValue('mock-api-key'),
+}));
+
 vi.mock('../../storage', () => ({
   ScrapingStorage: vi.fn(function (this: Record<string, unknown>) {
     this.saveBatchResults = mockSaveBatchResults;

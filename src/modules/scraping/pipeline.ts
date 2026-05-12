@@ -12,7 +12,7 @@ import { savePreflightLog } from './utils/preflight-db';
 import { parseActivity, discoverWithFallback, getParserMetrics, resetParserMetrics } from './parser/parser';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { prisma } from '../../lib/db';
-import { quota } from './nlp/gemini.analyzer';
+import { quota } from '../../lib/quota-tracker';
 import { evaluateActivityGate } from './quality/activity-gate';
 import { evaluateActivityGateV2 } from './quality/activity-gate-v2';
 import { saveActivityV2 } from './pipeline-v2/save-activity-v2';

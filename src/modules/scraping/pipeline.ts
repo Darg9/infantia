@@ -381,13 +381,17 @@ export class ScrapingPipeline {
 
     // ── Hard-Stop de Cuota Dinámico ──────────────────────────────────────────
     const currentRemaining = await quota.getRemaining();
-    const safetyBuffer = 50;
-    // Estimación: 1 req por cada 100 links (discover) + 1 req por posible link (parse).
-    // Es pesimista (asume que TODOS son actividades) para nunca caer en fallback.
-    const estimatedRequests = Math.ceil(linksForGemini.length / 100) + linksForGemini.length;
+    const safetyBuffer = 20;
+    // Estimación conservadora:
+    //   - Discover: 1 req por cada 100 links (chunks de 100 a Gemini)
+    //   - Parse: asume 70% hit rate (no todos los links son actividades)
+    // Usar 100% sería demasiado pesimista para fuentes pure_listing con fallback Cheerio.
+    const discoverCalls = Math.ceil(linksForGemini.length / 100);
+    const parseCalls    = Math.ceil(linksForGemini.length * 0.7);
+    const estimatedRequests = discoverCalls + parseCalls;
 
     if (currentRemaining < estimatedRequests + safetyBuffer) {
-      log.error(`[HARD-STOP] Cuota restante (${currentRemaining}) es menor a la estimada para esta fuente (${estimatedRequests}) + buffer (${safetyBuffer}).`);
+      log.error(`[HARD-STOP] Cuota restante (${currentRemaining}) insuficiente. Estimado: ${estimatedRequests} (discover=${discoverCalls} + parse=${parseCalls}) + buffer=${safetyBuffer}.`);
       log.error(`Abortando ejecución para proteger la calidad del feed y evitar fallbacks silenciosos.`);
       throw new Error('QUOTA_HARD_STOP');
     }

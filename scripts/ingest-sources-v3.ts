@@ -106,7 +106,7 @@ const ALL_SOURCES: Source[] = [
   {
     name:            'Banrep Bogota',
     channel:         'web',
-    url:             'https://www.banrepcultural.org/actividades',
+    url:             'https://www.banrepcultural.org/bogota/actividades',
     cityName:        'Bogotá',
     maxPages:        50,
     processAllLinks: true,

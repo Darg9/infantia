@@ -40,7 +40,7 @@ const ALL_SOURCES: Source[] = [
   { name: 'FCE Bogotá',        channel: 'web', url: 'https://fce.com.co/programacion-cultural', cityName: 'Bogotá' },
   { name: 'JBB',               channel: 'web', url: 'https://jbb.gov.co',                     cityName: 'Bogotá' },
   { name: 'Sec. Cultura',      channel: 'web', url: 'https://culturarecreacionydeporte.gov.co', cityName: 'Bogotá' },
-  { name: 'Alcaldía de Bogotá',channel: 'web', url: 'https://bogota.gov.co/que-hacer/agenda-cultural', cityName: 'Bogotá' },
+  { name: 'Alcaldía de Bogotá',channel: 'web', url: 'https://bogota.gov.co/que-hacer/agenda-cultural', cityName: 'Bogotá', maxPages: 50 },
 
   // ── Medellín Institucionales ───────────────────────────────────────────────
   { name: 'Parque Explora',    channel: 'web', url: 'https://parqueexplora.org',               cityName: 'Medellín' },

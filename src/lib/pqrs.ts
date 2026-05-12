@@ -62,3 +62,36 @@ export const PQRS_SLA: Record<ContactCategory, { alertAt: number; limit: number 
   report_error:    { alertAt: 3,  limit: 5  }, // SLA interno
   other:           { alertAt: 3,  limit: 5  }, // SLA interno
 };
+
+// ---------------------------------------------------------------------------
+// Utilidades de SLA — usadas por check-overdue-pqrs y GET /api/admin/pqrs
+// ---------------------------------------------------------------------------
+
+export type SlaLevel = 'WARNING' | 'DUE_TODAY' | 'OVERDUE';
+
+/** Días hábiles (lun–vie) entre dos fechas, sin contar festivos colombianos. */
+export function getBusinessDays(startDate: Date, endDate: Date): number {
+  let count = 0;
+  const cur = new Date(startDate.getTime());
+  cur.setHours(0, 0, 0, 0);
+  const end = new Date(endDate.getTime());
+  end.setHours(0, 0, 0, 0);
+  while (cur <= end) {
+    const day = cur.getDay();
+    if (day !== 0 && day !== 6) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return Math.max(0, count - 1);
+}
+
+/** Clasifica una PQRS según días hábiles transcurridos y su SLA. */
+export function classifySla(
+  businessDays: number,
+  category: string,
+): { level: SlaLevel | null; limit: number } {
+  const sla = PQRS_SLA[category as ContactCategory] ?? PQRS_SLA.general;
+  if (businessDays > sla.limit)    return { level: 'OVERDUE',   limit: sla.limit };
+  if (businessDays === sla.limit)  return { level: 'DUE_TODAY', limit: sla.limit };
+  if (businessDays >= sla.alertAt) return { level: 'WARNING',   limit: sla.limit };
+  return { level: null, limit: sla.limit };
+}

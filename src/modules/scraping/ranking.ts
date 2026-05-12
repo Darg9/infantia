@@ -14,7 +14,8 @@ const TIME_RE = /\b(\d{1,2}:\d{2}|am|pm)\b/i;
 const NEG_RE = /\b(permanente|siempre abierto|visítanos|quienes somos|contacto|noticias|directorio|convocatoria|licitaci[oó]n|empleo|pol[ií]tica|privacidad)\b/i;
 
 // Patrones de URL: rutas de evento (fuerte señal de actividad)
-const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad\/)/i;
+// /planes-* cubre Alcaldía de Bogotá (bogota.gov.co/que-hacer/cultura/planes-* y /mi-ciudad/.../planes-*)
+const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad\/|\/planes-)/i;
 
 // Fecha en URL: /año/mes/ o /año-mes-día/ — señal de contenido con fecha específica
 const URL_DATE_RE = /\/\d{4}\/\d{2}(?:\/\d{2})?\/|\/\d{4}-\d{2}-\d{2}\//;

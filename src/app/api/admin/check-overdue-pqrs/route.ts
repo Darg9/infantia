@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/db';
 import { createLogger } from '@/lib/logger';
-import { PQRS_SLA } from '@/lib/pqrs';
+import { getBusinessDays, classifySla } from '@/lib/pqrs';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
@@ -13,52 +13,17 @@ const resend = new Resend(process.env.RESEND_API_KEY || 'placeholder');
 const FROM_EMAIL  = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 const ADMIN_EMAIL = 'info@habitaplan.com';
 
-// ---------------------------------------------------------------------------
-// Días hábiles (lun–vie, sin festivos colombianos)
-// Para precisión 100% legal ante la SIC se necesitaría una API de festivos.
-// ---------------------------------------------------------------------------
-function getBusinessDays(startDate: Date, endDate: Date): number {
-  let count = 0;
-  const cur = new Date(startDate.getTime());
-  cur.setHours(0, 0, 0, 0);
-  const end = new Date(endDate.getTime());
-  end.setHours(0, 0, 0, 0);
-
-  while (cur <= end) {
-    const day = cur.getDay();
-    if (day !== 0 && day !== 6) count++;
-    cur.setDate(cur.getDate() + 1);
-  }
-  return Math.max(0, count - 1);
-}
-
-// ---------------------------------------------------------------------------
-// Clasificación por SLA — fuente de verdad: src/lib/pqrs.ts › PQRS_SLA
-// ---------------------------------------------------------------------------
 type AlertLevel = 'WARNING' | 'DUE_TODAY' | 'OVERDUE';
 
 interface PqrsAlert {
   id: string;
-  createdAt: string;      // ISO date
+  createdAt: string;
   category: string;
   status: string;
   email: string;
   businessDays: number;
   limit: number;
   level: AlertLevel;
-}
-
-function classify(
-  businessDays: number,
-  category: string,
-): { level: AlertLevel | null; limit: number } {
-  const sla = PQRS_SLA[category as keyof typeof PQRS_SLA] ?? PQRS_SLA.general;
-  const { alertAt, limit } = sla;
-
-  if (businessDays > limit)    return { level: 'OVERDUE',   limit };
-  if (businessDays === limit)  return { level: 'DUE_TODAY', limit };
-  if (businessDays >= alertAt) return { level: 'WARNING',   limit };
-  return { level: null, limit };
 }
 
 // ---------------------------------------------------------------------------
@@ -151,7 +116,7 @@ export async function GET(request: Request) {
 
     for (const req of openRequests) {
       const businessDays = getBusinessDays(req.createdAt, now);
-      const { level, limit } = classify(businessDays, req.category);
+      const { level, limit } = classifySla(businessDays, req.category);
       if (!level) continue;
 
       alerts.push({

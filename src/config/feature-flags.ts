@@ -42,6 +42,7 @@ export const FEATURE_FLAGS = {
       'biblored.gov.co':                  'hard',
       'idartes.gov.co':                   'hard',
       'planetariodebogota.gov.co':        'hard',
+      'bogota.gov.co':                    'hard',
     };
     const raw = process.env.DISCOVERY_RANKING_MODE_BY_SOURCE;
     if (!raw) return defaults;

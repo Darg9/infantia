@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
 import { UserRole } from '@/generated/prisma/client';
-import { RESPONSE_CHANNELS } from '@/lib/pqrs';
+import { RESPONSE_CHANNELS, getBusinessDays, classifySla } from '@/lib/pqrs';
 import { createLogger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
@@ -17,6 +17,47 @@ const patchSchema = z.object({
   responseChannel:  z.enum(RESPONSE_CHANNELS).optional(),
   firstRespondedAt: z.string().datetime().optional(),
 });
+
+// GET /api/admin/pqrs/:id
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  await requireRole([UserRole.ADMIN]);
+
+  const { id } = await params;
+
+  const item = await prisma.contactRequest.findUnique({
+    where: { id },
+    select: {
+      id:               true,
+      createdAt:        true,
+      name:             true,
+      email:            true,
+      category:         true,
+      message:          true,
+      dataRightType:    true,
+      status:           true,
+      statusChangedAt:  true,
+      resolvedAt:       true,
+      resolvedBy:       true,
+      firstRespondedAt: true,
+      responseChannel:  true,
+      emailStatus:      true,
+      emailError:       true,
+      ip:               true,
+    },
+  });
+
+  if (!item) {
+    return NextResponse.json({ error: 'PQRS no encontrada' }, { status: 404 });
+  }
+
+  const businessDays = getBusinessDays(item.createdAt, new Date());
+  const { level, limit } = classifySla(businessDays, item.category);
+
+  return NextResponse.json({ ...item, sla: { businessDays, limit, level } });
+}
 
 // PATCH /api/admin/pqrs/:id
 export async function PATCH(

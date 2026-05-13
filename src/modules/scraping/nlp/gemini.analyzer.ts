@@ -97,7 +97,15 @@ REGLAS:
 - price: número sin símbolo de moneda. Si dice "gratis", usa 0.
 - pricePeriod: PER_SESSION, MONTHLY, TOTAL, o FREE.
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
-- Fechas en formato YYYY-MM-DD.
+
+REGLAS DE FECHAS (obligatorias — el mensaje del usuario incluirá la fecha de hoy Colombia):
+- Usa el CONTEXTO TEMPORAL del mensaje para resolver referencias relativas.
+- "este 16 de mayo" / "el 16 de mayo" → convierte a YYYY-MM-DD con el año del contexto.
+- "este viernes" / "el próximo sábado" → calcula la fecha real a partir de hoy.
+- "este fin de semana" → el sábado más próximo desde hoy.
+- Si el texto menciona CUALQUIER fecha (incluso informal), extráela en schedules[].startDate con formato YYYY-MM-DD.
+- Actividades recurrentes ("todos los sábados") → schedules[0].notes: "todos los sábados"; startDate: próxima ocurrencia.
+- Si no hay fecha en el texto, deja schedules como null.
 
 AGE INFERENCE RULES:
 If age is not explicitly stated, infer it ONLY if strong signals exist:
@@ -148,7 +156,16 @@ REGLAS:
 - price: número sin símbolo de moneda. Si dice "gratis" o "entrada libre", usa 0.
 - pricePeriod: PER_SESSION, MONTHLY, TOTAL, o FREE.
 - currency: código ISO (COP, USD, MXN, etc.) — por defecto COP.
-- Fechas en formato YYYY-MM-DD.
+
+REGLAS DE FECHAS (obligatorias — el mensaje del usuario incluirá la fecha de hoy Colombia):
+- Usa el CONTEXTO TEMPORAL del mensaje para resolver referencias relativas.
+- "este 16 de mayo" / "el 16 de mayo" → convierte a YYYY-MM-DD con el año del contexto.
+- "este viernes" / "el próximo sábado" → calcula la fecha real a partir de hoy.
+- "este fin de semana" → el sábado más próximo desde hoy.
+- Los emojis 📅🗓️ son indicadores fuertes de fecha — extrae siempre la fecha que los acompaña.
+- Si el caption menciona fecha (incluso informal), extráela en schedules[].startDate con formato YYYY-MM-DD.
+- Actividades recurrentes ("todos los sábados") → schedules[0].notes: "todos los sábados"; startDate: próxima ocurrencia.
+- Si no hay fecha en el caption, deja schedules como null.
 
 AGE INFERENCE RULES:
 If age is not explicitly stated, infer it ONLY if strong signals exist:
@@ -257,7 +274,10 @@ export class GeminiAnalyzer {
 
   async analyze(sourceText: string, url: string): Promise<ActivityNLPResult> {
     const truncatedText = sourceText.substring(0, 6000);
-    const userMessage = `URL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
+    const todayCol = new Date().toLocaleDateString('es-CO', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Bogota',
+    });
+    const userMessage = `CONTEXTO TEMPORAL (Colombia, UTC-5): Hoy es ${todayCol}.\n\nURL de origen: ${url}\n\nTEXTO CRUDO EXTRAÍDO:\n${truncatedText}`;
 
     // Intenta hasta 3 veces (una por key disponible) rotando entre keys en caso de 429
     const MAX_KEY_ATTEMPTS = 3;
@@ -543,7 +563,12 @@ ${linksText}`;
       return this.mockAnalysis(post.url);
     }
 
-    const userMessage = `POST DE INSTAGRAM:
+    const todayCol = new Date().toLocaleDateString('es-CO', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'America/Bogota',
+    });
+    const userMessage = `CONTEXTO TEMPORAL (Colombia, UTC-5): Hoy es ${todayCol}.
+
+POST DE INSTAGRAM:
 URL: ${post.url}
 Fecha: ${post.timestamp ?? 'No disponible'}
 Likes: ${post.likesCount ?? 'No disponible'}

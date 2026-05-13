@@ -74,6 +74,12 @@ function mapActivityType(categories: string[], title: string): string {
   return 'ONE_TIME';
 }
 
+// ── Observabilidad temporal ───────────────────────────────────────────────────
+// Detecta menciones de fecha en título/descripción cuando startDate es null.
+// SOLO para métricas — nunca se usa para rellenar startDate automáticamente.
+// Enriquece extractionMetadata.temporal para queries de calidad editorial.
+const DATE_MENTION_RE = /\b(\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)|este\s+(viernes|s[aá]bado|domingo|lunes|martes|mi[eé]rcoles|jueves)|este\s+fin\s+de\s+semana|pr[oó]ximo\s+(s[aá]bado|domingo|viernes|lunes)|ma[nñ]ana\b|\besta\s+semana\b|\d{1,2}\/\d{1,2}\/\d{2,4})\b/i;
+
 /**
  * Guarda una actividad en el Pipeline V2.
  * El Gate V2 ya fue evaluado por el caller — aquí solo persistimos.
@@ -200,7 +206,16 @@ export async function saveActivityV2(
         fallbackUsed: data.parserSource === 'fallback',
         sourceUrl: sourceUrl,
         extractedAt: new Date().toISOString(),
-        qualityTier: data.parserSource === 'fallback' ? 'degraded' : 'premium'
+        qualityTier: data.parserSource === 'fallback' ? 'degraded' : 'premium',
+        temporal: {
+          // 'extracted' → schedules[0].startDate presente | 'missing' → sin fecha estructurada
+          status: normalized.schedules?.[0]?.startDate ? 'extracted' : 'missing',
+          // true → hay mención de fecha en texto pero no se estructuró
+          // Útil para medir el gap de enrichment temporal
+          dateMentionDetected: !normalized.schedules?.[0]?.startDate
+            ? DATE_MENTION_RE.test(`${normalized.title} ${normalized.description}`)
+            : false,
+        },
       } as Prisma.JsonObject,
     };
 

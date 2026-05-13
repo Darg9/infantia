@@ -61,7 +61,7 @@ async function getMetrics(): Promise<SourceRow[]> {
     SELECT
       COALESCE(source_domain, 'unknown')                                          AS domain,
       COUNT(*)                                                                    AS total,
-      COUNT(CASE WHEN start_date IS NOT NULL THEN 1 END)                          AS with_date,
+      COUNT(CASE WHEN "startDate" IS NOT NULL THEN 1 END)                         AS with_date,
       -- Métricas V2 (extraction_metadata.temporal presente desde commit 3583068)
       COUNT(CASE WHEN extraction_metadata->'temporal'->>'status' = 'resolved'   THEN 1 END) AS v2_resolved,
       COUNT(CASE WHEN extraction_metadata->'temporal'->>'status' = 'degraded'   THEN 1 END) AS v2_degraded,

@@ -75,10 +75,56 @@ function mapActivityType(categories: string[], title: string): string {
 }
 
 // ── Observabilidad temporal ───────────────────────────────────────────────────
-// Detecta menciones de fecha en título/descripción cuando startDate es null.
-// SOLO para métricas — nunca se usa para rellenar startDate automáticamente.
-// Enriquece extractionMetadata.temporal para queries de calidad editorial.
+// Detecta el tipo de señal de fecha en texto — SOLO para métricas de quality control.
+// NUNCA se usa para rellenar startDate automáticamente.
+// Enriquece extractionMetadata.temporal para queries y ranking de confianza.
+//
+// dateSource calibra la confianza en la fecha extraída:
+//   'explicit'  → fecha literal en texto ("16 de mayo de 2026", "16/05/2026")
+//   'relative'  → fecha relativa ("este viernes", "mañana", "próximo sábado")
+//   'inferred'  → Gemini puso fecha sin señal textual directa (máxima incertidumbre)
+//   'none'      → sin startDate
+//
+// status resume el resultado del enrichment temporal:
+//   'resolved'  → startDate presente (Gemini + prompt con contexto de fecha)
+//   'degraded'  → Cheerio fallback (sin NLP, sin fechas)
+//   'missing'   → Gemini procesó pero no extrajo fecha estructurada
+
+/** Fecha explícita: "16 de mayo de 2026", "16 de mayo", "16/05/2026", "2026-05-16" */
+const EXPLICIT_DATE_RE = /\b(\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)(\s+de\s+\d{4})?|\d{1,2}\/\d{1,2}\/\d{2,4}|\d{4}-\d{2}-\d{2})\b/i;
+
+/** Fecha relativa: "este viernes", "mañana", "próximo sábado", "este fin de semana", "esta semana" */
 const DATE_MENTION_RE = /\b(\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)|este\s+(viernes|s[aá]bado|domingo|lunes|martes|mi[eé]rcoles|jueves)|este\s+fin\s+de\s+semana|pr[oó]ximo\s+(s[aá]bado|domingo|viernes|lunes)|ma[nñ]ana\b|\besta\s+semana\b|\d{1,2}\/\d{1,2}\/\d{2,4})\b/i;
+
+function computeTemporalMeta(
+  normalized: { schedules?: { startDate: string; endDate?: string | null }[] | null; title: string; description: string | null },
+  isCheerioFallback: boolean,
+): { status: string; dateSource: string; dateMentionDetected: boolean } {
+  const hasStartDate = !!normalized.schedules?.[0]?.startDate;
+  const text = `${normalized.title} ${normalized.description}`;
+
+  let dateSource: 'explicit' | 'relative' | 'inferred' | 'none';
+  if (!hasStartDate) {
+    dateSource = 'none';
+  } else if (EXPLICIT_DATE_RE.test(text)) {
+    dateSource = 'explicit';
+  } else if (DATE_MENTION_RE.test(text)) {
+    dateSource = 'relative';
+  } else {
+    // Gemini produjo fecha sin señal textual directa — puede ser correcta o hallucination
+    dateSource = 'inferred';
+  }
+
+  const status = isCheerioFallback ? 'degraded'
+    : hasStartDate ? 'resolved'
+    : 'missing';
+
+  // dateMentionDetected: solo relevante cuando status=missing
+  // Revela si había señal temporal en texto que Gemini no estructuró (el gap real)
+  const dateMentionDetected = !hasStartDate ? DATE_MENTION_RE.test(text) : false;
+
+  return { status, dateSource, dateMentionDetected };
+}
 
 /**
  * Guarda una actividad en el Pipeline V2.
@@ -207,15 +253,7 @@ export async function saveActivityV2(
         sourceUrl: sourceUrl,
         extractedAt: new Date().toISOString(),
         qualityTier: data.parserSource === 'fallback' ? 'degraded' : 'premium',
-        temporal: {
-          // 'extracted' → schedules[0].startDate presente | 'missing' → sin fecha estructurada
-          status: normalized.schedules?.[0]?.startDate ? 'extracted' : 'missing',
-          // true → hay mención de fecha en texto pero no se estructuró
-          // Útil para medir el gap de enrichment temporal
-          dateMentionDetected: !normalized.schedules?.[0]?.startDate
-            ? DATE_MENTION_RE.test(`${normalized.title} ${normalized.description}`)
-            : false,
-        },
+        temporal: computeTemporalMeta(normalized, data.parserSource === 'fallback'),
       } as Prisma.JsonObject,
     };
 

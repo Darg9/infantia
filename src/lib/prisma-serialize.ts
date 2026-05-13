@@ -35,7 +35,9 @@ export function toNumber(value: unknown): number | null {
     const n = parseFloat(value);
     return isNaN(n) ? null : n;
   }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   if (typeof (value as any).toNumber === 'function') {
+    // eslint-disable-next-line no-restricted-syntax -- esta función ES la implementación del patrón; normalizePrice() la consume
     return (value as { toNumber: () => number }).toNumber();
   }
   return null;
@@ -76,6 +78,12 @@ export interface SerializedActivity {
   duplicatesCount: number;
   /** Convertido de Date a ISO string */
   createdAt: string;
+  /** ISO string o null — usado para label temporal editorial */
+  startDate: string | null;
+  /** ISO string o null — usado para rango multi-día */
+  endDate: string | null;
+  /** JSON con days/start/end para actividades recurrentes sin startDate */
+  schedule: Record<string, unknown> | null;
   provider: {
     name: string;
     isVerified: boolean;
@@ -120,12 +128,25 @@ type ActivityInput = {
   priceCurrency?: string; pricePeriod?: string | null; imageUrl?: string | null;
   sourceUrl?: string | null; sourceDomain?: string | null; duplicatesCount?: number;
   createdAt: Date | string;
+  startDate?: Date | string | null;
+  endDate?: Date | string | null;
+  schedule?: unknown;
   provider?: { name: string; isVerified?: boolean; isPremium?: boolean } | null;
   location?: { name: string; neighborhood?: string | null; city?: { name: string } | null } | null;
   categories?: { category: { id: string; name: string; slug: string } }[];
   _count?: { views?: number };
 };
 export function serializeActivity(act: ActivityInput): SerializedActivity {
+  // schedule es un JsonValue de Prisma — puede ser objeto, array, primitive o null
+  const schedule = (
+    act.schedule !== null &&
+    act.schedule !== undefined &&
+    typeof act.schedule === 'object' &&
+    !Array.isArray(act.schedule)
+  )
+    ? (act.schedule as Record<string, unknown>)
+    : null;
+
   return {
     id: act.id,
     title: act.title,
@@ -143,6 +164,9 @@ export function serializeActivity(act: ActivityInput): SerializedActivity {
     sourceDomain: act.sourceDomain ?? null,
     duplicatesCount: act.duplicatesCount ?? 0,
     createdAt: toISOString(act.createdAt) ?? new Date().toISOString(),
+    startDate: toISOString(act.startDate as Date | string | null | undefined) ?? null,
+    endDate: toISOString(act.endDate as Date | string | null | undefined) ?? null,
+    schedule,
     provider: act.provider
       ? {
           name: act.provider.name,

@@ -29,8 +29,10 @@ const baseActivity = {
   sourceUrl: 'https://example.com',
   sourceDomain: 'example.com',
   duplicatesCount: 0,
-  // createdAt hace 1 día → entra dentro de los 7 días
   createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+  startDate: null,
+  endDate: null,
+  schedule: null,
   provider: { name: 'BibloRed', isVerified: true, isPremium: false },
   location: { name: 'Biblioteca Tintal', neighborhood: 'Tintal', city: { name: 'Bogotá' } },
   categories: [{ category: { id: 'c1', name: 'Arte y Creatividad', slug: 'arte-y-creatividad' } }],
@@ -51,7 +53,6 @@ describe('ActivityCard', () => {
     it('enlaza a la página de detalle con URL canónica (uuid-slug)', () => {
       const { container } = render(<ActivityCard activity={baseActivity} />);
       const link = container.querySelector('a');
-      // URL canónica: /actividad/{uuid}-{slug-del-titulo}
       expect(link?.getAttribute('href')).toMatch(/^\/actividad\/act-1-taller-de-pintura/);
     });
 
@@ -71,37 +72,124 @@ describe('ActivityCard', () => {
     });
   });
 
-  describe('badge de tipo', () => {
-    it('muestra "Taller" para WORKSHOP', () => {
-      render(<ActivityCard activity={baseActivity} />);
-      expect(screen.getByText('Taller')).toBeInTheDocument();
+  describe('label temporal (overlay izquierdo)', () => {
+    it('NO muestra label cuando no hay startDate', () => {
+      render(<ActivityCard activity={{ ...baseActivity, startDate: null }} />);
+      // No debe aparecer ningún label de fecha
+      expect(screen.queryByText(/^Hoy/)).not.toBeInTheDocument();
+      expect(screen.queryByText('Mañana')).not.toBeInTheDocument();
     });
 
-    it('muestra "Recurrente" para RECURRING', () => {
-      render(<ActivityCard activity={{ ...baseActivity, type: 'RECURRING' }} />);
-      expect(screen.getByText('Recurrente')).toBeInTheDocument();
+    it('muestra "Hoy" cuando startDate es medianoche Colombia de hoy', () => {
+      // Medianoche COT = 05:00 UTC del mismo día Colombia
+      const now = new Date();
+      const COL_OFFSET_MS = 5 * 60 * 60 * 1000;
+      const nowCOL = new Date(now.getTime() - COL_OFFSET_MS);
+      const midnightCOT = new Date(
+        Date.UTC(nowCOL.getUTCFullYear(), nowCOL.getUTCMonth(), nowCOL.getUTCDate()) + COL_OFFSET_MS
+      );
+      render(<ActivityCard activity={{ ...baseActivity, startDate: midnightCOT.toISOString() }} />);
+      expect(screen.getByText('Hoy')).toBeInTheDocument();
     });
 
-    it('muestra "Campamento" para CAMP', () => {
-      render(<ActivityCard activity={{ ...baseActivity, type: 'CAMP' }} />);
-      expect(screen.getByText('Campamento')).toBeInTheDocument();
+    it('muestra "Hoy · X PM" cuando startDate es hoy con hora', () => {
+      const COL_OFFSET_MS = 5 * 60 * 60 * 1000;
+      const now = new Date();
+      const nowCOL = new Date(now.getTime() - COL_OFFSET_MS);
+      // Fija la hora a las 3 PM COT = 20:00 UTC
+      const startCOT = new Date(
+        Date.UTC(nowCOL.getUTCFullYear(), nowCOL.getUTCMonth(), nowCOL.getUTCDate(), 20, 0, 0)
+      );
+      render(<ActivityCard activity={{ ...baseActivity, startDate: startCOT.toISOString() }} />);
+      expect(screen.getByText(/^Hoy · /)).toBeInTheDocument();
+    });
+
+    it('muestra "Mañana" cuando startDate es mañana', () => {
+      const COL_OFFSET_MS = 5 * 60 * 60 * 1000;
+      const now = new Date();
+      const nowCOL = new Date(now.getTime() - COL_OFFSET_MS);
+      const tomorrowCOT = new Date(
+        Date.UTC(nowCOL.getUTCFullYear(), nowCOL.getUTCMonth(), nowCOL.getUTCDate() + 1) + COL_OFFSET_MS
+      );
+      render(<ActivityCard activity={{ ...baseActivity, startDate: tomorrowCOT.toISOString() }} />);
+      expect(screen.getByText('Mañana')).toBeInTheDocument();
+    });
+
+    it('muestra label de día para eventos dentro de la semana (ej. "Vie 16")', () => {
+      const COL_OFFSET_MS = 5 * 60 * 60 * 1000;
+      const now = new Date();
+      const nowCOL = new Date(now.getTime() - COL_OFFSET_MS);
+      // 4 días en el futuro
+      const futureCOT = new Date(
+        Date.UTC(nowCOL.getUTCFullYear(), nowCOL.getUTCMonth(), nowCOL.getUTCDate() + 4) + COL_OFFSET_MS
+      );
+      // Sólo verificamos que aparece algún label (el día exacto depende del día actual)
+      render(<ActivityCard activity={{ ...baseActivity, startDate: futureCOT.toISOString() }} />);
+      // Debe mostrar algún label temporal corto (no vacío)
+      const label = screen.queryByText(/^(Hoy|Mañana|Este fin|Lun|Mar|Mié|Jue|Vie|Sáb|Dom)\b/);
+      expect(label).toBeInTheDocument();
+    });
+
+    it('muestra "Este fin de semana" cuando startDate es sábado dentro de 7 días', () => {
+      const COL_OFFSET_MS = 5 * 60 * 60 * 1000;
+      // Construimos un sábado en el futuro próximo (dentro de 7 días)
+      const now = new Date();
+      const nowCOL = new Date(now.getTime() - COL_OFFSET_MS);
+      const dow = nowCOL.getUTCDay();
+      // Días hasta el próximo sábado (si hoy es sáb, avanzamos 7 días para el siguiente)
+      const toNextSat = dow === 6 ? 7 : (6 - dow) % 7 || 7;
+      if (toNextSat > 6) {
+        // Sábado muy lejano — skip this specific check
+        return;
+      }
+      const satCOT = new Date(
+        Date.UTC(nowCOL.getUTCFullYear(), nowCOL.getUTCMonth(), nowCOL.getUTCDate() + toNextSat) + COL_OFFSET_MS
+      );
+      render(<ActivityCard activity={{ ...baseActivity, startDate: satCOT.toISOString() }} />);
+      expect(screen.getByText('Este fin de semana')).toBeInTheDocument();
+    });
+
+    it('muestra rango "D1–D2 Mes" para eventos multi-día del mismo mes', () => {
+      // Fecha futura > 7 días, con endDate
+      const futureStart = new Date('2030-08-18T05:00:00Z'); // 18 ago 2030 medianoche COT
+      const futureEnd   = new Date('2030-08-20T05:00:00Z'); // 20 ago 2030
+      render(<ActivityCard activity={{ ...baseActivity, startDate: futureStart.toISOString(), endDate: futureEnd.toISOString() }} />);
+      expect(screen.getByText('18–20 Ago')).toBeInTheDocument();
+    });
+
+    it('muestra "D Mes" para eventos futuros (> 7 días, sin rango)', () => {
+      const futureDate = new Date('2030-09-05T05:00:00Z'); // 5 sep 2030 medianoche COT
+      render(<ActivityCard activity={{ ...baseActivity, startDate: futureDate.toISOString() }} />);
+      expect(screen.getByText('5 Sep')).toBeInTheDocument();
     });
   });
 
-  describe('badge de precio', () => {
+  describe('badge derecho (Gratis | Destacado)', () => {
     it('muestra "Gratis" cuando price=0', () => {
       render(<ActivityCard activity={baseActivity} />);
       expect(screen.getByText('Gratis')).toBeInTheDocument();
     });
 
-    it('NO muestra badge de precio cuando price=null (No disponible)', () => {
-      render(<ActivityCard activity={{ ...baseActivity, price: null }} />);
-      expect(screen.queryByText('No disponible')).not.toBeInTheDocument();
+    it('muestra "Gratis" cuando pricePeriod=FREE', () => {
+      render(<ActivityCard activity={{ ...baseActivity, price: null, pricePeriod: 'FREE' }} />);
+      expect(screen.getByText('Gratis')).toBeInTheDocument();
     });
 
-    it('muestra precio formateado cuando tiene valor', () => {
-      render(<ActivityCard activity={{ ...baseActivity, price: 50000, pricePeriod: 'MONTHLY' }} />);
-      expect(screen.getByText(/50\.000|50,000/)).toBeInTheDocument();
+    it('muestra "Destacado" cuando actividad multi-fuente y no es gratis', () => {
+      render(<ActivityCard activity={{ ...baseActivity, price: 50000, pricePeriod: 'MONTHLY', duplicatesCount: 2 }} />);
+      expect(screen.getByText(/Destacado/i)).toBeInTheDocument();
+    });
+
+    it('Gratis tiene prioridad sobre Destacado', () => {
+      render(<ActivityCard activity={{ ...baseActivity, price: 0, pricePeriod: 'FREE', duplicatesCount: 3 }} />);
+      expect(screen.getByText('Gratis')).toBeInTheDocument();
+      expect(screen.queryByText(/Destacado/i)).not.toBeInTheDocument();
+    });
+
+    it('NO muestra badge derecho cuando es de pago y no es destacado', () => {
+      render(<ActivityCard activity={{ ...baseActivity, price: 50000, pricePeriod: 'MONTHLY', duplicatesCount: 0 }} />);
+      expect(screen.queryByText('Gratis')).not.toBeInTheDocument();
+      expect(screen.queryByText(/Destacado/i)).not.toBeInTheDocument();
     });
   });
 
@@ -159,44 +247,9 @@ describe('ActivityCard', () => {
     });
   });
 
-  describe('badge Nuevo', () => {
-    it('muestra "Nuevo" cuando createdAt < 7 días y status=ACTIVE', () => {
-      render(<ActivityCard activity={baseActivity} />);
-      expect(screen.getByText(/Nuevo/i)).toBeInTheDocument();
-    });
-
-    it('NO muestra "Nuevo" cuando createdAt > 7 días', () => {
-      const oldActivity = {
-        ...baseActivity,
-        createdAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
-      };
-      render(<ActivityCard activity={oldActivity} />);
-      expect(screen.queryByText(/Nuevo/i)).not.toBeInTheDocument();
-    });
-
-    it('NO muestra "Nuevo" cuando status=EXPIRED aunque sea reciente', () => {
-      const expiredNew = { ...baseActivity, status: 'EXPIRED' };
-      render(<ActivityCard activity={expiredNew} />);
-      expect(screen.queryByText(/🆕 Nuevo/i)).not.toBeInTheDocument();
-    });
-
-    it('muestra "Nuevo" exactamente en el límite de 7 días (< threshold)', () => {
-      const borderActivity = {
-        ...baseActivity,
-        // 6 días y 23 horas → dentro del umbral
-        createdAt: new Date(Date.now() - (7 * 24 * 60 * 60 * 1000 - 3600_000)),
-      };
-      render(<ActivityCard activity={borderActivity} />);
-      expect(screen.getByText(/Nuevo/i)).toBeInTheDocument();
-    });
-  });
-
   describe('imagen', () => {
     it('muestra emoji cuando no hay imageUrl', () => {
       const { container } = render(<ActivityCard activity={baseActivity} />);
-      // Sin imagen, se muestra un span con emoji y gradiente en el strip
-      // Nota: jsdom no puede parsear clases Tailwind con valores arbitrarios [var(...)],
-      // por eso usamos las clases base text-4xl y select-none que son selectores CSS válidos
       const emojiSpan = container.querySelector('span.text-4xl.select-none');
       expect(emojiSpan).toBeInTheDocument();
     });
@@ -207,6 +260,27 @@ describe('ActivityCard', () => {
       expect(img).toBeInTheDocument();
       // next/image transforma la URL a /_next/image?url=... — verificamos que contiene el dominio original
       expect(img).toHaveAttribute('src', expect.stringContaining('example.com'));
+    });
+  });
+
+  describe('badges eliminados (regresión)', () => {
+    it('NO muestra "Verificado" como badge de overlay', () => {
+      render(<ActivityCard activity={{ ...baseActivity, sourceDomain: 'idartes.gov.co' }} />);
+      // El proveedor verificado muestra "✓" en el footer, NO como badge de overlay
+      expect(screen.queryByText('✓ Verificado')).not.toBeInTheDocument();
+    });
+
+    it('NO muestra "Nuevo" aunque la actividad sea reciente', () => {
+      render(<ActivityCard activity={{ ...baseActivity, createdAt: new Date() }} />);
+      expect(screen.queryByText(/🆕 Nuevo/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/\bNuevo\b/i)).not.toBeInTheDocument();
+    });
+
+    it('NO muestra badge de tipo "Recurrente" ni "Única vez"', () => {
+      const { rerender } = render(<ActivityCard activity={{ ...baseActivity, type: 'RECURRING' }} />);
+      expect(screen.queryByText('Recurrente')).not.toBeInTheDocument();
+      rerender(<ActivityCard activity={{ ...baseActivity, type: 'ONE_TIME' }} />);
+      expect(screen.queryByText('Única vez')).not.toBeInTheDocument();
     });
   });
 });

@@ -1,7 +1,15 @@
 "use client";
 
 // =============================================================================
-// ActivityCard — tarjeta de actividad para el grid de /actividades
+// ActivityCard — tarjeta de actividad para el grid de /actividades y Home
+// =============================================================================
+//
+// JERARQUÍA VISUAL (actualizada S68):
+//   Overlay izquierdo  → label temporal contextual (Hoy · 3 PM, Mañana, Vie 16…)
+//   Overlay derecho    → Gratis | ⭐ Destacado  (máximo 1, máxima señal editorial)
+//   Footer             → audiencia + ubicación + proveedor + favorito
+//
+// Eliminado: ✓ Verificado, 🆕 Nuevo, badges de tipo (Recurrente, Única vez, Taller).
 // =============================================================================
 
 import Image from 'next/image';
@@ -14,9 +22,9 @@ import { normalizePrice } from '@/lib/decimal';
 import { highlightText } from '@/lib/highlight';
 import { FeedImpressionTracker } from '@/components/analytics/FeedImpressionTracker';
 import { getEditorialAudience, getAudienceEmoji } from '@/lib/audience-utils';
-import { VERIFIED_SOURCES } from '@/config/editorial';
+import { getEditorialDateLabel } from '@/lib/date-label-utils';
 
-// Tipo local inferido desde lo que devuelve listActivities.
+// Tipo local inferido desde lo que devuelve serializeActivity().
 // En producción puede llegar como number, string o Decimal serializado.
 type PrismaPrice = number | string | { toNumber?: () => number; valueOf?: () => unknown } | null;
 
@@ -39,6 +47,12 @@ interface Activity {
   _count?: { views: number };
   /** Acepta Date (Prisma) o ISO string (serializado vía serializeActivity) */
   createdAt: Date | string;
+  /** ISO string o null — para label temporal */
+  startDate?: string | Date | null;
+  /** ISO string o null — para rango multi-día */
+  endDate?: string | Date | null;
+  /** schedule JSON { days, start, end } para recurrentes sin startDate */
+  schedule?: Record<string, unknown> | unknown | null;
   provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
   location: {
     name: string;
@@ -54,69 +68,46 @@ interface ActivityCardProps {
   isFavorited?: boolean;
   /**
    * compact=true → vista simplificada para el home:
-   * sin badge de tipo, sin categorías, sin descripción,
-   * título más prominente, footer reducido a ubicación + favorito
+   * sin categorías, sin descripción, título más prominente,
+   * footer reducido a ubicación + favorito
    */
   compact?: boolean;
   /** Término de búsqueda activo — se resaltan coincidencias en título y descripción */
   searchQuery?: string;
 }
 
-
-
-function formatPrice(price: PrismaPrice, currency: string, period: string | null): string {
-  const numPrice = normalizePrice(price);
-  if (numPrice === null) return 'No disponible';
-  if (numPrice === 0 || period === 'FREE') return 'Gratis';
-  const formatted = new Intl.NumberFormat('es-CO', { style: 'currency', currency, minimumFractionDigits: 0 }).format(numPrice);
-  const periodLabel: Record<string, string> = {
-    PER_SESSION: '/sesión',
-    MONTHLY: '/mes',
-    TOTAL: '',
-    FREE: '',
-  };
-  return `${formatted}${period ? (periodLabel[period] ?? '') : ''}`;
-}
-
-const TYPE_LABELS: Record<string, string> = {
-  RECURRING: 'Recurrente',
-  ONE_TIME: 'Única vez',
-  CAMP: 'Campamento',
-  WORKSHOP: 'Taller',
-};
-
-const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000; // 7 días en ms
-
 export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '' }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
-  
+
   const editorialAudience = getEditorialAudience(activity.ageMin, activity.ageMax, activity.audience);
   const audienceEmoji = getAudienceEmoji(editorialAudience);
-  
-  const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
+
   const locationLabel = activity.location?.neighborhood ?? activity.location?.city?.name ?? '';
-  // eslint-disable-next-line react-hooks/purity -- Date.now() aquí es seguro: badge "Nuevo" tolera staleness entre renders
-  const nowMs = Date.now();
-  const isNew = activity.status !== 'EXPIRED'
-    && nowMs - new Date(activity.createdAt).getTime() < NEW_THRESHOLD_MS;
 
-  // ── Product Trust Signals ──
+  // ── Señales editoriales ──────────────────────────────────────────────────────
+  const numPrice = normalizePrice(activity.price);
+  const isGratis = numPrice === 0 || activity.pricePeriod === 'FREE';
+  /** Multi-fuente = señal de relevancia cruzada */
   const isFeatured = (activity.duplicatesCount ?? 0) >= 1;
-  const isPopular = (activity._count?.views ?? 0) >= 10;
-  const isVerifiedSource = VERIFIED_SOURCES.some(d => activity.sourceDomain?.endsWith(d));
 
-  // Resolver visibilidad de overlays prioritarios (Permitir hasta 2)
-  const shouldShowFeatured = isFeatured;
-  const shouldShowVerified = isVerifiedSource;
-  // Popular solo se muestra si no hay otros badges para no saturar
-  const shouldShowPopular = isPopular && !shouldShowFeatured && !shouldShowVerified;
+  /** Badge derecho: Gratis tiene prioridad; Destacado aparece si no es gratis */
+  const rightBadge: 'gratis' | 'destacado' | null =
+    isGratis ? 'gratis' : isFeatured ? 'destacado' : null;
+
+  /** Label temporal: "Hoy", "Mañana", "Vie 16", "Este fin de semana", etc. */
+  const dateLabel = getEditorialDateLabel({
+    startDate: activity.startDate,
+    endDate:   activity.endDate,
+    schedule:  activity.schedule,
+    type:      activity.type,
+  });
 
   const cardContent = (
     <div className='group flex flex-col rounded-2xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] shadow-[var(--hp-shadow-md)] transition-all duration-200 hover:shadow-[var(--hp-shadow-md)] hover:-translate-y-0.5 overflow-hidden h-full'>
 
-      {/* ── Strip visual ─────────────────────────────────────────────── */}
+      {/* ── Strip visual ─────────────────────────────────────────────────────── */}
       <div
         className={clsx(
           'relative flex items-center justify-center overflow-hidden',
@@ -137,65 +128,41 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           <span className="text-4xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>
         )}
 
-        {/* Badge tipo — oculto en compact */}
-        {!compact && !shouldShowFeatured && !shouldShowVerified && !shouldShowPopular && (
-          <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-medium text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-md)]'>
-            {TYPE_LABELS[activity.type] ?? activity.type}
+        {/* ── Overlay izquierdo: label temporal ── */}
+        {dateLabel && (
+          <span className='absolute top-1.5 left-2 rounded-full bg-[var(--hp-bg-surface)]/90 px-2 py-0.5 text-xs font-semibold text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-md)]'>
+            {dateLabel}
           </span>
         )}
 
-        {/* ── Badges de Producto (Max 2 permitidos) ── */}
-        <div className="absolute top-1.5 left-2 flex gap-1 items-start max-w-[80%] flex-wrap">
-          {shouldShowFeatured && (
-            <span className="rounded-full bg-warning-100 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[0_0_8px_rgba(251,191,36,0.5)] border border-warning-300">
-              ⭐ Destacado
-            </span>
-          )}
-          {shouldShowVerified && (
-            <span className='rounded-full bg-brand-100 px-2 py-0.5 text-xs font-bold text-brand-900 shadow-[var(--hp-shadow-md)] border border-brand-200'>
-              ✓ Verificado
-            </span>
-          )}
-          {shouldShowPopular && (
-            <span className='rounded-full bg-error-100 px-2 py-0.5 text-xs font-bold text-error-900 shadow-[var(--hp-shadow-md)] border border-error-200'>
-              🔥 Popular
-            </span>
-          )}
-        </div>
-
-        {/* Badge precio */}
-        {priceLabel !== 'No disponible' && (
-          <span className={clsx(
-            'absolute top-1.5 right-2 rounded-full px-2 py-0.5 text-xs font-semibold shadow-[var(--hp-shadow-md)]',
-            priceLabel === 'Gratis' ? 'bg-success-500 text-white' : 'bg-[var(--hp-bg-surface)]/90 text-[var(--hp-text-primary)]'
-          )}>
-            {priceLabel}
+        {/* ── Overlay derecho: Gratis | Destacado ── */}
+        {rightBadge === 'gratis' && (
+          <span className='absolute top-1.5 right-2 rounded-full bg-success-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-md)]'>
+            Gratis
+          </span>
+        )}
+        {rightBadge === 'destacado' && (
+          <span className='absolute top-1.5 right-2 rounded-full bg-warning-100 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[0_0_8px_rgba(251,191,36,0.5)] border border-warning-300'>
+            ⭐ Destacado
           </span>
         )}
 
-        {/* Badge expirada */}
+        {/* Badge expirada — siempre al centro-fondo */}
         {activity.status === 'EXPIRED' && (
           <span className='absolute bottom-1.5 left-0 right-0 mx-auto w-fit rounded-full bg-warning-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-md)]'>
             Verificar disponibilidad
           </span>
         )}
 
-        {/* Badge Destacado — proveedor premium puro (se quita si isFeatured manda arriba, para no sobrecargar) */}
-        {activity.provider?.isPremium && !shouldShowFeatured && (
+        {/* Badge Sponsor — edge case, proveedor premium */}
+        {activity.provider?.isPremium && (
           <span className='absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[var(--hp-shadow-md)]'>
             ⭐ Sponsor
           </span>
         )}
-
-        {/* Badge Nuevo — últimos 7 días */}
-        {isNew && !activity.provider?.isPremium && !shouldShowFeatured && !shouldShowVerified && (
-          <span className='absolute bottom-1.5 left-2 rounded-full bg-info-500 px-2 py-0.5 text-xs font-bold text-white shadow-[var(--hp-shadow-md)]'>
-            🆕 Nuevo
-          </span>
-        )}
       </div>
 
-      {/* ── Contenido ────────────────────────────────────────────────── */}
+      {/* ── Contenido ────────────────────────────────────────────────────────── */}
       <div className={clsx('flex flex-col p-4 flex-1', compact ? 'gap-3' : 'gap-2')}>
 
         {/* Categorías — ocultas en compact */}
@@ -229,13 +196,13 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           </p>
         )}
 
-        {/* ── Footer ──────────────────────────────────────────────────── */}
+        {/* ── Footer ──────────────────────────────────────────────────────────── */}
         <div className={clsx(
           'flex items-center mt-auto pt-2 border-t border-[var(--hp-border)]',
           compact ? 'justify-between' : 'flex-wrap gap-x-3 gap-y-1'
         )}>
 
-          {/* Vista completa: audience + age + location + provider */}
+          {/* Vista completa: audience + location + provider */}
           {!compact && (
             <>
               <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)] font-medium">
@@ -289,8 +256,8 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
   // La tarjeta siempre enlaza a la página de detalle interna (URL canónica)
   return (
     <FeedImpressionTracker activityId={activity.id}>
-      <a 
-        href={activityPath(activity.id, activity.title)} 
+      <a
+        href={activityPath(activity.id, activity.title)}
         className="block h-full"
         data-activity-target="true"
         data-activity-id={activity.id}
@@ -306,4 +273,3 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
     </FeedImpressionTracker>
   );
 }
-

@@ -124,11 +124,11 @@ describe('runDataPipeline — transformaciones en datos válidos', () => {
   });
 
   it('no duplica categorías si dos inputs mapean al mismo bucket', () => {
-    // 'arte' y 'artes' ambos → 'Arte y Creatividad'; 'pintura' → 'Pintura y Dibujo'
+    // 'arte' y 'artes' → 'Arte y Creatividad'; 'pintura' → 'Manualidades' (7 canónicas S68)
     const r = runDataPipeline({ ...base, categories: ['arte', 'artes', 'pintura'] });
     expect(r.valid).toBe(true);
     expect(r.data.categories.filter((c) => c === 'Arte y Creatividad')).toHaveLength(1);
-    expect(r.data.categories).toContain('Pintura y Dibujo');
+    expect(r.data.categories).toContain('Manualidades');
   });
 
   it('swapea minAge/maxAge cuando están invertidos (línea 76)', () => {

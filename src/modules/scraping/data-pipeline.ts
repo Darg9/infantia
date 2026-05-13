@@ -1,114 +1,113 @@
 import { ActivityNLPResult } from './types';
 
 // =============================================================================
-// CATEGORY STANDARDIZATION MAP
-// Mapea ruido natural inferido por LLM hacia buckets definidos
+// CATEGORY STANDARDIZATION MAP — 7 CANÓNICAS (actualizado S68)
+// Mapea el ruido inferido por el LLM directamente a las 7 categorías canónicas.
+// REGLA: NUNCA añadir una categoría nueva aquí — todo debe mapear a una de las 7.
 // =============================================================================
+const CANONICAL_CATEGORIES = [
+  'Música', 'Lectura', 'Ciencia y tec.',
+  'Naturaleza', 'Deportes', 'Teatro y danza', 'Manualidades',
+] as const;
+
 const CATEGORY_MAP: Record<string, string> = {
-  // ── Arte y Creatividad ──────────────────────────────────────────────────────
-  'arte': 'Arte y Creatividad', 'artes': 'Arte y Creatividad',
-  'arte y creatividad': 'Arte y Creatividad',
-  'artes audiovisuales': 'Arte y Creatividad', 'audiovisual': 'Arte y Creatividad', 'cine': 'Arte y Creatividad',
-  'fotografía': 'Arte y Creatividad', 'fotografia': 'Arte y Creatividad',
-  'comics': 'Arte y Creatividad', 'ilustracion': 'Arte y Creatividad', 'ilustración': 'Arte y Creatividad',
-  'escultura': 'Arte y Creatividad', 'modelado': 'Arte y Creatividad',
-  'talleres': 'Arte y Creatividad', 'taller': 'Arte y Creatividad', 'workshop': 'Arte y Creatividad',
-  // Lúdico — "Artes Lúdicas" en Idartes/SCRD: circo, magia, títeres, juegos creativos
-  'lúdico': 'Arte y Creatividad', 'ludico': 'Arte y Creatividad',
-  'artes lúdicas': 'Arte y Creatividad', 'artes ludicas': 'Arte y Creatividad',
-  'juegos': 'Arte y Creatividad', 'gamification': 'Arte y Creatividad', 'juegos de mesa': 'Arte y Creatividad',
-  'circo': 'Arte y Creatividad', 'magia': 'Arte y Creatividad', 'títeres': 'Arte y Creatividad', 'titeres': 'Arte y Creatividad',
-
-  // ── Manualidades y Pintura y Dibujo ────────────────────────────────────────
-  'manualidades': 'Manualidades',
-  'pintura': 'Pintura y Dibujo', 'dibujo': 'Pintura y Dibujo', 'pintura y dibujo': 'Pintura y Dibujo',
-
-  // ── Cerámica ────────────────────────────────────────────────────────────────
-  'cerámica': 'Cerámica', 'ceramica': 'Cerámica', 'barro': 'Cerámica',
-
-  // ── Cocina ──────────────────────────────────────────────────────────────────
-  'cocina': 'Cocina', 'gastronomia': 'Cocina', 'gastronomía': 'Cocina', 'reposteria': 'Cocina', 'repostería': 'Cocina',
-
-  // ── Danza ───────────────────────────────────────────────────────────────────
-  'danza': 'Danza', 'danza moderna': 'Danza Moderna', 'hip hop': 'Hip Hop', 'hip-hop': 'Hip Hop',
-  'danzas folclóricas': 'Danzas Folclóricas', 'danzas folcloricas': 'Danzas Folclóricas',
-  'danza folclórica': 'Danzas Folclóricas', 'danza folclorica': 'Danzas Folclóricas',
-  'folclor': 'Danzas Folclóricas', 'folclore': 'Danzas Folclóricas',
-  'ballet': 'Ballet',
-
-  // ── Teatro ──────────────────────────────────────────────────────────────────
-  'teatro': 'Teatro', 'eventos': 'Teatro', 'show': 'Teatro',
-  'espectaculo': 'Teatro', 'espectáculo': 'Teatro',
-  'charlas': 'General', 'charlas y debates': 'General', 'debate': 'General', 'conversatorio': 'General',
-  'conferencia': 'General', 'foro': 'General',
-
   // ── Música ──────────────────────────────────────────────────────────────────
-  'musica': 'Música', 'música': 'Música', 'concierto': 'Música', 'banda': 'Música',
-  'canto': 'Canto', 'coro': 'Canto', 'voz': 'Canto',
-  'guitarra': 'Guitarra', 'piano': 'Piano', 'violin': 'Violín', 'violín': 'Violín',
-  'bateria': 'Batería', 'batería': 'Batería',
+  'música': 'Música', 'musica': 'Música',
+  'concierto': 'Música', 'banda': 'Música', 'canto': 'Música', 'coro': 'Música',
+  'guitarra': 'Música', 'piano': 'Música', 'violin': 'Música', 'violín': 'Música',
+  'bateria': 'Música', 'batería': 'Música', 'voz': 'Música',
 
-  // ── Deportes ────────────────────────────────────────────────────────────────
-  'deporte': 'Deportes', 'deportes': 'Deportes',
-  'futbol': 'Fútbol', 'fútbol': 'Fútbol', 'soccer': 'Fútbol',
-  'baloncesto': 'Baloncesto', 'basquet': 'Baloncesto', 'básquet': 'Baloncesto',
-  'natacion': 'Natación', 'natación': 'Natación', 'natacion infantil': 'Natación',
-  'tenis': 'Tenis', 'padel': 'Tenis',
-  'gimnasia': 'Gimnasia', 'acrobacia': 'Gimnasia',
-  'patinaje': 'Patinaje', 'skate': 'Patinaje', 'rollerblade': 'Patinaje',
-  'karate': 'Artes Marciales', 'artes marciales': 'Artes Marciales',
-  'judo': 'Artes Marciales', 'taekwondo': 'Artes Marciales',
+  // ── Lectura ──────────────────────────────────────────────────────────────────
+  'lectura': 'Lectura', 'literatura': 'Lectura', 'cuentos': 'Lectura', 'cuento': 'Lectura',
+  'escritura': 'Lectura', 'redaccion': 'Lectura', 'redacción': 'Lectura',
+  'poesia': 'Lectura', 'poesía': 'Lectura',
+  'idiomas': 'Lectura', 'ingles': 'Lectura', 'inglés': 'Lectura', 'english': 'Lectura',
+  'frances': 'Lectura', 'francés': 'Lectura', 'french': 'Lectura',
+  'mandarin': 'Lectura', 'mandarín': 'Lectura', 'chino': 'Lectura',
+  'apoyo académico': 'Lectura', 'apoyo academico': 'Lectura',
+  'tutorías': 'Lectura', 'tutorias': 'Lectura', 'refuerzo escolar': 'Lectura',
+  'desarrollo personal': 'Lectura', 'habilidades sociales': 'Lectura',
+  'inteligencia emocional': 'Lectura', 'liderazgo': 'Lectura',
+  // conversatorios/charlas → Lectura (contenido cultural intelectual)
+  'conversatorio': 'Lectura', 'charlas': 'Lectura', 'debate': 'Lectura',
+  'conferencia': 'Lectura', 'foro': 'Lectura', 'charlas y debates': 'Lectura',
 
-  // ── Ciencias y Tecnología ───────────────────────────────────────────────────
-  'ciencia': 'Ciencias', 'ciencias': 'Ciencias', 'steam': 'Ciencias',
-  'experimentos': 'Experimentos', 'experimento': 'Experimentos', 'laboratorio': 'Experimentos',
-  'astronomia': 'Astronomía', 'astronomía': 'Astronomía', 'planetas': 'Astronomía', 'universo': 'Astronomía',
-  'tecnologia': 'Tecnología', 'tecnología': 'Tecnología',
-  'robotica': 'Robótica', 'robótica': 'Robótica', 'robots': 'Robótica',
-  'programacion': 'Programación', 'programación': 'Programación', 'coding': 'Programación',
-  'diseño digital': 'Diseño Digital', 'diseno digital': 'Diseño Digital',
+  // ── Ciencia y tec. ───────────────────────────────────────────────────────────
+  'ciencia': 'Ciencia y tec.', 'ciencias': 'Ciencia y tec.', 'steam': 'Ciencia y tec.',
+  'experimentos': 'Ciencia y tec.', 'experimento': 'Ciencia y tec.',
+  'astronomia': 'Ciencia y tec.', 'astronomía': 'Ciencia y tec.',
+  'planetas': 'Ciencia y tec.', 'universo': 'Ciencia y tec.', 'planetario': 'Ciencia y tec.',
+  'tecnologia': 'Ciencia y tec.', 'tecnología': 'Ciencia y tec.',
+  'robotica': 'Ciencia y tec.', 'robótica': 'Ciencia y tec.', 'robots': 'Ciencia y tec.',
+  'programacion': 'Ciencia y tec.', 'programación': 'Ciencia y tec.', 'coding': 'Ciencia y tec.',
+  'diseño digital': 'Ciencia y tec.', 'diseno digital': 'Ciencia y tec.',
+  'matematicas': 'Ciencia y tec.', 'matemáticas': 'Ciencia y tec.', 'calculo': 'Ciencia y tec.',
+  'ciencia y tec.': 'Ciencia y tec.', 'ciencia y tecnología': 'Ciencia y tec.',
 
-  // ── Naturaleza ──────────────────────────────────────────────────────────────
+  // ── Naturaleza ───────────────────────────────────────────────────────────────
   'naturaleza': 'Naturaleza', 'aire libre': 'Naturaleza', 'parque': 'Naturaleza',
   'ecologia': 'Naturaleza', 'ecología': 'Naturaleza', 'medio ambiente': 'Naturaleza',
   'jardineria': 'Naturaleza', 'jardinería': 'Naturaleza', 'huerta': 'Naturaleza',
+  'campamento': 'Naturaleza', 'campamentos': 'Naturaleza',
+  'campamentos de día': 'Naturaleza', 'campamentos de dia': 'Naturaleza',
+  'campamentos vacacionales': 'Naturaleza',
 
-  // ── Campamentos ─────────────────────────────────────────────────────────────
-  'campamento': 'Campamentos', 'campamentos': 'Campamentos',
-  'campamentos de día': 'Campamentos de Día', 'campamentos de dia': 'Campamentos de Día',
-  'campamentos vacacionales': 'Campamentos Vacacionales',
+  // ── Deportes ─────────────────────────────────────────────────────────────────
+  'deporte': 'Deportes', 'deportes': 'Deportes',
+  'futbol': 'Deportes', 'fútbol': 'Deportes', 'soccer': 'Deportes',
+  'baloncesto': 'Deportes', 'basquet': 'Deportes', 'básquet': 'Deportes',
+  'natacion': 'Deportes', 'natación': 'Deportes', 'natacion infantil': 'Deportes',
+  'tenis': 'Deportes', 'padel': 'Deportes',
+  'gimnasia': 'Deportes', 'acrobacia': 'Deportes',
+  'patinaje': 'Deportes', 'skate': 'Deportes', 'rollerblade': 'Deportes',
+  'karate': 'Deportes', 'artes marciales': 'Deportes',
+  'judo': 'Deportes', 'taekwondo': 'Deportes',
+  'yoga': 'Deportes', 'yoga infantil': 'Deportes',
+  'mindfulness': 'Deportes', 'meditacion': 'Deportes', 'meditación': 'Deportes',
+  'bienestar': 'Deportes', 'salud mental': 'Deportes',
 
-  // ── Idiomas ─────────────────────────────────────────────────────────────────
-  'idiomas': 'Idiomas', 'ingles': 'Inglés', 'inglés': 'Inglés', 'english': 'Inglés',
-  'frances': 'Francés', 'francés': 'Francés', 'french': 'Francés',
-  'mandarin': 'Mandarín', 'mandarín': 'Mandarín', 'chino': 'Mandarín',
+  // ── Teatro y danza ───────────────────────────────────────────────────────────
+  'teatro': 'Teatro y danza', 'teatro y danza': 'Teatro y danza',
+  'danza': 'Teatro y danza', 'danza moderna': 'Teatro y danza',
+  'hip hop': 'Teatro y danza', 'hip-hop': 'Teatro y danza',
+  'danzas folclóricas': 'Teatro y danza', 'danzas folcloricas': 'Teatro y danza',
+  'danza folclórica': 'Teatro y danza', 'danza folclorica': 'Teatro y danza',
+  'folclor': 'Teatro y danza', 'folclore': 'Teatro y danza',
+  'ballet': 'Teatro y danza',
+  'circo': 'Teatro y danza', 'títeres': 'Teatro y danza', 'titeres': 'Teatro y danza',
+  'show': 'Teatro y danza', 'espectaculo': 'Teatro y danza', 'espectáculo': 'Teatro y danza',
+  'eventos': 'Teatro y danza',
+  // Artes Lúdicas Idartes/SCRD: circo, magia, títeres
+  'lúdico': 'Teatro y danza', 'ludico': 'Teatro y danza',
+  'artes lúdicas': 'Teatro y danza', 'artes ludicas': 'Teatro y danza',
+  'magia': 'Teatro y danza',
 
-  // ── Lectura y Escritura ─────────────────────────────────────────────────────
-  'lectura': 'Lectura', 'literatura': 'Lectura', 'cuentos': 'Lectura', 'cuento': 'Lectura',
-  'escritura': 'Lectura', 'redaccion': 'Lectura', 'redacción': 'Lectura',
+  // ── Manualidades ─────────────────────────────────────────────────────────────
+  'manualidades': 'Manualidades',
+  'pintura': 'Manualidades', 'dibujo': 'Manualidades', 'pintura y dibujo': 'Manualidades',
+  'cerámica': 'Manualidades', 'ceramica': 'Manualidades', 'barro': 'Manualidades',
+  'cocina': 'Manualidades', 'gastronomia': 'Manualidades', 'gastronomía': 'Manualidades',
+  'reposteria': 'Manualidades', 'repostería': 'Manualidades',
+  'fotografía': 'Manualidades', 'fotografia': 'Manualidades',
+  'comics': 'Manualidades', 'ilustracion': 'Manualidades', 'ilustración': 'Manualidades',
+  'escultura': 'Manualidades', 'modelado': 'Manualidades',
 
-  // ── Desarrollo Personal ─────────────────────────────────────────────────────
-  'desarrollo personal': 'Desarrollo Personal',
-  'habilidades sociales': 'Desarrollo Personal', 'liderazgo': 'Desarrollo Personal',
-  'inteligencia emocional': 'Desarrollo Personal', 'autoestima': 'Desarrollo Personal',
-  'bienestar': 'Desarrollo Personal', 'salud mental': 'Desarrollo Personal',
-
-  // ── Mindfulness y Yoga ──────────────────────────────────────────────────────
-  'mindfulness': 'Mindfulness', 'meditacion': 'Mindfulness', 'meditación': 'Mindfulness',
-  'relajacion': 'Mindfulness', 'relajación': 'Mindfulness',
-  'yoga': 'Yoga Infantil', 'yoga infantil': 'Yoga Infantil',
-
-  // ── Apoyo Académico ─────────────────────────────────────────────────────────
-  'apoyo académico': 'Apoyo Académico', 'apoyo academico': 'Apoyo Académico',
-  'tutorías': 'Tutorías', 'tutorias': 'Tutorías', 'refuerzo escolar': 'Tutorías',
-  'matematicas': 'Matemáticas', 'matemáticas': 'Matemáticas', 'calculo': 'Matemáticas',
-
-  // ── Fallback ─────────────────────────────────────────────────────────────────
-  // 'general' explícito de Gemini → Arte y Creatividad (más útil que General vacío)
+  // ── Genéricos — Arte y Creatividad (contenedor temporal) ────────────────────
+  // Gemini devuelve categorías vagas → Arte y Creatividad como staging area.
+  // Estas actividades quedan en PENDING_REVIEW hasta asignación manual o
+  // reclasificación automática en el próximo ciclo de mantenimiento.
+  'arte': 'Arte y Creatividad', 'artes': 'Arte y Creatividad',
+  'arte y creatividad': 'Arte y Creatividad',
+  'artes audiovisuales': 'Arte y Creatividad', 'audiovisual': 'Arte y Creatividad',
+  'cine': 'Arte y Creatividad',
+  'talleres': 'Arte y Creatividad', 'taller': 'Arte y Creatividad', 'workshop': 'Arte y Creatividad',
+  'juegos': 'Arte y Creatividad', 'gamification': 'Arte y Creatividad', 'juegos de mesa': 'Arte y Creatividad',
   'general': 'Arte y Creatividad',
-  // Categorías sin bucket claro → General
-  'género': 'General', 'genero': 'General', 'comunidad': 'General', 'community': 'General',
-  'cultura': 'General', 'cultural': 'General',
+  // Sin bucket claro → Arte y Creatividad
+  'género': 'Arte y Creatividad', 'genero': 'Arte y Creatividad',
+  'comunidad': 'Arte y Creatividad', 'community': 'Arte y Creatividad',
+  'cultura': 'Arte y Creatividad', 'cultural': 'Arte y Creatividad',
+  'laboratorio': 'Arte y Creatividad',
 };
 
 function standardizeCategory(raw: string): string {

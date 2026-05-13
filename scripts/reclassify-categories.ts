@@ -110,8 +110,9 @@ const KW_RULES: KwRule[] = [
   {
     target: 'Manualidades',
     patterns: [
-      /\b(taller de (pintura|acuarela|dibujo|textil|grabado|arcilla|plastilina|bordado|tejido|cer[aá]mica|collage|m[aá]scaras|costuras|carpinteri|origami|repostería|fotografía))\b/i,
-      /\b(pintura\b|acuarela\b|dibujo\b|grabado\b|arcilla\b|plastilina\b|bordado\b|tejido\b|craft\b|m[aá]scaras\b|collage\b|costuras?\b|costurero|carpinteri|origami\b|repostería|alfarería|cartapesta\b|ilustraci[oó]n\b|fotografía\b)\b/i,
+      /\b(taller de (pintura|acuarela|dibujo|textil|grabado|arcilla|plastilina|bordado|tejido|cer[aá]mica|collage|m[aá]scaras|costuras|carpinteri|origami|repostería|fotografía|papel|mosaico))\b/i,
+      /\b(pintura\b|acuarela\b|dibujo\b|grabado\b|arcilla\b|plastilina\b|bordado\b|tejido\b|craft\b|m[aá]scaras\b|collage\b|costuras?\b|costurero|carpinteri|origami\b|repostería|alfarería|cartapesta\b|ilustraci[oó]n\b|fotografía\b|escultura\b|mosaico\b|papel.maché|paperm\w+)\b/i,
+      /\brecortar\b|\bpegar\b/i,  // "Recortar, pegar y componer" → Manualidades
     ],
   },
   {

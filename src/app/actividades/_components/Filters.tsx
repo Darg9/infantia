@@ -219,7 +219,7 @@ export default function Filters({
   const prevFiltersRef = useRef<{
     categoryId: string; cityId: string; price: string;
     ageMin: string; ageMax: string; type: string;
-    audience: string; sort: string;
+    audience: string; sort: string; dateRange: string;
   } | null>(null);
 
   useEffect(() => {
@@ -252,13 +252,16 @@ export default function Filters({
       } else if (sort !== prev.sort && sort !== 'relevance') {
         const sortLabel = SORT_OPTIONS.find(o => o.value === sort)?.label ?? sort;
         trackFilterApplied({ filterType: 'sort', filterValue: sortLabel, resultsCount: total, query: search || undefined, path: currentPath });
+      } else if (dateRange !== prev.dateRange && dateRange) {
+        const dateLabel = DATE_RANGE_LABELS[dateRange] ?? dateRange;
+        trackFilterApplied({ filterType: 'dateRange', filterValue: dateLabel, resultsCount: total, query: search || undefined, path: currentPath });
       }
     }
 
     // Actualizar referencia para la siguiente comparación
-    prevFiltersRef.current = { categoryId, cityId, price, ageMin, ageMax, type, audience, sort };
+    prevFiltersRef.current = { categoryId, cityId, price, ageMin, ageMax, type, audience, sort, dateRange };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, ageMin, ageMax, categoryId, cityId, price, sort, type, audience, total]);
+  }, [search, ageMin, ageMax, categoryId, cityId, price, sort, type, audience, dateRange, total]);
   // ↑ `total` en las deps es intencional: garantiza que el disparo usa el conteo post-SSR correcto.
 
   // Cerrar dropdown al hacer clic fuera

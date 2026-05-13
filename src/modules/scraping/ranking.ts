@@ -7,15 +7,26 @@ export type RankedCandidate = DiscoveredLink & {
 
 // Expresiones regulares para scoring (ligeras y deterministas)
 const DATE_RE = /\b(\d{1,2}\s*(de\s*)?(ene|feb|mar|abr|may|jun|jul|ago|sep|oct|nov|dic)[a-z]*|\d{1,2}\/\d{1,2}|hoy|mañana|sábado|domingo)\b/i;
-const EVENT_RE = /\b(taller|evento|feria|inscripci[oó]n|agenda|programaci[oó]n|funci[oó]n|concierto|exposici[oó]n|charla|conversatorio|festival)\b/i;
+
+// Vocabulario de evento — cultura institucional colombiana real:
+//   - Música:        concierto, festival, ópera
+//   - Artes escénicas: teatro, ballet, danza, función
+//   - Cine/audiovisual: cine, película, proyección
+//   - Artes visuales: exposición, muestra
+//   - Formación:     taller, charla, conversatorio
+//   - Infantil:      infantil (+3 pero vigilar falsos positivos en "Sala Infantil")
+//   - Agenda general: evento, feria, inscripción, agenda, programación
+const EVENT_RE = /\b(taller|evento|feria|inscripci[oó]n|agenda|programaci[oó]n|funci[oó]n|concierto|exposici[oó]n|charla|conversatorio|festival|ballet|danza|teatro|cine|pel[ií]cula|muestra|proyecci[oó]n|[oó]pera|infantil)\b/i;
+
 const TIME_RE = /\b(\d{1,2}:\d{2}|am|pm)\b/i;
 
 // Señales negativas: páginas estáticas / institucionales / legales
 const NEG_RE = /\b(permanente|siempre abierto|visítanos|quienes somos|contacto|noticias|directorio|convocatoria|licitaci[oó]n|empleo|pol[ií]tica|privacidad)\b/i;
 
 // Patrones de URL: rutas de evento (fuerte señal de actividad)
-// /planes-* cubre Alcaldía de Bogotá (bogota.gov.co/que-hacer/cultura/planes-* y /mi-ciudad/.../planes-*)
-const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad\/|\/planes-)/i;
+// /planes-*     → Alcaldía de Bogotá (bogota.gov.co/que-hacer/cultura/planes-*)
+// /pelicula*    → Cinemateca de Bogotá (cinematecadebogota.gov.co/node/peliculas/*)
+const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad\/|\/planes-|\/pelicula)/i;
 
 // Fecha en URL: /año/mes/ o /año-mes-día/ — señal de contenido con fecha específica
 const URL_DATE_RE = /\/\d{4}\/\d{2}(?:\/\d{2})?\/|\/\d{4}-\d{2}-\d{2}\//;

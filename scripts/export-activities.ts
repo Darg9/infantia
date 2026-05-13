@@ -1,16 +1,66 @@
-// export-activities.ts
-// Exporta TODAS las actividades históricas de HabitaPlan a un archivo Excel.
-// Uso: npx tsx scripts/export-activities.ts [--output=archivo.xlsx]
+// =============================================================================
+// export-activities.ts — Snapshot de salud sistémica de HabitaPlan
+// =============================================================================
+//
+// Genera un Excel con 5 hojas:
+//
+//   1. Actividades — una fila por actividad (todas: ACTIVE, PAUSED, EXPIRED…)
+//      Columnas clave:
+//        · Método ingesta   → canal de origen (WEB | INSTAGRAM | TELEGRAM | MANUAL)
+//        · Método parser    → cómo se extrajo el contenido:
+//                             Gemini   = extracción IA (pipeline V2, status resolved/missing)
+//                             Cheerio  = fallback HTML estructurado (status degraded)
+//                             pre-V2   = procesado antes del pipeline V2 (sin metadata temporal)
+//        · Tipo fuente      → sourceType del modelo (SCRAPED | MANUAL | …)
+//        · Completeness     → score 0–100 calculado con 6 señales (ver abajo)
+//        · Campos faltantes → lista textual de señales ausentes ("date, image, age")
+//        · Tiene fecha      → startDate IS NOT NULL
+//        · Tiene imagen     → imageUrl IS NOT NULL
+//        · Fallback Cheerio → equivale a Método parser = Cheerio
+//        · Verificada       → campo isVerified de la actividad
+//
+//   2. Resumen por fuente — total histórico + activas + tasa de publicación
+//
+//   3. URLs vistas (cache) — todo lo que pasó por el discovery (scraping_cache)
+//
+//   4. URLs rechazadas — gate/trust layer rejections (tabla url_rejections si existe)
+//
+//   5. Calidad por parser — avg completeness + % con fecha/imagen por Gemini/Cheerio/pre-V2
+//
+// ── Cálculo de Completeness ───────────────────────────────────────────────────
+//   Score = (señales presentes / 6) × 100
+//   Señales:
+//     1. date        → startDate IS NOT NULL
+//     2. image       → imageUrl IS NOT NULL
+//     3. age         → ageMin OR ageMax IS NOT NULL
+//     4. location    → locationId IS NOT NULL
+//     5. price       → price IS NOT NULL
+//     6. description → description.length > 150 chars
+//
+// ── Output ────────────────────────────────────────────────────────────────────
+//   Por defecto: habitaplan-actividades-YYYY-MM-DD.xlsx (relativo al cwd del proyecto)
+//   Configurable: --output=ruta/archivo.xlsx
+//
+// Uso:
+//   npx tsx scripts/export-activities.ts
+//   npx tsx scripts/export-activities.ts --output=exports/snapshot-mayo.xlsx
+//
+// =============================================================================
 
 import 'dotenv/config';
 import * as XLSX from 'xlsx';
 import path from 'path';
+import fs from 'fs';
 import { prisma } from '../src/lib/db';
 
 const outputArg = process.argv.find((a) => a.startsWith('--output='));
 const OUTPUT_FILE = outputArg
-  ? outputArg.replace('--output=', '')
+  ? path.resolve(process.cwd(), outputArg.replace('--output=', ''))
   : path.join(process.cwd(), `habitaplan-actividades-${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+// Crear directorio de destino si no existe
+const outputDir = path.dirname(OUTPUT_FILE);
+if (!fs.existsSync(outputDir)) fs.mkdirSync(outputDir, { recursive: true });
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,9 +88,52 @@ function formatSchedule(schedule: unknown): string {
 }
 
 function sourceMethod(sourceDomain: string | null, sourcePlatform: string | null): string {
-  if (sourcePlatform) return sourcePlatform;  // 'instagram', 'telegram', etc.
-  if (sourceDomain)   return 'web';
-  return 'manual';
+  if (sourcePlatform) return sourcePlatform.toUpperCase();  // 'INSTAGRAM', 'TELEGRAM', etc.
+  if (sourceDomain)   return 'WEB';
+  return 'MANUAL';
+}
+
+function parserMethod(meta: unknown): string {
+  if (!meta || typeof meta !== 'object') return 'pre-V2';
+  const m = meta as Record<string, unknown>;
+  const temporal = m['temporal'] as Record<string, unknown> | undefined;
+  if (!temporal) return 'pre-V2';
+  const status = temporal['status'];
+  if (status === 'degraded') return 'Cheerio';
+  if (status === 'resolved' || status === 'missing') return 'Gemini';
+  return 'pre-V2';
+}
+
+interface CompletenessResult {
+  score: number;           // 0–100
+  missingFields: string;   // "date, image, age" — vacío si completa
+}
+
+function completeness(a: {
+  startDate:   Date | null;
+  imageUrl:    string | null;
+  ageMin:      number | null;
+  ageMax:      number | null;
+  locationId:  string | null;
+  price:       unknown;
+  description: string;
+}): CompletenessResult {
+  const signals: Array<{ key: string; present: boolean }> = [
+    { key: 'date',        present: a.startDate !== null },
+    { key: 'image',       present: !!a.imageUrl },
+    { key: 'age',         present: a.ageMin !== null || a.ageMax !== null },
+    { key: 'location',    present: a.locationId !== null },
+    { key: 'price',       present: a.price !== null && a.price !== undefined },
+    { key: 'description', present: a.description.length > 150 },
+  ];
+
+  const presentCount = signals.filter(s => s.present).length;
+  const missing = signals.filter(s => !s.present).map(s => s.key);
+
+  return {
+    score:         Math.round((presentCount / signals.length) * 100),
+    missingFields: missing.join(', '),
+  };
 }
 
 function statusLabel(status: string): string {
@@ -91,6 +184,16 @@ async function main() {
       ? [a.location.name, a.location.address, a.location.neighborhood].filter(Boolean).join(', ')
       : '';
 
+    const comp = completeness({
+      startDate:   a.startDate,
+      imageUrl:    a.imageUrl,
+      ageMin:      a.ageMin,
+      ageMax:      a.ageMax,
+      locationId:  a.locationId,
+      price:       a.price,
+      description: a.description,
+    });
+
     return {
       'ID':              a.id,
       'Título':          a.title,
@@ -98,6 +201,14 @@ async function main() {
       'URL en HabitaPlan': `https://www.habitaplan.com/actividad/${a.id}`,
       'Fuente (dominio)': a.sourceDomain ?? '',
       'Método ingesta':  sourceMethod(a.sourceDomain, a.sourcePlatform),
+      'Método parser':   parserMethod(a.extractionMetadata),
+      'Tipo fuente':     a.sourceType ?? '',
+      'Completeness':    comp.score,
+      'Campos faltantes': comp.missingFields,
+      'Tiene fecha':     a.startDate !== null ? 'Sí' : 'No',
+      'Tiene imagen':    a.imageUrl ? 'Sí' : 'No',
+      'Fallback Cheerio': parserMethod(a.extractionMetadata) === 'Cheerio' ? 'Sí' : 'No',
+      'Verificada':      a.isVerified ? 'Sí' : 'No',
       'URL fuente':      a.sourceUrl ?? '',
       'Ciudad':          city,
       'Ubicación':       locationName,
@@ -126,7 +237,15 @@ async function main() {
     { wch: 18 }, // Estado
     { wch: 55 }, // URL HabitaPlan
     { wch: 30 }, // Fuente
-    { wch: 15 }, // Método
+    { wch: 15 }, // Método ingesta
+    { wch: 12 }, // Método parser
+    { wch: 12 }, // Tipo fuente
+    { wch: 14 }, // Completeness
+    { wch: 30 }, // Campos faltantes
+    { wch: 12 }, // Tiene fecha
+    { wch: 12 }, // Tiene imagen
+    { wch: 16 }, // Fallback Cheerio
+    { wch: 12 }, // Verificada
     { wch: 70 }, // URL fuente
     { wch: 15 }, // Ciudad
     { wch: 40 }, // Ubicación
@@ -200,6 +319,35 @@ async function main() {
   const ws4 = XLSX.utils.json_to_sheet(rejRows);
   ws4['!cols'] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 30 }, { wch: 10 }, { wch: 16 }];
   XLSX.utils.book_append_sheet(wb, ws4, 'URLs rechazadas');
+
+  // ── Hoja 5: Completeness por parser ──────────────────────────────────────────
+  const parserGroups: Record<string, number[]> = { Gemini: [], Cheerio: [], 'pre-V2': [] };
+  for (const row of rows) {
+    const p = row['Método parser'] as string;
+    const s = row['Completeness'] as number;
+    if (parserGroups[p]) parserGroups[p].push(s);
+    else parserGroups[p] = [s];
+  }
+  const avg = (arr: number[]) =>
+    arr.length > 0 ? Math.round(arr.reduce((a, b) => a + b, 0) / arr.length) : 0;
+
+  const qualityRows = Object.entries(parserGroups).map(([parser, scores]) => ({
+    'Parser':            parser,
+    'Total actividades': scores.length,
+    'Avg completeness':  avg(scores),
+    'Score mínimo':      scores.length > 0 ? Math.min(...scores) : 0,
+    'Score máximo':      scores.length > 0 ? Math.max(...scores) : 0,
+    'Con fecha (%)':     scores.length > 0
+      ? `${Math.round(rows.filter(r => r['Método parser'] === parser && r['Tiene fecha'] === 'Sí').length / scores.length * 100)}%`
+      : '0%',
+    'Con imagen (%)':    scores.length > 0
+      ? `${Math.round(rows.filter(r => r['Método parser'] === parser && r['Tiene imagen'] === 'Sí').length / scores.length * 100)}%`
+      : '0%',
+  }));
+
+  const ws5 = XLSX.utils.json_to_sheet(qualityRows);
+  ws5['!cols'] = [{ wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 14 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws5, 'Calidad por parser');
 
   XLSX.writeFile(wb, OUTPUT_FILE);
   console.log(`\n📊 Excel generado: ${OUTPUT_FILE}`);

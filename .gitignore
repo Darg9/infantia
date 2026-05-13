@@ -89,3 +89,8 @@ e2e/.auth/
 
 # ─── Documentos fundacionales (backup OneDrive — no van al repo de código) ───
 /Infantia_Claude/
+
+# Exports generados por scripts
+*.xlsx
+~.xlsx
+exports/

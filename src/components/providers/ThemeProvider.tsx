@@ -68,8 +68,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // color-scheme se actualiza automáticamente vía CSS (.dark { color-scheme: dark })
     document.documentElement.classList.toggle('dark', next === 'dark')
 
-    // 2. Persistir elección del usuario
+    // 2. Persistir elección del usuario (localStorage + cookie para SSR)
     localStorage.setItem('theme', next)
+    document.cookie = `hp-theme=${next}; path=/; max-age=31536000; SameSite=Lax`
 
     // 3. Actualizar estado React → re-render del toggle
     setTheme(next)

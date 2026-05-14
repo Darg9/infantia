@@ -42,6 +42,13 @@ const ALL_SOURCES: Source[] = [
   { name: 'Sec. Cultura',      channel: 'web', url: 'https://culturarecreacionydeporte.gov.co', cityName: 'Bogotá' },
   { name: 'Alcaldía de Bogotá',channel: 'web', url: 'https://bogota.gov.co/que-hacer/agenda-cultural', cityName: 'Bogotá', maxPages: 50 },
 
+  // ── Bogotá — Museos y Cultura ─────────────────────────────────────────────
+  { name: 'Maloka',            channel: 'web', url: 'https://maloka.org',                      cityName: 'Bogotá' },
+  { name: 'Filarmónica Bogotá',channel: 'web', url: 'https://filarmonica.gov.co',              cityName: 'Bogotá' },
+
+  // ── Bogotá — Cajas de compensación ────────────────────────────────────────
+  { name: 'Compensar',         channel: 'web', url: 'https://www.compensar.com/recreacion-y-cultura/', cityName: 'Bogotá' },
+
   // ── Medellín Institucionales ───────────────────────────────────────────────
   { name: 'Parque Explora',    channel: 'web', url: 'https://parqueexplora.org',               cityName: 'Medellín' },
 

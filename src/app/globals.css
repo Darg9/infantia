@@ -180,6 +180,14 @@
   transition: none !important;
 }
 
+/* html recibe el mismo fondo que body. Sin esto el navegador pinta 'html'
+   en blanco durante el tiempo entre parsing y carga de CSS → flash visible.
+   El script anti-flash en layout.tsx setea también backgroundColor inline
+   para cubrir el caso en que CSS aún no haya cargado. */
+html {
+  background-color: var(--hp-bg-page);
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

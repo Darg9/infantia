@@ -96,8 +96,13 @@ export default function RootLayout({
                   : (systemDark ? 'dark' : 'light');
                 if (theme === 'dark') {
                   d.classList.add('dark');
+                  // Aplicar background directo en html ANTES de que cargue el CSS.
+                  // Sin esto, 'html' queda blanco (default del navegador) hasta
+                  // que el stylesheet se aplica \u2014 causa el flash visible.
+                  d.style.backgroundColor = '#0b1220';
                 } else {
                   d.classList.remove('dark');
+                  d.style.backgroundColor = '#f8fafc';
                 }
                 // rAF: se alinea con el pr\u00f3ximo paint, no con el event loop
                 requestAnimationFrame(function() {

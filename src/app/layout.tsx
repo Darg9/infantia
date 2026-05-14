@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Montserrat } from "next/font/google";
 // eslint-disable-next-line no-restricted-imports
 import "./globals.css";
-import { cookies } from "next/headers";
 import { AuthProvider } from "@/components/providers/AuthProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Header } from "@/components/layout/Header";
@@ -72,20 +71,13 @@ import AnalyticsTracker from "@/components/AnalyticsTracker";
 import IntentResolver from "@/components/IntentResolver";
 import { TimeToFirstActivityTracker } from "@/components/analytics/TimeToFirstActivityTracker";
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Leer cookie de tema para evitar FOUC en usuarios que ya eligieron tema.
-  // El servidor conoce la preferencia → renderiza <html class="dark"> desde el primer byte.
-  const cookieStore = await cookies()
-  const themeCookie = cookieStore.get('hp-theme')?.value
-  const serverTheme = themeCookie === 'dark' || themeCookie === 'light' ? themeCookie : null
-  const htmlClass = serverTheme === 'dark' ? 'dark' : serverTheme === 'light' ? '' : undefined
-
   return (
-    <html lang="es" className={htmlClass} suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning>
       {/* ── Script anti-flash: se ejecuta de forma síncrona antes del render ──
           Prioridad: localStorage.theme > prefers-color-scheme del sistema.
           El fallback hardened evita valores corruptos en localStorage. */}
@@ -112,11 +104,6 @@ export default async function RootLayout({
                   d.classList.add('dark');
                 } else {
                   d.classList.remove('dark');
-                }
-                // Persistir en cookie para que el servidor conozca el tema en el próximo request.
-                // Solo si la cookie no existe aún (evitar sobrescribir en cada visita).
-                if (!document.cookie.match(/hp-theme=/)) {
-                  document.cookie = 'hp-theme=' + theme + '; path=/; max-age=31536000; SameSite=Lax';
                 }
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');

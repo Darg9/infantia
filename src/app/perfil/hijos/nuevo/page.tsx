@@ -6,6 +6,7 @@ import { useBeforeUnload } from '@/hooks/useBeforeUnload';
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/components/ui/toast'
 
 const CONSENT_TEXT =
   'Soy el padre, madre o tutor legal de este menor y autorizo el tratamiento de sus datos personales ' +
@@ -31,6 +32,7 @@ const SELECT_CLS =
 
 export default function NuevoHijoPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [name, setName] = useState('')
   const [birthDate, setBirthDate] = useState('')
   const [gender, setGender] = useState('')
@@ -77,6 +79,7 @@ export default function NuevoHijoPage() {
       return
     }
 
+    toast.success(`Perfil de ${name.trim()} creado`)
     router.push('/perfil/hijos')
     router.refresh()
   }

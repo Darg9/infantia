@@ -4,6 +4,7 @@ import { buttonVariants } from '@/components/ui/button';
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useToast } from '@/components/ui/toast'
 
 const INPUT_CLS =
   'w-full px-3 py-2 border border-[var(--hp-border-subtle)] rounded-lg text-sm ' +
@@ -28,6 +29,7 @@ interface Props {
 
 export function EditChildForm({ childId, initialName, initialBirthDate, initialGender }: Props) {
   const router = useRouter()
+  const { toast } = useToast()
   const [name, setName] = useState(initialName)
   const [birthDate, setBirthDate] = useState(initialBirthDate)
   const [gender, setGender] = useState(initialGender)
@@ -68,6 +70,7 @@ export function EditChildForm({ childId, initialName, initialBirthDate, initialG
       return
     }
 
+    toast.success('Cambios guardados')
     router.push('/perfil/hijos')
     router.refresh()
   }

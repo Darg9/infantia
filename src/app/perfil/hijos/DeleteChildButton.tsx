@@ -2,15 +2,22 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useToast } from '@/components/ui/toast'
 
 export function DeleteChildButton({ id, name }: { id: string; name: string }) {
   const [confirming, setConfirming] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
+  const { toast } = useToast()
 
   async function handleConfirm() {
     setLoading(true)
-    await fetch(`/api/children/${id}`, { method: 'DELETE' })
+    const res = await fetch(`/api/children/${id}`, { method: 'DELETE' })
+    if (res.ok) {
+      toast.success(`Perfil de ${name} eliminado`)
+    } else {
+      toast.error('No se pudo eliminar el perfil')
+    }
     router.refresh()
     setLoading(false)
   }

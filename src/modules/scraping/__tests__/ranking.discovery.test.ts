@@ -16,7 +16,7 @@ import type { DiscoveredLink } from '../types';
 // =============================================================================
 
 function link(url: string, title = '', snippet = ''): DiscoveredLink {
-  return { url, title, snippet };
+  return { url, title, snippet, anchorText: '' };
 }
 
 // ── Grupo A: Cinemateca — score era 0, ahora ≥ 2 con /pelicula en URL_EVENT_RE ─

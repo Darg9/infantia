@@ -93,7 +93,8 @@ async function getUnpublished(): Promise<Row[]> {
 
   const activities = await prisma.activity.findMany({
     where: {
-      status: { in: statusList as Parameters<typeof prisma.activity.findMany>[0]['where']['status']['in'] },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      status: { in: statusList as any },
       ...(SOURCE_FILTER ? { sourceDomain: { contains: SOURCE_FILTER } } : {}),
       ...(since ? { createdAt: { gte: since } } : {}),
     },

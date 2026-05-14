@@ -22,6 +22,7 @@ import { ViewToggle } from './_components/ViewToggle';
 import { ACTIVITY_DISCLAIMER_SHORT } from '@/modules/legal/constants/legal-disclaimers';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { serializeActivity } from '@/lib/prisma-serialize';
+import { roundRobinByCategory } from '@/lib/diversity-utils';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -209,13 +210,20 @@ export default async function ActividadesPage({
       : undefined,
   };
 
+  // Diversidad page 1: pool extra para round-robin por categoría.
+  // Condiciones: solo primera página, sin filtro de categoría ni búsqueda activa.
+  // En páginas siguientes o con filtros específicos, el ranking puro es más útil.
+  const DIVERSITY_EXTRA = 12; // candidatos adicionales para el round-robin
+  const shouldDiversify = skip === 0 && !filters.categoryId && !filters.search;
+  const fetchSize = shouldDiversify ? PAGE_SIZE + DIVERSITY_EXTRA : PAGE_SIZE;
+
   // Cargar actividades, facets, sesión y categorías populares en paralelo
   let favoriteIds = new Set<string>();
 
-  const [{ activities, total }, facets, sessionUser, topCategories, selectedCategory, selectedCity] = await Promise.all([
+  const [{ activities: rawActivities, total }, facets, sessionUser, topCategories, selectedCategory, selectedCity] = await Promise.all([
     listActivities({
       skip,
-      pageSize: PAGE_SIZE,
+      pageSize: fetchSize,
       ...filters,
       sortBy,
     }),
@@ -236,6 +244,12 @@ export default async function ActividadesPage({
       ? prisma.city.findUnique({ where: { id: filters.cityId }, select: { name: true } })
       : Promise.resolve(null),
   ]);
+
+  // Aplicar round-robin solo en page 1 sin filtros de categoría/búsqueda.
+  // Respeta el score interno de cada grupo — no es shuffle, es reordenamiento suave.
+  const activities = shouldDiversify
+    ? roundRobinByCategory(rawActivities, PAGE_SIZE)
+    : rawActivities;
 
   // Si hay sesión, obtener los favoriteIds del usuario (query adicional pero inevitable)
   if (sessionUser) {

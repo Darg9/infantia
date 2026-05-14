@@ -8,20 +8,38 @@ export const CATEGORY_COLORS = [
 ] as const;
 
 // Gradientes por slug de categoría (para placeholder visual cuando no hay og:image)
+//
+// Paleta S72 — separación perceptual máxima entre categorías cercanas:
+//   Música   → violeta/índigo  (frío, profundo)
+//   Teatro   → magenta/fucsia  (cálido, dramático) ← antes también violeta: bug visual
+//   Ciencia  → azul/cian
+//   Arte     → coral/naranja
+//   Lectura  → ámbar/marrón
+//   Deportes → verde esmeralda
+//   Naturaleza → verde-teal (distinguible de Deportes por el teal)
+//   Manualidades → lima/amarillo
+//
+// Slugs: se mapean tanto los canónicos S68 (teatro-y-danza, ciencia-y-tec)
+// como los legacy (teatro, ciencias) para compatibilidad con datos existentes.
 const CATEGORY_GRADIENTS: Record<string, string> = {
-  'arte-y-creatividad':  'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)',
+  // ── Canónicos S68 ────────────────────────────────────────────────────────
+  'arte-y-creatividad':  'linear-gradient(135deg, #f97316 0%, #fbbf24 100%)', // coral→ámbar
+  'lectura':             'linear-gradient(135deg, #d97706 0%, #92400e 100%)', // ámbar→castaño
+  'musica':              'linear-gradient(135deg, #818cf8 0%, #4338ca 100%)', // índigo→violeta
+  'música':              'linear-gradient(135deg, #818cf8 0%, #4338ca 100%)', // alias con tilde
+  'teatro-y-danza':      'linear-gradient(135deg, #ec4899 0%, #9d174d 100%)', // fucsia→magenta oscuro
+  'ciencia-y-tec':       'linear-gradient(135deg, #06b6d4 0%, #1d4ed8 100%)', // cian→azul
+  'naturaleza':          'linear-gradient(135deg, #34d399 0%, #0f766e 100%)', // esmeralda→teal
+  'deportes':            'linear-gradient(135deg, #4ade80 0%, #15803d 100%)', // verde lima→verde
+  'manualidades':        'linear-gradient(135deg, #a3e635 0%, #ca8a04 100%)', // lima→dorado
+  // ── Legacy / aliases ─────────────────────────────────────────────────────
+  'teatro':              'linear-gradient(135deg, #ec4899 0%, #9d174d 100%)', // ← corregido: antes violeta
+  'ciencias':            'linear-gradient(135deg, #06b6d4 0%, #1d4ed8 100%)',
+  'tecnologia':          'linear-gradient(135deg, #06b6d4 0%, #1d4ed8 100%)',
+  'danza':               'linear-gradient(135deg, #f472b6 0%, #a21caf 100%)', // rosa→púrpura
   'artes-marciales':     'linear-gradient(135deg, #ef4444 0%, #7f1d1d 100%)',
-  'ciencias':            'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
   'cocina':              'linear-gradient(135deg, #fb923c 0%, #fde68a 100%)',
-  'danza':               'linear-gradient(135deg, #ec4899 0%, #a855f7 100%)',
-  'deportes':            'linear-gradient(135deg, #22c55e 0%, #15803d 100%)',
-  'lectura':             'linear-gradient(135deg, #d97706 0%, #92400e 100%)',
-  'manualidades':        'linear-gradient(135deg, #84cc16 0%, #eab308 100%)',
-  'musica':              'linear-gradient(135deg, #8b5cf6 0%, #4338ca 100%)',
-  'naturaleza':          'linear-gradient(135deg, #34d399 0%, #047857 100%)',
   'pintura-y-dibujo':    'linear-gradient(135deg, #f97316 0%, #db2777 100%)',
-  'teatro':              'linear-gradient(135deg, #a855f7 0%, #be123c 100%)',
-  'tecnologia':          'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
   'yoga-infantil':       'linear-gradient(135deg, #14b8a6 0%, #22c55e 100%)',
 };
 

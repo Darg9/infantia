@@ -72,7 +72,7 @@ export default async function HijosPage() {
                   <div>
                     <p className="font-medium text-[var(--hp-text-primary)]">{child.name}</p>
                     <p className="text-xs text-[var(--hp-text-muted)]">
-                      {age} {age === 1 ? 'ano' : 'anos'} ·{' '}
+                      {age} {age === 1 ? 'año' : 'años'} ·{' '}
                       {new Date(child.birthDate).toLocaleDateString('es-CO', {
                         day: 'numeric',
                         month: 'long',
@@ -81,7 +81,15 @@ export default async function HijosPage() {
                     </p>
                   </div>
                 </div>
-                <DeleteChildButton id={child.id} name={child.name} />
+                <div className="flex items-center gap-2 shrink-0">
+                  <Link
+                    href={`/perfil/hijos/${child.id}/editar`}
+                    className={buttonVariants({ variant: 'secondary', size: 'sm' })}
+                  >
+                    Editar
+                  </Link>
+                  <DeleteChildButton id={child.id} name={child.name} />
+                </div>
               </li>
             )
           })}

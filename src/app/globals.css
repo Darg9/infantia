@@ -188,6 +188,16 @@ html {
   background-color: var(--hp-bg-page);
 }
 
+/* Pre-paint dark mode: aplica ANTES de que JS ejecute (CSS es render-blocking).
+   Usa literal hex, no var() — las variables CSS dependen del cascade completo.
+   Cubre el caso system-dark + app-dark (mayoría) en hard reload.
+   El inline script de layout.tsx sigue manejando localStorage para overrides. */
+@media (prefers-color-scheme: dark) {
+  html {
+    background-color: #0b1220;
+  }
+}
+
 body {
   background: var(--color-background);
   color: var(--color-foreground);

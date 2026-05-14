@@ -20,6 +20,7 @@ import { getSession, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { extractActivityId, activityPath } from '@/lib/activity-url';
 import { SimilarActivities } from '@/components/SimilarActivities';
+import { SequentialNav } from '@/components/SequentialNav';
 import { ActivityDetailMap } from '@/components/ActivityDetailMap';
 import OutboundLink from '@/components/OutboundLink';
 import { buttonVariants } from '@/components/ui';
@@ -266,6 +267,9 @@ export default async function ActividadDetallePage({
           <span className="text-[var(--hp-text-secondary)] truncate max-w-[200px]">{activity.title}</span>
         </nav>
       </div>
+
+      {/* Navegación secuencial prev/next (solo si viene del listado) */}
+      <SequentialNav activityId={id} />
 
 
       <div className="mx-auto max-w-4xl px-4 py-4 flex flex-col gap-6">

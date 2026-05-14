@@ -22,7 +22,8 @@ import { ViewToggle } from './_components/ViewToggle';
 import { ACTIVITY_DISCLAIMER_SHORT } from '@/modules/legal/constants/legal-disclaimers';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { serializeActivity } from '@/lib/prisma-serialize';
-import { roundRobinByCategory } from '@/lib/diversity-utils';
+import { roundRobinByCategory } from '@/lib/diversity-utils'
+import { ActivityListTracker } from './_components/ActivityListTracker';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -275,6 +276,17 @@ export default async function ActividadesPage({
 
   const totalPages = Math.ceil(total / PAGE_SIZE);
 
+  // returnUrl para la navegación secuencial: preserva todos los filtros activos
+  // excepto 'view' (siempre volvemos a la vista lista) y valores vacíos.
+  const returnUrl = (() => {
+    const sp = new URLSearchParams();
+    for (const [k, v] of Object.entries(params) as [string, string | undefined][]) {
+      if (v && k !== 'view') sp.set(k, v);
+    }
+    const qs = sp.toString();
+    return `/actividades${qs ? `?${qs}` : ''}`;
+  })();
+
   return (
     <div className="min-h-screen bg-[var(--hp-bg-page)]">
 
@@ -364,16 +376,23 @@ export default async function ActividadesPage({
                 favoriteIds={favoriteIds}
               />
             ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {activities.map((activity) => (
-                  <ActivityCard
-                    key={activity.id}
-                    activity={serializeActivity(activity)}
-                    isFavorited={favoriteIds.has(activity.id)}
-                    searchQuery={filters.search ?? ''}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {activities.map((activity) => (
+                    <ActivityCard
+                      key={activity.id}
+                      activity={serializeActivity(activity)}
+                      isFavorited={favoriteIds.has(activity.id)}
+                      searchQuery={filters.search ?? ''}
+                    />
+                  ))}
+                </div>
+                {/* Guarda el orden del listado en sessionStorage para la nav secuencial */}
+                <ActivityListTracker
+                  items={activities.map((a) => ({ id: a.id, title: a.title }))}
+                  returnUrl={returnUrl}
+                />
+              </>
             )}
 
             {/* Paginación */}

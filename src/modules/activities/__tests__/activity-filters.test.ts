@@ -351,6 +351,92 @@ describe('buildActivityWhere — badDomains', () => {
 });
 
 // =============================================================================
+// Date Range — filtro temporal (S65 + fix S71)
+// =============================================================================
+describe('buildActivityWhere — dateRange', () => {
+  // ── today ──────────────────────────────────────────────────────────────────
+  describe("dateRange='today'", () => {
+    it('genera startDate.gte y startDate.lt', () => {
+      const where = buildActivityWhere({ dateRange: 'today' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      expect(dateClause).toBeDefined();
+      expect(dateClause.startDate.gte).toBeInstanceOf(Date);
+      expect(dateClause.startDate.lt).toBeInstanceOf(Date);
+    });
+
+    it('los límites son UTC midnight (T00:00:00Z) — no T05:00:00Z Colombia', () => {
+      // Fix S71: límites en UTC midnight para que fechas almacenadas como
+      // T00:00:00Z (Gemini date-only) no caigan en el día equivocado.
+      const where = buildActivityWhere({ dateRange: 'today' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      const gte: Date = dateClause.startDate.gte;
+      const lt: Date  = dateClause.startDate.lt;
+
+      expect(gte.getUTCHours()).toBe(0);
+      expect(gte.getUTCMinutes()).toBe(0);
+      expect(gte.getUTCSeconds()).toBe(0);
+      expect(lt.getUTCHours()).toBe(0);
+      expect(lt.getUTCMinutes()).toBe(0);
+      expect(lt.getUTCSeconds()).toBe(0);
+    });
+
+    it('la ventana es exactamente 24h (1 día)', () => {
+      const where = buildActivityWhere({ dateRange: 'today' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      const diff = dateClause.startDate.lt.getTime() - dateClause.startDate.gte.getTime();
+      expect(diff).toBe(24 * 60 * 60 * 1000); // 86_400_000 ms
+    });
+
+    it('UTC midnight de mañana (T00:00:00Z) NO queda dentro del rango de hoy', () => {
+      // Regresión: este era el bug — actividades del 14 may T00:00Z aparecían en "hoy"
+      const where = buildActivityWhere({ dateRange: 'today' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      const lt: Date = dateClause.startDate.lt; // = mañana T00:00:00Z
+
+      // Simular actividad almacenada como UTC midnight de mañana:
+      // lt es el límite superior (exclusive). Una actividad con startDate = lt
+      // NO debe estar en el rango (ya que la query es `lt: lt`, es decir < lt).
+      // Verificamos que lt coincide con UTC midnight de mañana.
+      const tomorrowMidnightUTC = new Date(dateClause.startDate.gte.getTime() + 24 * 60 * 60 * 1000);
+      expect(lt.toISOString()).toBe(tomorrowMidnightUTC.toISOString());
+    });
+
+    it('omite dateRange cuando exclude="dateRange"', () => {
+      const where = buildActivityWhere({ dateRange: 'today' }, 'dateRange');
+      const and = (where.AND as any[]) ?? [];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      expect(dateClause).toBeUndefined();
+    });
+  });
+
+  // ── week ───────────────────────────────────────────────────────────────────
+  describe("dateRange='week'", () => {
+    it('la ventana es exactamente 7 días', () => {
+      const where = buildActivityWhere({ dateRange: 'week' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      const diff = dateClause.startDate.lt.getTime() - dateClause.startDate.gte.getTime();
+      expect(diff).toBe(7 * 24 * 60 * 60 * 1000);
+    });
+  });
+
+  // ── weekend ─────────────────────────────────────────────────────────────────
+  describe("dateRange='weekend'", () => {
+    it('la ventana es 2 días (sáb + dom)', () => {
+      const where = buildActivityWhere({ dateRange: 'weekend' });
+      const and = where.AND as any[];
+      const dateClause = and.find((c) => c.startDate?.gte !== undefined);
+      const diff = dateClause.startDate.lt.getTime() - dateClause.startDate.gte.getTime();
+      expect(diff).toBe(2 * 24 * 60 * 60 * 1000);
+    });
+  });
+});
+
+// =============================================================================
 // Combinación de filtros — integridad del AND acumulado
 // =============================================================================
 describe('buildActivityWhere — combinación de filtros', () => {

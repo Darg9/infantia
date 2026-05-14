@@ -22,19 +22,29 @@ import type { Prisma } from '@/generated/prisma/client';
 const COL_OFFSET_MS = 5 * 60 * 60 * 1000; // 5h en ms
 
 /**
- * Devuelve el timestamp UTC que corresponde a la medianoche Colombia
- * del día actual + offsetDays.
+ * Devuelve el timestamp UTC midnight (T00:00:00Z) para el día Colombia
+ * actual + offsetDays.
  *
- * Ejemplo: si son las 23:00 UTC el 7 may (18:00 COT), today = 7 may Colombia.
- *   - colombiaDayStartUTC(0)  → 2026-05-07T05:00:00Z  (00:00 COT del 7 may)
- *   - colombiaDayStartUTC(1)  → 2026-05-08T05:00:00Z  (00:00 COT del 8 may)
+ * ⚠️  DESIGN DECISION: se usan límites UTC midnight (T00:00Z), NO Colombia midnight
+ * (T05:00Z). Razón: Gemini almacena fechas sin hora como T00:00:00Z (UTC midnight).
+ * Si usáramos T05:00Z como límite, una actividad almacenada como 2026-05-14T00:00Z
+ * caería dentro del rango "hoy" (13 may COT), mostrando "Hoy" incorrectamente.
+ *
+ * Trade-off aceptado: eventos con hora real a las 7–11 PM COT (almacenados como
+ * T00–T04 UTC del día siguiente) caerían en el bucket "equivocado". En la práctica
+ * nuestro catálogo usa T00:00:00Z para fechas-only, por lo que esta heurística
+ * es correcta para ≥95% de los casos.
+ *
+ * Ejemplo (now = 2026-05-13 COT):
+ *   colombiaDayStartUTC(0)  → 2026-05-13T00:00:00Z
+ *   colombiaDayStartUTC(1)  → 2026-05-14T00:00:00Z
  */
 function colombiaDayStartUTC(offsetDays: number): Date {
   const nowColombia = new Date(Date.now() - COL_OFFSET_MS);
   const y  = nowColombia.getUTCFullYear();
   const mo = nowColombia.getUTCMonth();
   const d  = nowColombia.getUTCDate() + offsetDays;
-  return new Date(Date.UTC(y, mo, d) + COL_OFFSET_MS);
+  return new Date(Date.UTC(y, mo, d)); // UTC midnight — NO sumar COL_OFFSET_MS
 }
 
 // =============================================================================

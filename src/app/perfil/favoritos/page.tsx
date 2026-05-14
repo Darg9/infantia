@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { requireAuth, getOrCreateDbUser } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
+import { serializeActivity, type SerializedActivity } from '@/lib/prisma-serialize';
 import { FavoriteButton } from '@/components/FavoriteButton';
 
 export const metadata: Metadata = {
@@ -47,6 +48,9 @@ export default async function FavoritosPage() {
           sourceDomain: true,
           duplicatesCount: true,
           createdAt: true,
+          startDate: true,
+          endDate: true,
+          schedule: true,
           provider: {
             select: { name: true, isVerified: true, isPremium: true },
           },
@@ -82,28 +86,7 @@ export default async function FavoritosPage() {
   type ActivityFav = {
     type: 'activity';
     favId: string;
-    item: {
-      id: string;
-      title: string;
-      description: string;
-      type: string;
-      status: string;
-      audience: string;
-      ageMin: number | null;
-      ageMax: number | null;
-      price: number | null;
-      priceCurrency: string;
-      pricePeriod: string | null;
-      imageUrl: string | null;
-      sourceUrl: string | null;
-      sourceDomain: string | null;
-      duplicatesCount: number;
-      createdAt: string; // ISO string — Date no es serializable
-      provider: { name: string; isVerified: boolean; isPremium: boolean } | null;
-      location: { name: string; neighborhood: string | null; city: { name: string } | null } | null;
-      categories: { category: { id: string; name: string; slug: string } }[];
-      _count: { views: number };
-    };
+    item: SerializedActivity; // serializeActivity maneja Date→ISO, Decimal→number
   };
 
   type PlaceFav = {
@@ -126,36 +109,8 @@ export default async function FavoritosPage() {
       mixedFavorites.push({
         type: 'activity',
         favId: f.id,
-        item: {
-          id: act.id,
-          title: act.title,
-          description: act.description,
-          type: act.type,
-          status: act.status,
-          audience: act.audience,
-          ageMin: act.ageMin,
-          ageMax: act.ageMax,
-          // Convertir Decimal a number explícitamente
-          price: act.price !== null && act.price !== undefined
-            ? (typeof (act.price as any).toNumber === 'function'
-                ? (act.price as any).toNumber()
-                : Number(act.price))
-            : null,
-          priceCurrency: act.priceCurrency,
-          pricePeriod: act.pricePeriod,
-          imageUrl: act.imageUrl,
-          sourceUrl: act.sourceUrl,
-          sourceDomain: act.sourceDomain,
-          duplicatesCount: act.duplicatesCount,
-          // Convertir Date a ISO string
-          createdAt: act.createdAt instanceof Date
-            ? act.createdAt.toISOString()
-            : String(act.createdAt),
-          provider: act.provider,
-          location: act.location,
-          categories: act.categories,
-          _count: { views: 0 },
-        },
+        // serializeActivity maneja: Decimal→number, Date→ISO, _count opcional
+        item: serializeActivity(act),
       });
     } else if (f.location) {
       mixedFavorites.push({
@@ -243,7 +198,7 @@ export default async function FavoritosPage() {
               return (
                 <div key={fav.favId} className="relative group">
                   {/* fav.item ya es un objeto plano con price=number y createdAt=string */}
-                  <ActivityCard activity={fav.item as any} isFavorited={true} />
+                  <ActivityCard activity={fav.item} isFavorited={true} />
                 </div>
               );
             } else {

@@ -5,6 +5,7 @@
 
 import Link from 'next/link';
 import ActivityCard from './ActivityCard';
+import { serializeActivity } from '@/lib/prisma-serialize';
 
 interface Breadcrumb {
   name: string;
@@ -99,7 +100,7 @@ export function FilterLandingLayout({
             <>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {activities.map((activity: ActivityItem) => (
-                  <ActivityCard key={activity.id} activity={activity} />
+                  <ActivityCard key={activity.id} activity={serializeActivity(activity)} />
                 ))}
               </div>
 

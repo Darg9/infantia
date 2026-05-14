@@ -13,6 +13,7 @@ import { prisma } from '@/lib/db';
 import { SITE_URL } from '@/config/site';
 import { slugify } from '@/lib/slugify';
 import ActivityCard from '../_components/ActivityCard';
+import { serializeActivity } from '@/lib/prisma-serialize';
 import { getCategoryEmoji } from '@/lib/category-utils';
 
 const PAGE_LIMIT = 12;
@@ -189,7 +190,7 @@ export default async function CiudadLandingPage({ params }: Props) {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {activities.map((activity) => (
-              <ActivityCard key={activity.id} activity={activity as any} />
+              <ActivityCard key={activity.id} activity={serializeActivity(activity)} />
             ))}
           </div>
           <div className="mt-10 text-center">

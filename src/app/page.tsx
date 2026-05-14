@@ -15,6 +15,7 @@ import { CitySwitcher } from '@/components/layout/CitySwitcher';
 import { CategoryCountsIsland } from '@/app/_components/CategoryCountsIsland';
 import { getCitiesForSelector } from '@/lib/cities';
 import { SITE_URL } from '@/config/site';
+import { roundRobinByCategory } from '@/lib/diversity-utils';
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',
@@ -74,11 +75,11 @@ export default async function HomePage() {
       take: 8,
     }),
 
-    // 4 actividades más recientes (una fila en desktop)
-    listActivities({ skip: 0, pageSize: 4, status: 'ACTIVE', sortBy: 'newest' }),
+    // 20 candidatos recientes — se aplicará round-robin por categoría antes de mostrar
+    listActivities({ skip: 0, pageSize: 20, status: 'ACTIVE', sortBy: 'newest' }),
 
-    // Fallback: 4 actividades populares (relevance) si no hay recientes
-    listActivities({ skip: 0, pageSize: 4, status: 'ACTIVE', sortBy: 'relevance' }),
+    // Fallback: 20 candidatos populares (relevance) si no hay recientes
+    listActivities({ skip: 0, pageSize: 20, status: 'ACTIVE', sortBy: 'relevance' }),
 
   ] as const);
 
@@ -113,10 +114,16 @@ export default async function HomePage() {
   const popularActivities =
     popularActivitiesResult.status === 'fulfilled' ? popularActivitiesResult.value.activities : [];
 
-  // Lógica de fallback para la sección de actividades
+  // Lógica de fallback + diversificación para la sección de actividades
   const hasRecent   = recentActivities.length > 0;
   const hasPopular  = popularActivities.length > 0;
-  const displayActivities = hasRecent ? recentActivities : popularActivities;
+  const candidateActivities = hasRecent ? recentActivities : popularActivities;
+
+  // Round-robin por categoría sobre los candidatos ordenados por relevancia/fecha.
+  // Toma 4 cards variando categoría en cada slot para mejorar scannability del home.
+  // Respeta el score interno de cada grupo — determinista, sin random.
+  const displayActivities = roundRobinByCategory(candidateActivities, 4);
+
   const activitySubtitle  = hasRecent ? 'Las más recientes' : 'Las más populares';
   const activityHref      = hasRecent ? '/actividades?sort=newest' : '/actividades';
 

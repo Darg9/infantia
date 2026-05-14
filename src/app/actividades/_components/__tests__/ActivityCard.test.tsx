@@ -10,6 +10,19 @@ vi.mock('@/components/FavoriteButton', () => ({
     <Button aria-label={initialIsFavorited ? 'Quitar de favoritos' : 'Guardar en favoritos'} data-activity-id={activityId} />
   ),
 }));
+// SHOW_AUDIENCE_LABEL=true en tests — los tests de audiencia verifican la lógica
+// aunque el flag esté OFF en producción (datos incompletos). Al reactivar el flag,
+// estos tests seguirán siendo válidos sin modificación.
+vi.mock('@/config/feature-flags', () => ({
+  FEATURE_FLAGS: {
+    SHOW_AUDIENCE_LABEL: true,
+    DATE_FILTER_ENABLED: false,
+    PARSER_FALLBACK_ENABLED: true,
+    DISCOVERY_RANKING_ENABLED: true,
+    DISCOVERY_RANKING_MODE: 'shadow',
+    DISCOVERY_RANKING_MODE_BY_SOURCE: {},
+  },
+}));
 
 import ActivityCard from '../ActivityCard';
 

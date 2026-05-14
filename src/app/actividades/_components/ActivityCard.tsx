@@ -14,7 +14,7 @@
 
 import Image from 'next/image';
 import clsx from 'clsx';
-import { getCategoryGradient, getCategoryEmoji } from '@/lib/category-utils';
+import { getCategoryGradient, getCategoryEmoji, getCategoryShortLabel } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
 import { activityPath } from '@/lib/activity-url';
 import { trackEvent } from '@/lib/track';
@@ -159,6 +159,25 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
         {activity.provider?.isPremium && (
           <span className='absolute bottom-1.5 left-2 rounded-full bg-warning-400 px-2 py-0.5 text-xs font-bold text-warning-900 shadow-[var(--hp-shadow-md)]'>
             ⭐ Sponsor
+          </span>
+        )}
+
+        {/* ── Chip de categoría: solo compact, bottom-left ─────────────────────
+            Frosted glass sobre el gradiente — el gradiente ya aporta el color
+            semántico, el chip aporta el texto/emoji escaneable.
+            Oculto si: Sponsor activo (conflicto posición) | status EXPIRED. */}
+        {compact && mainCategory && !activity.provider?.isPremium && activity.status !== 'EXPIRED' && (
+          <span
+            className='absolute bottom-1.5 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white'
+            style={{
+              background: 'rgba(0,0,0,0.32)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.18)',
+            }}
+          >
+            <span className="leading-none">{categoryEmoji}</span>
+            <span>{getCategoryShortLabel(mainCategory.slug, mainCategory.name)}</span>
           </span>
         )}
       </div>

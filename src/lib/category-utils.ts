@@ -81,3 +81,37 @@ export function getCategoryColor(slug: string): string {
   for (let i = 0; i < slug.length; i++) hash = slug.charCodeAt(i) + ((hash << 5) - hash);
   return CATEGORY_COLORS[Math.abs(hash) % CATEGORY_COLORS.length];
 }
+
+// ── Etiquetas cortas para el chip de categoría en la tarjeta compacta ────────
+// Mapeadas desde los slugs canónicos (post-S68: 7 categorías + Arte staging).
+const CATEGORY_SHORT_LABELS: Record<string, string> = {
+  'lectura':            'Lectura',
+  'musica':             'Música',
+  'música':             'Música',
+  'teatro-y-danza':     'Teatro',
+  'teatro':             'Teatro',
+  'ciencia-y-tec':      'Ciencia',
+  'ciencias':           'Ciencia',
+  'tecnologia':         'Ciencia',
+  'naturaleza':         'Naturaleza',
+  'deportes':           'Deportes',
+  'manualidades':       'Manualidades',
+  'arte-y-creatividad': 'Arte',
+  'arte':               'Arte',
+  'pintura-y-dibujo':   'Arte',
+  'danza':              'Danza',
+  'cocina':             'Cocina',
+  'yoga-infantil':      'Yoga',
+};
+
+/**
+ * Devuelve una etiqueta corta (≤12 chars) para mostrar en el chip de categoría
+ * en la tarjeta compacta del home.
+ */
+export function getCategoryShortLabel(slug: string, fallbackName: string): string {
+  const normalized = slug.toLowerCase();
+  if (CATEGORY_SHORT_LABELS[normalized]) return CATEGORY_SHORT_LABELS[normalized];
+  // Fallback: primera palabra del nombre, máx 12 chars
+  const first = fallbackName.split(' ')[0];
+  return first.length > 12 ? first.slice(0, 11) + '…' : first;
+}

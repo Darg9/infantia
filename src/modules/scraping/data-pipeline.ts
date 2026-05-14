@@ -13,9 +13,16 @@ const CANONICAL_CATEGORIES = [
 const CATEGORY_MAP: Record<string, string> = {
   // ── Música ──────────────────────────────────────────────────────────────────
   'música': 'Música', 'musica': 'Música',
-  'concierto': 'Música', 'banda': 'Música', 'canto': 'Música', 'coro': 'Música',
+  'concierto': 'Música', 'conciertos': 'Música', 'banda': 'Música', 'canto': 'Música', 'coro': 'Música',
   'guitarra': 'Música', 'piano': 'Música', 'violin': 'Música', 'violín': 'Música',
   'bateria': 'Música', 'batería': 'Música', 'voz': 'Música',
+  // Géneros musicales — Gemini los genera como categorías independientes
+  'rock': 'Música', 'pop': 'Música', 'jazz': 'Música', 'salsa': 'Música',
+  'reggaeton': 'Música', 'regueton': 'Música', 'reggae': 'Música',
+  'cumbia': 'Música', 'vallenato': 'Música', 'electronica': 'Música', 'electrónica': 'Música',
+  'urbano': 'Música', 'rap': 'Música', 'hip hop musical': 'Música',
+  // Fiestas con componente musical dominante (Alcaldía, Movistar Arena)
+  'fiesta': 'Música', 'fiesta musical': 'Música',
 
   // ── Lectura ──────────────────────────────────────────────────────────────────
   'lectura': 'Lectura', 'literatura': 'Lectura', 'cuentos': 'Lectura', 'cuento': 'Lectura',
@@ -81,6 +88,11 @@ const CATEGORY_MAP: Record<string, string> = {
   'lúdico': 'Teatro y danza', 'ludico': 'Teatro y danza',
   'artes lúdicas': 'Teatro y danza', 'artes ludicas': 'Teatro y danza',
   'magia': 'Teatro y danza',
+  // Comedia escénica — stand-up, impro, clown, comedia de situación (artes escénicas)
+  'humor': 'Teatro y danza', 'comedia': 'Teatro y danza', 'comedia infantil': 'Teatro y danza',
+  'stand-up': 'Teatro y danza', 'standup': 'Teatro y danza', 'stand up': 'Teatro y danza',
+  'improvisacion': 'Teatro y danza', 'improvisación': 'Teatro y danza', 'impro': 'Teatro y danza',
+  'clown': 'Teatro y danza', 'payaso': 'Teatro y danza',
 
   // ── Manualidades ─────────────────────────────────────────────────────────────
   'manualidades': 'Manualidades',
@@ -108,6 +120,10 @@ const CATEGORY_MAP: Record<string, string> = {
   'comunidad': 'Arte y Creatividad', 'community': 'Arte y Creatividad',
   'cultura': 'Arte y Creatividad', 'cultural': 'Arte y Creatividad',
   'laboratorio': 'Arte y Creatividad',
+  // Categorías genéricas frecuentes en Gemini — staging hasta revisión editorial
+  'patrimonio': 'Arte y Creatividad', 'patrimonio cultural': 'Arte y Creatividad',
+  'entretenimiento': 'Arte y Creatividad', 'entertainment': 'Arte y Creatividad',
+  'multidisciplinar': 'Arte y Creatividad', 'interdisciplinar': 'Arte y Creatividad',
 };
 
 function standardizeCategory(raw: string): string {

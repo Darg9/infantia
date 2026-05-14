@@ -15,28 +15,16 @@
 // used_fallback = false → capa 1 (datetime atributo) o sin señal detectada
 // =============================================================================
 
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../../generated/prisma/client';
+import { prisma } from '../../../lib/db';
 import { createLogger } from '../../../lib/logger';
 import { PreflightResult } from './date-preflight';
 
 const log = createLogger('scraping:preflight-db');
 
-// Singleton lazy para no crear conexión si el módulo no se usa
-let _prisma: PrismaClient | null = null;
-
-function getPrisma(): PrismaClient {
-  if (!_prisma) {
-    const connectionString = process.env.DATABASE_URL ?? '';
-    const adapter = new PrismaPg({ connectionString });
-    _prisma = new PrismaClient({ adapter });
-  }
-  return _prisma;
-}
-
-/** Solo para tests — resetea el singleton entre casos de prueba. */
+/** Solo para tests — no-op, el singleton global se gestiona en src/lib/db.ts. */
 export function _resetPrismaForTests(): void {
-  _prisma = null;
+  // No-op: el singleton de lib/db.ts se reutiliza entre tests.
+  // Tests que necesiten BD real deben mockearlo a nivel de módulo.
 }
 
 export interface PreflightLogEntry {
@@ -56,7 +44,6 @@ export async function savePreflightLog(entry: PreflightLogEntry): Promise<void> 
   const usedFallback = result.reason !== 'datetime_past' && result.reason !== 'process';
 
   try {
-    const prisma = getPrisma();
     await prisma.$executeRawUnsafe(
       `INSERT INTO date_preflight_logs
          (source_id, url, raw_date_text, parsed_date, reason, used_fallback, skip)

@@ -33,11 +33,11 @@
 
 /* ===== BRAND (LOCKED) ===== */
 :root {
-  /* Forzar light: controles nativos (select, input, scrollbar) usan colores claros
-     aunque el sistema esté en dark mode. .dark sobreescribe a dark más abajo.
-     Antes era 'light dark' — esto delegaba al sistema y causaba selects negros
-     en sistema-dark + app-light. */
-  color-scheme: light;
+  /* Baseline: el navegador puede adaptar la UI nativa al sistema.
+     html:not(.dark) sobreescribe con especificidad mayor (0,1,1 vs 0,1,0)
+     para forzar controles claros cuando el app está en modo light,
+     independientemente del color-scheme del sistema operativo. */
+  color-scheme: light dark;
 
   --hp-primary: #002147;
   --hp-accent: #ff8c00;
@@ -93,6 +93,14 @@
 
      Uso: <div class="hp-context-accent" style={{ background: gradient }} aria-hidden="true" /> */
   --hp-context-accent-opacity: 0.08;
+}
+
+/* LIGHT — especificidad (0,1,1) > :root (0,1,0).
+   Fuerza controles nativos (select, input, scrollbar) claros cuando el app
+   está en modo light, aunque el sistema operativo esté en dark mode.
+   Soluciona: selects negros en sistema-dark + app-light. */
+html:not(.dark) {
+  color-scheme: light;
 }
 
 /* DARK */

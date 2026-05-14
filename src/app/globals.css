@@ -193,22 +193,13 @@ html:not(.dark) {
   transition: none !important;
 }
 
-/* html recibe el mismo fondo que body. Sin esto el navegador pinta 'html'
-   en blanco durante el tiempo entre parsing y carga de CSS → flash visible.
-   El script anti-flash en layout.tsx setea también backgroundColor inline
-   para cubrir el caso en que CSS aún no haya cargado. */
+/* html recibe el mismo fondo que body para evitar flash en bordes/overscroll.
+   La regla html.dark{background-color:#0b1220} está en layout.tsx <style> inline
+   (especificidad 0,1,1 > 0,1,0) y aplica SOLO cuando la clase .dark está presente.
+   El script anti-flash en <head> setea/quita .dark antes del primer paint basado
+   en localStorage — respeta la elección manual del usuario sobre el SO. */
 html {
   background-color: var(--hp-bg-page);
-}
-
-/* Pre-paint dark mode: aplica ANTES de que JS ejecute (CSS es render-blocking).
-   Usa literal hex, no var() — las variables CSS dependen del cascade completo.
-   Cubre el caso system-dark + app-dark (mayoría) en hard reload.
-   El inline script de layout.tsx sigue manejando localStorage para overrides. */
-@media (prefers-color-scheme: dark) {
-  html {
-    background-color: #0b1220;
-  }
 }
 
 body {

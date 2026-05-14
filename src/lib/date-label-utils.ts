@@ -110,10 +110,25 @@ export function getEditorialDateLabel(
   }
 
   const start    = new Date(activity.startDate);
-  const startCol = toColDate(start);
+
+  // UTC midnight (T00:00:00.000Z) = fecha-only guardada por el pipeline de ingesta.
+  // Gemini extrae "14 de mayo" y lo almacena como 2026-05-14T00:00:00Z sin offset COT.
+  // Si aplicamos toColDate() obtenemos May 13 19:00 COT → día incorrecto ("Hoy · 7 PM").
+  // Solución: si la hora UTC es medianoche exacta, usar la fecha UTC directamente como
+  // representación Colombia (date-only sin offset). COT midnight correcto = T05:00:00Z
+  // ya resulta en h=0 m=0 tras toColDate(), así que ambas rutas convergen al mismo output.
+  const isMidnightUTC = (
+    start.getUTCHours() === 0 &&
+    start.getUTCMinutes() === 0 &&
+    start.getUTCSeconds() === 0
+  );
+  const startCol = isMidnightUTC ? start : toColDate(start);
 
   const end    = activity.endDate ? new Date(activity.endDate) : null;
-  const endCol = end ? toColDate(end) : null;
+  const endMidnightUTC = end ? (
+    end.getUTCHours() === 0 && end.getUTCMinutes() === 0 && end.getUTCSeconds() === 0
+  ) : false;
+  const endCol = end ? (endMidnightUTC ? end : toColDate(end)) : null;
 
   // Número de días entre hoy y el inicio (en COL, ignorando hora)
   const todayMidnight = Date.UTC(

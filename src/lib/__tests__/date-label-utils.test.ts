@@ -196,4 +196,42 @@ describe('getEditorialDateLabel', () => {
       expect(getEditorialDateLabel({ startDate: start, schedule: sch, type: 'RECURRING' }, NOW)).toBe('Hoy');
     });
   });
+
+  // ── Fechas guardadas como UTC midnight por Gemini ─────────────────────────────
+  // Gemini extrae "14 de mayo" y almacena 2026-05-14T00:00:00Z (medianoche UTC, sin
+  // offset COT). Si se aplica -5h resulta May 13 19:00 COT → bug "Hoy · 7 PM".
+  // NOW = martes 19 mayo 2026 10:00 AM COT.
+  describe('UTC midnight — fecha-only guardada por pipeline de ingesta', () => {
+    it('May 19 UTC midnight (hoy) → "Hoy" (sin hora)', () => {
+      // 2026-05-19T00:00:00Z: si no se corrige → May 18 19:00 COT → "Pasado" (null)
+      // Con corrección → May 19 COT → "Hoy"
+      expect(getEditorialDateLabel({ startDate: '2026-05-19T00:00:00Z' }, NOW)).toBe('Hoy');
+    });
+
+    it('May 20 UTC midnight (mañana) → "Mañana", no "Hoy · 7 PM"', () => {
+      // Bug original: 2026-05-20T00:00:00Z → toColDate = May 19 19:00 → "Hoy · 7 PM"
+      // Correcto: May 20 COT → "Mañana"
+      expect(getEditorialDateLabel({ startDate: '2026-05-20T00:00:00Z' }, NOW)).toBe('Mañana');
+    });
+
+    it('May 23 UTC midnight (sábado) → "Este fin de semana", no día equivocado', () => {
+      // Bug: May 23 00:00Z → May 22 19:00 COT = viernes → "Vie 22"
+      // Correcto: May 23 COT = sábado → "Este fin de semana"
+      expect(getEditorialDateLabel({ startDate: '2026-05-23T00:00:00Z' }, NOW)).toBe('Este fin de semana');
+    });
+
+    it('Oct 29 UTC midnight (futuro) → fecha correcta del mes, no día anterior', () => {
+      // Bunbury: almacenado como 2026-10-29T00:00:00Z
+      // Bug: Oct 29 00:00Z → Oct 28 19:00 COT → "28 Oct"
+      // Correcto: Oct 29 COT → "29 Oct"
+      expect(getEditorialDateLabel({ startDate: '2026-10-29T00:00:00Z' }, NOW)).toBe('29 Oct');
+    });
+
+    it('no muestra hora cuando el UTC midnight proviene del pipeline', () => {
+      // El label debe ser "Hoy" sin "· 7 PM" aunque la hora COT sea las 7 PM
+      const label = getEditorialDateLabel({ startDate: '2026-05-19T00:00:00Z' }, NOW);
+      expect(label).not.toContain('PM');
+      expect(label).not.toContain('AM');
+    });
+  });
 });

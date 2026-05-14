@@ -31,8 +31,20 @@ const ThemeContext = createContext<ThemeContextValue>({
 
 function resolveTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
-  const saved = localStorage.getItem('theme')
-  if (saved === 'dark' || saved === 'light') return saved
+
+  // 1. localStorage — fuente principal
+  try {
+    const saved = localStorage.getItem('theme')
+    if (saved === 'dark' || saved === 'light') return saved
+  } catch { /* localStorage bloqueado (Brave Shields, incógnito estricto) */ }
+
+  // 2. Cookie hp-theme — fallback robusto para browsers con localStorage restrictivo
+  try {
+    const m = document.cookie.match(/(?:^|;\s*)hp-theme=(dark|light)/)
+    if (m) return m[1] as Theme
+  } catch { /* cookie API restringida */ }
+
+  // 3. OS preference — último recurso
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 

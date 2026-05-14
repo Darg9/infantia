@@ -95,16 +95,36 @@ export default function RootLayout({
               try {
                 var d = document.documentElement;
                 d.classList.add('no-transition');
-                var saved = localStorage.getItem('theme');
+
+                // 1. localStorage — fuente principal
+                var saved = null;
+                try { saved = localStorage.getItem('theme'); } catch(e2) {}
+
+                // 2. Cookie hp-theme — fallback robusto (resiste Brave Shields,
+                //    "clear on exit", fingerprint protection sobre localStorage).
+                if (saved !== 'dark' && saved !== 'light') {
+                  var m = document.cookie.match(/(?:^|;\\s*)hp-theme=(dark|light)/);
+                  if (m) saved = m[1];
+                }
+
+                // 3. OS preference — último recurso
                 var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                var theme = saved === 'dark' || saved === 'light'
+                var theme = (saved === 'dark' || saved === 'light')
                   ? saved
                   : (systemDark ? 'dark' : 'light');
+
                 if (theme === 'dark') {
                   d.classList.add('dark');
                 } else {
                   d.classList.remove('dark');
                 }
+
+                // Escribir cookie si no existe aún — garantiza persistencia
+                // en el próximo ciclo aunque localStorage sea inaccesible.
+                if (!document.cookie.match(/(?:^|;\\s*)hp-theme=/)) {
+                  document.cookie = 'hp-theme=' + theme + '; path=/; max-age=31536000; SameSite=Lax';
+                }
+
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');
                 });

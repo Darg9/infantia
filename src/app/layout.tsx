@@ -96,12 +96,19 @@ export default function RootLayout({
                   : (systemDark ? 'dark' : 'light');
                 if (theme === 'dark') {
                   d.classList.add('dark');
+                  // Cubre el gap entre parsing HTML y carga de CSS (render-blocking
+                  // pero no instant\u00e1neo). Sin esto, html queda blanco hasta que
+                  // el stylesheet aplica --hp-bg-page v\u00eda .dark {}.
+                  d.style.backgroundColor = '#0b1220';
                 } else {
                   d.classList.remove('dark');
                 }
-                // rAF: se alinea con el pr\u00f3ximo paint, no con el event loop
+                // rAF se ejecuta despu\u00e9s del primer paint: el fondo ya est\u00e1 pintado
+                // oscuro, as\u00ed que el inline style ya cumpli\u00f3 su funci\u00f3n y se puede
+                // limpiar \u2014 el CSS var toma control sin parpadeo ni conflicto con toggle.
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');
+                  d.style.removeProperty('background-color');
                 });
               } catch(e) {}
             `,

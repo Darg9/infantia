@@ -120,7 +120,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
       </head>
       <body
-        className={`${montserrat.variable}font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}
+        className={`${montserrat.variable} font-sans antialiased bg-[var(--hp-bg-page)] text-[var(--hp-text-primary)]`}
       >
         <AnalyticsTracker />
         <TimeToFirstActivityTracker />

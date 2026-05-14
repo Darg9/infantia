@@ -168,13 +168,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             Oculto si: Sponsor activo (conflicto posición) | status EXPIRED. */}
         {compact && mainCategory && !activity.provider?.isPremium && activity.status !== 'EXPIRED' && (
           <span
-            className='absolute bottom-1.5 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold text-white'
-            style={{
-              background: 'rgba(0,0,0,0.32)',
-              backdropFilter: 'blur(8px)',
-              WebkitBackdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.18)',
-            }}
+            className='absolute bottom-1.5 left-2 flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold backdrop-blur-sm shadow-sm bg-white/85 text-[var(--hp-text-primary)] border border-black/10 dark:bg-black/30 dark:border-white/20'
           >
             <span className="leading-none">{categoryEmoji}</span>
             <span>{getCategoryShortLabel(mainCategory.slug, mainCategory.name)}</span>

@@ -33,8 +33,11 @@
 
 /* ===== BRAND (LOCKED) ===== */
 :root {
-  /* Alinea la UI nativa del navegador (scrollbars, inputs, selects) con el tema */
-  color-scheme: light dark;
+  /* Forzar light: controles nativos (select, input, scrollbar) usan colores claros
+     aunque el sistema esté en dark mode. .dark sobreescribe a dark más abajo.
+     Antes era 'light dark' — esto delegaba al sistema y causaba selects negros
+     en sistema-dark + app-light. */
+  color-scheme: light;
 
   --hp-primary: #002147;
   --hp-accent: #ff8c00;
@@ -94,6 +97,8 @@
 
 /* DARK */
 .dark {
+  color-scheme: dark; /* controles nativos siguen el tema del app, no el sistema */
+
   --hp-bg-page: #0b1220;
   --hp-bg-surface: #111827;
   --hp-bg-subtle: #1f2937;

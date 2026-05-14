@@ -22,6 +22,7 @@ import { normalizePrice } from '@/lib/decimal';
 import { highlightText } from '@/lib/highlight';
 import { FeedImpressionTracker } from '@/components/analytics/FeedImpressionTracker';
 import { getEditorialAudience, getAudienceEmoji } from '@/lib/audience-utils';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { getEditorialDateLabel } from '@/lib/date-label-utils';
 
 // Tipo local inferido desde lo que devuelve serializeActivity().
@@ -205,9 +206,11 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
           {/* Vista completa: audience + location + provider */}
           {!compact && (
             <>
-              <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)] font-medium">
-                <span>{audienceEmoji}</span> <span className="text-[var(--hp-text-primary)]">{editorialAudience}</span>
-              </span>
+              {FEATURE_FLAGS.SHOW_AUDIENCE_LABEL && (
+                <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)] font-medium">
+                  <span>{audienceEmoji}</span> <span className="text-[var(--hp-text-primary)]">{editorialAudience}</span>
+                </span>
+              )}
               {locationLabel && (
                 <span className="flex items-center gap-1 text-xs text-[var(--hp-text-secondary)]">
                   <span>📍</span> {locationLabel}

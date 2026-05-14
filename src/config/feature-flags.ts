@@ -60,4 +60,16 @@ export const FEATURE_FLAGS = {
    * Cuando se active, se recomienda priorizar ingest de fuentes con fecha.
    */
   DATE_FILTER_ENABLED: process.env.DATE_FILTER_ENABLED === 'true',
+
+  /**
+   * Badge de audiencia en ActivityCard (S71):
+   * Muestra "👨‍👩‍👧 Familia", "👧 Niños", "🧑 Adultos", etc. en el footer.
+   *
+   * OFF por defecto — ageMin/ageMax/audience incompletos en catálogo:
+   * la mayoría cae en el fallback 'Familia' sin ser información verificada.
+   * Reactivar cuando el pipeline extraiga y valide edades de forma consistente.
+   *
+   * Activar en Vercel: SHOW_AUDIENCE_LABEL=true (sin redeploy).
+   */
+  SHOW_AUDIENCE_LABEL: process.env.SHOW_AUDIENCE_LABEL === 'true',
 } as const;

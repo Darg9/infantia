@@ -100,9 +100,15 @@ export default function RootLayout({
                   // Sin esto, 'html' queda blanco (default del navegador) hasta
                   // que el stylesheet se aplica \u2014 causa el flash visible.
                   d.style.backgroundColor = '#0b1220';
+                  // colorScheme 'dark' \u2192 controles nativos (select, input, scrollbar)
+                  // usan colores oscuros aunque el sistema est\u00e9 en light.
+                  d.style.colorScheme = 'dark';
                 } else {
                   d.classList.remove('dark');
                   d.style.backgroundColor = '#f8fafc';
+                  // colorScheme 'light' \u2192 evita que controles nativos aparezcan negros
+                  // cuando el sistema est\u00e1 en dark mode pero el usuario eligi\u00f3 light.
+                  d.style.colorScheme = 'light';
                 }
                 // rAF: se alinea con el pr\u00f3ximo paint, no con el event loop
                 requestAnimationFrame(function() {

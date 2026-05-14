@@ -40,10 +40,13 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Leer fuente de verdad (localStorage) en el initializer — sin efecto síncrono.
   const [theme, setTheme] = useState<Theme>(resolveTheme)
 
-  // Efecto 1: re-aplicar clase CSS si la hidratación la eliminó.
+  // Efecto 1: re-aplicar clase CSS y colorScheme si la hidratación los eliminó.
   // No llama setState — solo opera sobre el DOM.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
+    // Fijar color-scheme explícito: evita que controles nativos (select, input,
+    // scrollbar) usen la preferencia del sistema cuando difiere del tema del app.
+    document.documentElement.style.colorScheme = theme === 'dark' ? 'dark' : 'light'
   }, [theme])
 
   // Efecto 2: cross-tab sync. setState solo dentro del callback del evento
@@ -66,6 +69,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
     // 1. Actualizar clase en <html> → CSS reacciona inmediatamente
     document.documentElement.classList.toggle('dark', next === 'dark')
+    // Actualizar color-scheme para que controles nativos sigan el tema del app
+    document.documentElement.style.colorScheme = next === 'dark' ? 'dark' : 'light'
 
     // 2. Persistir elección del usuario
     localStorage.setItem('theme', next)

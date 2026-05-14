@@ -46,8 +46,8 @@ const ALL_SOURCES: Source[] = [
   // Maloka: sitemap directo → 321 posts /noticias/ (vs 41 del homepage).
   // post-sitemap1.xml cubre hasta May 2026; date-preflight descarta artículos viejos.
   { name: 'Maloka',            channel: 'web', url: 'https://maloka.org/post-sitemap1.xml', sitemapPatterns: ['/noticias/'], cityName: 'Bogotá' },
-  // Filarmónica: URL pendiente de verificar (fetch failed en primer run).
-  // { name: 'Filarmónica Bogotá',channel: 'web', url: 'https://filarmonica.gov.co',              cityName: 'Bogotá' },
+  // Filarmónica: sitemap 1000+ URLs — filtrar /calendario-de-actividades/ y /conciertos/.
+  { name: 'Filarmónica Bogotá', channel: 'web', url: 'https://www.filarmonicabogota.gov.co/sitemap.xml', sitemapPatterns: ['/calendario-de-actividades/', '/conciertos/'], cityName: 'Bogotá' },
 
   // ── Bogotá — Cajas de compensación ────────────────────────────────────────
   // Compensar: URL /recreacion-y-cultura/ solo tiene sub-categorías sin links directos.

@@ -40,9 +40,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Leer fuente de verdad (localStorage) en el initializer — sin efecto síncrono.
   const [theme, setTheme] = useState<Theme>(resolveTheme)
 
-  // Efecto 1: re-aplicar clase CSS si la hidratación la eliminó.
-  // No llama setState — solo opera sobre el DOM.
+  // Efecto 1: re-aplicar clase CSS + limpiar inline style del anti-flash.
+  // El script inline en layout.tsx pone backgroundColor='#0b1220' para cubrir
+  // el gap ANTES de que cargue el CSS externo. Este useEffect corre post-hidratación,
+  // cuando CSS ya está aplicado → se puede quitar el inline style con seguridad
+  // y dejar que las CSS vars tomen control. Sin esto, el rAF del script podría
+  // borrar el inline bg antes de que el CSS cargue → flash blanco.
   useEffect(() => {
+    document.documentElement.style.removeProperty('background-color')
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
 

@@ -103,12 +103,13 @@ export default function RootLayout({
                 } else {
                   d.classList.remove('dark');
                 }
-                // rAF se ejecuta despu\u00e9s del primer paint: el fondo ya est\u00e1 pintado
-                // oscuro, as\u00ed que el inline style ya cumpli\u00f3 su funci\u00f3n y se puede
-                // limpiar \u2014 el CSS var toma control sin parpadeo ni conflicto con toggle.
+                // rAF se ejecuta despu\u00e9s del primer paint: elimina no-transition.
+                // NOTA: backgroundColor inline NO se borra aqu\u00ed \u2014 el rAF puede
+                // dispararse antes de que el CSS externo haya cargado, dejando
+                // un instante sin fondo (flash blanco). ThemeProvider lo borra
+                // en su useEffect, donde CSS est\u00e1 garantizado (post-hidrataci\u00f3n).
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');
-                  d.style.removeProperty('background-color');
                 });
               } catch(e) {}
             `,

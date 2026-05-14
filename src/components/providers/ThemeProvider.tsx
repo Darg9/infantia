@@ -41,12 +41,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(resolveTheme)
 
   // Efecto 1: re-aplicar clase CSS si la hidratación la eliminó.
-  // También limpia el inline style backgroundColor que el script anti-flash dejó en <html>
-  // para que los CSS vars tomen control (inline styles tienen máxima especificidad
-  // y bloquearían la actualización del fondo al hacer toggle).
+  // No llama setState — solo opera sobre el DOM.
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
-    document.documentElement.style.removeProperty('background-color')
   }, [theme])
 
   // Efecto 2: cross-tab sync. setState solo dentro del callback del evento

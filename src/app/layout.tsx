@@ -83,6 +83,12 @@ export default function RootLayout({
           El fallback hardened evita valores corruptos en localStorage. */}
       <head>
         <meta name="color-scheme" content="light dark" />
+        {/* \u2500\u2500 Regla CSS sincr\u00f3nica anti-flash \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+            Aplica ANTES de que cargue cualquier stylesheet externo (el browser
+            procesa <style> inline al momento de parsear, sin round-trip de red).
+            Especificidad html.dark (0,1,1) > html (0,1,0) \u2192 gana al CSS externo.
+            No requiere inline style en JS ni removeProperty posterior. */}
+        <style>{`html.dark{background-color:#0b1220}`}</style>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -96,18 +102,9 @@ export default function RootLayout({
                   : (systemDark ? 'dark' : 'light');
                 if (theme === 'dark') {
                   d.classList.add('dark');
-                  // Cubre el gap entre parsing HTML y carga de CSS (render-blocking
-                  // pero no instant\u00e1neo). Sin esto, html queda blanco hasta que
-                  // el stylesheet aplica --hp-bg-page v\u00eda .dark {}.
-                  d.style.backgroundColor = '#0b1220';
                 } else {
                   d.classList.remove('dark');
                 }
-                // rAF se ejecuta despu\u00e9s del primer paint: elimina no-transition.
-                // NOTA: backgroundColor inline NO se borra aqu\u00ed \u2014 el rAF puede
-                // dispararse antes de que el CSS externo haya cargado, dejando
-                // un instante sin fondo (flash blanco). ThemeProvider lo borra
-                // en su useEffect, donde CSS est\u00e1 garantizado (post-hidrataci\u00f3n).
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');
                 });

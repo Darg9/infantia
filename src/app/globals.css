@@ -70,9 +70,12 @@
   /* INTERACTIVE CONTROLS (toggles, sliders, progress) */
   --hp-control-track: #cbd5e1;   /* track inactivo — gris slate, visible sobre white */
 
-  /* ACTION */
-  --hp-action-primary: #ff8c00;
-  --hp-action-primary-hover: #e67e00;
+  /* ACTION
+     Light mode: #b46000 → 4.56:1 sobre blanco WCAG AA ✅ (también white sobre este bg = 4.56:1 ✅)
+     Dark mode: overrideado abajo → #ff8c00 → 7.62:1 sobre #111827 ✅
+     El split por modo evita el trade-off: "oscuro para texto claro" vs "brillante para texto oscuro". */
+  --hp-action-primary: #b46000;
+  --hp-action-primary-hover: #963f00;
 
   /* RADIUS */
   --hp-radius-sm: 8px;
@@ -128,6 +131,10 @@ html:not(.dark) {
   --hp-badge-provider-text: #818cf8;
 
   --hp-control-track: #374151;   /* track inactivo — gris, visible sobre #111827 */
+
+  /* ACTION — override dark: naranja brillante accesible sobre fondos oscuros */
+  --hp-action-primary: #ff8c00;       /* 7.62:1 sobre #111827 WCAG AA ✅ */
+  --hp-action-primary-hover: #e67e00; /* 6.23:1 sobre #111827 WCAG AA ✅ */
 
   --hp-context-accent-opacity: 0.12;
 }

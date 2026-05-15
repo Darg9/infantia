@@ -183,7 +183,12 @@ export default async function ActividadDetallePage({
   const priceLabel = formatPrice(activity.price, activity.priceCurrency, activity.pricePeriod);
 
   // JSON-LD structured data for SEO (Event schema)
-  const jsonLd = {
+  // Guard: solo emitir Event schema cuando se cumplen los requisitos mínimos de Google.
+  // Sin startDate o sin location.name → schema inválido → Google penaliza la calidad
+  // estructurada del sitio. Mejor no emitir que emitir inválido.
+  const canEmitEventSchema = !!activity.startDate && !!activity.location?.name;
+
+  const jsonLd = canEmitEventSchema ? {
     '@context': 'https://schema.org',
     '@type': 'Event',
     name: activity.title,
@@ -191,23 +196,21 @@ export default async function ActividadDetallePage({
     url: `https://habitaplan.com${canonicalPath}`,
     eventStatus: 'https://schema.org/EventScheduled',
     eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
-    ...(activity.startDate && { startDate: new Date(activity.startDate).toISOString() }),
+    startDate: new Date(activity.startDate!).toISOString(),
     ...(activity.endDate && { endDate: new Date(activity.endDate).toISOString() }),
     ...(activity.imageUrl && { image: activity.imageUrl }),
-    ...(activity.location && {
-      location: {
-        '@type': 'Place',
-        name: activity.location.name,
-        ...(activity.location.address && {
-          address: {
-            '@type': 'PostalAddress',
-            streetAddress: activity.location.address,
-            addressLocality: activity.location.city?.name ?? 'Bogotá',
-            addressCountry: 'CO',
-          },
-        }),
-      },
-    }),
+    location: {
+      '@type': 'Place',
+      name: activity.location!.name,
+      ...(activity.location!.address && {
+        address: {
+          '@type': 'PostalAddress',
+          streetAddress: activity.location!.address,
+          addressLocality: activity.location!.city?.name ?? 'Bogotá',
+          addressCountry: 'CO',
+        },
+      }),
+    },
     ...(activity.provider && {
       organizer: {
         '@type': 'Organization',
@@ -229,7 +232,7 @@ export default async function ActividadDetallePage({
         ? `${activity.ageMin}-${activity.ageMax}`
         : `${activity.ageMin}+`,
     }),
-  };
+  } : null;
 
   // Breadcrumb JSON-LD para SEO
   const breadcrumbLd = {
@@ -247,8 +250,8 @@ export default async function ActividadDetallePage({
     <>
       {/* Tracker Invisible de Visita Pura */}
       <ActivityViewTracker activityId={id} />
-      {/* JSON-LD: evento + breadcrumb */}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      {/* JSON-LD: evento (solo si tiene startDate + location) + breadcrumb siempre */}
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <div className="bg-[var(--hp-bg-page)]">
 

@@ -24,6 +24,8 @@ import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { serializeActivity } from '@/lib/prisma-serialize';
 import { roundRobinByCategory } from '@/lib/diversity-utils'
 import { ActivityListTracker } from './_components/ActivityListTracker';
+import { getCategoryEmoji, getCategoryShortLabel } from '@/lib/category-utils';
+import { getEditorialDateLabel } from '@/lib/date-label-utils';
 
 export const metadata: Metadata = {
   title: 'Actividades para niños en Colombia',
@@ -389,7 +391,22 @@ export default async function ActividadesPage({
                 </div>
                 {/* Guarda el orden del listado en sessionStorage para la nav secuencial */}
                 <ActivityListTracker
-                  items={activities.map((a) => ({ id: a.id, title: a.title }))}
+                  items={activities.map((a) => {
+                    const cat = a.categories[0]?.category
+                    const emoji = cat ? getCategoryEmoji(cat.name) : null
+                    const shortLabel = cat ? getCategoryShortLabel(cat.slug, cat.name) : null
+                    const dateLabel = getEditorialDateLabel({
+                      startDate: a.startDate as string | Date | null | undefined,
+                      endDate:   a.endDate   as string | Date | null | undefined,
+                      schedule:  a.schedule  as Record<string, unknown> | null | undefined,
+                      type:      a.type,
+                    })
+                    // "🎭 Teatro · Hoy" | "📚 Lectura" | null
+                    const meta = (emoji && shortLabel)
+                      ? `${emoji} ${shortLabel}${dateLabel ? ` · ${dateLabel}` : ''}`
+                      : dateLabel ?? undefined
+                    return { id: a.id, title: a.title, meta }
+                  })}
                   returnUrl={returnUrl}
                 />
               </>

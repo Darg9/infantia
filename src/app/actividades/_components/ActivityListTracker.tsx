@@ -17,6 +17,8 @@ const NAV_KEY = 'hp_nav_ctx'
 export interface NavItem {
   id: string
   title: string
+  /** Metadata contextual precomputada en servidor: "🎭 Teatro · Hoy" */
+  meta?: string
 }
 
 interface Props {

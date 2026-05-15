@@ -3,19 +3,21 @@
 // =============================================================================
 // SequentialNav — Navegación editorial prev/next entre actividades.
 //
-// V4: Affordance y semántica.
-//   - aria-labels descriptivos en español con título completo
-//   - title tooltip muestra nombre completo cuando el texto está truncado
-//   - underline sutil on hover (decoration-transparent → decoration-current)
-//   - micro-animation en flechas: ±2px en dirección de navegación
-//   - active:opacity-70 para feedback táctil
+// V5: Analytics + metadata contextual.
+//   - trackEvent en cada click (prev/next) con depth y totalItems
+//   - NavItem enriquecido con `meta` precomputada en servidor ("🎭 Teatro · Hoy")
+//   - Meta se muestra bajo el título en desktop (sm+), invisible en mobile
+//   - Mobile sin cambios: "Anterior" / "Siguiente" compacto
 //
-// Una sola instancia inline bajo el breadcrumb. Mobile compacto (< sm).
+// Arquitectura:
+//   - ActivityListTracker (server) computa meta y guarda en sessionStorage
+//   - SequentialNav (client) lee el contexto y lo renderiza
 // =============================================================================
 
 import Link from 'next/link'
 import { useState } from 'react'
 import { activityPath } from '@/lib/activity-url'
+import { trackEvent } from '@/lib/track'
 
 const NAV_KEY = 'hp_nav_ctx'
 const NAV_TTL = 30 * 60 * 1000 // 30 min
@@ -23,6 +25,8 @@ const NAV_TTL = 30 * 60 * 1000 // 30 min
 interface NavItem {
   id: string
   title: string
+  /** Metadata contextual precomputada: "🎭 Teatro · Hoy" */
+  meta?: string
 }
 
 interface NavContext {
@@ -90,8 +94,6 @@ export function SequentialNav({ activityId }: Props) {
   const position = `${currentIndex + 1} / ${ctx.items.length}`
 
   // Clases compartidas para los links de navegación.
-  // underline-offset-2 + decoration-transparent reserva el espacio del underline
-  // desde el inicio — evita layout shift al hacer hover.
   const linkBase =
     'group flex items-center gap-1.5 text-[var(--hp-text-primary)] hover:text-brand-600 ' +
     'underline-offset-2 decoration-transparent group-hover:decoration-current ' +
@@ -113,11 +115,31 @@ export function SequentialNav({ activityId }: Props) {
                 className={linkBase}
                 aria-label={`Ir a la actividad anterior: ${prevItem.title}`}
                 title={`Actividad anterior: ${prevItem.title}`}
+                onClick={() => {
+                  void trackEvent({
+                    type: 'sequential_nav_prev_click',
+                    activityId: prevItem.id,
+                    metadata: {
+                      fromActivityId: activityId,
+                      depth: currentIndex + 1,
+                      totalItems: ctx.items.length,
+                    },
+                  })
+                }}
               >
                 <ChevronLeft />
-                <span className="hidden sm:block truncate text-sm font-medium leading-snug">
-                  {prevItem.title}
+                {/* Desktop: título + meta en columna */}
+                <span className="hidden sm:flex sm:flex-col sm:min-w-0">
+                  <span className="truncate text-sm font-medium leading-snug">
+                    {prevItem.title}
+                  </span>
+                  {prevItem.meta && (
+                    <span className="truncate text-[10px] text-[var(--hp-text-muted)] leading-none mt-0.5">
+                      {prevItem.meta}
+                    </span>
+                  )}
                 </span>
+                {/* Mobile: label compacto */}
                 <span className="sm:hidden text-sm font-medium whitespace-nowrap">Anterior</span>
               </Link>
             ) : (
@@ -141,10 +163,30 @@ export function SequentialNav({ activityId }: Props) {
                 className={`${linkBase} min-w-0 max-w-full`}
                 aria-label={`Ir a la siguiente actividad: ${nextItem.title}`}
                 title={`Siguiente actividad: ${nextItem.title}`}
+                onClick={() => {
+                  void trackEvent({
+                    type: 'sequential_nav_next_click',
+                    activityId: nextItem.id,
+                    metadata: {
+                      fromActivityId: activityId,
+                      depth: currentIndex + 1,
+                      totalItems: ctx.items.length,
+                    },
+                  })
+                }}
               >
-                <span className="hidden sm:block truncate text-sm font-medium leading-snug">
-                  {nextItem.title}
+                {/* Desktop: título + meta en columna, alineado a la derecha */}
+                <span className="hidden sm:flex sm:flex-col sm:min-w-0 sm:items-end">
+                  <span className="truncate text-sm font-medium leading-snug">
+                    {nextItem.title}
+                  </span>
+                  {nextItem.meta && (
+                    <span className="truncate text-[10px] text-[var(--hp-text-muted)] leading-none mt-0.5">
+                      {nextItem.meta}
+                    </span>
+                  )}
                 </span>
+                {/* Mobile: label compacto */}
                 <span className="sm:hidden text-sm font-medium whitespace-nowrap">Siguiente</span>
                 <ChevronRight />
               </Link>

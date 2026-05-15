@@ -151,8 +151,8 @@ describe('ActivityCard', () => {
       const dow = nowCOL.getUTCDay();
       // Días hasta el próximo sábado (si hoy es sáb, avanzamos 7 días para el siguiente)
       const toNextSat = dow === 6 ? 7 : (6 - dow) % 7 || 7;
-      if (toNextSat > 6) {
-        // Sábado muy lejano — skip this specific check
+      if (toNextSat > 6 || toNextSat === 1) {
+        // Skip si: sábado a 7 días (hoy es sáb) o a 1 día (hoy es vie → "Mañana", no "Este fin de semana")
         return;
       }
       const satCOT = new Date(

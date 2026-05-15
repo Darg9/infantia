@@ -429,8 +429,15 @@ export async function getActivityById(id: string) {
 
 /**
  * Devuelve hasta `limit` actividades similares a la dada.
- * Criterio: comparten al menos una categoría, misma ciudad preferida.
+ * Criterio: comparten al menos una categoría, misma ciudad preferida,
+ * con bonificación temporal para actividades próximas.
  * Excluye la actividad actual y las EXPIRED/DRAFT.
+ *
+ * Scoring:
+ *   +1 por cada categoría compartida
+ *   +2 ciudad coincide
+ *   +3 startDate en los próximos 7 días (urgencia alta)
+ *   +1 startDate en los próximos 8–30 días (relevancia temporal)
  */
 export async function getSimilarActivities(activityId: string, limit = 4) {
   // 1. Obtener categorías y ciudad de la actividad base
@@ -449,7 +456,7 @@ export async function getSimilarActivities(activityId: string, limit = 4) {
 
   if (categoryIds.length === 0) return [];
 
-  // 2. Buscar por categorías compartidas (misma ciudad tiene prioridad vía orderBy score)
+  // 2. Buscar por categorías compartidas
   const candidates = await prisma.activity.findMany({
     where: {
       id: { not: activityId },
@@ -460,11 +467,22 @@ export async function getSimilarActivities(activityId: string, limit = 4) {
     take: limit * 3, // Traer más para poder reordenar
   });
 
-  // 3. Puntuar: +2 por misma ciudad, +1 por cada categoría compartida
+  // 3. Puntuar con bonificación temporal (alineado con DATE_FILTER activo)
+  const now = Date.now()
+  const MS_PER_DAY = 86_400_000
+
   const scored = candidates.map((act) => {
     const sharedCats = act.categories.filter((c) => categoryIds.includes(c.category.id)).length;
     const sameCity = cityId && act.location?.city.id === cityId ? 2 : 0;
-    return { act, score: sharedCats + sameCity };
+
+    let temporalBonus = 0
+    if (act.startDate) {
+      const daysUntil = (new Date(act.startDate).getTime() - now) / MS_PER_DAY
+      if (daysUntil >= 0 && daysUntil <= 7) temporalBonus = 3
+      else if (daysUntil > 7 && daysUntil <= 30) temporalBonus = 1
+    }
+
+    return { act, score: sharedCats + sameCity + temporalBonus };
   });
 
   scored.sort((a, b) => b.score - a.score);

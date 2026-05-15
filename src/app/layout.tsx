@@ -11,7 +11,11 @@ import { ToastProvider } from "@/components/ui/toast";
 const montserrat = Montserrat({
   variable: "--font-montserrat",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  // 700 primero: next/font preloads el primer peso declarado.
+  // H1 usa font-bold (700) — es el LCP element, necesita preload prioritario.
+  // 300 eliminado: no se usa en ningún componente activo.
+  weight: ["700", "600", "400"],
+  display: 'swap',
 });
 
 import { SITE_URL } from '@/config/site';

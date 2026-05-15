@@ -5,17 +5,28 @@
 
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { listActivities } from '@/modules/activities';
 import { prisma } from '@/lib/db';
 import { buildActivityWhere } from '@/modules/activities/activity-filters';
 import ActivityCard from '@/app/actividades/_components/ActivityCard';
-import HeroSearch from '@/app/_components/HeroSearch';
 import { serializeActivity } from '@/lib/prisma-serialize';
 import { CitySwitcher } from '@/components/layout/CitySwitcher';
-import { CategoryCountsIsland } from '@/app/_components/CategoryCountsIsland';
 import { getCitiesForSelector } from '@/lib/cities';
 import { SITE_URL } from '@/config/site';
 import { roundRobinByCategory } from '@/lib/diversity-utils';
+
+// Dynamic imports: JS de estos componentes va a chunks propios, no al bundle inicial.
+// Mejora LCP: reduce el código que el browser parsea antes de pintar el H1.
+// ssr:true (default) → HTML se sigue renderizando en servidor, sin layout shift.
+const HeroSearch = dynamic(() => import('@/app/_components/HeroSearch'));
+const CategoryCountsIsland = dynamic(
+  () => import('@/app/_components/CategoryCountsIsland').then((m) => ({ default: m.CategoryCountsIsland })),
+);
+
+// ISR: home page se cachea en Vercel CDN 1h. Sin esto, Next.js puede marcar
+// la ruta como dinámica (cada visita hace queries a DB), degradando TTFB.
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'HabitaPlan — Actividades para niños y familias en Colombia',

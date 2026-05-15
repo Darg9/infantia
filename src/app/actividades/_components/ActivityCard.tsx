@@ -1,29 +1,30 @@
-"use client";
-
 // =============================================================================
 // ActivityCard — tarjeta de actividad para el grid de /actividades y Home
 // =============================================================================
 //
-// JERARQUÍA VISUAL (actualizada S68):
+// Server Component: genera HTML estático de la card.
+// Client boundary mínimo → ActivityCardShell (<a> tracking + FeedImpressionTracker).
+// FavoriteButton es la única isla cliente dentro del cuerpo de la card.
+//
+// Antes (todo 'use client'): React hidrataba imagen + badges + título + footer + FavoriteButton
+// Ahora: React hidrata SOLO ActivityCardShell + FavoriteButton → ~80% menos hydration por card.
+//
+// JERARQUÍA VISUAL (actualizada S69):
 //   Overlay izquierdo  → label temporal contextual (Hoy · 3 PM, Mañana, Vie 16…)
 //   Overlay derecho    → Gratis | ⭐ Destacado  (máximo 1, máxima señal editorial)
 //   Footer             → audiencia + ubicación + proveedor + favorito
-//
-// Eliminado: ✓ Verificado, 🆕 Nuevo, badges de tipo (Recurrente, Única vez, Taller).
 // =============================================================================
 
 import Image from 'next/image';
 import clsx from 'clsx';
 import { getCategoryGradient, getCategoryEmoji, getCategoryShortLabel } from '@/lib/category-utils';
 import { FavoriteButton } from '@/components/FavoriteButton';
-import { activityPath } from '@/lib/activity-url';
-import { trackEvent } from '@/lib/track';
 import { normalizePrice } from '@/lib/decimal';
 import { highlightText } from '@/lib/highlight';
-import { FeedImpressionTracker } from '@/components/analytics/FeedImpressionTracker';
 import { getEditorialAudience, getAudienceEmoji } from '@/lib/audience-utils';
 import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { getEditorialDateLabel } from '@/lib/date-label-utils';
+import { ActivityCardShell } from './ActivityCardShell';
 
 // Tipo local inferido desde lo que devuelve serializeActivity().
 // En producción puede llegar como number, string o Decimal serializado.
@@ -269,23 +270,11 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
     </div>
   );
 
-  // La tarjeta siempre enlaza a la página de detalle interna (URL canónica)
+  // ActivityCardShell provee: FeedImpressionTracker + <a> con click tracking.
+  // {cardContent} llega como children (HTML estático del server) — sin hidratación.
   return (
-    <FeedImpressionTracker activityId={activity.id}>
-      <a
-        href={activityPath(activity.id, activity.title)}
-        className="block h-full"
-        data-activity-target="true"
-        data-activity-id={activity.id}
-        onClick={() => {
-          trackEvent({
-            type: "activity_click",
-            activityId: activity.id
-          });
-        }}
-      >
-        {cardContent}
-      </a>
-    </FeedImpressionTracker>
+    <ActivityCardShell activityId={activity.id} activityTitle={activity.title}>
+      {cardContent}
+    </ActivityCardShell>
   );
 }

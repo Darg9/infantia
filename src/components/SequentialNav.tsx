@@ -15,7 +15,8 @@
 // =============================================================================
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { activityPath } from '@/lib/activity-url'
 import { trackEvent } from '@/lib/track'
 
@@ -80,6 +81,23 @@ function ChevronRight() {
 
 export function SequentialNav({ activityId }: Props) {
   const [ctx] = useState<NavContext | null>(readNavContext)
+  const router = useRouter()
+
+  // Prefetch proactivo: dispara inmediatamente al montar, sin esperar al timer
+  // de <Link> (intersection observer + delay). En navegación secuencial el
+  // usuario tiene alta probabilidad de continuar → ROI muy alto.
+  // Dep array vacío es intencional: ctx viene de useState lazy initializer
+  // (sessionStorage, leído una sola vez) y nunca cambia tras el mount.
+  useEffect(() => {
+    if (!ctx) return
+    const idx = ctx.items.findIndex((item) => item.id === activityId)
+    if (idx === -1) return
+    if (idx > 0)
+      router.prefetch(activityPath(ctx.items[idx - 1].id, ctx.items[idx - 1].title))
+    if (idx < ctx.items.length - 1)
+      router.prefetch(activityPath(ctx.items[idx + 1].id, ctx.items[idx + 1].title))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!ctx) return null
 

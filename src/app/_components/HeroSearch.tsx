@@ -92,7 +92,7 @@ function SuggIcon({ type }: { type: SuggestionItem['type'] }) {
 
 // ── Componente ────────────────────────────────────────────────────────────────
 
-export default function HeroSearch({ unified = false }: { unified?: boolean }) {
+export default function HeroSearch({ unified = false, autoFocus = false }: { unified?: boolean; autoFocus?: boolean }) {
   const router = useRouter();
   useToast(); // inicializa el contexto — sin desestructurar (no usado aquí)
   const { hintText } = useTypewriterHints();
@@ -339,6 +339,7 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
           hideLabel
           type="text"
           value={query}
+          autoFocus={autoFocus}
           onChange={e => handleChange(e.target.value)}
           onFocus={() => {
             if (query.length < 2) {

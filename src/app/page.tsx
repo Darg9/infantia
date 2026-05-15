@@ -15,11 +15,11 @@ import { CitySwitcher } from '@/components/layout/CitySwitcher';
 import { getCitiesForSelector } from '@/lib/cities';
 import { SITE_URL } from '@/config/site';
 import { roundRobinByCategory } from '@/lib/diversity-utils';
+// HeroSearchLoader: interaction-first — el chunk de HeroSearch no bloquea TBT.
+// Renderiza un placeholder HTML hasta hover/focus, luego monta HeroSearch real.
+import { HeroSearchLoader } from '@/app/_components/HeroSearchLoader';
 
-// Dynamic imports: JS de estos componentes va a chunks propios, no al bundle inicial.
-// Mejora LCP: reduce el código que el browser parsea antes de pintar el H1.
-// ssr:true (default) → HTML se sigue renderizando en servidor, sin layout shift.
-const HeroSearch = dynamic(() => import('@/app/_components/HeroSearch'));
+// CategoryCountsIsland: chunk propio; se hidrata post-FCP (conteos de categorías).
 const CategoryCountsIsland = dynamic(
   () => import('@/app/_components/CategoryCountsIsland').then((m) => ({ default: m.CategoryCountsIsland })),
 );
@@ -236,7 +236,7 @@ export default async function HomePage() {
                 abarque también el CitySwitcher. bg-subtle da feedback visual
                 sin necesitar ring (que sería recortado por overflow-hidden). */}
             <div className="flex-1 min-w-0 focus-within:bg-[var(--hp-bg-subtle)] transition-colors">
-              <HeroSearch unified />
+              <HeroSearchLoader unified />
             </div>
           </div>
           {/* Chips rápidos — 4 accesos directos, diseñados para caber en 1 línea en mobile */}

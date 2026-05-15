@@ -354,8 +354,6 @@ export default function HeroSearch({ unified = false }: { unified?: boolean }) {
           autoComplete="off"
           spellCheck={false}
           disabled={isSubmitting}
-          aria-autocomplete="list"
-          aria-expanded={dropdownVisible}
           className={
             unified
               ? "rounded-none shadow-none border-0 py-4 text-base md:text-lg md:py-5 bg-transparent focus:ring-0 cursor-text"

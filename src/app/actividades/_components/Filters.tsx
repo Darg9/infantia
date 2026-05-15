@@ -574,7 +574,6 @@ export default function Filters({
           </svg>
         </button>
 
-        {/* eslint-disable-next-line jsx-a11y/role-supports-aria-props -- aria-expanded en input de búsqueda es patrón combobox estándar */}
         <input
           type="text"
           value={searchValue}
@@ -593,9 +592,6 @@ export default function Filters({
           autoComplete="off"
           spellCheck={false}
           aria-label="Buscar actividades"
-          aria-autocomplete="list"
-          aria-expanded={dropdownVisible}
-          aria-haspopup="listbox"
           className={`w-full rounded-2xl border bg-[var(--hp-bg-surface)] py-3.5 pl-12 pr-12 text-base placeholder:text-[var(--hp-text-muted)] text-[var(--hp-text-primary)] focus:outline-none focus:ring-2 transition-all shadow-[var(--hp-shadow-md)]${isPending
               ? 'border-brand-300 opacity-80 focus:ring-brand-100'
               : 'border-[var(--hp-border)] hover:border-[var(--hp-border-subtle)] focus:border-brand-500 focus:ring-brand-100'

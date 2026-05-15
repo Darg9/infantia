@@ -36,7 +36,7 @@ export function StarRating({ value, onChange, readonly = false, size = 'md' }: S
             disabled={readonly}
             onClick={() => onChange?.(star)}
             onMouseEnter={() => !readonly && setHovered(star)}
-            className={`p-0.5 rounded ${readonly ? 'cursor-default' : 'cursor-pointer'}`}
+            className={`p-0.5 rounded ${readonly ? 'cursor-default' : 'cursor-pointer min-h-[44px] min-w-[44px]'}`}
             aria-label={`${star} estrella${star > 1 ? 's' : ''}`}
           >
             <svg

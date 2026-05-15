@@ -39,7 +39,8 @@ const VARIANTS = {
 } as const;
 
 const STATE = {
-  active:   'border-brand-500 bg-brand-600 text-white shadow-[var(--hp-shadow-md)]',
+  active:   'border-brand-600 bg-brand-600 text-[var(--hp-primary)] shadow-[var(--hp-shadow-md)]',
+  // text-white sobre brand-600 = 2.86:1 ❌ → text-[--hp-primary] (#002147) = 5.17:1 ✅ WCAG AA
   inactive: 'border-[var(--hp-border)] bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)] ' +
             'hover:border-brand-300 hover:text-brand-600',
 } as const;

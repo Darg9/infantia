@@ -1,5 +1,5 @@
 'use client';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
@@ -20,7 +20,13 @@ interface ActivityDetail {
   type: string
   sourceUrl: string | null
   provider: { name: string } | null
-  categories: { category: { name: string } }[]
+  categories: { category: { id: string; name: string } }[]
+}
+
+interface Category {
+  id: string
+  name: string
+  slug: string
 }
 
 export default function EditarActividadPage() {
@@ -31,6 +37,7 @@ export default function EditarActividadPage() {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [categories, setCategories] = useState<Category[]>([])
 
   // Form fields
   const [title, setTitle] = useState('')
@@ -40,7 +47,9 @@ export default function EditarActividadPage() {
   const [price, setPrice] = useState('')
   const [ageMin, setAgeMin] = useState('')
   const [ageMax, setAgeMax] = useState('')
+  const [categoryId, setCategoryId] = useState('')
 
+  // Cargar actividad
   useEffect(() => {
     fetch(`/api/activities/${id}`)
       .then((r) => r.json())
@@ -54,9 +63,19 @@ export default function EditarActividadPage() {
         setPrice(act.price !== null ? String(act.price) : '')
         setAgeMin(act.ageMin !== null ? String(act.ageMin) : '')
         setAgeMax(act.ageMax !== null ? String(act.ageMax) : '')
+        // Categoría actual
+        setCategoryId(act.categories[0]?.category.id ?? '')
       })
       .finally(() => setLoading(false))
   }, [id])
+
+  // Cargar lista de categorías
+  useEffect(() => {
+    fetch('/api/admin/categories')
+      .then((r) => r.json())
+      .then((data) => setCategories(data.categories ?? []))
+      .catch(() => {/* silencioso */})
+  }, [])
 
   async function save() {
     setSaving(true)
@@ -66,6 +85,7 @@ export default function EditarActividadPage() {
     body.price = price !== '' ? Number(price) : null
     body.ageMin = ageMin !== '' ? Number(ageMin) : null
     body.ageMax = ageMax !== '' ? Number(ageMax) : null
+    if (categoryId) body.categoryId = categoryId
 
     const res = await fetch(`/api/admin/activities/${id}`, {
       method: 'PATCH',
@@ -228,13 +248,29 @@ export default function EditarActividadPage() {
           </div>
         </div>
 
+        {/* Categoría — editable */}
+        <div>
+          <label className="block text-sm font-medium text-[var(--hp-text-primary)] mb-1">
+            Categoría
+          </label>
+          <select
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            className="w-full border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+          >
+            <option value="">— Sin categoría —</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>{c.name}</option>
+            ))}
+          </select>
+          <p className="text-xs text-[var(--hp-text-muted)] mt-1">
+            Reasignar aquí reemplaza todas las categorías actuales por la seleccionada.
+          </p>
+        </div>
+
         {/* Info de solo lectura */}
         <div className="pt-4 border-t border-[var(--hp-border)] grid grid-cols-2 gap-3 text-xs text-[var(--hp-text-muted)]">
           <div><span className="font-medium text-[var(--hp-text-secondary)]">Tipo:</span> {activity.type}</div>
-          <div>
-            <span className="font-medium text-[var(--hp-text-secondary)]">Categorías:</span>{' '}
-            {activity.categories.map((c) => c.category.name).join(', ') || '—'}
-          </div>
           {activity.sourceUrl && (
             <div className="col-span-2">
               <span className="font-medium text-[var(--hp-text-secondary)]">Fuente:</span>{' '}

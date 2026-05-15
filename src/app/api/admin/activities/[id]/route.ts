@@ -16,6 +16,8 @@ const patchSchema = z.object({
   ageMin: z.number().int().min(0).max(120).nullable().optional(),
   ageMax: z.number().int().min(0).max(120).nullable().optional(),
   audience: z.enum(['KIDS', 'FAMILY', 'ADULTS', 'ALL']).optional(),
+  /** UUID de la categoría canónica a asignar (reemplaza todas las categorías actuales) */
+  categoryId: z.string().uuid().optional(),
 }).refine((d) => Object.keys(d).length > 0, { message: 'Se requiere al menos un campo' })
 
 type RouteParams = { params: Promise<{ id: string }> }
@@ -36,11 +38,23 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 
   try {
+    const { categoryId, ...activityData } = parsed.data
+
+    // Actualizar campos de la actividad
     const activity = await prisma.activity.update({
       where: { id },
-      data: parsed.data,
+      data: activityData,
       select: { id: true, title: true, status: true },
     })
+
+    // Si se envía categoryId, reemplazar todas las categorías actuales
+    if (categoryId) {
+      await prisma.activityCategory.deleteMany({ where: { activityId: id } })
+      await prisma.activityCategory.create({
+        data: { activityId: id, categoryId },
+      })
+    }
+
     return NextResponse.json({ activity })
   } catch {
     return NextResponse.json({ error: 'Actividad no encontrada' }, { status: 404 })

@@ -1,5 +1,4 @@
 'use client';
-import { Input } from '@/components/ui';
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
@@ -17,6 +16,12 @@ interface Activity {
   createdAt: string
   provider: { name: string } | null
   categories: { category: { name: string } }[]
+}
+
+interface Category {
+  id: string
+  name: string
+  slug: string
 }
 
 const STATUS_LABELS: Record<Status, string> = {
@@ -39,10 +44,20 @@ export default function AdminActividadesPage() {
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<Status | ''>('')
+  const [categoryFilter, setCategoryFilter] = useState('')
+  const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [busy, setBusy] = useState<string | null>(null)
 
   const PAGE_SIZE = 20
+
+  // Cargar lista de categorías una sola vez
+  useEffect(() => {
+    fetch('/api/admin/categories')
+      .then((r) => r.json())
+      .then((data) => setCategories(data.categories ?? []))
+      .catch(() => {/* silencioso — filtro queda vacío */})
+  }, [])
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -52,6 +67,7 @@ export default function AdminActividadesPage() {
     })
     if (search) params.set('search', search)
     if (statusFilter) params.set('status', statusFilter)
+    if (categoryFilter) params.set('categoryId', categoryFilter)
 
     const res = await fetch(`/api/activities?${params}`)
     if (res.ok) {
@@ -60,8 +76,9 @@ export default function AdminActividadesPage() {
       setTotal(data.data?.total ?? 0)
     }
     setLoading(false)
-  }, [page, search, statusFilter])
+  }, [page, search, statusFilter, categoryFilter])
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load() }, [load])
 
   async function toggleStatus(activity: Activity) {
@@ -93,7 +110,6 @@ export default function AdminActividadesPage() {
       </div>
       {/* Filtros */}
       <div className="flex flex-wrap gap-3 mb-5">
-        { }
         <input
           type="text"
           placeholder="Buscar por título..."
@@ -112,6 +128,24 @@ export default function AdminActividadesPage() {
           <option value="DRAFT">Borradores</option>
           <option value="EXPIRED">Expiradas</option>
         </select>
+        <select
+          value={categoryFilter}
+          onChange={(e) => { setCategoryFilter(e.target.value); setPage(1) }}
+          className="border border-[var(--hp-border)] rounded-xl px-4 py-2 text-sm focus:outline-none focus:border-brand-400"
+        >
+          <option value="">Todas las categorías</option>
+          {categories.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
+        </select>
+        {(statusFilter || categoryFilter || search) && (
+          <button
+            onClick={() => { setStatusFilter(''); setCategoryFilter(''); setSearch(''); setPage(1) }}
+            className="text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline"
+          >
+            Limpiar filtros
+          </button>
+        )}
       </div>
       {/* Tabla */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">

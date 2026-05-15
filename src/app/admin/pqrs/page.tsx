@@ -1,12 +1,19 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Button } from '@/components/ui';
 import { RESPONSE_CHANNELS, PQRS_SLA, type ResponseChannel } from '@/lib/pqrs';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
 
 type PqrsStatus = 'received' | 'in_progress' | 'closed';
+type SlaLevel   = 'WARNING' | 'DUE_TODAY' | 'OVERDUE' | null;
+
+interface SlaInfo {
+  businessDays: number;
+  limit:        number;
+  level:        SlaLevel;
+}
 
 interface Pqrs {
   id:               string;
@@ -22,6 +29,7 @@ interface Pqrs {
   firstRespondedAt: string | null;
   responseChannel:  string | null;
   emailStatus:      string;
+  sla:              SlaInfo;
 }
 
 // ── Constantes ────────────────────────────────────────────────────────────────
@@ -34,267 +42,515 @@ const STATUS_LABELS: Record<PqrsStatus, string> = {
 
 const STATUS_COLORS: Record<PqrsStatus, string> = {
   received:    'bg-warning-100 text-warning-700',
-  in_progress: 'bg-info-100 text-info-700',
-  closed:      'bg-[var(--hp-bg-page)] text-[var(--hp-text-muted)]',
+  in_progress: 'bg-brand-50 text-brand-600',
+  closed:      'bg-[var(--hp-bg-subtle)] text-[var(--hp-text-muted)]',
 };
 
 const CATEGORY_LABELS: Record<string, string> = {
-  general:          'General',
-  content_removal:  'Eliminación de contenido',
-  data_access:      'Acceso a datos',
-  data_claim:       'Corrección de datos',
-  report_error:     'Reportar error',
-  other:            'Otro',
+  general:         'General',
+  content_removal: 'Eliminación',
+  data_access:     'Acceso datos',
+  data_claim:      'Corrección datos',
+  report_error:    'Reportar error',
+  other:           'Otro',
+};
+
+const CATEGORY_LABELS_FULL: Record<string, string> = {
+  general:         'Solicitud general',
+  content_removal: 'Eliminación de contenido',
+  data_access:     'Acceso a datos personales',
+  data_claim:      'Corrección de datos',
+  report_error:    'Reportar error',
+  other:           'Otro',
 };
 
 const CHANNEL_LABELS: Record<ResponseChannel, string> = {
-  email:    'Correo',
-  phone:    'Teléfono',
-  whatsapp: 'WhatsApp',
-  manual:   'Manual',
-  platform: 'Plataforma',
+  email:    '✉️ Correo',
+  phone:    '📞 Teléfono',
+  whatsapp: '💬 WhatsApp',
+  manual:   '📋 Manual',
+  platform: '🖥️ Plataforma',
 };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── SLA helpers ───────────────────────────────────────────────────────────────
 
-function getBusinessDays(start: string, end: Date): number {
-  let count = 0;
-  const cur = new Date(start);
-  cur.setHours(0, 0, 0, 0);
-  const e = new Date(end);
-  e.setHours(0, 0, 0, 0);
-  while (cur <= e) {
-    const d = cur.getDay();
-    if (d !== 0 && d !== 6) count++;
-    cur.setDate(cur.getDate() + 1);
+function getSlaChip(sla: SlaInfo, status: PqrsStatus) {
+  if (status === 'closed') {
+    return { label: 'Cerrada', className: 'bg-[var(--hp-bg-subtle)] text-[var(--hp-text-muted)]' };
   }
-  return Math.max(0, count - 1);
+  if (!sla.level) {
+    return {
+      label: `✅ Ok ${sla.businessDays}/${sla.limit}d`,
+      className: 'bg-success-50 text-success-700',
+    };
+  }
+  if (sla.level === 'WARNING') {
+    return {
+      label: `⚠️ Riesgo ${sla.businessDays}/${sla.limit}d`,
+      className: 'bg-warning-100 text-warning-700',
+    };
+  }
+  if (sla.level === 'DUE_TODAY') {
+    return {
+      label: `⏱️ Vence hoy ${sla.businessDays}d`,
+      className: 'bg-orange-100 text-orange-700',
+    };
+  }
+  // OVERDUE
+  return {
+    label: `🚨 Vencida ${sla.businessDays}d`,
+    className: 'bg-error-50 text-error-600 font-semibold',
+  };
 }
 
-function getSlaLabel(item: Pqrs, now: Date): { text: string; color: string } | null {
-  if (item.status === 'closed') return null;
-  const sla = PQRS_SLA[item.category as keyof typeof PQRS_SLA] ?? PQRS_SLA.general;
-  const days = getBusinessDays(item.createdAt, now);
-  if (days > sla.limit)     return { text: `🚨 Vencida (${days}d)`,      color: 'text-error-600 font-semibold' };
-  if (days === sla.limit)   return { text: `⏱️ Vence hoy (${days}d)`,    color: 'text-warning-600 font-semibold' };
-  if (days >= sla.alertAt)  return { text: `⚠️ En riesgo (${days}/${sla.limit}d)`, color: 'text-warning-500' };
-  return { text: `✅ Ok (${days}/${sla.limit}d)`, color: 'text-[var(--hp-text-muted)]' };
-}
-
-// ── Componente ────────────────────────────────────────────────────────────────
+// ── Componente principal ──────────────────────────────────────────────────────
 
 export default function PqrsAdminPage() {
   const [items, setItems]         = useState<Pqrs[]>([]);
-  const [filter, setFilter]       = useState<PqrsStatus | 'all'>('received');
-  const [expanded, setExpanded]   = useState<string | null>(null);
+  const [total, setTotal]         = useState(0);
+  const [loading, setLoading]     = useState(true);
+  const [statusFilter, setStatus] = useState<PqrsStatus | 'all'>('all');
+  const [categoryFilter, setCat]  = useState('all');
+  const [onlyOverdue, setOverdue] = useState(false);
+  const [selected, setSelected]   = useState<Set<string>>(new Set());
+  const [drawer, setDrawer]       = useState<Pqrs | null>(null);
   const [busy, setBusy]           = useState<string | null>(null);
-  const [msg, setMsg]             = useState('');
-  const [tick, setTick]           = useState(0); // incrementar para forzar recarga
-  const now = new Date();
+  const [bulkBusy, setBulkBusy]   = useState(false);
+  const [toast, setToast]         = useState('');
+  const [tick, setTick]           = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-    fetch(`/api/admin/pqrs?status=${filter}`)
-      .then(r => (r.ok ? r.json() : null))
-      .then((data: Pqrs[] | null) => { if (!cancelled && data) setItems(data); })
-      .catch(() => {});
-    return () => { cancelled = true; };
-  }, [filter, tick]);
+  // ── Fetch ──────────────────────────────────────────────────────────────────
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const params = new URLSearchParams({ limit: '100' });
+    if (statusFilter !== 'all') params.set('status', statusFilter);
+    if (categoryFilter !== 'all') params.set('category', categoryFilter);
+    if (onlyOverdue) params.set('overdue', 'true');
+
+    const res = await fetch(`/api/admin/pqrs?${params}`);
+    if (res.ok) {
+      const data = await res.json();
+      setItems(data.items ?? []);
+      setTotal(data.total ?? 0);
+    }
+    setLoading(false);
+  }, [statusFilter, categoryFilter, onlyOverdue, tick]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
+
+  // ── Notificación temporal ──────────────────────────────────────────────────
+
+  function notify(msg: string) {
+    setToast(msg);
+    setTimeout(() => setToast(''), 3000);
+  }
+
+  // ── PATCH individual ───────────────────────────────────────────────────────
 
   async function patch(id: string, data: {
     status?: PqrsStatus;
     responseChannel?: ResponseChannel;
-    firstRespondedAt?: string;
   }) {
     setBusy(id);
-    setMsg('');
     const res = await fetch(`/api/admin/pqrs/${id}`, {
       method:  'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(data),
     });
     if (res.ok) {
-      setMsg('✅ Actualizado correctamente.');
-      setTick(t => t + 1); // dispara re-fetch via useEffect
-      setExpanded(null);
+      notify('✅ Actualizado');
+      setTick(t => t + 1);
+      // Actualizar drawer si está abierto
+      if (drawer?.id === id) setDrawer(null);
     } else {
       const err = await res.json().catch(() => ({}));
-      setMsg(`❌ Error: ${err.error ?? 'desconocido'}`);
+      notify(`❌ ${err.error ?? 'Error desconocido'}`);
     }
     setBusy(null);
   }
 
+  // ── Bulk close ─────────────────────────────────────────────────────────────
+
+  async function bulkClose() {
+    if (selected.size === 0) return;
+    setBulkBusy(true);
+    await Promise.all(
+      [...selected].map((id) =>
+        fetch(`/api/admin/pqrs/${id}`, {
+          method:  'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ status: 'closed' }),
+        })
+      )
+    );
+    notify(`✅ ${selected.size} PQRS cerradas`);
+    setSelected(new Set());
+    setTick(t => t + 1);
+    setBulkBusy(false);
+  }
+
+  // ── Selección ──────────────────────────────────────────────────────────────
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleAll() {
+    const open = items.filter(i => i.status !== 'closed');
+    if (selected.size === open.length) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(open.map(i => i.id)));
+    }
+  }
+
+  const openItems = items.filter(i => i.status !== 'closed');
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="max-w-7xl mx-auto px-4 py-8">
+
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)]">PQRS</h1>
-          <p className="text-sm text-[var(--hp-text-secondary)] mt-1">
-            Gestión de solicitudes de contacto (Ley 1581 / SIC)
+          <a href="/admin" className="text-sm text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)]">← Admin</a>
+          <h1 className="text-2xl font-bold text-[var(--hp-text-primary)] mt-1">PQRS</h1>
+          <p className="text-sm text-[var(--hp-text-secondary)]">
+            {total} solicitudes · Ley 1581 / SIC
           </p>
         </div>
-        <a href="/admin" className="text-sm text-brand-600 hover:underline">← Admin</a>
       </div>
 
-      {/* Filtros de estado */}
-      <div className="flex gap-2 mb-6 flex-wrap">
-        {(['all', 'received', 'in_progress', 'closed'] as const).map((s) => (
-          <Button
-            key={s}
-            onClick={() => setFilter(s)}
-            className={`text-xs font-medium px-4 py-1.5 rounded-full border transition-colors ${
-              filter === s
-                ? 'bg-brand-600 text-white border-brand-600'
-                : 'border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-brand-300'
-            }`}
-          >
-            {s === 'all' ? 'Todas' : STATUS_LABELS[s]}
-          </Button>
-        ))}
+      {/* Filtros */}
+      <div className="flex flex-wrap items-center gap-3 mb-5">
+        {/* Status pills */}
+        <div className="flex gap-1.5">
+          {(['all', 'received', 'in_progress', 'closed'] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => { setStatus(s); setSelected(new Set()); }}
+              className={`text-xs font-medium px-3 py-1.5 rounded-full border transition-colors ${
+                statusFilter === s
+                  ? 'bg-brand-600 text-white border-brand-600'
+                  : 'border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-brand-300 hover:text-brand-600'
+              }`}
+            >
+              {s === 'all' ? 'Todas' : STATUS_LABELS[s]}
+            </button>
+          ))}
+        </div>
+
+        {/* Categoría */}
+        <select
+          value={categoryFilter}
+          onChange={(e) => setCat(e.target.value)}
+          className="text-sm border border-[var(--hp-border)] rounded-xl px-3 py-1.5 focus:outline-none focus:border-brand-400 bg-[var(--hp-bg-surface)] text-[var(--hp-text-primary)]"
+        >
+          <option value="all">Todas las categorías</option>
+          {Object.entries(CATEGORY_LABELS_FULL).map(([k, v]) => (
+            <option key={k} value={k}>{v}</option>
+          ))}
+        </select>
+
+        {/* Solo vencidas */}
+        <label className="flex items-center gap-2 text-sm text-[var(--hp-text-secondary)] cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={onlyOverdue}
+            onChange={(e) => setOverdue(e.target.checked)}
+            className="rounded"
+          />
+          Solo vencidas / en riesgo
+        </label>
+
+        {/* Bulk actions */}
+        {selected.size > 0 && (
+          <div className="ml-auto flex items-center gap-2">
+            <span className="text-sm text-[var(--hp-text-secondary)]">{selected.size} seleccionadas</span>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={bulkBusy}
+              onClick={bulkClose}
+            >
+              {bulkBusy ? 'Cerrando…' : `Cerrar ${selected.size}`}
+            </Button>
+            <button
+              onClick={() => setSelected(new Set())}
+              className="text-xs text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] underline"
+            >
+              Deseleccionar
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Feedback */}
-      {msg && (
-        <p className="text-sm mb-4 px-3 py-2 bg-[var(--hp-bg-page)] border border-[var(--hp-border)] rounded-lg text-[var(--hp-text-primary)]">
-          {msg}
-        </p>
+      {/* Toast */}
+      {toast && (
+        <div className="mb-4 px-4 py-2.5 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-xl text-sm text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-sm)]">
+          {toast}
+        </div>
       )}
 
-      {/* Lista */}
-      {items.length === 0 ? (
-        <p className="text-center text-[var(--hp-text-muted)] py-12">
-          No hay solicitudes{filter !== 'all' ? ` ${STATUS_LABELS[filter as PqrsStatus].toLowerCase()}s` : ''}.
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {items.map((item) => {
-            const sla     = getSlaLabel(item, now);
-            const isOpen  = expanded === item.id;
+      {/* Tabla */}
+      <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
+        {loading ? (
+          <div className="p-10 text-center text-[var(--hp-text-muted)] text-sm">Cargando…</div>
+        ) : items.length === 0 ? (
+          <div className="p-10 text-center text-[var(--hp-text-muted)] text-sm">
+            No hay solicitudes con estos filtros.
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-[var(--hp-bg-page)] border-b border-[var(--hp-border)]">
+              <tr>
+                <th className="px-4 py-3 w-8">
+                  <input
+                    type="checkbox"
+                    checked={selected.size === openItems.length && openItems.length > 0}
+                    onChange={toggleAll}
+                    className="rounded"
+                  />
+                </th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Solicitante</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Categoría</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Estado</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">SLA</th>
+                <th className="text-left px-4 py-3 font-medium text-[var(--hp-text-secondary)]">Fecha</th>
+                <th className="px-4 py-3 w-24"></th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--hp-border-subtle)]">
+              {items.map((item) => {
+                const chip = getSlaChip(item.sla, item.status);
+                const isSelectable = item.status !== 'closed';
 
-            return (
-              <div
-                key={item.id}
-                className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl p-5"
-              >
-                {/* Fila principal */}
-                <div className="flex items-start justify-between gap-4 flex-wrap">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap mb-1">
-                      <span className="font-semibold text-[var(--hp-text-primary)] text-sm">
-                        {item.name ?? item.email}
-                      </span>
-                      <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_COLORS[item.status]}`}>
-                        {STATUS_LABELS[item.status]}
-                      </span>
-                      <span className="rounded-full px-2 py-0.5 text-xs bg-[var(--hp-bg-page)] text-[var(--hp-text-secondary)] border border-[var(--hp-border)]">
+                return (
+                  <tr
+                    key={item.id}
+                    className="hover:bg-[var(--hp-bg-page)] transition-colors"
+                  >
+                    <td className="px-4 py-3">
+                      {isSelectable && (
+                        <input
+                          type="checkbox"
+                          checked={selected.has(item.id)}
+                          onChange={() => toggleSelect(item.id)}
+                          className="rounded"
+                        />
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      <p className="font-medium text-[var(--hp-text-primary)] truncate max-w-[180px]">
+                        {item.name ?? '—'}
+                      </p>
+                      <p className="text-xs text-[var(--hp-text-muted)] truncate max-w-[180px]">
+                        {item.email}
+                      </p>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--hp-bg-page)] border border-[var(--hp-border)] text-[var(--hp-text-secondary)]">
                         {CATEGORY_LABELS[item.category] ?? item.category}
                       </span>
-                      {sla && <span className={`text-xs ${sla.color}`}>{sla.text}</span>}
-                    </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[item.status]}`}>
+                        {STATUS_LABELS[item.status]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full ${chip.className}`}>
+                        {chip.label}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-[var(--hp-text-muted)]">
+                      {new Date(item.createdAt).toLocaleDateString('es-CO', { day: 'numeric', month: 'short' })}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <button
+                        onClick={() => setDrawer(item)}
+                        className="text-xs text-brand-600 hover:underline border border-[var(--hp-border)] rounded-lg px-3 py-1 hover:border-brand-300 transition-colors"
+                      >
+                        Gestionar
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
+      </div>
 
-                    <p className="text-xs text-[var(--hp-text-muted)] mb-1">
-                      {item.email} · {new Date(item.createdAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}
-                    </p>
-                    <p className="text-sm text-[var(--hp-text-secondary)] line-clamp-2">{item.message}</p>
+      {/* Drawer */}
+      {drawer && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/30 z-40"
+            onClick={() => setDrawer(null)}
+          />
 
-                    {item.responseChannel && (
-                      <p className="text-xs text-[var(--hp-text-muted)] mt-1">
-                        Respondido vía {CHANNEL_LABELS[item.responseChannel as ResponseChannel] ?? item.responseChannel}
-                        {item.firstRespondedAt && ` · ${new Date(item.firstRespondedAt).toLocaleDateString('es-CO')}`}
-                      </p>
-                    )}
-                  </div>
+          {/* Panel lateral */}
+          <div className="fixed inset-y-0 right-0 w-full max-w-lg bg-[var(--hp-bg-surface)] shadow-2xl z-50 flex flex-col overflow-hidden">
 
-                  <div className="flex gap-2 flex-shrink-0 items-start">
-                    <button
-                      onClick={() => setExpanded(isOpen ? null : item.id)}
-                      className="text-xs text-brand-600 hover:underline border border-[var(--hp-border)] rounded-lg px-3 py-1.5"
-                    >
-                      {isOpen ? 'Cerrar' : 'Gestionar'}
-                    </button>
-                  </div>
-                </div>
+            {/* Header drawer */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--hp-border)]">
+              <div>
+                <h2 className="font-bold text-[var(--hp-text-primary)]">
+                  {drawer.name ?? drawer.email}
+                </h2>
+                <p className="text-xs text-[var(--hp-text-muted)] mt-0.5">
+                  {CATEGORY_LABELS_FULL[drawer.category] ?? drawer.category} ·{' '}
+                  {new Date(drawer.createdAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}
+                </p>
+              </div>
+              <button
+                onClick={() => setDrawer(null)}
+                className="text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] text-xl leading-none"
+              >
+                ×
+              </button>
+            </div>
 
-                {/* Panel expandido */}
-                {isOpen && (
-                  <div className="mt-4 pt-4 border-t border-[var(--hp-border)] space-y-4">
-                    {/* Mensaje completo */}
-                    <div>
-                      <p className="text-xs font-medium text-[var(--hp-text-muted)] mb-1">Mensaje completo</p>
-                      <p className="text-sm text-[var(--hp-text-primary)] bg-[var(--hp-bg-page)] rounded-lg p-3 whitespace-pre-wrap">
-                        {item.message}
-                      </p>
-                      {item.dataRightType && (
-                        <p className="text-xs text-[var(--hp-text-muted)] mt-1">Tipo derecho: {item.dataRightType}</p>
-                      )}
-                    </div>
+            {/* Cuerpo drawer */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
 
-                    {/* Acciones de estado */}
-                    {item.status !== 'closed' && (
-                      <div className="space-y-3">
-                        <p className="text-xs font-medium text-[var(--hp-text-muted)]">Actualizar estado</p>
-
-                        {/* Canal de respuesta */}
-                        {!item.firstRespondedAt && (
-                          <div>
-                            <p className="text-xs text-[var(--hp-text-muted)] mb-2">Marcar primera respuesta</p>
-                            <div className="flex gap-2 flex-wrap">
-                              {RESPONSE_CHANNELS.map((ch) => (
-                                <button
-                                  key={ch}
-                                  disabled={busy === item.id}
-                                  onClick={() => patch(item.id, {
-                                    responseChannel: ch,
-                                    status: item.status === 'received' ? 'in_progress' : item.status,
-                                  })}
-                                  className="text-xs border border-[var(--hp-border)] rounded-lg px-3 py-1.5 hover:border-brand-300 hover:text-brand-600 transition-colors disabled:opacity-40"
-                                >
-                                  {CHANNEL_LABELS[ch]}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Cambio de estado */}
-                        <div className="flex gap-2 flex-wrap">
-                          {item.status === 'received' && (
-                            <Button
-                              size="sm"
-                              disabled={busy === item.id}
-                              onClick={() => patch(item.id, { status: 'in_progress' })}
-                            >
-                              {busy === item.id ? '…' : 'Marcar en proceso'}
-                            </Button>
-                          )}
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            disabled={busy === item.id}
-                            onClick={() => patch(item.id, { status: 'closed' })}
-                          >
-                            {busy === item.id ? '…' : 'Cerrar PQRS'}
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Info de resolución */}
-                    {item.status === 'closed' && (
-                      <p className="text-xs text-[var(--hp-text-muted)]">
-                        Cerrada el {item.resolvedAt
-                          ? new Date(item.resolvedAt).toLocaleDateString('es-CO')
-                          : '—'}
-                        {item.responseChannel && ` · Canal: ${CHANNEL_LABELS[item.responseChannel as ResponseChannel] ?? item.responseChannel}`}
-                      </p>
-                    )}
-                  </div>
+              {/* Badges estado + SLA */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_COLORS[drawer.status]}`}>
+                  {STATUS_LABELS[drawer.status]}
+                </span>
+                {(() => {
+                  const chip = getSlaChip(drawer.sla, drawer.status);
+                  return (
+                    <span className={`text-xs px-2 py-0.5 rounded-full ${chip.className}`}>
+                      {chip.label}
+                    </span>
+                  );
+                })()}
+                {drawer.sla.level && drawer.status !== 'closed' && (
+                  <span className="text-xs text-[var(--hp-text-muted)]">
+                    Límite: {drawer.sla.limit} días hábiles
+                  </span>
                 )}
               </div>
-            );
-          })}
-        </div>
+
+              {/* Contacto */}
+              <div className="bg-[var(--hp-bg-page)] rounded-xl p-4 space-y-1.5">
+                <p className="text-xs font-medium text-[var(--hp-text-muted)] uppercase tracking-wide">Contacto</p>
+                <p className="text-sm text-[var(--hp-text-primary)]">{drawer.name ?? '—'}</p>
+                <p className="text-sm text-[var(--hp-text-secondary)]">{drawer.email}</p>
+                {drawer.dataRightType && (
+                  <p className="text-xs text-[var(--hp-text-muted)]">Tipo derecho: {drawer.dataRightType}</p>
+                )}
+              </div>
+
+              {/* Mensaje */}
+              <div>
+                <p className="text-xs font-medium text-[var(--hp-text-muted)] uppercase tracking-wide mb-2">Mensaje</p>
+                <p className="text-sm text-[var(--hp-text-primary)] bg-[var(--hp-bg-page)] rounded-xl p-4 whitespace-pre-wrap leading-relaxed">
+                  {drawer.message}
+                </p>
+              </div>
+
+              {/* Respuesta anterior */}
+              {drawer.firstRespondedAt && (
+                <div className="bg-[var(--hp-bg-page)] rounded-xl p-4 space-y-1">
+                  <p className="text-xs font-medium text-[var(--hp-text-muted)] uppercase tracking-wide">Primera respuesta</p>
+                  <p className="text-sm text-[var(--hp-text-secondary)]">
+                    {new Date(drawer.firstRespondedAt).toLocaleDateString('es-CO', { dateStyle: 'medium' })}
+                    {drawer.responseChannel && (
+                      <> · {CHANNEL_LABELS[drawer.responseChannel as ResponseChannel] ?? drawer.responseChannel}</>
+                    )}
+                  </p>
+                </div>
+              )}
+
+              {/* Acciones — solo si no está cerrada */}
+              {drawer.status !== 'closed' && (
+                <div className="space-y-4 pt-2">
+                  <div className="border-t border-[var(--hp-border)] pt-4">
+                    <p className="text-xs font-medium text-[var(--hp-text-muted)] uppercase tracking-wide mb-3">
+                      Canal de respuesta
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {RESPONSE_CHANNELS.map((ch) => (
+                        <button
+                          key={ch}
+                          disabled={busy === drawer.id || drawer.responseChannel === ch}
+                          onClick={() => patch(drawer.id, {
+                            responseChannel: ch,
+                            status: drawer.status === 'received' ? 'in_progress' : drawer.status,
+                          })}
+                          className={`text-sm py-2 px-3 rounded-xl border transition-colors text-left ${
+                            drawer.responseChannel === ch
+                              ? 'border-brand-400 bg-brand-50 text-brand-600 font-medium'
+                              : 'border-[var(--hp-border)] text-[var(--hp-text-secondary)] hover:border-brand-300 hover:text-brand-600'
+                          } disabled:opacity-40`}
+                        >
+                          {CHANNEL_LABELS[ch]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Estado */}
+                  <div className="flex gap-2">
+                    {drawer.status === 'received' && (
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        disabled={busy === drawer.id}
+                        onClick={() => patch(drawer.id, { status: 'in_progress' })}
+                      >
+                        {busy === drawer.id ? '…' : 'Marcar en proceso'}
+                      </Button>
+                    )}
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={busy === drawer.id}
+                      onClick={() => patch(drawer.id, { status: 'closed' })}
+                    >
+                      {busy === drawer.id ? '…' : 'Cerrar PQRS'}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Cerrada info */}
+              {drawer.status === 'closed' && drawer.resolvedAt && (
+                <div className="bg-[var(--hp-bg-subtle)] rounded-xl p-4">
+                  <p className="text-sm text-[var(--hp-text-muted)]">
+                    Cerrada el {new Date(drawer.resolvedAt).toLocaleDateString('es-CO', { dateStyle: 'medium' })}
+                    {drawer.responseChannel && (
+                      <> · Canal: {CHANNEL_LABELS[drawer.responseChannel as ResponseChannel] ?? drawer.responseChannel}</>
+                    )}
+                  </p>
+                </div>
+              )}
+
+            </div>
+
+            {/* SLA reference footer */}
+            <div className="px-6 py-3 border-t border-[var(--hp-border)] bg-[var(--hp-bg-page)]">
+              <p className="text-xs text-[var(--hp-text-muted)]">
+                {(() => {
+                  const sla = PQRS_SLA[drawer.category as keyof typeof PQRS_SLA] ?? PQRS_SLA.general;
+                  return `SLA: ${sla.alertAt}d alerta · ${sla.limit}d límite · ${drawer.sla.businessDays}d transcurridos`;
+                })()}
+              </p>
+            </div>
+          </div>
+        </>
       )}
     </div>
   );

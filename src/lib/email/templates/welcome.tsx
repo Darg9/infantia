@@ -4,9 +4,9 @@ import {
   Head,
   Hr,
   Html,
+  Img,
   Link,
   Preview,
-  Row,
   Section,
   Text,
 } from '@react-email/components';
@@ -15,61 +15,57 @@ interface WelcomeEmailProps {
   userEmail?: string;
 }
 
-export const WelcomeEmail = ({ userEmail = 'friend' }: WelcomeEmailProps) => {
+export const WelcomeEmail = ({ userEmail }: WelcomeEmailProps) => {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://habitaplan.com';
+  const greeting = userEmail ? `Hola, ${userEmail}` : 'Hola';
 
   return (
     <Html>
       <Head />
-      <Preview>Bienvenido a HabitaPlan — descubre actividades para tu familia</Preview>
+      <Preview>Bienvenido a HabitaPlan — encuentra qué hacer en tu ciudad</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={box}>
-            <Row>
-              <Text style={heading}>Bienvenido a HabitaPlan 🎉</Text>
-            </Row>
-            <Hr style={hr} />
-            <Text style={paragraph}>
-              Hola {userEmail},
-            </Text>
-            <Text style={paragraph}>
-              Nos alegra mucho que te hayas unido a HabitaPlan. A partir de ahora podrás:
-            </Text>
-            <Text style={bulletPoint}>
-              ✓ Descubrir actividades, eventos y talleres para tus hijos en Bogotá
-            </Text>
-            <Text style={bulletPoint}>
-              ✓ Guardar tus favoritos para acceder rápidamente
-            </Text>
-            <Text style={bulletPoint}>
-              ✓ Crear perfiles de tus hijos y recibir recomendaciones personalizadas
-            </Text>
-            <Text style={bulletPoint}>
-              ✓ Calificar actividades y compartir tu opinión con otros padres
-            </Text>
 
-            <Row style={cta}>
-              <Link href={`${baseUrl}/actividades`} style={button}>
-                Explorar Actividades
-              </Link>
-            </Row>
+            {/* Logo */}
+            <Img
+              src={`${baseUrl}/logo.png`}
+              alt="HabitaPlan"
+              width="160"
+              style={logo}
+            />
+
+            {/* Contenido */}
+            <Text style={heading}>{greeting}</Text>
+            <Text style={paragraph}>
+              Tu cuenta en HabitaPlan ya está activa. A partir de ahora podrás:
+            </Text>
+            <Text style={bulletPoint}>✓ Descubrir actividades, eventos y talleres en tu ciudad</Text>
+            <Text style={bulletPoint}>✓ Guardar tus favoritos para acceder rápidamente</Text>
+            <Text style={bulletPoint}>✓ Calificar actividades y compartir tu opinión</Text>
+
+            <Link href={`${baseUrl}/actividades`} style={button}>
+              Explorar actividades
+            </Link>
+
+            {/* Aviso */}
+            <Text style={notice}>
+              Este es un mensaje automático, por favor no respondas.
+            </Text>
 
             <Hr style={hr} />
 
-            <Text style={footerText}>
-              Puedes personalizar tus preferencias de notificación en tu{' '}
-              <Link href={`${baseUrl}/perfil/notificaciones`} style={link}>
-                perfil
-              </Link>
-              .
+            {/* Firma */}
+            <Text style={footer}>
+              <strong style={{ color: '#475569' }}>HabitaPlan</strong>
+              <br />
+              Encuentra qué hacer en tu ciudad
+              <br />
+              <Link href={baseUrl} style={footerLink}>www.habitaplan.com</Link>
+              {' · '}
+              <Link href="mailto:info@habitaplan.com" style={footerLink}>info@habitaplan.com</Link>
             </Text>
-            <Text style={footerText}>
-              ¿Preguntas? Contáctanos en{' '}
-              <Link href={`${baseUrl}/contacto`} style={link}>
-                habitaplan.com/contacto
-              </Link>
-            </Text>
-            <Text style={footer}>© 2026 HabitaPlan. Todos los derechos reservados.</Text>
+
           </Section>
         </Container>
       </Body>
@@ -78,83 +74,80 @@ export const WelcomeEmail = ({ userEmail = 'friend' }: WelcomeEmailProps) => {
 };
 
 const main = {
-  backgroundColor: '#f3f4f6',
-  fontFamily:
-    '-apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif',
+  backgroundColor: '#f8fafc',
+  fontFamily: 'Inter, Arial, sans-serif',
 };
 
 const container = {
   backgroundColor: '#ffffff',
   margin: '0 auto',
-  padding: '20px 0 48px',
-  marginBottom: '64px',
+  maxWidth: '520px',
+  padding: '32px 24px 24px',
 };
 
 const box = {
-  padding: '0 48px',
+  padding: '0',
+};
+
+const logo = {
+  marginBottom: '32px',
+  display: 'block',
 };
 
 const heading = {
-  fontSize: '32px',
+  color: '#002147',
+  fontSize: '20px',
   fontWeight: 'bold',
-  margin: '16px 0',
+  margin: '0 0 12px',
   padding: '0',
-  color: '#000',
-};
-
-const hr = {
-  borderColor: '#e5e7eb',
-  margin: '26px 0 26px 0',
 };
 
 const paragraph = {
-  color: '#525252',
-  fontSize: '16px',
-  lineHeight: '26px',
-  margin: '16px 0',
+  color: '#475569',
+  fontSize: '15px',
+  lineHeight: '1.6',
+  margin: '0 0 16px',
 };
 
 const bulletPoint = {
-  color: '#525252',
+  color: '#475569',
   fontSize: '15px',
-  lineHeight: '24px',
-  margin: '8px 0',
-  paddingLeft: '8px',
-};
-
-const cta = {
-  textAlign: 'center' as const,
-  marginTop: '32px',
-  marginBottom: '32px',
+  lineHeight: '1.6',
+  margin: '4px 0',
 };
 
 const button = {
-  backgroundColor: '#fb923c',
-  borderRadius: '3px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
+  backgroundColor: '#002147',
+  borderRadius: '10px',
+  color: '#ffffff',
+  fontSize: '15px',
+  fontWeight: '600',
   textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 20px',
+  display: 'inline-block',
+  padding: '12px 28px',
+  margin: '24px 0 0',
 };
 
-const link = {
-  color: '#fb923c',
-  textDecoration: 'underline',
+const notice = {
+  color: '#94a3b8',
+  fontSize: '12px',
+  lineHeight: '1.6',
+  margin: '32px 0 0',
 };
 
-const footerText = {
-  color: '#6b7280',
-  fontSize: '14px',
-  lineHeight: '20px',
-  margin: '12px 0',
+const hr = {
+  borderColor: '#e2e8f0',
+  margin: '24px 0',
 };
 
 const footer = {
-  color: '#9ca3af',
+  color: '#94a3b8',
   fontSize: '12px',
-  lineHeight: '16px',
-  margin: '16px 0 0 0',
+  lineHeight: '1.6',
+  margin: '0',
+};
+
+const footerLink = {
+  color: '#002147',
+  textDecoration: 'none',
 };

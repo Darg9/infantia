@@ -43,9 +43,8 @@ const ALL_SOURCES: Source[] = [
   { name: 'Alcaldía de Bogotá',channel: 'web', url: 'https://bogota.gov.co/que-hacer/agenda-cultural', cityName: 'Bogotá', maxPages: 50 },
 
   // ── Bogotá — Museos y Cultura ─────────────────────────────────────────────
-  // Maloka: sitemap directo → 321 posts /noticias/ (vs 41 del homepage).
-  // post-sitemap1.xml cubre hasta May 2026; date-preflight descarta artículos viejos.
-  { name: 'Maloka',            channel: 'web', url: 'https://maloka.org/post-sitemap1.xml', sitemapPatterns: ['/noticias/'], cityName: 'Bogotá' },
+  // Maloka: /programacion/ es la página de agenda oficial (más limpio que sitemap /noticias/).
+  { name: 'Maloka',            channel: 'web', url: 'https://maloka.org/programacion/', cityName: 'Bogotá' },
   // Filarmónica: sitemap 1000+ URLs — filtrar /calendario-de-actividades/ y /conciertos/.
   { name: 'Filarmónica Bogotá', channel: 'web', url: 'https://www.filarmonicabogota.gov.co/sitemap.xml', sitemapPatterns: ['/calendario-de-actividades/', '/conciertos/'], cityName: 'Bogotá' },
 

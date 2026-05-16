@@ -87,7 +87,7 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
 // Para cada filtro, usa todos los demás filtros activos → 0 combinaciones vacías
 // =============================================================================
 async function getFacets(filters: ActiveFilters) {
-  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount, availableCities] =
+  const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount, citiesRaw] =
     await Promise.all([
       // Tipos disponibles: con todos los filtros EXCEPTO type
       prisma.activity.groupBy({
@@ -140,23 +140,21 @@ async function getFacets(filters: ActiveFilters) {
         },
       }),
 
-      // Ciudades con actividades geo-asignadas reales (mismo criterio que el Header).
-      // No usar isActive:true ni OR pattern — ambos incluyen ciudades sin contenido local.
-      prisma.city.findMany({
-        where: {
-          isActive: true,
-          locations: {
-            some: {
-              activities: {
-                some: { status: 'ACTIVE' },
-              },
-            },
-          },
-        },
-        select: { id: true, name: true },
-        orderBy: { name: 'asc' },
-      }),
+      // Ciudades con conteo de actividades ACTIVE (via locations → activities).
+      // $queryRaw porque Prisma no soporta _count anidado a través de relación doble.
+      prisma.$queryRaw<{ id: string; name: string; activity_count: bigint }[]>`
+        SELECT c.id, c.name, COUNT(DISTINCT a.id) AS activity_count
+        FROM cities c
+        JOIN locations l ON l.city_id = c.id
+        JOIN activities a ON a.location_id = l.id
+        WHERE c.is_active = true AND a.status = 'ACTIVE'
+        GROUP BY c.id, c.name
+        ORDER BY c.name ASC
+      `,
     ]);
+
+  const availableCities = (citiesRaw as { id: string; name: string; activity_count: bigint }[])
+    .map((c) => ({ id: c.id, name: c.name, activityCount: Number(c.activity_count) }));
 
   return {
     availableTypes: typeGroups.map((g) => ({ type: g.type as string, count: g._count._all })),

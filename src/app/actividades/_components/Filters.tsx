@@ -30,6 +30,7 @@ interface Category {
 interface City {
   id: string;
   name: string;
+  activityCount?: number;
 }
 
 interface Facets {
@@ -805,7 +806,7 @@ export default function Filters({
           >
             <option value="">Todas las ciudades</option>
             {facets.availableCities.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>{c.name}{c.activityCount ? ` (${c.activityCount})` : ''}</option>
             ))}
           </select>
         )}
@@ -983,7 +984,7 @@ export default function Filters({
                   className="w-full rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-3 text-sm text-[var(--hp-text-primary)] focus:border-brand-500 focus:outline-none [color-scheme:light] dark:[color-scheme:dark]">
                   <option value="">Todas las ciudades</option>
                   {facets.availableCities.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>{c.name}{c.activityCount ? ` (${c.activityCount})` : ''}</option>
                   ))}
                 </select>
               </div>

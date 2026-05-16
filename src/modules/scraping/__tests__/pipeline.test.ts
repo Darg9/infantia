@@ -749,6 +749,150 @@ describe('ScrapingPipeline logger integration (Instagram)', () => {
   });
 });
 
+// ── shouldSkipSource → skip=true ─────────────────────────────────────────────
+
+describe('ScrapingPipeline — shouldSkipSource skip=true (early return)', () => {
+  it('runBatchPipeline retorna vacío sin procesar links si la fuente está penalizada', async () => {
+    const { shouldSkipSource } = await import('../resilience');
+    vi.mocked(shouldSkipSource).mockResolvedValueOnce({ skip: true, reason: 'CRITICAL health score' });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runBatchPipeline('https://example.com/actividades');
+
+    expect(result.discoveredLinks).toBe(0);
+    expect(result.filteredLinks).toBe(0);
+    expect(result.results).toEqual([]);
+    // Cheerio nunca se llama porque el pipeline se aborta antes
+    expect(mockExtractLinksAllPages).not.toHaveBeenCalled();
+  });
+
+  it('runInstagramPipeline retorna vacío si la fuente Instagram está penalizada', async () => {
+    const { shouldSkipSource } = await import('../resilience');
+    vi.mocked(shouldSkipSource).mockResolvedValueOnce({ skip: true, reason: 'Auto-recovery cooldown' });
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline('https://www.instagram.com/test/');
+
+    expect(result.postsExtracted).toBe(0);
+    expect(result.results).toEqual([]);
+    expect(mockExtractProfile).not.toHaveBeenCalled();
+  });
+});
+
+// ── runReparsePipeline() ──────────────────────────────────────────────────────
+
+describe('ScrapingPipeline.runReparsePipeline()', () => {
+  const listingUrl = 'https://idartes.gov.co/actividades';
+  const urls = [
+    'https://idartes.gov.co/actividades/taller-1',
+    'https://idartes.gov.co/actividades/taller-2',
+  ];
+
+  it('reparsea URLs directamente omitiendo discovery y preflight', async () => {
+    mockExtract.mockResolvedValue({
+      sourceText: 'Texto largo del taller de artes para analizar con Gemini',
+      status: 'SUCCESS',
+    });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runReparsePipeline(urls, listingUrl);
+
+    expect(result.discoveredLinks).toBe(urls.length);
+    expect(result.filteredLinks).toBe(urls.length);
+    expect(result.results).toHaveLength(2);
+    expect(result.results.every(r => r.data !== null)).toBe(true);
+  });
+
+  it('registra error en resultado si la extracción falla para una URL', async () => {
+    mockExtract
+      .mockResolvedValueOnce({ sourceText: '', status: 'FAILED', error: 'HTTP 404' })
+      .mockResolvedValueOnce({ sourceText: 'Texto válido del segundo taller', status: 'SUCCESS' });
+    mockAnalyze.mockResolvedValue(sampleNLPResult);
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runReparsePipeline(urls, listingUrl);
+
+    expect(result.results).toHaveLength(2);
+    expect(result.results[0].data).toBeNull();
+    expect(result.results[0].error).toBeTruthy();
+    expect(result.results[1].data).not.toBeNull();
+  });
+
+  it('guarda en BD las actividades con confidence >= threshold cuando saveToDb=true', async () => {
+    mockExtract.mockResolvedValue({
+      sourceText: 'Texto del taller con alta confianza para guardar',
+      status: 'SUCCESS',
+    });
+    mockAnalyze.mockResolvedValue({ ...sampleNLPResult, confidenceScore: 0.9 });
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    const result = await pipeline.runReparsePipeline(urls, listingUrl);
+
+    expect(mockSaveActivity).toHaveBeenCalledTimes(2);
+    expect(result.savedCount).toBe(2);
+  });
+
+  it('NO guarda si confidence está por debajo del threshold (0.3 para gemini)', async () => {
+    mockExtract.mockResolvedValue({
+      sourceText: 'Texto del taller con baja confianza',
+      status: 'SUCCESS',
+    });
+    mockAnalyze.mockResolvedValue({ ...sampleNLPResult, confidenceScore: 0.1 });
+
+    const pipeline = new ScrapingPipeline({ saveToDb: true });
+    await pipeline.runReparsePipeline(urls, listingUrl);
+
+    expect(mockSaveActivity).not.toHaveBeenCalled();
+  });
+});
+
+// ── Instagram QUOTA_EXHAUSTED → break loop ────────────────────────────────────
+
+describe('ScrapingPipeline Instagram — QUOTA_EXHAUSTED break', () => {
+  it('detiene el loop de posts al recibir QUOTA_EXHAUSTED (no cuenta como error)', async () => {
+    const profileWith4Posts = {
+      ...sampleInstagramProfile,
+      posts: [
+        {
+          url: 'https://www.instagram.com/p/P1/',
+          // Caption con señal de evento para pasar el pre-filter
+          caption: 'Gran taller de arte este sábado para toda la familia en el parque central',
+          imageUrls: [],
+          timestamp: '2026-05-01T10:00:00.000Z',
+          likesCount: 10,
+        },
+        {
+          url: 'https://www.instagram.com/p/P2/',
+          caption: 'Festival de teatro este domingo en la plaza principal para toda la familia',
+          imageUrls: [],
+          timestamp: '2026-05-01T11:00:00.000Z',
+          likesCount: 20,
+        },
+        {
+          url: 'https://www.instagram.com/p/P3/',
+          caption: 'Feria del libro este viernes con actividades para niños y adultos en el parque',
+          imageUrls: [],
+          timestamp: '2026-05-01T12:00:00.000Z',
+          likesCount: 30,
+        },
+      ],
+    };
+    mockExtractProfile.mockResolvedValue(profileWith4Posts);
+    mockAnalyzeInstagramPost
+      .mockResolvedValueOnce(sampleIGActivity)          // Post 1: éxito
+      .mockRejectedValueOnce(new Error('QUOTA_EXHAUSTED: All keys exhausted')); // Post 2: cuota agotada → break
+
+    const pipeline = new ScrapingPipeline();
+    const result = await pipeline.runInstagramPipeline('https://www.instagram.com/test/');
+
+    // Solo el primer post se procesó antes del break
+    expect(result.results).toHaveLength(1);
+    // El segundo post con QUOTA_EXHAUSTED NO se registra como error (break silencioso)
+    expect(result.results[0].data).toEqual(sampleIGActivity);
+  });
+});
+
 // ── disconnect() ──────────────────────────────────────────────────────────────
 
 describe('ScrapingPipeline.disconnect()', () => {

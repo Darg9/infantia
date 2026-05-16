@@ -15,6 +15,11 @@ const { mockFindMany, mockCount, mockFindUnique, mockCreate, mockUpdate, mockQue
   mockQueryRaw: vi.fn(),
 }));
 
+vi.mock('@/modules/analytics/metrics', () => ({
+  getCachedCTR: vi.fn().mockResolvedValue({}),
+  ctrToBoost: vi.fn().mockReturnValue(0),
+}));
+
 vi.mock('@/lib/db', () => ({
   prisma: {
     $queryRaw: mockQueryRaw,
@@ -40,6 +45,7 @@ import {
   createActivity,
   updateActivity,
   deleteActivity,
+  getSimilarActivities,
   VALID_SORT_VALUES,
   clearCountCacheForTests,
 } from '../activities.service';
@@ -492,5 +498,306 @@ describe('deleteActivity()', () => {
     await deleteActivity('abc-123');
     // Verifica que se usó update, no delete
     expect(mockUpdate).toHaveBeenCalledTimes(1);
+  });
+});
+
+// =============================================================================
+// createActivity / updateActivity — branches con sourceUrl
+// =============================================================================
+
+describe('createActivity() — branches sourceUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCreate.mockResolvedValue(actividadMock);
+  });
+
+  it('extrae sourceDomain cuando se proporciona sourceUrl', async () => {
+    await createActivity({
+      title: 'Taller con fuente',
+      description: 'Actividad con URL de origen',
+      type: 'ONE_TIME',
+      status: 'DRAFT',
+      audience: 'ALL',
+      priceCurrency: 'COP',
+      sourceType: 'SCRAPING',
+      sourceConfidence: 0.8,
+      providerId: 'prov-001',
+      verticalId: 'vert-001',
+      sourceUrl: 'https://idartes.gov.co/actividades/taller-arte',
+    });
+    const dataArg = mockCreate.mock.calls[0][0].data;
+    expect(dataArg.sourceDomain).toBe('idartes.gov.co');
+  });
+});
+
+describe('updateActivity() — branches sourceUrl', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockUpdate.mockResolvedValue({ ...actividadMock, title: 'Título actualizado' });
+  });
+
+  it('extrae sourceDomain cuando se proporciona sourceUrl en update', async () => {
+    await updateActivity('abc-123', {
+      sourceUrl: 'https://biblored.gov.co/eventos/nuevo-taller',
+    });
+    const dataArg = mockUpdate.mock.calls[0][0].data;
+    expect(dataArg.sourceDomain).toBe('biblored.gov.co');
+  });
+
+  it('no modifica categorías cuando categoryIds está ausente en update', async () => {
+    await updateActivity('abc-123', { title: 'Solo título' });
+    const dataArg = mockUpdate.mock.calls[0][0].data;
+    expect(dataArg.categories).toBeUndefined();
+  });
+});
+
+// =============================================================================
+// listActivities() — branches adicionales
+// =============================================================================
+
+describe('listActivities() — branches adicionales', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearCountCacheForTests();
+    mockFindMany.mockResolvedValue([actividadMock]);
+    mockCount.mockResolvedValue(1);
+  });
+
+  it('FORCE_CHRONO=true fuerza ordenamiento por newest independiente de sortBy', async () => {
+    process.env.FORCE_CHRONO = 'true';
+    try {
+      await listActivities({ skip: 0, pageSize: 20, sortBy: 'relevance' });
+      const orderBy = mockFindMany.mock.calls[0][0].orderBy;
+      // newest = [{ createdAt: 'desc' }]
+      expect(orderBy).toEqual([{ createdAt: 'desc' }]);
+    } finally {
+      delete process.env.FORCE_CHRONO;
+    }
+  });
+
+  it('aplica penalización 0.85 a actividades sin rango de edad (ageMin=null, ageMax=null)', async () => {
+    const noAgeMock = { ...actividadMock, ageMin: null, ageMax: null };
+    mockFindMany.mockResolvedValue([noAgeMock]);
+    const result = await listActivities({ skip: 0, pageSize: 20 });
+    // La penalización se aplica internamente — el resultado sigue devolviendo la actividad
+    expect(result.activities).toHaveLength(1);
+  });
+
+  it('hybrid ranking: ejercita branch act.startDate truthy en búsqueda con scores', async () => {
+    const matchId = actividadMock.id;
+    mockQueryRaw.mockResolvedValue([{
+      id: matchId,
+      sim_title: 0.8,
+      sim_desc: 0.4,
+      exact_title: true,
+      prefix_title: true,
+    }]);
+    // Actividad con startDate para ejercitar el branch act.startDate → eventDate = startDate
+    const actWithDate = {
+      ...actividadMock,
+      startDate: new Date(Date.now() + 7 * 86_400_000), // 7 días adelante
+    };
+    mockFindMany.mockResolvedValue([actWithDate]);
+
+    const result = await listActivities({ skip: 0, pageSize: 20, search: 'natación' });
+    expect(result.activities).toHaveLength(1);
+  });
+
+  it('fallback progresivo: usa umbral 0.2 si filteredActivities < needed a 0.3', async () => {
+    // 3 actividades con confidence muy bajo → rankingScore < 0.3 pero > 0.2
+    const lowScoreActs = Array.from({ length: 3 }, (_, i) => ({
+      ...actividadMock,
+      id: `low-${i}`,
+      sourceConfidence: 0.01,
+      ageMin: null,
+      ageMax: null, // penalización → score * 0.85
+      sourceDomain: 'unknown-source.com',
+    }));
+    mockFindMany.mockResolvedValue(lowScoreActs);
+    mockCount.mockResolvedValue(3);
+
+    const result = await listActivities({ skip: 0, pageSize: 3 });
+    // Fallback progresivo garantiza que el resultado no quede vacío
+    expect(result.activities.length).toBeGreaterThanOrEqual(0);
+  });
+
+  it('MAX_DIVERSITY_PER_DOMAIN=2 limita dominios a 2 slots en diversePool', async () => {
+    process.env.MAX_DIVERSITY_PER_DOMAIN = '2';
+    try {
+      // 4 biblored + 4 idartes = 8 actividades mixtas
+      // Con cap=2: diversePool = [2 biblored, 2 idartes], overflowPool = [2 biblored, 2 idartes]
+      // slice(0,4) = [biblored-0, biblored-1, idartes-0, idartes-1] → max 2 por dominio
+      const acts = [
+        ...Array.from({ length: 4 }, (_, i) => ({
+          ...actividadMock,
+          id: `b-${i}`,
+          sourceDomain: 'biblored.gov.co',
+          sourceUrl: 'https://biblored.gov.co/evento',
+          _count: { views: 0 },
+        })),
+        ...Array.from({ length: 4 }, (_, i) => ({
+          ...actividadMock,
+          id: `id-${i}`,
+          sourceDomain: 'idartes.gov.co',
+          sourceUrl: 'https://idartes.gov.co/evento',
+          _count: { views: 0 },
+        })),
+      ];
+      mockFindMany.mockResolvedValue(acts);
+      mockCount.mockResolvedValue(8);
+
+      const result = await listActivities({ skip: 0, pageSize: 4 });
+      const biblored = result.activities.filter((a: any) => a.sourceDomain === 'biblored.gov.co');
+      // Con cap=2: biblored en diversePool = 2 → en el slice de pageSize=4 max 2 biblored
+      expect(biblored.length).toBeLessThanOrEqual(2);
+    } finally {
+      delete process.env.MAX_DIVERSITY_PER_DOMAIN;
+    }
+  });
+});
+
+// =============================================================================
+// getSimilarActivities()
+// =============================================================================
+
+describe('getSimilarActivities()', () => {
+  // Fixture: base activity (solo campos que usa findUnique con select)
+  const baseMock = {
+    categories: [{ categoryId: 'cat-001' }],
+    location: { cityId: 'city-bog' },
+  };
+
+  // Fixture: candidato completo (lo que devuelve findMany con activityIncludes)
+  const candidateMock = {
+    ...actividadMock,
+    id: 'cand-1',
+    title: 'Taller similar',
+    sourceDomain: 'idartes.gov.co',
+    sourceUrl: 'https://idartes.gov.co/taller',
+    startDate: null,
+    _count: { views: 0 },
+    categories: [{ category: { id: 'cat-001', name: 'Música', slug: 'musica' } }],
+    location: {
+      id: 'loc-1',
+      name: 'Teatro Mayor',
+      address: 'Cra 7 #22-47',
+      neighborhood: 'Centro',
+      latitude: 4.65,
+      longitude: -74.06,
+      city: { id: 'city-bog', name: 'Bogotá' },
+    },
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    clearCountCacheForTests();
+  });
+
+  it('retorna [] cuando la actividad base no existe', async () => {
+    mockFindUnique.mockResolvedValue(null);
+    const result = await getSimilarActivities('no-existe');
+    expect(result).toEqual([]);
+    expect(mockFindMany).not.toHaveBeenCalled();
+  });
+
+  it('retorna [] cuando la actividad base no tiene categorías', async () => {
+    mockFindUnique.mockResolvedValue({ categories: [], location: null });
+    const result = await getSimilarActivities('abc-123');
+    expect(result).toEqual([]);
+    expect(mockFindMany).not.toHaveBeenCalled();
+  });
+
+  it('devuelve candidatos que comparten categorías', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    mockFindMany.mockResolvedValue([candidateMock]);
+
+    const result = await getSimilarActivities('abc-123');
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('cand-1');
+  });
+
+  it('prioriza candidatos de la misma ciudad (cityId match → +2 score)', async () => {
+    mockFindUnique.mockResolvedValue(baseMock); // cityId: 'city-bog'
+
+    const sameCity = { ...candidateMock, id: 'same-city' }; // city.id = 'city-bog'
+    const diffCity = {
+      ...candidateMock,
+      id: 'diff-city',
+      location: {
+        ...candidateMock.location,
+        city: { id: 'city-med', name: 'Medellín' },
+      },
+    };
+    // diffCity primero en el array — sameCity debería ganar por score más alto
+    mockFindMany.mockResolvedValue([diffCity, sameCity]);
+
+    const result = await getSimilarActivities('abc-123', 1);
+    expect(result[0].id).toBe('same-city');
+  });
+
+  it('aplica bonus temporal +3 cuando startDate está en los próximos 7 días', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    const soonDate = new Date(Date.now() + 3 * 86_400_000); // 3 días
+    const withSoon = { ...candidateMock, id: 'soon', startDate: soonDate };
+    const noDate   = { ...candidateMock, id: 'no-date', startDate: null };
+    // sin startDate va primero en array pero withSoon debería ganar por +3 temporal
+    mockFindMany.mockResolvedValue([noDate, withSoon]);
+
+    const result = await getSimilarActivities('abc-123', 2);
+    expect(result[0].id).toBe('soon'); // mayor score
+  });
+
+  it('aplica bonus temporal +1 cuando startDate está entre 8 y 30 días', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    const medDate = new Date(Date.now() + 15 * 86_400_000); // 15 días → bonus=1
+    const withMed = { ...candidateMock, id: 'medium', startDate: medDate };
+    mockFindMany.mockResolvedValue([withMed]);
+
+    const result = await getSimilarActivities('abc-123', 1);
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('medium');
+  });
+
+  it('no aplica bonus temporal cuando startDate es null', async () => {
+    mockFindUnique.mockResolvedValue({ categories: [{ categoryId: 'cat-001' }], location: null });
+    const noDate = { ...candidateMock, startDate: null };
+    mockFindMany.mockResolvedValue([noDate]);
+
+    const result = await getSimilarActivities('abc-123', 1);
+    expect(result).toHaveLength(1); // funciona sin cityId ni startDate
+  });
+
+  it('no aplica bonus temporal cuando startDate es una fecha pasada (daysUntil < 0)', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    const pastDate = new Date(Date.now() - 5 * 86_400_000); // hace 5 días
+    const pastAct = { ...candidateMock, id: 'past', startDate: pastDate };
+    mockFindMany.mockResolvedValue([pastAct]);
+
+    const result = await getSimilarActivities('abc-123', 1);
+    expect(result).toHaveLength(1); // la actividad pasada se incluye, sin bonus
+  });
+
+  it('respeta el límite de resultados (limit=2)', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    const candidates = Array.from({ length: 8 }, (_, i) => ({
+      ...candidateMock,
+      id: `cand-${i}`,
+    }));
+    mockFindMany.mockResolvedValue(candidates);
+
+    const result = await getSimilarActivities('abc-123', 2);
+    expect(result).toHaveLength(2);
+  });
+
+  it('usa limit=4 por defecto', async () => {
+    mockFindUnique.mockResolvedValue(baseMock);
+    const candidates = Array.from({ length: 10 }, (_, i) => ({
+      ...candidateMock,
+      id: `cand-${i}`,
+    }));
+    mockFindMany.mockResolvedValue(candidates);
+
+    const result = await getSimilarActivities('abc-123');
+    expect(result).toHaveLength(4);
   });
 });

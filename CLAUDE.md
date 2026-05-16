@@ -236,8 +236,8 @@ Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando 
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
 ## Estado actual (v0.21.1 — Actualizado 2026-05-16)
 - **~219 actividades ACTIVE** en BD (Bogotá principalmente; Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13)
-- **1411 tests** en 86 archivos — `npm test` pasa — 1411 passed, 2 skipped, 0 errores
-- Cobertura: statements 86.86% ✅ | branches 79.94% (umbral 79% diferenciado — DEBT-07) | lines 88.36% ✅
+- **1436 tests** en 86 archivos — `npm test` pasa — 1436 passed, 2 skipped, 0 errores
+- Cobertura: statements 89.07% ✅ | branches 81.78% ✅ (umbral 79% diferenciado) | lines 90.39% ✅
 - **ESLint limpio** en `src/` — 0 warnings en código de producción (S73). scripts/ excluidos con globalIgnores.
 - GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
@@ -276,7 +276,7 @@ Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando 
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
 | DEBT-05 | ESLint legacy | ~~178 warnings pre-existentes~~ | **RESUELTO (S73):** `_` prefix convention + globalIgnores (scripts/, e2e/). 0 warnings en `src/` producción. | — |
 | DEBT-06 | Testing Mocks | ~~7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57.~~ | **RESUELTO (2026-05-02):** Tests alineados con comportamiento real del módulo `resilience/` v0.18.0. `classifyError` ETIMEDOUT fix (E-01) incluido. 83 archivos / 1326 tests — exit 0. | — |
-| DEBT-07 | Branch Coverage | Branch coverage real: 79.94% (threshold diferenciado 79% — vs 85% para lines/statements/functions). Módulos con ramas sin cubrir: `pipeline.ts` (73.17%), `activities.service.ts` (69.56%), `publish-validator.ts` (63.63%). Causa: ramas de error/fallback que requieren mocks complejos de Redis/BullMQ/Prisma. | **Mitigado (S73):** exclusiones correctas para `merger.ts`, `city-review.ts`, `producer.ts`, `quota-tracker.ts`, `track.ts`, legal/constants. Threshold branches=79% diferenciado. | Agregar tests de ramas en pipeline.ts y activities.service.ts en sprints futuros |
+| DEBT-07 | Branch Coverage | ~~Branch coverage real: 79.94% (threshold diferenciado 79%)~~ | **RESUELTO (S74):** +25 tests — `getSimilarActivities` (98.19% branches), `runReparsePipeline`, `shouldSkipSource skip=true`, `QUOTA_EXHAUSTED` break, `FORCE_CHRONO`, `sourceUrl` branches. Global: **81.78% branches ✅** (umbral 79%). `pipeline.ts` sigue en 68.43% por Fase-3 batch loop (requiere V2 gate mocks). | Pipeline.ts Fase-3 branches pendientes — baja prioridad |
 | **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | **Mitigado (S58):** Implementado Filtro Bi-capa (`count >= 3`) en autocompletado preservando la persistencia raw. | - |
 | **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | **Mitigado (S58):** Implementado `normalizeQuery()` con NFD, stopwords filtering y retención de 3 tokens fuertes. | - |
 | **FEAT-6.8-3** | Analytics | Ceguera analítica sobre interacción de usuarios con filtros facetados en navegación no textual. | **RESUELTO (v0.19.1):** Evento `filter_applied` instrumentado en `Filters.tsx` con throttle de 2000ms. | - |

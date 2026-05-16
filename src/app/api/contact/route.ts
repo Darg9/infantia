@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
 
   // 2. Intentar enviar los emails
   try {
-    const [resEquipo, resUser] = await Promise.all([
+    const [resEquipo] = await Promise.all([
       resend.emails.send({
         from:     FROM_EMAIL,
         to:       CONTACT_EMAIL,

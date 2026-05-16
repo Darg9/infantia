@@ -109,6 +109,14 @@ const eslintConfig = defineConfig([...nextVitals, ...nextTs, {
     ],
     // Block new `any` in all files not explicitly overridden below.
     "@typescript-eslint/no-explicit-any": "warn",
+    // Convención estándar: variables/args prefijados con _ son intencionalmente no usados.
+    "@typescript-eslint/no-unused-vars": ["warn", {
+      varsIgnorePattern: "^_",
+      argsIgnorePattern: "^_",
+      caughtErrorsIgnorePattern: "^_",
+      destructuredArrayIgnorePattern: "^_",
+      ignoreRestSiblings: true,
+    }],
   }
 }, // Legacy files: downgrade to warn so they stay visible but don't block CI.
 {
@@ -128,6 +136,14 @@ globalIgnores([
   // Scripts JS legados (one-time codemods, DS guard) — usan require() por diseño
   "codemods/**",
   "scripts/ds-guard.js",
+  // Generadores de documentos fundacionales (one-time, no son prod code)
+  "scripts/generate_v*.mjs",
+  "scripts/generate-brand-assets.mjs",
+  // Otros scripts .mjs one-time (codemods, fixers, doc updaters)
+  "scripts/**/*.mjs",
+  "scripts/codemods/**",
+  // E2E tests — playwright, no son prod code
+  "e2e/**",
 ]),
 // AST Regex Rule for className (anti-Tailwind directo de color)
 // Captura solo clases de COLOR Tailwind directas: bg-red-500, text-blue-400, border-gray-200, etc.

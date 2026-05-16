@@ -1,8 +1,3 @@
-import { PrismaClient } from '../../generated/prisma/client';
-import { createLogger } from '../../lib/logger';
-import { PrismaPg } from '@prisma/adapter-pg';
-
-const log = createLogger('dedup:cluster');
 
 export interface ActivityClusterNode {
   id: string;

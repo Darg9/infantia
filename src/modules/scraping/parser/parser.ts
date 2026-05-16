@@ -15,7 +15,6 @@
 
 import type { ActivityNLPResult, DiscoveredLink, ScrapedRawData } from '../types';
 import type { GeminiAnalyzer } from '../nlp/gemini.analyzer';
-import { CheerioExtractor } from '../extractors/cheerio.extractor';
 import { fallbackFromCheerio } from './fallback-mapper';
 import { isRetryableError, _incrementMetric } from './parser.types';
 import type { ParseResult } from './parser.types';

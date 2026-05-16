@@ -230,8 +230,6 @@ export class CheerioExtractor implements Extractor {
 
     const html = await response.text();
     const $ = cheerio.load(html);
-    const baseUrl = new URL(currentUrl);
-
     // Estrategia 1: Buscar link con texto "Siguiente", "Next", "›", "»"
     const nextPatterns = ['siguiente', 'next', '›', '»', '>>'];
     for (const pattern of nextPatterns) {

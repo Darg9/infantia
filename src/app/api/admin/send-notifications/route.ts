@@ -2,7 +2,7 @@ import { getErrorMessage } from '../../../../lib/error';
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '@/generated/prisma/client';
-import { sendWelcomeEmail, sendActivityDigest } from '@/lib/email/resend';
+import { sendActivityDigest } from '@/lib/email/resend';
 import { sendPushToMany } from '@/lib/push';
 import { createLogger } from '@/lib/logger';
 

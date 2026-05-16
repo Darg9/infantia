@@ -10,6 +10,7 @@
  * Tamaños: xs (24) / sm (32) / md (40) / lg (64) / xl (80)
  */
 
+import Image from 'next/image'
 import { clsx } from 'clsx'
 
 type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl'
@@ -33,6 +34,8 @@ const SIZE_CLASSES: Record<AvatarSize, { wrapper: string; text: string; icon: st
   lg: { wrapper: 'w-16 h-16', text: 'text-lg',     icon: 'w-5 h-5' },
   xl: { wrapper: 'w-20 h-20', text: 'text-2xl',    icon: 'w-6 h-6' },
 }
+
+const SIZE_PX: Record<AvatarSize, number> = { xs: 24, sm: 32, md: 40, lg: 64, xl: 80 }
 
 function SpinnerIcon({ className }: { className?: string }) {
   return (
@@ -69,9 +72,11 @@ export function Avatar({
     <>
       {/* Image or initial */}
       {src ? (
-        <img
+        <Image
           src={src}
           alt={name ? `Foto de ${name}` : 'Avatar'}
+          width={SIZE_PX[size]}
+          height={SIZE_PX[size]}
           className={clsx(
             wrapper,
             'rounded-full object-cover',

@@ -68,9 +68,8 @@ export async function trackEvent({
       })
     });
 
-  } catch (e) {
+  } catch {
     // fail silently para no afectar performance UX ni crashear arbol de render...
-    // console.warn('Silenced Event Error');
   }
 }
 
@@ -147,7 +146,7 @@ class EventBatchTracker {
           body
         }).catch(() => {});
       }
-    } catch (e) {
+    } catch {
       // fail silently
     }
   }

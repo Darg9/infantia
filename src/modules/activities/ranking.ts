@@ -1,7 +1,4 @@
 import { Activity } from '@/generated/prisma/client';
-import { createLogger } from '@/lib/logger';
-
-const log = createLogger('activities:ranking');
 
 export function getDomainFromUrl(url: string | null): string {
   if (!url) return '';
@@ -39,7 +36,7 @@ function computeRecencyScore(createdAt: Date): number {
  * Relevance Score:
  * Default base para integraciones futuras basadas en afinidad de usuario
  */
-function computeRelevanceScore(activity: Partial<Activity>): number {
+function computeRelevanceScore(_activity: Partial<Activity>): number {
   // Inicial simple según requerimiento
   return 0.7;
 }

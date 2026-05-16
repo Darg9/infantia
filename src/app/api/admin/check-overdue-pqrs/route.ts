@@ -35,7 +35,6 @@ function buildEmailHtml(alerts: PqrsAlert[]): string {
   const warningCount  = alerts.filter(a => a.level === 'WARNING').length;
 
   const emoji = overdueCount > 0 ? '🚨' : dueTodayCount > 0 ? '⏱️' : '⚠️';
-  const subject = `${emoji} HabitaPlan — PQRS requieren atención (${alerts.length} casos)`;
 
   const rows = alerts
     .map(a => {

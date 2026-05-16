@@ -1,8 +1,8 @@
 'use client';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
 
 import { createLogger } from '@/lib/logger'
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 
 const log = createLogger('admin:quality')
 import {
@@ -33,7 +33,7 @@ export default function QualityDashboardClient() {
   const [loading, setLoading] = useState(true)
   const [filters, setFilters] = useState({ from: "", to: "", source: "" })
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams()
@@ -59,11 +59,11 @@ export default function QualityDashboardClient() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [filters])
 
   useEffect(() => {
     fetchData()
-  }, [filters])
+  }, [fetchData])
 
   const latest = data.length > 0 ? data[data.length - 1] : null;
   const status = getSystemStatus(latest);

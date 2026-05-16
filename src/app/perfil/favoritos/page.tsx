@@ -127,9 +127,6 @@ export default async function FavoritosPage() {
     }
   }
 
-  const activeCount = mixedFavorites.filter(
-    (f) => f.type === 'activity' && f.item.status === 'ACTIVE'
-  ).length;
   const expiredCount = mixedFavorites.filter(
     (f) => f.type === 'activity' && f.item.status === 'EXPIRED'
   ).length;

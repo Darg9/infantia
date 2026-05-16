@@ -104,6 +104,7 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
       mapRef.current        = null;
       layerGroupRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 'city' se usa solo para el centro inicial; re-inicializar el mapa al cambiar ciudad destruiría la instancia Leaflet
   }, []);
 
   // ── Actualizar pines cuando cambian los datos ─────────────────────────────

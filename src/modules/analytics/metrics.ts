@@ -118,7 +118,7 @@ export function clearCTRCacheForTests(): void {
  * Obtiene métricas promedio (saveRate, avgCost) de los últimos 5 runs por fuente.
  * Se utiliza para calcular heurísticas del Predictitve Scheduler.
  */
-export async function getSourceAggregatedStats(sourceId: string, limit: number = 5): Promise<{ saveRate: number; avgCost: number }> {
+export async function getSourceAggregatedStats(sourceId: string, _limit: number = 5): Promise<{ saveRate: number; avgCost: number }> {
   // TODO: Implementar la tabla ingest_metrics o recuperar stats del SourceLog.
   // Actualmente retorna un fallback neutro para no quebrar el Predictitve Scheduler.
   return { saveRate: 0.20, avgCost: 50 };

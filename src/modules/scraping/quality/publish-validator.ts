@@ -1,8 +1,5 @@
 import { ActivityNLPResult } from '../types';
 import { isDomainSpecificNoise } from './domain-noise-rules';
-import { createLogger } from '../../../lib/logger';
-
-const log = createLogger('scraping:trust-layer');
 
 export interface PublishValidationResult {
   action: 'PUBLISH' | 'QUARANTINE' | 'REJECT';

@@ -55,18 +55,18 @@ export async function resolveClusterWinner(
             checksUsed++;
 
             try {
-               const analysis = await analyzer.analyze(`Compare these two event titles and determine if they represent the exact same event. 
+               await analyzer.analyze(`Compare these two event titles and determine if they represent the exact same event.
                Event A: "${cluster.canonical.title}"
                Event B: "${candidate.title}"
                Respond exactly with JSON: { "isDuplicate": true } or { "isDuplicate": false }`, 'dedup-check');
-               
+
                // Dirty parse since analyzer returns standard schema, we trick it by passing a custom prompt context.
                // Actually natively GeminiAnalyzer accepts URL content to parse event. We should abstract a simple generate function.
                // For this implementation, we will skip Gemini if not specifically injected, and rely on 0.8 strict threshold if Gemini fails
                if (hyScore < 0.85) { // Without gemini we need to be stricter
                    continue;
                }
-            } catch (e) {
+            } catch {
                if (hyScore < 0.85) continue;
             }
         }

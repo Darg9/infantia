@@ -313,14 +313,12 @@ export async function listActivities(params: ListParams) {
   // IMPORTANTE: la diversificación se aplica DESPUÉS del slice de página para que
   // nunca bloquee la paginación (si se aplica globalmente, con pocas fuentes/dominios
   // los primeros N items consumen toda la cuota y las páginas 2+ quedan vacías).
-  let totalHidden = 0;
   let diversified: ActivityWithScore[] = processedActivities; // fallback para sort no-relevance
   // Declaradas aquí para que el bloque de logging (scope externo) pueda referenciarlas
   let diversePool: ActivityWithScore[] = [];
   let overflowPool: ActivityWithScore[] = [];
 
   if (isRelevanceSort) {
-    const initialCount = processedActivities.length;
     // needed = cuántos items necesitamos disponibles para llegar al final de esta página
     const needed = params.skip + params.pageSize;
 
@@ -335,7 +333,7 @@ export async function listActivities(params: ListParams) {
     }
 
     processedActivities = filteredActivities;
-    totalHidden = initialCount - processedActivities.length;
+    // totalHidden = initialCount - processedActivities.length; // metric, not yet surfaced
 
     // Ordenar por score descendente
     processedActivities.sort((a, b) => b.rankingScore - a.rankingScore);

@@ -22,7 +22,7 @@ interface ShareButtonProps {
 export function ShareButton({
   id,
   title,
-  description,
+  description: _description,
   imageUrl,
   ageMin,
   ageMax,

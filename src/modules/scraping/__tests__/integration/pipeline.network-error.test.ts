@@ -315,12 +315,12 @@ describe('Integration: pipeline — error de red', () => {
       .mockResolvedValueOnce({ url: URL_FAIL, sourceText: '', status: 'FAILED', error: 'timeout' })
       .mockResolvedValueOnce({ url: URL_OK, sourceText: 'Taller de arte para niños.', status: 'SUCCESS' });
 
-    // El analyzer solo se llama para la URL OK
-    const { GeminiAnalyzer } = await import('../../nlp/gemini.analyzer');
-    vi.mocked(GeminiAnalyzer).mock.instances[0];
-
     const pipeline = new ScrapingPipeline();
     const result = await pipeline.runBatchPipeline('https://x.com/listado');
+
+    // El analyzer solo se llama para la URL OK (no para la que falló)
+    const { GeminiAnalyzer } = await import('../../nlp/gemini.analyzer');
+    expect(vi.mocked(GeminiAnalyzer).mock.instances[0]).toBeDefined();
 
     // Ambas URLs presentes en results
     expect(result.results).toHaveLength(2);

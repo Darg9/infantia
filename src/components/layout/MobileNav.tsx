@@ -18,7 +18,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { SmartLink } from '@/components/ui/smart-link'
 import { createSupabaseBrowserClient } from '@/lib/supabase/client'
-import { Compass, Map as MapIcon, Heart, User, Sun, Moon, Grid, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
+import { Compass, Map as MapIcon, Heart, User, Sun, Moon, PlusCircle, HelpCircle, Mail, Shield, ShieldCheck, MapPinned, Menu, X } from "lucide-react"
 import { Icon } from "@/components/ui/icon"
 import { CitySwitcher } from '@/components/layout/CitySwitcher'
 import type { CityOption } from '@/components/providers/CityProvider'
@@ -36,87 +36,6 @@ interface MobileNavProps {
   } | null
   /** Ciudades activas para el CitySwitcher del drawer */
   cities: CityOption[]
-}
-
-// ─── Icons (inline SVG, no extra deps) ───────────────────────────────────────
-
-function IconHamburger({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-      <line x1="3" y1="6"  x2="21" y2="6"  />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </svg>
-  )
-}
-
-function IconClose({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round">
-      <line x1="18" y1="6"  x2="6"  y2="18" />
-      <line x1="6"  y1="6"  x2="18" y2="18" />
-    </svg>
-  )
-}
-
-function IconExplore({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth={active ? 2.5 : 2} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <circle cx="11" cy="11" r="8" />
-      <path d="m21 21-4.35-4.35" />
-    </svg>
-  )
-}
-
-function IconMap({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" strokeWidth={active ? 2.5 : 2} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21" />
-      <line x1="9" y1="3" x2="9" y2="18" />
-      <line x1="15" y1="6" x2="15" y2="21" />
-    </svg>
-  )
-}
-
-function IconSaved({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} strokeWidth={active ? 2.5 : 2} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-    </svg>
-  )
-}
-
-function IconProfile({ active }: { active: boolean }) {
-  return (
-    <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} strokeWidth={active ? 2.5 : 2} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
-      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-      <circle cx="12" cy="7" r="4" />
-    </svg>
-  )
-}
-
-function IconMoon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-    </svg>
-  )
-}
-
-function IconSun() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5">
-      <circle cx="12" cy="12" r="5" />
-      <line x1="12" y1="1" x2="12" y2="3" />
-      <line x1="12" y1="21" x2="12" y2="23" />
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-      <line x1="1" y1="12" x2="3" y2="12" />
-      <line x1="21" y1="12" x2="23" y2="12" />
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-    </svg>
-  )
 }
 
 // ─── Drawer sections config ───────────────────────────────────────────────────
@@ -450,10 +369,8 @@ function BottomNav({ session }: { session: MobileNavProps['session'] }) {
 
 function MobileHeader({
   onOpenDrawer,
-  session,
 }: {
   onOpenDrawer: () => void
-  session: MobileNavProps['session']
 }) {
   return (
     <header
@@ -510,7 +427,6 @@ export function MobileNav({ session, cities }: MobileNavProps) {
     <>
       <MobileHeader
         onOpenDrawer={() => setDrawerOpen(true)}
-        session={session}
       />
       <MobileDrawer
         open={drawerOpen}

@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { NextResponse } from 'next/server'
-import { getScrapingQueue, closeScrapingQueue } from '@/modules/scraping/queue'
+import { getScrapingQueue } from '@/modules/scraping/queue'
 import { createLogger } from '@/lib/logger';
 
 const log = createLogger('api:queue:status');

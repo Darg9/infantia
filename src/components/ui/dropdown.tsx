@@ -225,11 +225,10 @@ export function DropdownItem({
   const [index, setIndex] = useState(-1)
 
   useEffect(() => {
-    if (ref.current) {
-      setIndex(ctx.registerItem(ref.current))
-    }
+    const el = ref.current
+    if (el) setIndex(ctx.registerItem(el))
     return () => {
-      if (ref.current) ctx.unregisterItem(ref.current)
+      if (el) ctx.unregisterItem(el)
     }
   }, [ctx])
 

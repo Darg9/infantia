@@ -3,6 +3,7 @@
 // Server Component: carga datos y renderiza tarjetas compactas
 // =============================================================================
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { getSimilarActivities } from '@/modules/activities';
 import { activityPath } from '@/lib/activity-url';
@@ -45,10 +46,12 @@ export async function SimilarActivities({ activityId }: Props) {
                 style={act.imageUrl ? undefined : { background: gradient }}
               >
                 {act.imageUrl ? (
-                  <img
+                  <Image
                     src={act.imageUrl}
                     alt={act.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 300px"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 ) : (
                   <span className="text-4xl drop-shadow-[var(--hp-shadow-md)]">{emoji}</span>

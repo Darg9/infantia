@@ -5,7 +5,7 @@ import { ActivityNLPResult } from './types';
 // Mapea el ruido inferido por el LLM directamente a las 7 categorías canónicas.
 // REGLA: NUNCA añadir una categoría nueva aquí — todo debe mapear a una de las 7.
 // =============================================================================
-const CANONICAL_CATEGORIES = [
+export const CANONICAL_CATEGORIES = [
   'Música', 'Lectura', 'Ciencia y tec.',
   'Naturaleza', 'Deportes', 'Teatro y danza', 'Manualidades',
 ] as const;

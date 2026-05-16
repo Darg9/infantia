@@ -1,5 +1,5 @@
 import React from 'react';
-import Link, { LinkProps } from 'next/link';
+import Link from 'next/link';
 
 export interface SmartLinkProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
   href: string;

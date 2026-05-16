@@ -188,6 +188,15 @@ export default async function ActividadDetallePage({
   // estructurada del sitio. Mejor no emitir que emitir inválido.
   const canEmitEventSchema = !!activity.startDate && !!activity.location?.name;
 
+  // Detectar eventos virtuales por palabras clave en título/descripción.
+  // Criterio conservador: solo marcar como virtual si hay señal explícita.
+  const VIRTUAL_RE = /\bvirtual\b|\ben\s+l[ií]nea\b|\bonline\b|\bwebinar\b|\bremoto\b/i;
+  const activityText = `${activity.title} ${activity.description ?? ''}`;
+  const isVirtual = VIRTUAL_RE.test(activityText);
+  const attendanceMode = isVirtual
+    ? 'https://schema.org/OnlineEventAttendanceMode'
+    : 'https://schema.org/OfflineEventAttendanceMode';
+
   const jsonLd = canEmitEventSchema ? {
     '@context': 'https://schema.org',
     '@type': 'Event',
@@ -195,22 +204,27 @@ export default async function ActividadDetallePage({
     description: activity.description,
     url: `https://habitaplan.com${canonicalPath}`,
     eventStatus: 'https://schema.org/EventScheduled',
-    eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+    eventAttendanceMode: attendanceMode,
     startDate: new Date(activity.startDate!).toISOString(),
     ...(activity.endDate && { endDate: new Date(activity.endDate).toISOString() }),
     ...(activity.imageUrl && { image: activity.imageUrl }),
-    location: {
-      '@type': 'Place',
-      name: activity.location!.name,
-      ...(activity.location!.address && {
-        address: {
-          '@type': 'PostalAddress',
-          streetAddress: activity.location!.address,
-          addressLocality: activity.location!.city?.name ?? 'Bogotá',
-          addressCountry: 'CO',
+    // Virtual: usar VirtualLocation con URL. In-person: Place con address siempre presente.
+    // addressLocality + addressCountry son requeridos por Google — no omitir aunque streetAddress sea null.
+    location: isVirtual
+      ? {
+          '@type': 'VirtualLocation',
+          url: `https://habitaplan.com${canonicalPath}`,
+        }
+      : {
+          '@type': 'Place',
+          name: activity.location!.name,
+          address: {
+            '@type': 'PostalAddress',
+            ...(activity.location!.address && { streetAddress: activity.location!.address }),
+            addressLocality: activity.location!.city?.name ?? 'Bogotá',
+            addressCountry: 'CO',
+          },
         },
-      }),
-    },
     ...(activity.provider && {
       organizer: {
         '@type': 'Organization',

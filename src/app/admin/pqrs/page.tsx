@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { Button } from '@/components/ui';
+import { Button, useToast } from '@/components/ui';
 import { RESPONSE_CHANNELS, PQRS_SLA, type ResponseChannel } from '@/lib/pqrs';
 
 // ── Tipos ─────────────────────────────────────────────────────────────────────
@@ -116,8 +116,8 @@ export default function PqrsAdminPage() {
   const [drawer, setDrawer]       = useState<Pqrs | null>(null);
   const [busy, setBusy]           = useState<string | null>(null);
   const [bulkBusy, setBulkBusy]   = useState(false);
-  const [toast, setToast]         = useState('');
   const [tick, setTick]           = useState(0);
+  const { toast }                 = useToast();
 
   // ── Fetch ──────────────────────────────────────────────────────────────────
 
@@ -135,17 +135,11 @@ export default function PqrsAdminPage() {
       setTotal(data.total ?? 0);
     }
     setLoading(false);
-  }, [statusFilter, categoryFilter, onlyOverdue, tick]); // eslint-disable-line react-hooks/exhaustive-deps
+  // tick no es una dep "real" — es un contador de refresco manual
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, categoryFilter, onlyOverdue, tick]);
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
-
-  // ── Notificación temporal ──────────────────────────────────────────────────
-
-  function notify(msg: string) {
-    setToast(msg);
-    setTimeout(() => setToast(''), 3000);
-  }
 
   // ── PATCH individual ───────────────────────────────────────────────────────
 
@@ -160,13 +154,12 @@ export default function PqrsAdminPage() {
       body:    JSON.stringify(data),
     });
     if (res.ok) {
-      notify('✅ Actualizado');
+      toast.success('Actualizado');
       setTick(t => t + 1);
-      // Actualizar drawer si está abierto
       if (drawer?.id === id) setDrawer(null);
     } else {
       const err = await res.json().catch(() => ({}));
-      notify(`❌ ${err.error ?? 'Error desconocido'}`);
+      toast.error(err.error ?? 'Error desconocido');
     }
     setBusy(null);
   }
@@ -185,7 +178,7 @@ export default function PqrsAdminPage() {
         })
       )
     );
-    notify(`✅ ${selected.size} PQRS cerradas`);
+    toast.success(`${selected.size} PQRS cerradas`);
     setSelected(new Set());
     setTick(t => t + 1);
     setBulkBusy(false);
@@ -291,13 +284,6 @@ export default function PqrsAdminPage() {
           </div>
         )}
       </div>
-
-      {/* Toast */}
-      {toast && (
-        <div className="mb-4 px-4 py-2.5 bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-xl text-sm text-[var(--hp-text-primary)] shadow-[var(--hp-shadow-sm)]">
-          {toast}
-        </div>
-      )}
 
       {/* Tabla */}
       <div className="bg-[var(--hp-bg-surface)] border border-[var(--hp-border)] rounded-2xl overflow-hidden">
@@ -447,7 +433,15 @@ export default function PqrsAdminPage() {
               <div className="bg-[var(--hp-bg-page)] rounded-xl p-4 space-y-1.5">
                 <p className="text-xs font-medium text-[var(--hp-text-muted)] uppercase tracking-wide">Contacto</p>
                 <p className="text-sm text-[var(--hp-text-primary)]">{drawer.name ?? '—'}</p>
-                <p className="text-sm text-[var(--hp-text-secondary)]">{drawer.email}</p>
+                <div className="flex items-center gap-2">
+                  <p className="text-sm text-[var(--hp-text-secondary)]">{drawer.email}</p>
+                  <a
+                    href={`mailto:${drawer.email}?subject=Re: tu solicitud en HabitaPlan`}
+                    className="text-xs text-brand-600 hover:underline border border-[var(--hp-border)] rounded-lg px-2 py-0.5 hover:border-brand-300 transition-colors"
+                  >
+                    ✉️ Responder
+                  </a>
+                </div>
                 {drawer.dataRightType && (
                   <p className="text-xs text-[var(--hp-text-muted)]">Tipo derecho: {drawer.dataRightType}</p>
                 )}

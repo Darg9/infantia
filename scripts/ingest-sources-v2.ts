@@ -34,7 +34,7 @@ const ALL_SOURCES: Source[] = [
   // ── Bogotá Institucionales ─────────────────────────────────────────────────
   { name: 'BibloRed',          channel: 'web', url: 'https://www.biblored.gov.co/eventos',      cityName: 'Bogotá', maxPages: 50 },
   { name: 'Idartes',           channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',    cityName: 'Bogotá', maxPages: 50 },
-  { name: 'Planetario',        channel: 'web', url: 'https://planetariodebogota.gov.co',       cityName: 'Bogotá' },
+  { name: 'Planetario',        channel: 'web', url: 'https://planetariodebogota.gov.co/programate', cityName: 'Bogotá' },
   { name: 'Cinemateca',        channel: 'web', url: 'https://cinematecadebogota.gov.co',       cityName: 'Bogotá' },
   { name: 'Banrep Bogotá',     channel: 'web', url: 'https://www.banrepcultural.org/bogota',   cityName: 'Bogotá' },
   { name: 'FCE Bogotá',        channel: 'web', url: 'https://fce.com.co/programacion-cultural', cityName: 'Bogotá' },

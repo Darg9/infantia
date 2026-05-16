@@ -122,8 +122,7 @@ const ALL_SOURCES: Source[] = [
   // ── web: Medellín ─────────────────────────────────────────────────────────
   // Parque Explora — sitemap con 700+ eventos individuales bajo /programate/
   { name: 'Parque Explora',    channel: 'web', url: 'https://www.parqueexplora.org/sitemap.xml',    cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/programate/'] },
-  // Biblioteca Piloto — sitemap + SSR Next.js, eventos niños/familias bajo /agenda/
-  { name: 'Biblioteca Piloto', channel: 'web', url: 'https://bibliotecapiloto.gov.co/sitemap.xml', cityName: 'Medellín', verticalSlug: 'kids', sitemapPatterns: ['/agenda/'] },
+  { name: 'Biblioteca Piloto', channel: 'web', url: 'https://bibliotecapiloto.gov.co/agenda', cityName: 'Medellín', verticalSlug: 'kids' },
 
   // Pendientes Medellín (verificar disponibilidad):
   // { name: 'Sec. Cultura Antioquia', channel: 'web', url: 'https://www.culturaantioquia.gov.co/agenda',     cityName: 'Medellín', verticalSlug: 'kids' }, // ECONNREFUSED

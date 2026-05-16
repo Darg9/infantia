@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { PrivacyContent } from '@/modules/legal/components/PrivacyContent';
 
-// Ruta mantenida activa (sin redirect) — SEO preservado
-// Fuente de verdad: src/modules/legal/components/PrivacyContent.tsx
+// Ruta redirigida → /centro-de-confianza/privacidad (301 en next.config.ts)
+// Esta página no se sirve directamente. El redirect toma precedencia.
 export const metadata: Metadata = {
   title: 'Política de Privacidad | HabitaPlan',
   description: 'Política de privacidad de HabitaPlan. Conoce cómo protegemos tu información personal.',
-  alternates: { canonical: '/privacidad' },
+  alternates: { canonical: '/centro-de-confianza/privacidad' },
 };
 
 export default function PrivacidadPage() {

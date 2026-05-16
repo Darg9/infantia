@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { TermsContent } from '@/modules/legal/components/TermsContent';
 
-// Ruta mantenida activa (sin redirect) — SEO preservado
-// Fuente de verdad: src/modules/legal/components/TermsContent.tsx
+// Ruta redirigida → /centro-de-confianza/terminos (301 en next.config.ts)
+// Esta página no se sirve directamente. El redirect toma precedencia.
 export const metadata: Metadata = {
   title: 'Términos de Uso | HabitaPlan',
   description: 'Términos y condiciones de uso de la plataforma HabitaPlan.',
-  alternates: { canonical: '/terminos' },
+  alternates: { canonical: '/centro-de-confianza/terminos' },
 };
 
 export default function TerminosPage() {

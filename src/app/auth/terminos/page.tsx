@@ -45,7 +45,7 @@ export default async function TerminosPage({ searchParams }: { searchParams: { n
         <div className={"text-4xl mb-4"}>📝</div>
         <h1 className={"text-2xl font-bold mb-4 text-[var(--hp-text-primary)]"}>Acuerdo de Servicio</h1>
         <p className={'text-[var(--hp-text-secondary)] text-sm mb-8 leading-relaxed'}>
-          Para continuar usando HabitaPlan, debes aceptar nuestra <Link href="/privacidad" className={"text-brand-600 hover:underline"} target="_blank">Política de Privacidad</Link> y los <Link href="/terminos" className={"text-brand-600 hover:underline"} target="_blank">Términos de Uso</Link>.
+          Para continuar usando HabitaPlan, debes aceptar nuestra <Link href="/centro-de-confianza/privacidad" className={"text-brand-600 hover:underline"} target="_blank">Política de Privacidad</Link> y los <Link href="/centro-de-confianza/terminos" className={"text-brand-600 hover:underline"} target="_blank">Términos de Uso</Link>.
         </p>
         <form action={aceptarTerminos}>
           <Button type="submit" className="w-full">

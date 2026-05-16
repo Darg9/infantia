@@ -26,8 +26,8 @@ const NAV_COLUMNS = [
     title: 'Legal',
     links: [
       { label: 'Centro de Confianza',              href: '/centro-de-confianza'       },
-      { label: 'Términos de uso',                  href: '/terminos'                  },
-      { label: 'Política de privacidad',           href: '/privacidad'                },
+      { label: 'Términos de uso',                  href: '/centro-de-confianza/terminos'    },
+      { label: 'Política de privacidad',           href: '/centro-de-confianza/privacidad'  },
       { label: 'Política de tratamiento de datos', href: '/centro-de-confianza/datos' },
     ],
   },

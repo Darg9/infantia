@@ -136,6 +136,21 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* ── Organization schema — entidad HabitaPlan para Knowledge Graph ── */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'HabitaPlan',
+            url: SITE_URL,
+            logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
+            description: 'Plataforma de descubrimiento de actividades para niños y familias en Colombia.',
+            areaServed: { '@type': 'Country', name: 'Colombia' },
+            knowsAbout: ['actividades infantiles', 'planes familiares', 'eventos culturales', 'talleres infantiles'],
+            contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', url: `${SITE_URL}/contacto` },
+          })}}
+        />
         {/* Preconnect al CDN de imágenes (Supabase Storage) → LCP más rápido */}
         <link rel="preconnect" href="https://vjfhlrpfubbfnvpthwym.supabase.co" />
         <link rel="dns-prefetch" href="https://vjfhlrpfubbfnvpthwym.supabase.co" />

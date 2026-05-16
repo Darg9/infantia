@@ -229,7 +229,7 @@ function RegistroForm() {
               </Link>{' '}
               y los{' '}
               <Link
-                href="/terminos"
+                href="/centro-de-confianza/terminos"
                 target="_blank"
                 className="text-brand-600 hover:underline focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-1 rounded-sm"
                 onClick={(e) => e.stopPropagation()}

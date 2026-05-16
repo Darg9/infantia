@@ -55,8 +55,9 @@ describe('Sitemap unificado', () => {
     const urls = result.map(r => r.url);
     expect(urls).toContain(`${SITE_URL}/`);
     expect(urls).toContain(`${SITE_URL}/actividades`);
-    expect(urls).toContain(`${SITE_URL}/privacidad`);
-    expect(urls).toContain(`${SITE_URL}/terminos`);
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza`);
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/privacidad`);
+    expect(urls).toContain(`${SITE_URL}/centro-de-confianza/terminos`);
     expect(urls).toContain(`${SITE_URL}/contacto`);
   });
 

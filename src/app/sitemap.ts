@@ -41,11 +41,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/actividades/precio/pagas`,    lastModified: catalogLastMod, changeFrequency: 'daily', priority: 0.85 },
     { url: `${baseUrl}/contacto`,   lastModified: STATIC_DATE, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${baseUrl}/contribuir`, lastModified: STATIC_DATE, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${baseUrl}/privacidad`,                     lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${baseUrl}/terminos`,                       lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${baseUrl}/centro-de-confianza/datos`,      lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/centro-de-confianza`,            lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.6 },
     { url: `${baseUrl}/centro-de-confianza/privacidad`, lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
     { url: `${baseUrl}/centro-de-confianza/terminos`,   lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/centro-de-confianza/datos`,      lastModified: LEGAL_DATE, changeFrequency: 'yearly', priority: 0.5 },
   ];
 
   // ── Categorías ────────────────────────────────────────────────────────────

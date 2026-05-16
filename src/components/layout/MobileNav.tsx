@@ -148,8 +148,8 @@ const DRAWER_SECTIONS = [
     title: 'Legal',
     links: [
       { label: 'Centro de Confianza',               href: '/centro-de-confianza',       icon: ShieldCheck },
-      { label: 'Términos de uso',                  href: '/terminos',                  icon: Shield },
-      { label: 'Política de privacidad',           href: '/privacidad',                icon: Shield },
+      { label: 'Términos de uso',                  href: '/centro-de-confianza/terminos',   icon: Shield },
+      { label: 'Política de privacidad',           href: '/centro-de-confianza/privacidad', icon: Shield },
       { label: 'Política de tratamiento de datos', href: '/centro-de-confianza/datos', icon: Shield },
     ],
   },

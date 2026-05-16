@@ -16,15 +16,29 @@ const nextConfig: NextConfig = {
 
   async redirects() {
     return [
+      // ── Rutas legacy → Centro de Confianza hub ──────────────────────────────
+      // /privacidad y /terminos consolidadas bajo /centro-de-confianza/*
+      // 301 permanente: Google transfiere autoridad al destino y actualiza índice.
+      {
+        source: '/privacidad',
+        destination: '/centro-de-confianza/privacidad',
+        permanent: true,
+      },
+      {
+        source: '/terminos',
+        destination: '/centro-de-confianza/terminos',
+        permanent: true,
+      },
+      // ── Redirects anteriores ─────────────────────────────────────────────────
       {
         source: '/tratamiento-datos',
         destination: '/centro-de-confianza/datos',
-        permanent: true, // 308 redirect
+        permanent: true,
       },
       {
         source: '/seguridad/:path*',
         destination: '/centro-de-confianza/:path*',
-        permanent: true, // 308 redirect (301)
+        permanent: true,
       },
       {
         source: '/seguridad',

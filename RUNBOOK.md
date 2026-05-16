@@ -108,7 +108,34 @@ npx tsx scripts/verify-db.ts
 
 ---
 
-## 4. Limpieza de Reparse Queue
+## 4. Backfill Temporal — force-reparse-source.ts (S72)
+
+Herramienta para re-parsear actividades existentes cuando el parser mejora (sin pasar por el pipeline completo de discovery).
+
+```bash
+# Dry run — ver qué haría sin ejecutar
+npx tsx scripts/force-reparse-source.ts --source=idartes --only-missing-dates --limit=30 --dry-run
+
+# Run real — solo actividades sin fecha
+npx tsx scripts/force-reparse-source.ts --source=idartes --only-missing-dates --limit=50
+
+# Run real — todas las actividades del dominio
+npx tsx scripts/force-reparse-source.ts --source=biblored --limit=100
+```
+
+**Parámetros:**
+- `--source`: dominio (ej: `idartes.gov.co`) o keyword (`idartes`)
+- `--limit=N`: máximo de actividades a procesar (default: 50)
+- `--dry-run`: sin guardar, solo reporta
+- `--only-missing-dates`: solo actividades con `startDate=null`
+
+**Flujo interno:** verificar quota → `prisma.activity.findMany()` por sourceDomain LIKE → `native fetch()` → Gemini → `prisma.activity.update()` (solo campos temporales) → dual cache update.
+
+**Referencia validada:** dry-run Idartes S72 → 49/50 OK, 1 × 404. Run real pendiente.
+
+---
+
+## 5. Limpieza de Reparse Queue
 
 Si el scheduler excluye una fuente porque el costo de reparse supera el 30% del budget diario:
 

@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.17.0 | **Fecha:** 2026-04-29
+**Version:** v0.21.1 | **Fecha:** 2026-05-16
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-04-24)
 
@@ -27,7 +27,7 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.17.0-S58)
+## Cobertura actual (v0.21.1 — S73)
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|

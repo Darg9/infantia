@@ -2,7 +2,7 @@
 
 A multi-source activity discovery platform for families in Bogotá, Colombia. Acting as a pure **Information Aggregator**, it collects and synthesizes activities from websites, Instagram, and other sources into a single searchable interface while strictly attributing ownership to original sources to comply with copyright and data protection laws (Ley 1581).
 
-**Version:** v0.20.0 | **Status:** Production | **Tests:** 1360 passing / 84 files (2 skipped) | **Coverage:** >85% branches | **Quality Metrics:** ✅ Active
+**Version:** v0.21.1 | **Status:** Production | **Tests:** 1411 passing / 86 files (2 skipped) | **Coverage:** >85% branches | **Quality Metrics:** ✅ Active
 
 ## Quick Start
 
@@ -72,7 +72,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 - 📱 **Responsive:** Mobile-first design
 - 🛡️ **Secure:** middleware global protege /api/admin/*, 0 vulns npm, security headers (CSP/HSTS)
 - 📊 **Observable:** Native Analytics UI, logger estructurado `createLogger(ctx)`, Sentry ready, `/api/health` para monitoreo
-- 🧪 **Well-tested:** 1293 unit tests (>91% stmts / >85% branches), E2E tests
+- 🧪 **Well-tested:** 1411 unit tests (>91% stmts / >85% branches), E2E tests
 - 🎨 **SVG-First Branding:** Logo vectorial SSOT + dark mode + brand asset pipeline (og.png, favicon, apple-touch auto-generados en cada build)
 
 ## Commands
@@ -80,7 +80,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the app.
 ```bash
 npm run dev                    # Start development server
 npm run build                  # Build for production (includes brand asset generation)
-npm test                       # Run all tests (1293 tests)
+npm test                       # Run all tests (1411 tests)
 npm run test:coverage          # Tests + coverage report (threshold: 85%)
 npm run generate:brand         # Generate og.png, favicon.png, apple-touch-icon.png from SVG
 npm run validate:logo          # Validate SVG assets (no fake backgrounds)
@@ -99,6 +99,9 @@ npx tsx scripts/verify-db.ts                     # Verify DB state
 npx tsx scripts/backfill-geocoding.ts [--dry-run] # Geocode 0,0 locations
 npx tsx scripts/backfill-images.ts               # Backfill og:image from sourceUrl
 npx tsx scripts/expire-activities.ts             # Manually expire activities
+npx tsx scripts/force-reparse-source.ts --source=idartes --limit=50 # Re-parse existing activities
+npx tsx scripts/source-health.ts                 # Coverage/dedupe/temporal dashboard per source
+npx tsx scripts/temporal-metrics.ts              # Temporal enrichment stats per source
 
 # Telegram
 npx tsx scripts/telegram-auth.ts                 # One-time MTProto auth → TELEGRAM_SESSION

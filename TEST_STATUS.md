@@ -1,37 +1,31 @@
 # HabitaPlan — Estado de Pruebas
 
-Actualizado: 01 de mayo de 2026 | Version: v0.20.0
+Actualizado: 16 de mayo de 2026 | Version: v0.21.1
 
-## Resumen Actual (v0.20.0 / Search Assist Hardening)
-- **Archivos de Test:** 83
-- **Tests Totales:** 1293 (1291 pasan ✅, 2 skipped)
-- **Estado:** 100% pasando ✅
+## Resumen Actual (v0.21.1 / Code Quality Sprint)
+- **Archivos de Test:** 86
+- **Tests Totales:** 1411 (1411 pasan ✅, 2 skipped)
+- **Estado:** 100% pasando ✅ — 0 fallos
 - **Framework:** Vitest 4.1 (+ React Testing Library + Playwright E2E)
 - **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
 
-## 🛡️ Deuda Técnica UI (Design System Enforcement)
-*Baseline medido al activar el enforcement mecánico (ESLint)*
-
-- **UI Debt (Tailwind directo / Elementos Nativos):** 1344 warnings (baseline)
-- **Objetivo:** 0 warnings
-- **Estrategia (Boy Scout Rule):** Limpieza progresiva al tocar el archivo.
-
-**Prioridad de Limpieza:**
-1. Componentes en `src/components/ui/*`
-2. Layouts principales (`Header`, `MobileNav`, `Footer`)
-3. Páginas de primer nivel
-4. Resto del árbol de renderizado
+## 🛡️ Estado ESLint (S73)
+- **Errores:** 0 ✅
+- **Warnings totales:** 286 (258 `no-explicit-any` en legacy/tests, 28 `no-unused-vars` en scripts/tests)
+- **Warnings en `src/` producción:** 0 ✅
+- **TypeScript (`tsc --noEmit`):** 0 errores ✅
+- **Estrategia:** Boy Scout Rule — limpiar `any` al tocar el archivo. No añadir nuevos.
 
 ## Resumen
 
 | Metrica | Valor |
 |---------|-------|
-| Archivos de test | 79 |
-| Tests totales | 1293 |
-| Pasados | 1291 |
+| Archivos de test | 86 |
+| Tests totales | 1411 |
+| Pasados | 1411 |
 | Skipped | 2 |
 | Fallidos | 0 |
-| Threshold configurado | 85% branches (cap desde día 33) |
+| Threshold configurado | 85% branches (cap fijo) |
 | Statements | >91% ✅ |
 | Branches | >85% ✅ |
 | Functions | >88% ✅ |
@@ -248,9 +242,13 @@ Rama `process.env.NODE_ENV === 'production'` en singleton de Prisma.
 | **v0.17.0-S57** | **1244** | **77** | **>91%** | **>85%** |
 | **v0.17.0-S58** | **1291** | **79** | **>91%** | **>85%** |
 | **v0.20.0**     | **1360** | **84** | **>91%** | **>85%** |
+| **v0.21.0**     | **1411** | **86** | **>91%** | **>85%** |
+| **v0.21.1**     | **1411** | **86** | **>91%** | **>85%** |
 
-## Known Technical Debt (v0.20.0)
-- **DEBT-06:** 7 tests fallando en `pipeline.success.test.ts` y `pipeline.llm-invalid.test.ts` debido a un refactor previo del Resilience Singleton y el `saveActivity` streaming, lo cual desincronizó los mocks. Requerido refactor arquitectónico de mocks.
+## Known Technical Debt (v0.21.1)
+- ~~**DEBT-06**~~ ✅ Resuelto en S73: aserción `GeminiAnalyzer.mock.instances` movida post-`runBatchPipeline()`.
+- **28 `no-unused-vars`** en scripts operacionales y tests — aceptados, no bloquean CI.
+- **258 `no-explicit-any`** en legacy/tests — downgraded a `warn`. Boy Scout Rule activa.
 
 ## Cambios en v0.16.1 (Multi-City Map Architecture)
 

@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.20.0
-**Última actualización:** 9 de mayo de 2026
+**Versión actual:** v0.21.1
+**Última actualización:** 16 de mayo de 2026
 
 
 ## ¿Qué hace?
@@ -204,6 +204,9 @@ WHERE skip = true ORDER BY random() LIMIT 30;
 | `queue/scraping.worker.ts` | Worker BullMQ: procesa batch + Instagram jobs |
 | `queue/producer.ts` | `enqueueBatchJob()` + `enqueueInstagramJob()` |
 | `queue/types.ts` | Tipos TypeScript para jobs |
+| `scripts/force-reparse-source.ts` | **(NUEVO S72)** Backfill temporal de actividades existentes — re-parsea sin pipeline completo. `--source`, `--limit`, `--dry-run`, `--only-missing-dates`. |
+| `scripts/source-health.ts` | **(NUEVO S71)** Dashboard unificado Coverage+Dedupe+Temporal+ParserMix por dominio. |
+| `scripts/temporal-metrics.ts` | **(NUEVO S69)** Reporte per-sourceDomain de metadata temporal (resolved/missing/degraded). |
 
 ## Proxy residencial (NUEVO v0.16.1+)
 

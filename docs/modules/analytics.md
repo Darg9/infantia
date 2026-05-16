@@ -1,7 +1,7 @@
 # Módulo: Analytics (Zero-Dependencies)
 
-**Versión:** ✅ v0.20.0
-**Última actualización:** 1 de mayo de 2026
+**Versión:** ✅ v0.21.1
+**Última actualización:** 16 de mayo de 2026
 
 Este documento explica la infraestructura de rastreo de interacciones web instalada nativamente en HabitaPlan, la cual opera **sin ninguna plataforma de terceros externa (Sin Google Analytics, Segment ni Mixpanel).** 
 
@@ -192,3 +192,26 @@ Aplicar suavizado de Laplace en `getCTRByDomain()` para evitar CTR inflado con p
 ```typescript
 result[domain] = clicks / (views + 5); // Laplace smoothing
 ```
+
+---
+
+## 📊 Vercel Analytics + Speed Insights (NUEVO S72)
+
+Además del tracker propio zero-dependencies, HabitaPlan integra las herramientas nativas de Vercel para observabilidad de rendimiento real:
+
+- **`<Analytics />`** (`@vercel/analytics/react`) — pageviews, unique visitors, top pages. Auto-reporta a Vercel dashboard sin configuración adicional.
+- **`<SpeedInsights />`** (`@vercel/speed-insights/next`) — Core Web Vitals reales de usuarios (LCP, FID, CLS) por ruta. Identifica regresiones de rendimiento antes de que afecten SEO.
+
+**Implementación:** `src/app/layout.tsx` antes de `</body>` (server component, sin overhead de hidratación).
+
+```tsx
+// layout.tsx
+import { Analytics } from '@vercel/analytics/react'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+
+// ... antes de </body>:
+<Analytics />
+<SpeedInsights />
+```
+
+**Complementariedad:** Vercel Analytics cubre comportamiento de usuarios reales (externo). El tracker propio `track.ts` cubre el funnel de conversión interno (activity_click, outbound_click, filter_applied). Ambos coexisten sin conflicto.

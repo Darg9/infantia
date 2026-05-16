@@ -170,6 +170,9 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.16.4-beta | V27 | Design System Zero-Debt, Semantic hp-tokens, Trust Layer, Parser Resiliente |
 | v0.17.0-beta | V28 | PQRS Legal (firstRespondedAt/responseChannel), Activity Gate fix, SaveActivityResult, pqrs.ts SSOT — S56+S57 |
 | v0.20.0 | V29 | Search Assist Hardening, NFD Query Normalization, 2-Layer Filtering |
+| v0.21.0 | V28 | CategoryHub SEO, centro-de-confianza, Event/Org JSON-LD, Vercel Analytics, force-reparse |
+| v0.21.1 | V28 | ESLint cleanup (0 warnings src/), confirm()→Modal sponsors, patch quality S73 |
+
 ### Regla para Documento Fundacional
 
 **Generar nueva versión SOLO ante cambio material en uno de estos ejes:**
@@ -192,7 +195,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 
 **La palabra clave es "material"** — si el cambio no altera el estado del sistema que un inversor o nuevo miembro del equipo necesitaría entender, no requiere nueva versión.
 
-Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
+Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando se cumplan criterios de cambio material)
 
 ## Notas de arquitectura críticas
 
@@ -231,10 +234,11 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 - **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
 - **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.20.0 — Actualizado 2026-05-02)
-- **~275 actividades** en BD (Bogotá + Medellín fuentes activas)
-- **1326 tests** en 83 archivos — `npm test` pasa — 1326 passed, 2 skipped, 0 errores
+## Estado actual (v0.21.1 — Actualizado 2026-05-16)
+- **~219 actividades ACTIVE** en BD (Bogotá principalmente; Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13)
+- **1411 tests** en 86 archivos — `npm test` pasa — 1411 passed, 2 skipped, 0 errores
 - Cobertura: **>85% branches** ✅ (umbral alcanzado consistentemente)
+- **ESLint limpio** en `src/` — 0 warnings en código de producción (S73). scripts/ excluidos con globalIgnores.
 - GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
 - BullMQ + Upstash Redis: OPERATIVO
@@ -270,7 +274,7 @@ Comando: `node scripts/generate_v28.mjs` (V28 es la versión actual)
 | DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`. | Reducir progresivamente al tocar cada archivo |
 | DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
-| DEBT-05 | ESLint legacy | 25 errores pre-existentes no relacionados con `any`. | No bloquean CI — son warnings en archivos legacy. Boy Scout Rule activa. | Corregir al tocar cada archivo afectado |
+| DEBT-05 | ESLint legacy | ~~178 warnings pre-existentes~~ | **RESUELTO (S73):** `_` prefix convention + globalIgnores (scripts/, e2e/). 0 warnings en `src/` producción. | — |
 | DEBT-06 | Testing Mocks | ~~7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57.~~ | **RESUELTO (2026-05-02):** Tests alineados con comportamiento real del módulo `resilience/` v0.18.0. `classifyError` ETIMEDOUT fix (E-01) incluido. 83 archivos / 1326 tests — exit 0. | — |
 | **FEAT-6.8-1** | Search Assist | Historial de búsqueda (SearchLog) contaminado con typos incompletos (arr, arra). Sesgo de feedback loop. | **Mitigado (S58):** Implementado Filtro Bi-capa (`count >= 3`) en autocompletado preservando la persistencia raw. | - |
 | **FEAT-6.8-2** | Search Assist | Búsquedas largas ("actividades gratis niños...") fallan porque `pg_trgm` diluye el score en strings inmensos. | **Mitigado (S58):** Implementado `normalizeQuery()` con NFD, stopwords filtering y retención de 3 tokens fuertes. | - |

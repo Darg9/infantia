@@ -1,6 +1,6 @@
 # Estrategia SEO de Abundancia (V3)
-**Versión:** v0.20.0
-**Última actualización:** 10 de Mayo de 2026
+**Versión:** v0.21.1
+**Última actualización:** 16 de mayo de 2026
 
 Este documento traza la hoja de ruta estratégica para gobernar el volumen masivo de datos introducido por el Pipeline V3, evitando que la abundancia degrade la calidad técnica y semántica del SEO de HabitaPlan.
 
@@ -50,5 +50,16 @@ Estos elementos son inevitables para soportar la carga estructural de V3 sin que
 3. **Search Console Observability en Tiempo Real:**
    - Monitoreo integrado de anomalies de CTR, *Keyword Cannibalization*, páginas ignoradas y *Thin Content* detectado por Google.
 
+## 4. Implementado en S72 (Base SEO completada)
+
+Las siguientes acciones SEO de infraestructura se **completaron en S72** y ya están en producción:
+
+- **`CategoryHub` SSR (S72):** Componente de chips `<Link>` crawlables a `/actividades/categoria/{slug}` + sección "Por precio" separada. Orden por CTR (Música→Lectura→Teatro…). Indexable por Google, no requiere JavaScript.
+- **`FilterLandingLayout` con `relatedLinks` (S72):** Sección "También te puede interesar" en páginas de categoría y precio — internal linking dinámico editorial.
+- **Organization JSON-LD global (S72):** Schema `Organization` en `layout.tsx` raíz — aparece en todos los resultados de búsqueda de la marca.
+- **Event schema JSON-LD fix (S72):** Dos issues críticos resueltos (Rich Results Test): (a) detección `VIRTUAL_RE` → `VirtualLocation` + `OnlineEventAttendanceMode`; (b) `addressLocality` + `addressCountry: 'CO'` siempre presentes en `Place.address`.
+- **Redirects 301 legales (S72):** `/privacidad` y `/terminos` → `/centro-de-confianza/*`. Hub legal unificado.
+- **Sitemap actualizado (S72):** URLs `/centro-de-confianza/*` reemplazan `/seguridad/*` y `/privacidad`.
+
 ---
-**Conclusión:** El SEO de HabitaPlan ya no es un problema de infraestructura básica (JSON-LD, Meta tags), sino un problema algorítmico y editorial. El verdadero SEO ahora es gobernar la abundancia.
+**Conclusión:** El SEO de HabitaPlan ya no es un problema de infraestructura básica (JSON-LD, Meta tags — resueltos en S72), sino un problema algorítmico y editorial. El verdadero SEO ahora es gobernar la abundancia y construir el Entity Graph Cultural.

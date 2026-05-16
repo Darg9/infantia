@@ -1,8 +1,8 @@
 # HabitaPlan Design System (v2 — v0.18.0-stable)
 
 El Design System de HabitaPlan es la fuente única de la verdad para la interfaz. Sus pilares previenen la dispersión visual ("UI drift"), garantizan plena accesibilidad WCAG AA, y agilizan el desarrollo de interfaces sin fricciones por decisiones ad-hoc.
-**Versión actual:** v0.19.1-stable
-**Última actualización:** 2 de mayo de 2026
+**Versión actual:** v0.21.1
+**Última actualización:** 16 de mayo de 2026
 
 ## 1. Principios Core
 
@@ -282,7 +282,33 @@ El Design System debe reflejar exactamente las props disponibles en el código.
 **Propósito**: Superficie base enmarcadora que aporta las sombras, radius, y borders uniformes.
 
 ### `<Modal />`
-**Propósito**: Renderiza diálogos destructivos o de confirmación crítica que requieren bloqueo del canvas.
+**Propósito**: Diálogo accesible con overlay, foco atrapado y cierre por Escape. Obligatorio para confirmaciones destructivas (eliminación, acciones irreversibles). Reemplaza `confirm()` del browser.
+
+**Props principales:**
+- `open`: boolean — controla visibilidad
+- `onClose`: () => void — llamado al Escape o click en overlay
+- `title`: string — requerido (accesibilidad `aria-labelledby`)
+- `description?`: string — texto descriptivo bajo el título
+- `size`: `sm` | `md` | `lg` | `xl` (default: `md`)
+- `hideCloseButton?`: boolean
+- `disableOverlayClose?`: boolean
+- `mobilePosition`: `center` | `bottom`
+
+**Sub-componentes:**
+- `Modal.Body` — área de contenido scrollable
+- `Modal.Footer` — acciones alineadas a la derecha
+
+**Ejemplo (confirmación destructiva):**
+```tsx
+<Modal open={open} onClose={() => setOpen(false)} title="Eliminar elemento" size="sm">
+  <Modal.Footer>
+    <Button variant="ghost" onClick={() => setOpen(false)}>Cancelar</Button>
+    <Button variant="destructive" onClick={handleDelete} loading={deleting}>Eliminar</Button>
+  </Modal.Footer>
+</Modal>
+```
+
+**Regla:** `confirm()` del browser está prohibido por ESLint (`no-restricted-globals`). Toda confirmación destructiva DEBE usar `<Modal />`.
 
 ### Toast (`useToast`)
 

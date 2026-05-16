@@ -97,7 +97,8 @@ import { Button, ToggleChip, useToast, colors } from '@/design-system'
 ## Reglas del sistema
 
 1. **Feedback → solo `useToast()`** — ESLint bloquea `alert()`/`prompt()`
-2. **Toggles → solo `ToggleChip`** — no duplicar clases inline
-3. **Colores → solo tokens** — no hardcodear hex
-4. **Links → solo `SmartLink`** — maneja interno/externo automáticamente
-5. **Botones → variante correcta** — máximo 1 `primary` por sección visible
+2. **Confirmaciones destructivas → solo `<Modal />`** — ESLint bloquea `confirm()`. Usar `deleteTarget` state pattern: `const [deleteTarget, setDeleteTarget] = useState<T | null>(null)`.
+3. **Toggles → solo `ToggleChip`** — no duplicar clases inline
+4. **Colores → solo tokens** — no hardcodear hex
+5. **Links → solo `SmartLink`** — maneja interno/externo automáticamente
+6. **Botones → variante correcta** — máximo 1 `primary` por sección visible

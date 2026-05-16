@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.18.0-stable
-**Última actualización:** 1 de mayo de 2026
+**Versión:** ✅ v0.21.1
+**Última actualización:** 16 de mayo de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -112,16 +112,23 @@ Nuevo usuario (cualquier proveedor)
 
 | Ruta | Tipo | Descripción |
 |---|---|---|
-| `GET /seguridad/privacidad` | Web SSR | Política de Privacidad renderizada |
-| `GET /seguridad/terminos` | Web SSR | Términos y Condiciones |
-| `GET /seguridad/datos` | Web SSR | Tratamiento de Datos (Ley 1581) |
+| `GET /centro-de-confianza` | Web SSR | Hub central de confianza y legalidad (SSOT) |
+| `GET /centro-de-confianza/privacidad` | Web SSR | Política de Privacidad renderizada |
+| `GET /centro-de-confianza/terminos` | Web SSR | Términos y Condiciones |
+| `GET /centro-de-confianza/datos` | Web SSR | Tratamiento de Datos (Ley 1581) |
+| `GET /seguridad/privacidad` | Redirect 301 | → `/centro-de-confianza/privacidad` |
+| `GET /seguridad/terminos` | Redirect 301 | → `/centro-de-confianza/terminos` |
+| `GET /privacidad` | Redirect 301 | → `/centro-de-confianza/privacidad` |
+| `GET /terminos` | Redirect 301 | → `/centro-de-confianza/terminos` |
 | `GET /api/legal/privacidad/pdf` | API | Descarga PDF Privacidad |
 | `GET /api/legal/terminos/pdf` | API | Descarga PDF Términos |
 | `GET /api/legal/datos/pdf` | API | Descarga PDF Tratamiento Datos |
 
+> **SSOT (S72):** `/centro-de-confianza` es el hub único de confianza editorial, legal y de seguridad. Cualquier enlace desde UI, email o sitemap debe apuntar aquí. Las rutas legacy (`/privacidad`, `/terminos`, `/seguridad/*`) redirigen con 301 permanente.
+
 ## 💡 Reglas de Modificación
-- **Un solo namespace:** Todas las rutas legales deben vivir estrictamente bajo `/seguridad/*`. No duplicar rutas legales.
-- **Redirecciones:** Las rutas legacy deben redirigir vía 308 (permanent) en `next.config.ts`.
+- **Un solo namespace:** Todas las rutas legales viven bajo `/centro-de-confianza/*`. No duplicar rutas legales.
+- **Redirecciones:** Las rutas legacy redirigen vía 301 (permanent) en `next.config.ts`.
 - *Nunca hardcodear* textos legales directamente en los componentes de React, UI, `Layout`, o modales.
 - Para cambiar cualquier texto legal: modificar el archivo `.ts` correspondiente en `src/modules/legal/constants/` → compila la app → web y PDF se actualizan simultáneamente.
 - Cambios en datos recolectados → actualizar `privacy.ts` **y** `data-treatment.ts` para mantener coherencia.

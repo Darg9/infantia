@@ -7,11 +7,13 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.17.0-beta — 2026-04-25):**
-- ~357 actividades activas en DB (BibloRed 150+, Idartes 50+, Instagram ~10, otras fuentes)
+**Estado Actual (v0.21.1 — 2026-05-16):**
+- ~219 actividades ACTIVE en DB (Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13, otras)
+- ~5.054 URLs en caché total
 - Protección automática integrada en `ScrapingStorage`
 - **Instrumentación Phase 3**: Logs `[DEDUPE_HIT]` para auditoría de colisiones semánticas.
 - **Caché dual:** `ScrapingCache` persiste URLs en BD (`scraping_cache`) + disco.
+- **Taxonomía 7 categorías canónicas** congelada hasta ~2026-07-01 (S68). Arte y Creatividad = staging temporal (42 needs_review).
 
 ---
 

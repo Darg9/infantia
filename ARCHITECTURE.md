@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.20.0 | Actualizado: 01 de mayo de 2026
+> Versión: v0.21.1 | Actualizado: 16 de mayo de 2026
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -118,9 +118,10 @@ habitaplan/
 │   │   │       └── reclamar/       # Formulario de reclamación de provider (NUEVO v0.16.1)
 │   │   ├── contacto/               # Formulario de contacto
 │   │   ├── contribuir/             # Página para proveedores
-│   │   ├── privacidad/             # Política de privacidad
-│   │   ├── terminos/               # Términos de uso
-│   │   ├── tratamiento-datos/      # Aviso de tratamiento (Ley 1581)
+│   │   ├── centro-de-confianza/    # Hub legal SSOT (S72) — privacidad, términos, datos
+│   │   │   ├── privacidad/         # Política de privacidad (redirect desde /privacidad)
+│   │   │   ├── terminos/           # Términos de uso (redirect desde /terminos)
+│   │   │   └── datos/              # Política de tratamiento de datos (Ley 1581)
 │   │   └── api/
 │   │       ├── activities/         # CRUD de actividades
 │   │       │   └── [id]/
@@ -176,10 +177,15 @@ habitaplan/
 │   │   ├── users/                  # Gestión de usuarios
 │   │   └── verticals/              # Verticales del negocio
 │   │
+│   ├── design-system/              # Design System tokens (S67)
+│   │   ├── tokens.ts               # Colores, tipografía, radii — fuente de verdad
+│   │   ├── index.ts                # Single entry point
+│   │   └── README.md               # Guía de uso del DS
+│   │
 │   ├── config/                     # Configuración de la aplicación
 │   │   ├── constants.ts            # Constantes globales
 │   │   ├── site.ts                 # Metadata del sitio (nombre, URL, SEO)
-│   │   └── feature-flags.ts        # NUEVO S52 — Feature flags (PARSER_FALLBACK_ENABLED)
+│   │   └── feature-flags.ts        # Feature flags: PARSER_FALLBACK_ENABLED, DATE_FILTER_ENABLED, AGE_FILTER_ENABLED
 │   │
 │   lib/                        # Utilidades compartidas
 │   │   ├── db.ts                   # Singleton de PrismaClient
@@ -237,6 +243,10 @@ habitaplan/
 │   ├── promote-admin.ts            # Da rol ADMIN a un usuario por email
 │   ├── verify-db.ts                # Reporte de estado de la BD (actividades, ubicaciones, fuentes)
 │   ├── seed-scraping-sources.ts    # Seed inicial de fuentes de scraping en BD
+│   ├── force-reparse-source.ts     # Re-parsea actividades existentes sin pipeline completo (S72)
+│   │                               #   --source, --limit=N, --dry-run, --only-missing-dates
+│   ├── source-health.ts            # Dashboard unificado Coverage+Dedupe+Temporal+ParserMix (S71)
+│   ├── temporal-metrics.ts         # Reporte temporal per-sourceDomain (S69)
 │   └── generate_v28.mjs            # Genera Documento Fundacional V28 (.docx)
 │
 ├── prisma/
@@ -247,6 +257,7 @@ habitaplan/
 ├── data/
 │   ├── scraping-cache.json         # Cache incremental de URLs scrapeadas (~4.600+ URLs, gitignored)
 │   └── ig-session.json             # Sesión de Instagram — gitignored
+├── SECURITY.md                     # Riesgos npm audit aceptados + mitigación (S73)
 ├── DEDUPLICATION-STRATEGY.md       # Estrategia completa de deduplicación
 └── .agents/
     └── workflows/

@@ -9,6 +9,69 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.21.1] — 2026-05-16 (S73 — Code Quality Sprint: ESLint limpio + Modal DS)
+
+### Code Quality — ESLint
+
+- **178 warnings eliminados** (464 → 286): código fuente `src/` limpio. Cero errores ESLint.
+- **`argsIgnorePattern/varsIgnorePattern: ^_`** añadido a la regla `@typescript-eslint/no-unused-vars` — convención estándar para parámetros intencionalmente no usados.
+- **MobileNav.tsx:** eliminadas 8 funciones SVG custom muertas (`IconHamburger`, `IconClose`, `IconExplore`, `IconMap`, `IconSaved`, `IconProfile`, `IconMoon`, `IconSun`) — migradas a `lucide-react` en S64 pero nunca removidas. Prop `session` eliminada de `MobileHeader` (no usada en render).
+- **Imports muertos eliminados:** `CheerioExtractor` (parser.ts), `PrismaClient`/`PrismaPg`/`log` (cluster.ts), `LinkProps` (smart-link.tsx), `Input` (×3 archivos), `log` (ranking.ts, publish-validator.ts).
+- **Variables muertas eliminadas:** `totalHidden`, `initialCount`, `baseUrl`, `e` en catch silenciosos → `catch {}`.
+- **`CANONICAL_CATEGORIES` exportada** como SSOT real — otros módulos pueden importarla.
+- **`globalIgnores` ampliado:** `scripts/**/*.mjs`, `e2e/**`, `scripts/codemods/**`.
+- **`useLocalStorage`:** doble `setState` en effect → estado unificado `{ mounted, value }` (elimina render cascada en hydration).
+- **SECURITY.md** (nuevo): documenta 3 riesgos aceptados de `npm audit` (Prisma dev dep, postcss dentro de Next, xlsx scripts-only).
+
+### Design System — Modal en Sponsors
+
+- **`confirm()` eliminado** de `/admin/sponsors` — reemplazado por `<Modal size="sm">` del DS con botones Cancelar / Eliminar y estado `loading`.
+- **`useToast()`** reemplaza `useState msg` + texto inline.
+- **`<a href>` → `<Link href>`** (next/link) para el enlace ← Admin.
+- Flujo: clic Eliminar → Modal con nombre del sponsor → confirmación → spinner durante DELETE → toast éxito/error.
+
+### Fixes
+
+- **`pipeline.network-error.test.ts`:** aserción `GeminiAnalyzer.mock.instances[0]` movida a DESPUÉS de `runBatchPipeline()` — estaba antes del run, causando fallo intermitente.
+- **`useLocalStorage`** hook: `set-state-in-effect` reemplazado con `eslint-disable` documentado + merge de estado.
+
+### Tests
+
+- **86 archivos / 1411 tests ✅ | 0 fallos | 2 skipped**
+- TypeScript: `tsc --noEmit` → 0 errores
+
+### Despliegue
+
+- **Rama:** `master`
+- **Commits:** `8acc539` (ESLint cleanup) → `720b8b3` (Modal DS sponsors)
+- **Hora último commit:** 2026-05-16 12:06 COL
+- **Plataforma:** Vercel (auto-deploy en push a master)
+- **Versión:** v0.21.1
+
+---
+
+## [v0.21.0] — 2026-05-16 (S72 — SEO + Trust + Observabilidad + Force-Reparse)
+
+> *Ver commits `6b5c655`..`d8a841f` en historial git*
+
+### Features principales S72
+- **CategoryHub SSR:** chips `<Link>` crawlables a `/actividades/categoria/{slug}` + sección "Por precio". Orden CTR (Música→Lectura→Teatro…).
+- **FilterLandingLayout + relatedLinks:** sección "También te puede interesar" en páginas de categoría y precio.
+- **Centro de Confianza:** Hub `/centro-de-confianza` como SSOT legal. Redirects 301 `/privacidad`→`/centro-de-confianza/privacidad`, `/terminos`→`/centro-de-confianza/terminos`.
+- **Organization JSON-LD** en `layout.tsx` global.
+- **Event schema JSON-LD:** `VIRTUAL_RE` guard para eventos virtuales + `addressLocality`/`addressCountry: 'CO'` SIEMPRE presentes.
+- **Vercel Analytics + Speed Insights** instalados (`@vercel/analytics` + `@vercel/speed-insights`).
+- **`force-reparse-source.ts`:** re-parsea actividades existentes sin pasar por pipeline completo.
+- **Avatar sidebar:** fallback `dbUser?.avatarUrl ?? user_metadata?.avatar_url`.
+- **Panel admin PQRS DS compliance:** `useToast()` + `mailto:` link en drawer.
+- **fix(search):** `activeIndex=-1` → Enter ejecuta búsqueda texto. Botón × para limpiar campo.
+- **fix(city):** CityProvider elimina auto-inject `?cityId=` en mount.
+
+### Despliegue S72
+- **Commit:** `d8a841f` | **Hora:** 2026-05-16 | **Versión:** v0.21.0
+
+---
+
 ## [v0.20.0] — 2026-05-09 (Pipeline V3 — Cobertura Institucional Total + Feed Diversity)
 
 ### Features — Pipeline V3

@@ -22,7 +22,7 @@ export const WelcomeEmail = ({ userEmail }: WelcomeEmailProps) => {
   return (
     <Html>
       <Head />
-      <Preview>Bienvenido a HabitaPlan — encuentra qué hacer en tu ciudad</Preview>
+      <Preview>Bienvenido a HabitaPlan — encuentra planes para niños y familias en tu ciudad</Preview>
       <Body style={main}>
         <Container style={container}>
           <Section style={box}>
@@ -38,10 +38,10 @@ export const WelcomeEmail = ({ userEmail }: WelcomeEmailProps) => {
             {/* Contenido */}
             <Text style={heading}>{greeting}</Text>
             <Text style={paragraph}>
-              Tu cuenta en HabitaPlan ya está activa. A partir de ahora podrás:
+              Tu cuenta en HabitaPlan ya está activa. A partir de ahora puedes:
             </Text>
             <Text style={bulletPoint}>✓ Descubrir actividades, eventos y talleres en tu ciudad</Text>
-            <Text style={bulletPoint}>✓ Guardar tus favoritos para acceder rápidamente</Text>
+            <Text style={bulletPoint}>✓ Guardar tus planes favoritos para acceder rápidamente</Text>
             <Text style={bulletPoint}>✓ Calificar actividades y compartir tu opinión</Text>
 
             <Link href={`${baseUrl}/actividades`} style={button}>
@@ -50,7 +50,8 @@ export const WelcomeEmail = ({ userEmail }: WelcomeEmailProps) => {
 
             {/* Aviso */}
             <Text style={notice}>
-              Este es un mensaje automático, por favor no respondas.
+              Si no solicitaste este correo, puedes ignorarlo. Nadie más puede acceder a tu cuenta de HabitaPlan.
+              <br/>Este es un mensaje automático, por favor no respondas.
             </Text>
 
             <Hr style={hr} />

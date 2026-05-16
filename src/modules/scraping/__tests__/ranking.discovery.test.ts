@@ -102,6 +102,78 @@ describe('BibloRed — /programate/ sin keywords explícitas (score limitado por
   });
 });
 
+// ── URL_DATE_RE — señal de URL con fecha explícita (/año/mes/ o /año-mes-día/) ─
+
+describe('URL_DATE_RE — URLs con fecha en path (+2 score)', () => {
+  it('URL con patrón /año/mes/ activa URL_DATE_RE → signals.urlDate = 2', () => {
+    const url = 'https://biblored.gov.co/noticias/2026/05/taller-literatura';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['urlDate']).toBe(2);
+    expect(rankedPool[0].score).toBeGreaterThanOrEqual(2);
+  });
+
+  it('URL con patrón /año/mes/día/ también activa URL_DATE_RE', () => {
+    const url = 'https://idartes.gov.co/noticias/2026/05/15/exposicion-arte-digital';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['urlDate']).toBe(2);
+  });
+
+  it('URL con patrón /año-mes-día/ (ISO en path) activa URL_DATE_RE', () => {
+    const url = 'https://bogota.gov.co/eventos/2026-05-20/concierto-orquesta';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['urlDate']).toBe(2);
+  });
+
+  it('URL sin patrón de fecha NO activa URL_DATE_RE', () => {
+    const url = 'https://bogota.gov.co/que-hacer/cultura/taller-arte';
+    const { rankedPool } = rankCandidates([link(url, 'taller')], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['urlDate']).toBeUndefined();
+  });
+});
+
+// ── freshnessScore — bonus por lastmod reciente en sitemaps XML ──────────────
+
+describe('freshnessScore — bonus por lastmod reciente (+1 o +2)', () => {
+  function linkWithLastmod(url: string, lastmod: string): import('../types').DiscoveredLink {
+    return { url, title: '', snippet: '', anchorText: '', lastmod };
+  }
+
+  it('lastmod hace ≤7 días → freshness = +2 (señal muy fresca)', () => {
+    const recent = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString();
+    const { rankedPool } = rankCandidates(
+      [linkWithLastmod('https://biblored.gov.co/evento-reciente', recent)],
+      { maxPagesLimit: 1 },
+    );
+    expect(rankedPool[0].signals['freshness']).toBe(2);
+  });
+
+  it('lastmod hace 15 días → freshness = +1 (fresco, no urgente)', () => {
+    const medium = new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString();
+    const { rankedPool } = rankCandidates(
+      [linkWithLastmod('https://biblored.gov.co/evento-medio', medium)],
+      { maxPagesLimit: 1 },
+    );
+    expect(rankedPool[0].signals['freshness']).toBe(1);
+  });
+
+  it('lastmod hace >30 días → sin bonus de freshness', () => {
+    const old = new Date(Date.now() - 45 * 24 * 60 * 60 * 1000).toISOString();
+    const { rankedPool } = rankCandidates(
+      [linkWithLastmod('https://biblored.gov.co/evento-viejo', old)],
+      { maxPagesLimit: 1 },
+    );
+    expect(rankedPool[0].signals['freshness']).toBeUndefined();
+  });
+
+  it('sin lastmod → sin bonus de freshness', () => {
+    const { rankedPool } = rankCandidates(
+      [link('https://biblored.gov.co/evento-sin-lastmod')],
+      { maxPagesLimit: 1 },
+    );
+    expect(rankedPool[0].signals['freshness']).toBeUndefined();
+  });
+});
+
 // ── Falsos positivos — palabras nuevas no deben disparar en páginas estáticas ─
 
 describe('Regresión — palabras nuevas no deben romper páginas estáticas', () => {

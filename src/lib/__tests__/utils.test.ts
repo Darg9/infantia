@@ -3,7 +3,7 @@
 // =============================================================================
 
 import { describe, it, expect } from 'vitest';
-import { cn, formatPrice, calculateAge, slugify } from '../utils';
+import { cn, formatPrice, calculateAge, slugify, getAccountTypeLabel } from '../utils';
 
 describe('cn()', () => {
   it('une clases simples', () => {
@@ -102,5 +102,33 @@ describe('slugify()', () => {
 
   it('maneja nombre típico de actividad habitaplan', () => {
     expect(slugify('Jardín Botánico — Taller Niños')).toBe('jardin-botanico-taller-ninos');
+  });
+});
+
+describe('getAccountTypeLabel()', () => {
+  it('retorna "Tipo de cuenta" para string vacío (branch !role)', () => {
+    expect(getAccountTypeLabel('')).toBe('Tipo de cuenta');
+  });
+
+  it('devuelve label en español para rol conocido (parent)', () => {
+    expect(getAccountTypeLabel('parent')).toBe('Madre o padre');
+  });
+
+  it('devuelve label para rol admin', () => {
+    expect(getAccountTypeLabel('admin')).toBe('Administrador');
+  });
+
+  it('devuelve label para rol provider', () => {
+    expect(getAccountTypeLabel('provider')).toBe('Proveedor');
+  });
+
+  it('devuelve "Tipo de cuenta" para rol desconocido (null-coalescing branch)', () => {
+    expect(getAccountTypeLabel('superadmin')).toBe('Tipo de cuenta');
+    expect(getAccountTypeLabel('viewer')).toBe('Tipo de cuenta');
+  });
+
+  it('es case-insensitive — convierte a minúscula antes del lookup', () => {
+    expect(getAccountTypeLabel('PARENT')).toBe('Madre o padre');
+    expect(getAccountTypeLabel('Admin')).toBe('Administrador');
   });
 });

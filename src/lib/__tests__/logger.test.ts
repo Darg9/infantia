@@ -3,7 +3,7 @@
 // Spies en console — no I/O real
 // =============================================================================
 
-import { describe, it, expect, vi, beforeEach, afterAll } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterAll, afterEach } from 'vitest';
 
 // Spy at module level — never restored between tests (only cleared)
 const logSpy   = vi.spyOn(console, 'log').mockImplementation(() => {});
@@ -84,6 +84,68 @@ describe('createLogger', () => {
     log.info('solo mensaje');
     const output = logSpy.mock.calls[0][0] as string;
     expect(output.trim()).not.toMatch(/\{\s*\}$/);
+  });
+});
+
+describe('logger — browser paths (window definido)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    logSpy.mockClear();
+    warnSpy.mockClear();
+    errorSpy.mockClear();
+  });
+
+  it('no deduplica la primera llamada aunque window esté definido', () => {
+    vi.stubGlobal('window', {});
+    const log = createLogger('browser-first');
+    log.info('mensaje único en browser ' + Date.now()); // key única
+    expect(logSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deduplica segunda llamada idéntica dentro de 2000ms en browser', () => {
+    vi.stubGlobal('window', {});
+    const log = createLogger('browser-dedup');
+    const msg = 'msg-dedup-' + Date.now();
+    log.info(msg);
+    log.info(msg); // segunda vez → deduplicada
+    expect(logSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('en NODE_ENV=production con window definido, no emite logs (console silenciado)', () => {
+    vi.stubGlobal('window', {});
+    const orig = process.env.NODE_ENV;
+    (process.env as any).NODE_ENV = 'production';
+    try {
+      const log = createLogger('prod-browser-' + Date.now());
+      log.info('prod-browser-unique-' + Date.now());
+      expect(logSpy).not.toHaveBeenCalled();
+    } finally {
+      (process.env as any).NODE_ENV = orig;
+    }
+  });
+});
+
+describe('logger — Sentry integration branch', () => {
+  afterEach(() => {
+    delete process.env.SENTRY_DSN;
+    errorSpy.mockClear();
+  });
+
+  it('intenta capturar en Sentry cuando SENTRY_DSN y meta.error están presentes', () => {
+    process.env.SENTRY_DSN = 'https://fake@sentry.io/123';
+    // El import('@sentry/nextjs') fallará silently en test — eso es esperado
+    logger.error('error con sentry', { error: new Error('boom sentry') });
+    // Solo verificamos que console.error fue llamado (la rama Sentry es fire-and-forget)
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    const output = errorSpy.mock.calls[0][0] as string;
+    expect(output).toContain('error con sentry');
+  });
+
+  it('no intenta Sentry cuando falta meta.error (SENTRY_DSN presente pero sin error)', () => {
+    process.env.SENTRY_DSN = 'https://fake@sentry.io/123';
+    logger.error('error sin error obj');
+    expect(errorSpy).toHaveBeenCalledTimes(1);
+    // Sentry no se dispara pero console.error sí
   });
 });
 

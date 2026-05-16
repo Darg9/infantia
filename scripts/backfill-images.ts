@@ -33,7 +33,7 @@ async function fetchWithTls(url: string): Promise<Response> {
     if (RELAXED_TLS.some((d) => hostname.endsWith(d))) {
       const { Agent } = await import('undici');
       const dispatcher = new Agent({ connect: { rejectUnauthorized: false } });
-      // @ts-ignore
+      // @ts-expect-error — `dispatcher` es una extensión de undici no tipada en el fetch nativo de Node
       return fetch(url, { signal: AbortSignal.timeout(10_000), dispatcher });
     }
   } catch { /* URL inválida */ }

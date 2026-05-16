@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import fs from 'fs';
+import path from 'path';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient } from '../src/generated/prisma/client';
 
@@ -29,8 +31,6 @@ async function main() {
     markdown += grouped[domain].join('\n') + '\n';
   }
 
-  const fs = require('fs');
-  const path = require('path');
   const outputPath = path.join(process.cwd(), 'active_sources.md');
   fs.writeFileSync(outputPath, markdown);
   console.log('Listado generado en', outputPath);

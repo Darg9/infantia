@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/nextjs-vite'
 import React from 'react'
 import { withThemeByClassName } from '@storybook/addon-themes'
+// eslint-disable-next-line no-restricted-imports -- Storybook necesita globals.css directamente para renderizar el DS correctamente
 import '../src/app/globals.css'
 
 export const parameters = {

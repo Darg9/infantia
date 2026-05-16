@@ -125,6 +125,9 @@ globalIgnores([
   "next-env.d.ts",
   // Prisma auto-generated — never lint:
   "src/generated/**",
+  // Scripts JS legados (one-time codemods, DS guard) — usan require() por diseño
+  "codemods/**",
+  "scripts/ds-guard.js",
 ]),
 // AST Regex Rule for className (anti-Tailwind directo de color)
 // Captura solo clases de COLOR Tailwind directas: bg-red-500, text-blue-400, border-gray-200, etc.

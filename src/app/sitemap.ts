@@ -9,7 +9,8 @@ import { SITE_URL } from '@/config/site';
 import { activityPath } from '@/lib/activity-url';
 import { slugify } from '@/lib/slugify';
 
-export const revalidate = 3600; // TTL global de 1h
+export const dynamic = 'force-dynamic'; // No pre-renderizar en build (evita EMAXCONN)
+export const revalidate = 3600; // TTL: revalida cada hora en background
 
 const baseUrl = SITE_URL;
 

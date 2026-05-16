@@ -15,6 +15,7 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities` | No | Lista actividades con filtros y paginación. **Usa Node TTL Cache (getCachedCount)** para no sobrecargar DB con conteos. |
 | POST | `/api/activities` | No | Crea una actividad |
 | GET | `/api/activities/:id` | No | Obtiene una actividad por ID |
+| GET | `/api/activities/category-counts` | No | Conteo de actividades ACTIVE por categoría — usado en CategoryHub y filtros |
 | PUT | `/api/activities/:id` | **Admin** | Actualiza una actividad (fix C-01 v0.16.1) |
 | DELETE | `/api/activities/:id` | **Admin** | Elimina una actividad (fix C-01 v0.16.1) |
 | GET | `/api/activities/suggestions?q=` | No | Sugerencias mixtas: actividades (max 3) + categorías (max 1) + ciudades (max 1) + queries históricas (SearchLog). Total max 8. **Mín 3 chars**. Ranking: prefix > confianza/count. Formato: `{ type, id, label, sublabel }`. Incorpora **Normalización NFD** (remueve diacríticos, filtra stop-words) y **Progressive Fallback** si no hay resultados. Las sugerencias de historial implementan **Filtro Bi-capa** (`count >= 3`) para suprimir typos. |
@@ -114,6 +115,7 @@ Cualquier desviación genera comportamiento inconsistente o ignorado.
 | `audience` | enum | `KIDS`, `FAMILY`, `ADULTS`, `ALL` |
 | `search` | string | Búsqueda por texto (1–200 chars) |
 | `sortBy` | enum | `relevance` \| `date` \| `price_asc` \| `price_desc` \| `newest` |
+| `dateRange` | enum | `today` \| `weekend` \| `week` — filtro temporal (requiere `DATE_FILTER_ENABLED=true` en Vercel) |
 
 ### ⚠️ Validación de Query Params (Zod Gate)
 Todos los parámetros de entrada son filtrados por `listActivitiesSchema`.

@@ -115,11 +115,23 @@ model Event {
 
 **Contrato POST `/api/events`:**
 ```json
-{ "type": "outbound_click", "activityId": "uuid", "path": "/actividades/uuid-slug" }
+{ "type": "outbound_click", "activityId": "uuid", "path": "/actividades/uuid-slug", "metadata": {} }
 ```
 - `type` es requerido — devuelve 400 si falta.
 - IP leída de `x-forwarded-for` o `x-real-ip` (compatible con Vercel).
 - Fail-silent en servidor: errores no rompen el request del usuario.
+
+**Tipos de eventos válidos (SSOT: `src/lib/track.ts`):**
+
+| Evento | Payload adicional | Descripción |
+|--------|------------------|-------------|
+| `page_view` | `path` | Carga de cualquier ruta |
+| `activity_view` | `activityId`, `path` | Apertura de detalle de actividad |
+| `activity_click` | `activityId` | Clic en card de listado |
+| `outbound_click` | `activityId`, `path` | Clic al sitio del proveedor (norte comercial) |
+| `search_applied` | `metadata.query` | Input textual del usuario |
+| `search_suggestion_clicked` | `metadata.type`, `metadata.id` | Clic en sugerencia del HeroSearch |
+| `filter_applied` | `metadata.filterType`, `filterValue`, `resultsCount`, `query?` | Interacción con filtro facetado |
 
 ## 📈 Dashboard Interno (`/admin/analytics`)
 
@@ -132,6 +144,35 @@ El dashboard es un Client Component (`page.tsx`) que consume `GET /api/admin/ana
 | Conversión a Fuente | `outbound_click / activity_view × 100` | Tasa de interés que lleva al proveedor |
 
 **Tabla raw:** todos los eventos ordenados por volumen descendente — útil para detectar anomalías (spike en `page_view` sin `activity_click` = contenido no resonando).
+
+## 📊 Métricas Derivadas (KPIs)
+
+### Dashboard `/admin/analytics` — Ventana 24h
+
+| KPI | Fórmula | Descripción |
+|-----|---------|-------------|
+| **CTR Exploración** | `activity_click / page_view × 100` | % de visitas que abren alguna actividad |
+| **Conversión a Fuente** | `outbound_click / activity_view × 100` | Tasa de interés que lleva al proveedor |
+| **Adopción de Sugerencias** | `search_suggestion_clicked / search_applied × 100` | Efectividad del autocompletado |
+| **CTR por Filtro** | agregado de `filter_applied.filterType` | Qué filtros generan más engagement |
+
+### Métricas de Supply Health (operativas)
+
+| Métrica | Fuente | Uso |
+|---------|--------|-----|
+| **CTR por dominio** | `getCTRByDomain()` en `metrics.ts` | Priorización de fuentes en BullMQ |
+| **zeroScorePct** | `ranking.ts` discovery | % URLs sin señal en una fuente |
+| **ParserMix** | `source-health.ts` | % Gemini vs Cheerio fallback por fuente |
+| **DateCoverage** | `source-health.ts` | % actividades con fecha explícita por fuente |
+
+### Valores de referencia (benchmarks)
+
+| Métrica | Óptimo | Acción si fuera de rango |
+|---------|--------|--------------------------|
+| CTR Exploración | > 15% | < 5% → revisar feed relevance |
+| Conversión a Fuente | > 8% | < 3% → revisar calidad actividades |
+| zeroScorePct | < 40% | > 60% → ajustar URL_EVENT_RE para esa fuente |
+| ParserMix Gemini | > 70% | < 30% → cuota agotada o fuente con bloqueos |
 
 ## 🔄 CTR Feedback Loop (NUEVO v0.16.1-S44)
 

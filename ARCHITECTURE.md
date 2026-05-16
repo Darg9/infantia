@@ -247,6 +247,11 @@ habitaplan/
 │   │                               #   --source, --limit=N, --dry-run, --only-missing-dates
 │   ├── source-health.ts            # Dashboard unificado Coverage+Dedupe+Temporal+ParserMix (S71)
 │   ├── temporal-metrics.ts         # Reporte temporal per-sourceDomain (S69)
+│   ├── reclassify-categories.ts    # Migración taxonomía categorías → 7 canónicas (S68)
+│   ├── force-reparse-source.ts     # Re-parsea actividades existentes sin pipeline completo (S72)
+│   │                               #   --source, --limit=N, --dry-run, --only-missing-dates
+│   ├── source-health.ts            # Dashboard unificado Coverage+Dedupe+Temporal+ParserMix (S71)
+│   ├── temporal-metrics.ts         # Reporte per-sourceDomain de metadata temporal (S69)
 │   └── generate_v28.mjs            # Genera Documento Fundacional V28 (.docx)
 │
 ├── prisma/
@@ -462,47 +467,52 @@ ScrapingStorage.saveActivity()
 1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
 2. Busca `<a href>` con parámetro `?page=N+1`
 
-### Fuentes activas (al 2026-04-24 — S40)
+### Fuentes activas (al 2026-05-16 — S73)
 
-#### Bogotá — Web (Cheerio + Gemini)
-| Fuente | Actividades aprox. |
-|---|---|
-| BibloRed | ~150 |
-| Sec. Cultura / bogota.gov.co | ~29 |
-| Alcaldía / culturarecreacionydeporte | ~20 |
-| Idartes | ~19 |
-| Planetario de Bogotá | ~25 |
-| JBB (Jardín Botánico) | ~7 |
-| Cinemateca Distrital | ~12 |
-| Centro Felicidad Chapinero | ~10 |
-| Banrep Bogotá | ~17 |
+> Ver `active_sources.md` para el estado operativo completo por fuente.
+> Ver `scripts/source-health.ts` para dashboard en tiempo real (Coverage+Dedupe+Temporal+ParserMix).
+
+#### Bogotá — Web (Cheerio + Gemini) — ACTIVE
+| Fuente | Actividades ACTIVE | Parser | Notas |
+|---|---|---|---|
+| Idartes | ~87 | Gemini/Cheerio | 26% con fecha (backfill pendiente) |
+| BibloRed | ~54 | Gemini | Pipeline V3, maxPages=50 |
+| bogota.gov.co (Alcaldía) | ~39 | Gemini HARD mode | Discovery ranking v2 activado |
+| Planetario de Bogotá | ~14 | Gemini | ~64% cobertura temporal |
+| Banrepcultural | ~2 | Playwright (SPA) | Requiere entorno sin VPN |
+| Cinemateca Distrital | ~1 | Gemini | URL_EVENT_RE incluye /pelicula |
 
 #### Bogotá — Instagram (Playwright)
-10 cuentas activas: @fcecolombia, @quehaypahacerenbogota y 8 más
-
-#### Medellín — Web (Cheerio + Gemini) — NUEVO S35
-| Fuente | Estado |
-|---|---|
-| Parque Explora (`parqueexplora.org/sitemap.xml`) | ✅ activo |
-| Biblioteca Piloto (`bibliotecapiloto.gov.co/sitemap.xml`) | ✅ activo |
-
-#### Medellín — Instagram (Playwright) — NUEVO S35
 | Cuenta | Estado |
 |---|---|
-| @parqueexplora | ✅ validada, pendiente ingest real |
-| @quehacerenmedellin | ✅ validada, pendiente ingest real |
+| @fcecolombia | ✅ activa |
+| @quehaypahacerenbogota | ✅ activa |
+| ~11 cuentas adicionales | activas |
+
+#### Medellín — Web (Cheerio + Gemini)
+| Fuente | Estado |
+|---|---|
+| Parque Explora (`parqueexplora.org`) | ✅ activo — ~9 actividades ACTIVE |
+| Biblioteca Piloto | ⏸️ PAUSADA — 0 yield confirmado |
+
+#### Medellín — Instagram (Playwright)
+| Cuenta | Estado |
+|---|---|
+| @quehacerenmedellin | ✅ activa (pre-filter `isLikelyInstagramEvent()` activo) |
 
 #### Telegram
 | Canal | Estado |
 |---|---|
-| @quehaypahacer | ✅ auth exitosa, dry-run OK, pendiente ingest real |
+| @quehaypahacer | PROTOTIPO — no productivo (ver `scraping.md`) |
 
 #### Pausadas
 | Fuente | Motivo |
 |---|---|
-| Banrep Ibagué | Score 13/100 — cuota Gemini se agota antes de llegar |
+| Biblioteca Piloto | 0 yield confirmado |
+| @distritojovenbta | 0 yield confirmado |
 
-**Total en BD: ~296 actividades activas** (44 activas / ~252 expiradas)
+**Total en BD (S73): ~219 actividades ACTIVE**
+Distribución categorías: Lectura 167 | Música 159 | Teatro y danza 136 | Ciencia y tec. 86 | Deportes 58 | Naturaleza 31 | Manualidades 15 | Arte y Creatividad 42 (needs_review)
 
 ---
 
@@ -569,7 +579,7 @@ El modelo `Child` almacena consentimiento parental explícito:
 ### Transferencia internacional de datos
 - Supabase Inc. (AWS, EEUU) — SOC 2 Type II, AES-256
 - Vercel Inc. (EEUU) — SOC 2 Type II
-- Documentos Legales bajo SSOT — /seguridad/* expone políticas alineadas con SIC y 1581 explícitamente vía descarga en PDF.
+- Documentos Legales bajo SSOT — `/centro-de-confianza/*` expone políticas alineadas con SIC y 1581 explícitamente vía descarga en PDF. Rutas legacy `/privacidad` y `/terminos` redirigen 301 permanente.
 
 ---
 
@@ -587,7 +597,7 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | `GET` | `/api/activities/map` | Pública — actividades con coords para mapa (max 500) |
 | `GET/POST` | `/api/activities/[id]/ratings` | Usuario |
 
-**Filtros GET `/api/activities`:** `page`, `pageSize`, `verticalId`, `categoryId`, `cityId`, `ageMin`, `ageMax` (0-120), `priceMin`, `priceMax`, `status`, `type`, `audience`, `search`
+**Filtros GET `/api/activities`:** `page`, `pageSize`, `verticalId`, `categoryId`, `cityId`, `ageMin`, `ageMax` (0-120), `priceMin`, `priceMax`, `status`, `type`, `audience`, `search`, `sortBy`, `price` (free\|paid), `dateRange` (today\|weekend\|week — requiere `DATE_FILTER_ENABLED=true`)
 
 ### Perfil y familia
 | Método | Ruta |
@@ -607,13 +617,26 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | `GET/POST` | `/api/ratings/[activityId]` | Mixto | Calificaciones por actividad |
 | `POST` | `/api/activities/[id]/view` | Pública | Registra vista (métricas) |
 
+### Actividades (adicional)
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `GET` | `/api/activities/category-counts` | Pública | Conteo de actividades ACTIVE por categoría — usado en CategoryHub y filtros |
+
+### PQRS (Centro de Contacto)
+| Método | Ruta | Auth | Descripción |
+|---|---|---|---|
+| `POST` | `/api/contact` | Pública | Crea ContactRequest — devuelve ID y confirma acuse de recibo |
+| `GET` | `/api/admin/pqrs` | ADMIN | Lista PQRS con paginación + filtros category/overdue |
+| `GET` | `/api/admin/pqrs/[id]` | ADMIN | Detalle PQRS + SLA enrichment (businessDays, slaStatus) |
+| `GET` | `/api/admin/check-overdue-pqrs` | CRON_SECRET | Audita PQRS vencidas — notifica a `info@habitaplan.com` (cron lun-vie 8am) |
+
 ### Analytics (Zero-Dependencies)
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `POST` | `/api/events` | Pública | Ingesta evento: `{ type, activityId?, path?, metadata? }`. `204` No Content. |
 | `GET` | `/api/admin/analytics` | ADMIN | Agrega eventos últimas 24h por tipo `[{ type, _count }]` |
 
-**Eventos válidos:** `page_view`, `activity_view`, `activity_click`, `outbound_click`, `search_applied`
+**Eventos válidos:** `page_view`, `activity_view`, `activity_click`, `outbound_click`, `search_applied`, `filter_applied`, `search_suggestion_clicked` (ver `src/lib/track.ts` — SSOT)
 
 ### Notificaciones Push
 | Método | Ruta | Auth |
@@ -728,11 +751,12 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 1214 tests, 75 archivos, 0 fallos (v0.16.1)
-- **Cobertura:** >91% stmts / >85% branches / >88% funcs / >91% lines
-- **Threshold:** 85% branches (cap fijo desde día 16 del proyecto)
-- **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/db`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `scraping/cache`, `scraping/types`, `scraping/storage`, `activities/schemas`, `activities/service`, `activities/ranking`, `analytics/metrics`
-- **Gap justificado:** `playwright.extractor.ts` (~90% funcs) — callbacks de browser ejecutan en contexto browser, inaccesibles en unit tests
+- **Estado actual:** 1411 tests, 86 archivos, 0 fallos (v0.21.1 — S73)
+- **Cobertura real:** 86.86% stmts | 79.94% branches | 88.36% lines
+- **Threshold:** statements/functions/lines = 85% | branches = 79% (DEBT-07 — threshold diferenciado por complejidad de orquestación)
+- **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `lib/date-label-utils`, `scraping/cache`, `scraping/types`, `scraping/deduplication`, `scraping/logger`, `scraping/data-pipeline`, `scraping/queue/*`, `activities/schemas`, `activities/ranking`, `activities/activity-filters`, `analytics/metrics`
+- **Gap justificado (DEBT-07):** `pipeline.ts` (73.17% branches — orquestación compleja), `activities.service.ts` (69.56% branches — mocks Redis/Prisma), `playwright.extractor.ts` (~90% funcs — callbacks browser)
+- **Ver `TEST_STATUS.md`** para tabla completa por módulo
 
 **Patrón crítico para mocks:**
 ```typescript
@@ -796,7 +820,7 @@ Reglas fundamentales:
 4. **UI Rule (Strict) para Feedback:** All user-facing notifications, alerts, confirmations, and feedback MUST use the internal toast system (`useToast` from `src/components/ui/toast.tsx`).
    - External libraries (`react-hot-toast`, `sonner`, `react-toastify`) are **strictly forbidden**.
    - Native browser alerts (`window.alert`, `window.prompt`) are **forbidden**.
-   - `window.confirm` is **temporarily allowed** until a model system is standardized.
+   - `window.confirm` is **forbidden** — ESLint blocks it. Use `<Modal />` DS pattern: `useState<T | null>(deleteTarget)` + `<Modal isOpen={!!deleteTarget} onConfirm={...} onCancel={...} />`. (S73)
 
 ## 14. Decisiones de Arquitectura
 
@@ -825,7 +849,17 @@ Reglas fundamentales:
 | ESLint freeze DEBT-02 (S45) | `@typescript-eslint/no-explicit-any: "error"` global en `eslint.config.mjs`. 31 archivos legacy en `LEGACY_ANY_FILES[]` → `"warn"`. `src/generated/**` en `globalIgnores`. Bloquea `any` nuevo en CI sin romper legacy. Boy Scout Rule: reducir al tocar cada archivo. |
 | Parser resiliente en módulo separado (S52) | `parser/` desacoplado de `pipeline.ts` y `gemini.analyzer.ts` — usa `Pick<GeminiAnalyzer, 'analyze'>` para no acoplar al constructor. `isRetryableError` centralizado en `parser.types.ts`. Fallback no modifica `ActivityNLPResult` (schema Zod inmutable) — usa wrapper `ParseResult`. |
 | Feature flag `PARSER_FALLBACK_ENABLED` (S52) | Control de activación en `src/config/feature-flags.ts`. Default: `true`. Override: `PARSER_FALLBACK=false` en Vercel env vars. Rollback sin redeploy en ~2 min. Flag vive solo en el punto de orquestación (`pipeline.ts`) — no contamina módulos internos. |
-| Unificación Legal SSOT | No duplicar rutas legales. Un solo namespace: `/seguridad`. Todas las rutas legales deben vivir bajo `/seguridad/*`. Las rutas legacy no se reutilizan: se redirigen (308) y se deprecán. |
+| Unificación Legal SSOT (S72) | Namespace único: `/centro-de-confianza`. Hub SSOT legal con privacidad, términos y datos. Redirects 301 permanentes desde `/privacidad` y `/terminos`. Sitemap actualizado. Links internos apuntan a `/centro-de-confianza/*`. |
+| Discovery Ranking v2 (S63) | `src/modules/scraping/ranking.ts` — ε-greedy ε=0.2 balanceando explotación/exploración. `freshnessScore(lastmod)` por sitemap. `URL_DATE_RE` (+2). NEG_RE ampliado. `zeroScorePct` métrica. Per-source mode via `DISCOVERY_RANKING_MODE_BY_SOURCE` en `feature-flags.ts` (`SCRD` + `bogota.gov.co` default=`'hard'`). `URL_EVENT_RE` incluye `/planes-` y `/pelicula`. `EVENT_RE` vocabulario extendido: ballet, danza, teatro, cine, película, muestra, proyección, ópera, infantil. |
+| Taxonomía 7 categorías canónicas (S68) | 7 canónicas fijas: Música, Lectura, Ciencia y tec., Naturaleza, Deportes, Teatro y danza, Manualidades. Arte y Creatividad = staging temporal (never force-assign). `CATEGORY_MAP` en `data-pipeline.ts` mapea a las 7 directamente. `scripts/reclassify-categories.ts` para migraciones. Taxonomía CONGELADA hasta ~2026-07-01. |
+| Temporal enrichment pipeline (S69) | Gemini recibe fecha actual Colombia (formato largo español) como contexto temporal — resuelve fechas relativas. `extractionMetadata.temporal` en JSON: `{ status: 'resolved'\|'missing'\|'degraded', dateSource: 'explicit'\|'relative'\|'inferred'\|'none', dateMentionDetected: boolean }`. Cheerio fallback siempre `status: 'degraded'`. |
+| ActivityCard editorial (S69) | Eliminados badges Verificado/Nuevo/Taller/Recurrente. Overlay izquierdo = label temporal contextual SSR-safe (UTC-5). Overlay derecho = max 1 badge: Gratis \| ⭐ Destacado. `src/lib/date-label-utils.ts` injectable `now` para tests. |
+| force-reparse pattern (S72) | `scripts/force-reparse-source.ts` — re-parsea actividades existentes sin pipeline completo. `native fetch()` (no ExtractorFactory) + `GeminiAnalyzer.analyze()` + `prisma.activity.update()` solo campos temporales. Dual cache update. Evita re-trigger dedup/gate/provider logic. |
+| Vercel Analytics + Speed Insights (S72) | `<Analytics />` + `<SpeedInsights />` en `src/app/layout.tsx` antes de `</body>`. Auto-reportan a Vercel dashboard sin config adicional. Complementarios al tracker propio `track.ts`. |
+| Event schema JSON-LD (S72) | `src/app/actividad/[id]/page.tsx` — `VIRTUAL_RE` detecta eventos virtuales → `VirtualLocation` + `OnlineEventAttendanceMode`. `addressLocality` + `addressCountry: 'CO'` SIEMPRE presentes en `Place.address` (no condicionales). |
+| ESLint `_` prefix convention (S73) | Variables/args no usados prefijados con `_` son ignorados. `varsIgnorePattern/argsIgnorePattern/caughtErrorsIgnorePattern/destructuredArrayIgnorePattern: "^_"` + `ignoreRestSiblings: true`. `globalIgnores` para `scripts/**/*.mjs`, `e2e/**`. Resultado: 0 warnings en `src/` producción. |
+| confirm() → Modal DS (S73) | `confirm()` bloqueado por ESLint. Patrón: `useState<T \| null>(deleteTarget)` + `<Modal isOpen={!!deleteTarget} onConfirm={doDelete} onCancel={() => setDeleteTarget(null)} />`. Documentado en DS README, PR template, y enforced por linter. |
+| Coverage threshold branches diferenciado (S73) | `branches: Math.min(79, threshold)` en `vitest.config.ts`. Real: 79.94%. Módulos complejos (`pipeline.ts`, `activities.service.ts`) tienen ramas de error/fallback que requieren mocks Redis/BullMQ/Prisma para cubrirse. DEBT-07 documenta plan de mejora. |
 | Multi-City Architecture | Resolución SSOT jerárquica (`URL > localStorage > fallback default`). El componente `CitySwitcher` sincroniza el estado cliente con la URL automáticamente en rutas sensibles para evitar mismatches. El backend estrictamente requiere `cityId`. `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
 | URL como SSOT de ciudad (v0.16.1) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
 | EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.1) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |

@@ -17,7 +17,7 @@ Este documento traza los lineamientos funcionales y lógicos que dictan la exper
    - **Trust Layer / Cuarentenas**: Las actividades clasificadas con baja confianza o caducidad leve por el guardián editorial se marcan como `PAUSED` (Cuarentena) y son 100% invisibles en la UI pública. Solo se listan actividades en estado `ACTIVE`.
 4. **Detalle de la Actividad**: Resumen unificado por la IA de NLP, protegiendo sobre cargas cognitivas o fotos gigantes cuando el texto es la metadata esencial. Enlaza siempre hacia la ruta saliente `outbound_click`.
 5. **Ecosistema de Favoritos Mixtos**: Sistema híbrido (Actividades + Lugares) unificado en `/perfil/favoritos`.
-6. **Centro de Contacto y Soporte (PQRS)**: Infantia garantiza una experiencia de soporte profesional bajo la Ley 1581:
+6. **Centro de Contacto y Soporte (PQRS)**: HabitaPlan garantiza una experiencia de soporte profesional bajo la Ley 1581:
     - **Confirmación Inmediata**: El usuario recibe acuse de recibo forense.
     - **SLA de Respuesta**: Máximo 3 días hábiles para primer contacto humano y 15 para resolución definitiva. (NUEVO v0.17.0)
 
@@ -77,6 +77,30 @@ hybridScore = (textScore × 0.50) + (healthScore × 0.25) + (ctrBoost × 0.15) +
 - **Confianza de Fuente (25%)**: Estabilidad del proveedor.
 - **Interacción CTR (15%)**: Desempeño real de clic frente a impresiones.
 - **Recencia (10%)**: Se le quita peso a la fecha de publicación para dar prioridad absoluta al término buscado.
+
+### 🗂️ ToggleChip — Componente DS Unificado (S65)
+
+`<ToggleChip />` es el componente único para todos los toggles de UI (pills y tiles):
+- **Variantes:** `pill` (filtros de audiencia/precio) y `tile` (filtros de ordenamiento/fecha)
+- **Active state:** `bg-brand-600 text-white` — consistente en todo el sistema
+- **Focus:** `focus-visible:ring-2` — accesible
+- Migra todos los chips de filtro en `Filters.tsx` (edad, audiencia, sort, dateRange)
+
+### 📅 Filtro de Fechas (S65/S70)
+
+Los chips "Hoy / Este finde / Esta semana" aparecen en `/actividades` cuando `DATE_FILTER_ENABLED=true` (activo en producción desde S70).
+
+- Helper `colombiaDayStartUTC(offsetDays)` — calcula rangos en UTC-5 sin dependencias de timezone del servidor
+- `dateRange` param en `buildActivityWhere` — SSOT en `activity-filters.ts`
+- Feature flag controlado por `FEATURE_FLAGS.DATE_FILTER_ENABLED` (env `DATE_FILTER_ENABLED=true`)
+
+### 🎨 ActivityCard Editorial (S69)
+
+Refactor editorial de las tarjetas de actividad:
+- **Eliminado:** badges Verificado, Nuevo, Taller, Recurrente — ruido visual sin valor para el usuario
+- **Overlay izquierdo:** label temporal contextual SSR-safe — "Hoy · 4 PM", "Mañana", "Este fin de semana", "18–20 May"
+- **Overlay derecho:** máx 1 badge por tarjeta — Gratis | ⭐ Destacado
+- `src/lib/date-label-utils.ts` — SSR-safe, timezone-aware (UTC-5), injectable `now` para tests
 
 ### 🔗 CategoryHub y Discovery SEO (v0.21.1 — S72)
 

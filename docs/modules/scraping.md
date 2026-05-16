@@ -265,6 +265,73 @@ Estado: **PROTOTIPO (no productivo)**
 No considerado parte del pipeline oficial.
 El extractor y la conexión MTProto existen en código, pero no hay fuentes `TELEGRAM` registradas en la base de datos, por lo que el Scheduler y el Cron nunca lo ejecutarán en producción.
 
+## Discovery Ranking v2 — ε-greedy (NUEVO S63)
+
+`src/modules/scraping/ranking.ts` implementa un algoritmo de discovery para priorizar qué URLs analizar con Gemini:
+
+### Señales de scoring
+| Señal | Descripción | Peso |
+|-------|-------------|------|
+| `URL_EVENT_RE` | Patrones de URL de eventos (`/agenda/`, `/evento/`, `/planes-`, `/pelicula`) | +4 |
+| `EVENT_RE` | Keywords en texto del link (ballet, teatro, cine, taller, festival, infantil…) | +2 |
+| `URL_DATE_RE` | Fecha en URL (`/2026/05/`) | +2 |
+| `freshnessScore(lastmod)` | Sitemap lastmod reciente → mayor score | 0–2 |
+| `NEG_RE` | Señales negativas (contacto, login, aviso legal, PQRS…) | penaliza |
+
+### Modos por fuente
+- **`'soft'`** (default): ε-greedy ε=0.2 — explota top-N + explora 20% aleatorio
+- **`'hard'`**: toma solo URLs con score > 0 (sin exploración)
+- Configurado en `DISCOVERY_RANKING_MODE_BY_SOURCE` en `feature-flags.ts`
+- `SCRD` y `bogota.gov.co` usan modo `'hard'` por defecto (baja ratio señal/ruido)
+
+### Métricas de observabilidad
+```
+[DISCOVERY:RANK] zeroScorePct=66.9% avgScoreSelected=3.1 totalFiltered=50
+```
+
+## Módulos V2 — Pipeline en construcción activa (DEBT-07)
+
+Los siguientes módulos están en desarrollo activo y **excluidos del threshold de coverage** hasta que sus test suites se completen:
+
+| Archivo | Propósito | Estado |
+|---------|-----------|--------|
+| `pipeline-v2/save-activity-v2.ts` | Guardado optimizado V2 con temporal metadata | En producción, sin tests completos |
+| `quality/activity-gate-v2.ts` | Gate mejorado con scoring v2 | En desarrollo |
+| `quality/source-trust.ts` | Score de confianza por fuente | En desarrollo |
+| `quality/category-skew.ts` | Detección de sesgo por categoría | En desarrollo |
+
+> **DEBT-07:** Tests unitarios para estos módulos son el próximo objetivo de coverage.
+
+## Temporal Enrichment Pipeline (NUEVO S69)
+
+Gemini recibe la fecha actual de Colombia (formato largo español) como contexto en cada análisis para resolver fechas relativas:
+
+```typescript
+// En gemini.analyzer.ts:
+const colombiaDate = new Date().toLocaleDateString('es-CO', { 
+  weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  timeZone: 'America/Bogota'
+});
+// → "viernes, 16 de mayo de 2026"
+```
+
+**Metadata temporal en `extractionMetadata.temporal` (JSONB):**
+```typescript
+{
+  status: 'resolved' | 'missing' | 'degraded',
+  dateSource: 'explicit' | 'relative' | 'inferred' | 'none',
+  dateMentionDetected: boolean
+}
+```
+
+**`scripts/temporal-metrics.ts`** — reporte per-sourceDomain: V2 resolved/missing/degraded, gap real, dateSource distribution.
+
+**`scripts/force-reparse-source.ts`** — re-parsea actividades existentes con parser mejorado sin pipeline completo:
+```bash
+npx tsx scripts/force-reparse-source.ts --source=idartes --dry-run
+npx tsx scripts/force-reparse-source.ts --source=idartes --only-missing-dates --limit=50
+```
+
 ## Pipeline V3 — Cobertura Institucional Total (NUEVO v0.20.0)
 
 ### Diseño
@@ -488,20 +555,25 @@ Su objetivo es erradicar el "ruido corporativo" (PQRS, términos legales, produc
 - Los logs del Trust Layer están agrupados bajo la etiqueta `[PUBLISH_VALIDATOR]`.
 - Las actualizaciones donde el Trust Layer saca una actividad de Cuarentena (de `PAUSED` a `ACTIVE` debido a una mejor pasada del scraper) se registran como `[TRUST_LAYER] Transición: PAUSED -> ACTIVE`.
 
-## Diccionario Maestro de Categorías (Data Pipeline V1)
-Todo flujo de Ingesta, posterior al scraping NLP, está obligado a cruzar el `data-pipeline.ts`, el cual sanitiza el vector crudo de categorías que exporta Gemini hacia **10 Buckets Estrictos**:
-1. `Arte`
-2. `Deporte`
-3. `Ciencia`
-4. `Aire Libre`
-5. `Idiomas`
-6. `Música`
-7. `Juegos`
-8. `Talleres`
-9. `Eventos`
-10. `General`
+## Taxonomía de Categorías — 7 Canónicas (S68)
 
-Cualquier variante externa (ej. "Taller de pintura al óleo") colapsará atómicamente al grupo correspondiente ("Arte", "Talleres") antes de ser introducida a PostgreSQL. Esta decisión elimina la "Basura Nominal" logrando resultados de búsqueda exactos y limpios.
+Todo flujo de ingesta, posterior al scraping NLP, cruza `data-pipeline.ts`, que normaliza el vector crudo de categorías Gemini hacia **7 categorías canónicas fijas**:
+
+| Categoría | Keywords principales |
+|-----------|---------------------|
+| `Música` | música, concierto, jazz, salsa, rock, cumbia, coro, orquesta, rap, fiesta |
+| `Lectura` | lectura, literatura, libro, cuento, biblioteca, taller de escritura, poesía |
+| `Ciencia y tec.` | ciencia, tecnología, robótica, astronomía, experimento, STEM, programación |
+| `Naturaleza` | naturaleza, jardín, botánica, ecología, animales, senderismo, huerta |
+| `Deportes` | deporte, fútbol, natación, atletismo, yoga, danza, baloncesto, artes marciales |
+| `Teatro y danza` | teatro, danza, títeres, clown, payaso, comedia, ballet, ópera, mímica |
+| `Manualidades` | manualidades, arte, pintura, dibujo, cerámica, tejido, origami, escultura |
+
+**Arte y Creatividad** = staging temporal (never force-assign — solo para actividades que no encajan claramente en ninguna canónica).
+
+**Enforcement:** `CATEGORY_MAP` en `data-pipeline.ts` mapea variantes → canónica. Taxonomía **CONGELADA hasta ~2026-07-01** — foco en sourcing/ranking/discovery.
+
+> **Migración S68:** `scripts/reclassify-categories.ts` — reclasificó 47 categorías legacy → 7 canónicas. JUNK_RE → PAUSED (56 actividades). 157 reasignadas por keyword. 41 categorías viejas eliminadas.
 
 ## Deduplicación
 

@@ -600,12 +600,27 @@ export default function Filters({
             }`}
         />
 
-        {/* Spinner de navegación (derecha) */}
-        {isPending && (
+        {/* Derecha: spinner durante navegación, o × para limpiar si hay texto */}
+        {isPending ? (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-400">
             <Spinner />
           </span>
-        )}
+        ) : searchValue ? (
+          <button
+            type="button"
+            aria-label="Limpiar búsqueda"
+            onClick={() => {
+              setSearchValue('');
+              closeDropdown();
+              navigate({ search: '', ageMin, ageMax, categoryId, cityId, type, audience, price, sort, dateRange });
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-[var(--hp-text-muted)] hover:text-[var(--hp-text-primary)] transition-colors rounded-full hover:bg-[var(--hp-bg-subtle)]"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        ) : null}
 
         {/* ── Dropdown ──────────────────────────────────────────────── */}
         {dropdownVisible && (

@@ -210,7 +210,7 @@ export default function HeroSearch({ unified = false, autoFocus = false }: { uni
         setSugg(list);
         setShowSugg(true);
         setIsFetching(false);
-        setActiveIndex(list.length > 0 ? 0 : -1);
+        setActiveIndex(-1); // No preseleccionar — Enter debe buscar texto libre, no seleccionar
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
         setSugg([]);

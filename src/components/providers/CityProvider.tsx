@@ -76,13 +76,11 @@ export function CityProvider({
     })
 
     setCityIdState(resolved)
-
-    // Normalizar URL si falta cityId (replace: no agrega historial)
-    if (!urlCityId && resolved) {
-      const params = new URLSearchParams(searchParams.toString())
-      params.set('cityId', resolved)
-      router.replace(`?${params.toString()}`)
-    }
+    // NOTA: NO inyectamos cityId en la URL automáticamente.
+    // La URL solo recibe cityId cuando el usuario lo elige explícitamente (setCityId).
+    // Auto-inyectar causaba que búsquedas como ?search=teatro se convirtieran en
+    // ?search=teatro&cityId=bogota, activando el filtro estricto de ciudad y ocultando
+    // actividades sin location o de otra ciudad.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Solo en mount
 

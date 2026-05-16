@@ -72,8 +72,8 @@ export default function AdminActividadesPage() {
     const res = await fetch(`/api/activities?${params}`)
     if (res.ok) {
       const data = await res.json()
-      setActivities(data.data?.activities ?? [])
-      setTotal(data.data?.total ?? 0)
+      setActivities(data.data ?? [])
+      setTotal(data.pagination?.total ?? 0)
     }
     setLoading(false)
   }, [page, search, statusFilter, categoryFilter])

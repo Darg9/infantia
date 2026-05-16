@@ -87,6 +87,7 @@ function buildWhere(f: ActiveFilters, exclude?: keyof ActiveFilters): Prisma.Act
 // Para cada filtro, usa todos los demás filtros activos → 0 combinaciones vacías
 // =============================================================================
 async function getFacets(filters: ActiveFilters) {
+  try {
   const [typeGroups, audienceKids, audienceFamily, audienceAdults, validCategories, freeCount, paidCount, citiesRaw] =
     await Promise.all([
       // Tipos disponibles: con todos los filtros EXCEPTO type
@@ -153,8 +154,10 @@ async function getFacets(filters: ActiveFilters) {
       `,
     ]);
 
-  const availableCities = (citiesRaw as { id: string; name: string; activity_count: bigint }[])
-    .map((c) => ({ id: c.id, name: c.name, activityCount: Number(c.activity_count) }));
+  const availableCities = Array.isArray(citiesRaw)
+    ? (citiesRaw as { id: string; name: string; activity_count: bigint }[])
+        .map((c) => ({ id: c.id, name: c.name, activityCount: Number(c.activity_count) }))
+    : [];
 
   return {
     availableTypes: typeGroups.map((g) => ({ type: g.type as string, count: g._count._all })),
@@ -163,6 +166,16 @@ async function getFacets(filters: ActiveFilters) {
     priceCounts: { free: freeCount, paid: paidCount },
     availableCities,
   };
+  } catch (err) {
+    console.error('[getFacets] error:', err);
+    return {
+      availableTypes: [],
+      audienceCounts: { KIDS: 0, FAMILY: 0, ADULTS: 0 },
+      validCategories: [],
+      priceCounts: { free: 0, paid: 0 },
+      availableCities: [],
+    };
+  }
 }
 
 // =============================================================================

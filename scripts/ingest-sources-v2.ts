@@ -35,10 +35,10 @@ const ALL_SOURCES: Source[] = [
   { name: 'BibloRed',          channel: 'web', url: 'https://www.biblored.gov.co/eventos',      cityName: 'Bogotá', maxPages: 50 },
   { name: 'Idartes',           channel: 'web', url: 'https://www.idartes.gov.co/es/agenda',    cityName: 'Bogotá', maxPages: 50 },
   { name: 'Planetario',        channel: 'web', url: 'https://planetariodebogota.gov.co/programate', cityName: 'Bogotá' },
-  { name: 'Cinemateca',        channel: 'web', url: 'https://cinematecadebogota.gov.co',       cityName: 'Bogotá' },
-  { name: 'Banrep Bogotá',     channel: 'web', url: 'https://www.banrepcultural.org/bogota',   cityName: 'Bogotá' },
-  { name: 'FCE Bogotá',        channel: 'web', url: 'https://fce.com.co/programacion-cultural', cityName: 'Bogotá' },
-  { name: 'JBB',               channel: 'web', url: 'https://jbb.gov.co',                     cityName: 'Bogotá' },
+  { name: 'Cinemateca',        channel: 'web', url: 'https://cinematecadebogota.gov.co/cine/11',                    cityName: 'Bogotá' },
+  { name: 'Banrep Bogotá',     channel: 'web', url: 'https://www.banrepcultural.org/bogota',                       cityName: 'Bogotá' },
+  { name: 'FCE Bogotá',        channel: 'web', url: 'https://fce.com.co/programacion-cultural',                    cityName: 'Bogotá' },
+  { name: 'JBB',               channel: 'web', url: 'https://jbb.gov.co/eventos/agenda-cultural-academica/',       cityName: 'Bogotá' },
   { name: 'Sec. Cultura',      channel: 'web', url: 'https://culturarecreacionydeporte.gov.co', cityName: 'Bogotá' },
   { name: 'Alcaldía de Bogotá',channel: 'web', url: 'https://bogota.gov.co/que-hacer/agenda-cultural', cityName: 'Bogotá', maxPages: 50 },
 
@@ -54,7 +54,7 @@ const ALL_SOURCES: Source[] = [
   // { name: 'Compensar',         channel: 'web', url: 'https://www.compensar.com/recreacion-y-cultura/', cityName: 'Bogotá' },
 
   // ── Medellín Institucionales ───────────────────────────────────────────────
-  { name: 'Parque Explora',    channel: 'web', url: 'https://parqueexplora.org',               cityName: 'Medellín' },
+  { name: 'Parque Explora',    channel: 'web', url: 'https://www.parqueexplora.org/sitemap.xml', cityName: 'Medellín', sitemapPatterns: ['/programate/'] },
 
   // ── Instagram ─────────────────────────────────────────────────────────────
   { name: 'IG: quehaypahacerenbogota', channel: 'instagram', url: 'https://www.instagram.com/quehaypahacerenbogota', cityName: 'Bogotá' },

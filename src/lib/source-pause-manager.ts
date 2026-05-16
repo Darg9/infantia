@@ -292,7 +292,7 @@ export async function getSourceDashboardStats(cityId?: string) {
       spc.pause_duration_days,
       s.is_active
     FROM scraping_source s
-    LEFT JOIN city c ON s.city_id = c.id
+    LEFT JOIN cities c ON s.city_id = c.id
     LEFT JOIN source_url_stats sus ON s.id = sus.source_id AND (sus.city_id = c.id OR sus.city_id IS NULL)
     LEFT JOIN source_pause_config spc ON s.id = spc.source_id AND (spc.city_id = c.id OR spc.city_id IS NULL)
     WHERE 1=1

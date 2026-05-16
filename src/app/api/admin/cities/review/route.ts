@@ -19,28 +19,33 @@ type RawRow = {
 };
 
 export async function GET() {
-  const rows = await prisma.$queryRaw<RawRow[]>`
-    SELECT
-      crq.id::text,
-      crq.raw_input,
-      crq.normalized_input,
-      crq.suggested_city_id::text,
-      c.name AS suggested_city_name,
-      crq.similarity_score,
-      crq.created_at
-    FROM city_review_queue crq
-    LEFT JOIN cities c ON c.id = crq.suggested_city_id
-    WHERE crq.resolved = false
-    ORDER BY crq.similarity_score ASC
-    LIMIT 50
-  `;
+  try {
+    const rows = await prisma.$queryRaw<RawRow[]>`
+      SELECT
+        crq.id::text,
+        crq.raw_input,
+        crq.normalized_input,
+        crq.suggested_city_id::text,
+        c.name AS suggested_city_name,
+        crq.similarity_score,
+        crq.created_at
+      FROM city_review_queue crq
+      LEFT JOIN cities c ON c.id = crq.suggested_city_id
+      WHERE crq.resolved = false
+      ORDER BY crq.similarity_score ASC
+      LIMIT 50
+    `;
 
-  const serialized = rows.map((r) => ({
-    ...r,
-    similarity_score: Number(r.similarity_score),
-    created_at:
-      r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,
-  }));
+    const serialized = rows.map((r) => ({
+      ...r,
+      similarity_score: Number(r.similarity_score),
+      created_at:
+        r.created_at instanceof Date ? r.created_at.toISOString() : r.created_at,
+    }));
 
-  return NextResponse.json(serialized);
+    return NextResponse.json(serialized);
+  } catch (err) {
+    console.error('[cities/review] GET error:', err);
+    return NextResponse.json({ error: 'Error al cargar la cola de revisión' }, { status: 500 });
+  }
 }

@@ -15,7 +15,10 @@ export default async function PerfilLayout({ children }: { children: React.React
       <ProfileSidebar
         userName={dbUser?.name ?? user.user_metadata?.name ?? ''}
         userEmail={user.email ?? ''}
-        avatarUrl={dbUser?.avatarUrl ?? null}
+        avatarUrl={
+          // Prioridad: foto subida manualmente en DB → foto del proveedor OAuth (Google/GitHub)
+          dbUser?.avatarUrl ?? (user.user_metadata?.avatar_url as string | null) ?? null
+        }
       />
       <main className="flex-1 bg-[var(--hp-bg-page)] transition-colors">
         {children}

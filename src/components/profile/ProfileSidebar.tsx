@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { Avatar } from '@/components/ui/avatar'
 
 interface ProfileSidebarProps {
   userName: string
@@ -34,17 +35,12 @@ export function ProfileSidebar({ userName, userEmail, avatarUrl }: ProfileSideba
         {/* User card */}
         <div className='p-5 border-b border-[var(--hp-border)] border-[var(--hp-border-subtle)]'>
           <div className="flex items-center gap-3">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt={userName}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-[var(--hp-border)] ring-[var(--hp-border)] shrink-0"
-              />
-            ) : (
-              <div className="w-10 h-10 bg-brand-100 dark:bg-brand-900/30 text-brand-600 dark:text-brand-400 rounded-full flex items-center justify-center font-bold text-sm shrink-0">
-                {(userName?.[0] ?? userEmail?.[0] ?? '?').toUpperCase()}
-              </div>
-            )}
+            {/* Avatar tamaño lg (64px) — más prominente que el topbar (sm/md) */}
+            <Avatar
+              src={avatarUrl}
+              name={userName || userEmail}
+              size="lg"
+            />
             <div className="min-w-0">
               <p className="text-sm font-semibold text-[var(--hp-text-primary)] dark:text-white truncate">
                 {userName || '—'}

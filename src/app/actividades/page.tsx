@@ -145,9 +145,9 @@ async function getFacets(filters: ActiveFilters) {
       prisma.$queryRaw<{ id: string; name: string; activity_count: bigint }[]>`
         SELECT c.id, c.name, COUNT(DISTINCT a.id) AS activity_count
         FROM cities c
-        JOIN locations l ON l.city_id = c.id
-        JOIN activities a ON a.location_id = l.id
-        WHERE c.is_active = true AND a.status = 'ACTIVE'
+        JOIN locations l ON l."cityId" = c.id
+        JOIN activities a ON a."locationId" = l.id
+        WHERE c."isActive" = true AND a.status = 'ACTIVE'
         GROUP BY c.id, c.name
         ORDER BY c.name ASC
       `,

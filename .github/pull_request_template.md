@@ -28,6 +28,8 @@
 - [ ] Usa exclusivamente tokens del DS (`var(--hp-*)` o utilidades permitidas)
 - [ ] No introduce anti-patrones (ej. colores hardcodeados, themes vía JS)
 - [ ] Respeta estrictamente la jerarquía de CTAs
+- [ ] Confirmaciones destructivas usan `<Modal />` — **nunca `confirm()`** (ESLint lo bloquea)
+- [ ] Feedback al usuario usa `useToast()` — nunca `alert()` ni `prompt()`
 
 ### Documentación funcional
 - [ ] Se actualizó `docs/modules/<módulo>.md` si se modificó ese módulo

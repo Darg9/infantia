@@ -1,5 +1,6 @@
 # HABITAPLAN — DOCUMENTO FUNDACIONAL V28
 > Generado por el script V28. Actualizado: 2026-04-25.
+> ⚠️ **Nota (2026-05-16):** Este archivo refleja el estado en V28 (S56). Las secciones 16, 17 y 19 han sido actualizadas manualmente con métricas reales de v0.21.1. Para el documento completo actualizado generar V29 cuando apliquen criterios de cambio material.
 
 
 # 1. VISION Y PROBLEMA
@@ -411,31 +412,39 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Cron Vercel: 9am UTC diario → POST /api/admin/send-notifications (CRON_SECRET).
 - Web Push VAPID: public/sw.js + API /api/push/subscribe. sendPushToMany() limpia endpoints expirados.
 
-# 16. ESTADO ACTUAL — v0.16.1 (2026-04-24)
+# 16. ESTADO ACTUAL — v0.21.1 (2026-05-16)
 
 | Metrica | Valor |
 | --- | --- |
-| Actividades en BD | ~300+ actividades activas (con cobertura de ciudad > 86%) |
+| Actividades ACTIVE | ~219 (Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13, otros) |
 | Locations geocodificadas | 29/29 con coordenadas reales |
-| Tests | 1213 pasando / 1215 totales (2 skipped) en 75 archivos — todos verdes |
+| Cache URLs | ~5.054 URLs |
+| Cobertura temporal | ~63% con fecha explícita. DATE_FILTER_ENABLED=true en Vercel. |
+| Tests | **1411 pasando / 1413 totales (2 skipped) en 86 archivos — todos verdes** |
 | Cobertura | >91% stmts / >85% branches / >88% funcs |
+| ESLint | **0 warnings en src/** (S73 — _prefix convention + globalIgnores) |
 | TypeScript | 0 errores (tsc --noEmit) |
-| npm audit | 3 moderate dev-only aceptables |
+| npm audit | 3 moderate dev-only aceptables (ver SECURITY.md) |
 | Build | OK — sin warnings críticos |
 | Deployment | Vercel ACTIVO — habitaplan.com |
 | CI/CD | GitHub Actions — tests + build + smoke CI |
 | Cola | BullMQ + Upstash Redis OPERATIVO — Cron 6h activo |
-| Fuentes activas | 10 web Bogotá + 2 web Medellín + 10 Instagram + 1 Telegram |
+| Fuentes activas | 20 web Bogotá + 2 web Medellín + 12 Instagram + 1 Telegram |
 | Search engine | pg_trgm activo — similarity + GIN indexes |
-| Activity Gate | ACTIVO (v0.16.1) — doble capa semántica + heurística. Logging diferencial. |
+| Activity Gate | ACTIVO — doble capa semántica + heurística. Hostname matching exacto/sufijo. |
 | Date Preflight | Activo — date_preflight_logs. 3 capas. |
 | Parser Resiliente | Activo — PARSER_FALLBACK_ENABLED. Cheerio fallback cuando Gemini 429/503. |
 | Intent Manager | Activo — hp_intent localStorage TTL 15min |
 | Sentry | ACTIVO — SENTRY_DSN en Vercel |
 | UptimeRobot | ACTIVO — monitoreando /api/health |
-| Analytics | window.__hp_analytics + CTR Feedback Loop |
-| Legal Center | /legal — PDFs react-pdf desde SSOT |
-| **Branding SSOT** | **logo.svg + logo-dark.svg + logo-icon.svg — Brand Asset Pipeline en build (V27)** |
+| Vercel Analytics | ACTIVO — `<Analytics />` + `<SpeedInsights />` en layout.tsx (S72) |
+| Analytics propios | track.ts zero-dep + CTR Feedback Loop (outbound → ranking → crawler) |
+| Legal Center | /centro-de-confianza — Hub SSOT legal (S72). /privacidad + /terminos → 301. |
+| SEO | CategoryHub SSR, FilterLandingLayout relatedLinks, Org JSON-LD global, Event JSON-LD fix (S72) |
+| Categorías | **7 canónicas congeladas** (Lectura/Música/Teatro/Ciencia/Deportes/Naturaleza/Manualidades) |
+| Taxonomía | Congelada hasta ~2026-07-01 — foco sourcing/ranking/discovery |
+| Branding SSOT | logo.svg + logo-dark.svg + logo-icon.svg — Brand Asset Pipeline en build |
+| DS Compliance | **Modal para confirmaciones destructivas** (S73 — confirm() eliminado) |
 
 
 ## 16.1 Historial de versiones (S33-S54)
@@ -475,12 +484,12 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Metrica | Valor |
 | --- | --- |
 | Framework | Vitest + @vitest/coverage-v8 |
-| Tests totales | 1213 en 75 archivos (+ 2 skipped) |
+| Tests totales | **1411 en 86 archivos (+ 2 skipped)** — actualizado 2026-05-16 |
 | Threshold | 85% branches — cap fijo |
 | Statements | >91% |
 | Branches | >85% |
 | Functions | >88% |
-| Tiempo ejecucion | ~26s |
+| Tiempo ejecucion | ~18s |
 
 
 ## Tests nuevos V24 (S34-S54 — seleccion)
@@ -529,14 +538,13 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 
 | Comando | Descripcion |
 | --- | --- |
-| npm test | Correr todos los tests (1213 tests, ~26s) |
+| npm test | Correr todos los tests (1411 tests, ~18s) |
 | npm run test:coverage | Tests + reporte de cobertura (threshold 85%) |
-| npm run generate:brand | Generar og.png, favicon.png, apple-touch-icon.png desde SVG (V27) |
-| npm run validate:logo | Validar que SVGs no tengan fondos falsos (pre-commit hook, V27) |
+| npm run generate:brand | Generar og.png, favicon.png, apple-touch-icon.png desde SVG |
+| npm run validate:logo | Validar que SVGs no tengan fondos falsos (pre-commit hook) |
 | npx tsx scripts/ingest-sources.ts --list | Ver inventario de fuentes por canal |
 | npx tsx scripts/ingest-sources.ts --save-db | Ingest completo a BD (todas las fuentes) |
 | npx tsx scripts/ingest-sources.ts --source=banrep --save-db | Solo Banrep — ahorra cuota Gemini |
-| npx tsx scripts/ingest-sources.ts --source=fuga --save-db | Solo FUGA Filarmonica (NUEVO V24) |
 | npx tsx scripts/ingest-sources.ts --channel=instagram --save-db | Solo fuentes Instagram |
 | npx tsx scripts/ingest-sources.ts --queue | Encolar todos los jobs de scraping |
 | npx tsx scripts/run-worker.ts | Iniciar el worker BullMQ |
@@ -547,7 +555,11 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | npx tsx scripts/telegram-auth.ts | Autenticacion one-time Telegram MTProto |
 | npx tsx scripts/ingest-telegram.ts [--dry-run] | Ingestar canales Telegram |
 | npx tsx scripts/source-ranking.ts [--weeks=4] | Ranking de fuentes por produccion/volumen |
-| npx tsx scripts/source-pause-manager.ts | Calcular scores y pausar fuentes bajas (NUEVO V24) |
+| npx tsx scripts/source-pause-manager.ts | Calcular scores y pausar fuentes bajas |
 | npx tsx scripts/test-instagram.ts <URL> --count-new | Contar posts nuevos sin consumir Gemini |
-| node scripts/generate_v27.mjs | Generar Documento Fundacional V27 (actual) |
+| npx tsx scripts/force-reparse-source.ts --source=idartes --limit=50 | Re-parsear activ. existentes con Gemini (S72) |
+| npx tsx scripts/source-health.ts | Dashboard salud: Coverage+Dedupe+Temporal por fuente (S71) |
+| npx tsx scripts/temporal-metrics.ts | Métricas temporales per-sourceDomain (S69) |
+| npx tsx scripts/reclassify-categories.ts [--apply] | Reclasificación taxonomía 7 categorías (S68) |
+| node scripts/generate_v28.mjs | Generar Documento Fundacional V28 (vigente) |
 

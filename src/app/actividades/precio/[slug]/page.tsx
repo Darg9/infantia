@@ -9,8 +9,10 @@ export const revalidate = 21600 // 6h
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { listActivities } from '@/modules/activities';
+import { prisma } from '@/lib/db';
 import { SITE_URL } from '@/config/site';
 import { FilterLandingLayout } from '../../_components/FilterLandingLayout';
+import { getCategoryEmoji } from '@/lib/category-utils';
 
 const PAGE_LIMIT = 24;
 
@@ -65,12 +67,14 @@ export default async function PrecioLandingPage({ params }: Props) {
   const config = PRICE_CONFIG[slug];
   if (!config) notFound();
 
-  const { activities } = await listActivities({
-    skip: 0,
-    pageSize: PAGE_LIMIT,
-    price: config.price,
-    sortBy: 'date',
-  });
+  const [{ activities }, categories] = await Promise.all([
+    listActivities({ skip: 0, pageSize: PAGE_LIMIT, price: config.price, sortBy: 'date' }),
+    prisma.category.findMany({
+      where: { activities: { some: { activity: { status: 'ACTIVE' } } } },
+      select: { name: true, slug: true },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
 
   const pageTitle = slug === 'gratis' ? 'Actividades gratuitas' : 'Actividades de pago';
 
@@ -97,6 +101,18 @@ export default async function PrecioLandingPage({ params }: Props) {
       filterUrl={`/actividades?price=${config.price}`}
       filterLabel={config.label}
       breadcrumbLd={breadcrumbLd}
+      relatedLinks={[
+        ...categories.map((c) => ({
+          label: c.name,
+          href: `/actividades/categoria/${c.slug}`,
+          emoji: getCategoryEmoji(c.name),
+        })),
+        slug === 'gratis'
+          ? { label: 'Actividades de pago', href: '/actividades/precio/pagas', emoji: '💳' }
+          : { label: 'Actividades gratis', href: '/actividades/precio/gratis', emoji: '✨' },
+        { label: 'Para niños', href: '/actividades/publico/ninos', emoji: '👧' },
+        { label: 'Para toda la familia', href: '/actividades/publico/familia', emoji: '👨‍👩‍👧' },
+      ]}
     />
   );
 }

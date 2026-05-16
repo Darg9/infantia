@@ -9,6 +9,7 @@ import { listActivities } from '@/modules/activities';
 import { SITE_URL } from '@/config/site';
 import { activityPath } from '@/lib/activity-url';
 import { FilterLandingLayout } from '../../_components/FilterLandingLayout';
+import { getCategoryEmoji } from '@/lib/category-utils';
 
 const PAGE_LIMIT = 24;
 
@@ -53,7 +54,20 @@ export async function generateStaticParams() {
 
 export default async function CategoriaLandingPage({ params }: Props) {
   const { slug } = await params;
-  const category = await getCategory(slug);
+
+  const [category, otherCategories] = await Promise.all([
+    getCategory(slug),
+    // Otras categorías activas para interlinking semántico
+    prisma.category.findMany({
+      where: {
+        slug: { not: slug },
+        activities: { some: { activity: { status: 'ACTIVE' } } },
+      },
+      select: { name: true, slug: true },
+      orderBy: { name: 'asc' },
+    }),
+  ]);
+
   if (!category) notFound();
 
   const { activities } = await listActivities({
@@ -140,6 +154,16 @@ export default async function CategoriaLandingPage({ params }: Props) {
       breadcrumbLd={breadcrumbLd}
       itemListLd={itemListLd}
       faqLd={faqLd}
+      relatedLinks={[
+        ...otherCategories.map((c) => ({
+          label: c.name,
+          href: `/actividades/categoria/${c.slug}`,
+          emoji: getCategoryEmoji(c.name),
+        })),
+        { label: 'Actividades gratis', href: '/actividades/precio/gratis', emoji: '✨' },
+        { label: 'Para niños', href: '/actividades/publico/ninos', emoji: '👧' },
+        { label: 'Para toda la familia', href: '/actividades/publico/familia', emoji: '👨‍👩‍👧' },
+      ]}
     />
   );
 }

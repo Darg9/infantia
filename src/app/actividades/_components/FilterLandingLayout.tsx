@@ -16,6 +16,12 @@ interface Breadcrumb {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ActivityItem = any;
 
+interface RelatedLink {
+  label: string;
+  href: string;
+  emoji?: string;
+}
+
 interface FilterLandingLayoutProps {
   /** H1 de la página */
   title: string;
@@ -35,6 +41,8 @@ interface FilterLandingLayoutProps {
   itemListLd?: object;
   /** JSON-LD de FAQPage (opcional — rich results FAQ) */
   faqLd?: object;
+  /** Links de interlinking semántico al pie de la página (otras categorías, precio, etc.) */
+  relatedLinks?: RelatedLink[];
 }
 
 export function FilterLandingLayout({
@@ -47,6 +55,7 @@ export function FilterLandingLayout({
   breadcrumbLd,
   itemListLd,
   faqLd,
+  relatedLinks,
 }: FilterLandingLayoutProps) {
   return (
     <>
@@ -122,6 +131,29 @@ export function FilterLandingLayout({
               <Link href="/actividades" className="mt-4 text-sm text-brand-600 hover:underline">
                 Ver todas las actividades
               </Link>
+            </div>
+          )}
+
+          {/* ── Interlinking semántico ─────────────────────────────────────────
+              Links crawlables hacia otras landing pages relacionadas.
+              Crea grafo semántico entre hubs de categoría/precio/público. */}
+          {relatedLinks && relatedLinks.length > 0 && (
+            <div className="mt-10 pt-6 border-t border-[var(--hp-border)]">
+              <p className="text-xs font-semibold uppercase tracking-wide text-[var(--hp-text-muted)] mb-3">
+                También te puede interesar
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {relatedLinks.map((link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-3 py-1.5 text-sm font-medium text-[var(--hp-text-primary)] shadow-sm transition-colors hover:border-brand-400 hover:bg-brand-50 hover:text-brand-600"
+                  >
+                    {link.emoji && <span aria-hidden>{link.emoji}</span>}
+                    <span>{link.label}</span>
+                  </Link>
+                ))}
+              </div>
             </div>
           )}
         </div>

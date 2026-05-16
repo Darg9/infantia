@@ -24,6 +24,7 @@ import { FEATURE_FLAGS } from '@/config/feature-flags';
 import { serializeActivity } from '@/lib/prisma-serialize';
 import { roundRobinByCategory } from '@/lib/diversity-utils'
 import { ActivityListTracker } from './_components/ActivityListTracker';
+import { CategoryHub } from './_components/CategoryHub';
 import { getCategoryEmoji, getCategoryShortLabel } from '@/lib/category-utils';
 import { getEditorialDateLabel } from '@/lib/date-label-utils';
 
@@ -234,7 +235,7 @@ export default async function ActividadesPage({
   // Cargar actividades, facets, sesión y categorías populares en paralelo
   let favoriteIds = new Set<string>();
 
-  const [{ activities: rawActivities, total }, facets, sessionUser, topCategories, selectedCategory, selectedCity] = await Promise.all([
+  const [{ activities: rawActivities, total }, facets, sessionUser, topCategories, selectedCategory, selectedCity, hubCategories] = await Promise.all([
     listActivities({
       skip,
       pageSize: fetchSize,
@@ -257,6 +258,20 @@ export default async function ActividadesPage({
     filters.cityId
       ? prisma.city.findUnique({ where: { id: filters.cityId }, select: { name: true } })
       : Promise.resolve(null),
+    // Categorías para el hub semántico (internal linking hacia landing pages)
+    // Solo se consulta en la vista base (sin filtros activos)
+    (!filters.categoryId && !filters.search && !filters.price && !filters.audience && !filters.type && !filters.cityId && !filters.dateRange)
+      ? prisma.category.findMany({
+          where: { activities: { some: { activity: { status: 'ACTIVE' } } } },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            _count: { select: { activities: { where: { activity: { status: 'ACTIVE' } } } } },
+          },
+          orderBy: { name: 'asc' },
+        })
+      : Promise.resolve([]),
   ]);
 
   // Aplicar round-robin solo en page 1 sin filtros de categoría/búsqueda.
@@ -347,6 +362,15 @@ export default async function ActividadesPage({
       {/* RESULTADOS — fondo gris, lista o mapa                          */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <div className="mx-auto max-w-7xl px-4 py-6 flex flex-col gap-6">
+
+        {/* ── Hub semántico de categorías ───────────────────────────────────── */}
+        {/* Visible solo en estado base (sin filtros): internal linking crawlable */}
+        {hubCategories.length > 0 && (
+          <CategoryHub
+            categories={hubCategories}
+            freeCount={facets.priceCounts.free}
+          />
+        )}
 
         {/* Toggle Lista / Mapa */}
         <div className="flex items-center justify-end">

@@ -72,4 +72,17 @@ export const FEATURE_FLAGS = {
    * Activar en Vercel: SHOW_AUDIENCE_LABEL=true (sin redeploy).
    */
   SHOW_AUDIENCE_LABEL: process.env.SHOW_AUDIENCE_LABEL === 'true',
+
+  /**
+   * Filtro de edad en /actividades (S72):
+   * Selector "Edad" (0–3, 4–6, 7–10, +10) en desktop y mobile.
+   *
+   * OFF por defecto — ageMin/ageMax incompletos en catálogo: la mayoría de
+   * actividades no tienen edad extraída de forma fiable. El filtro devuelve
+   * resultados escasos y confunde al usuario.
+   * Reactivar cuando el pipeline extraiga y valide edades consistentemente.
+   *
+   * Activar en Vercel: AGE_FILTER_ENABLED=true (sin redeploy).
+   */
+  AGE_FILTER_ENABLED: process.env.AGE_FILTER_ENABLED === 'true',
 } as const;

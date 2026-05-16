@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { activityPath } from '@/lib/activity-url';
 import { trackFilterApplied } from '@/lib/track';
 import type { SuggestionItem } from '@/app/api/activities/suggestions/route';
+import { FEATURE_FLAGS } from '@/config/feature-flags';
 
 // ── Interfaces ────────────────────────────────────────────────────────────────
 
@@ -518,7 +519,7 @@ export default function Filters({
   // Fallback a la búsqueda en facets por compatibilidad.
   const categoryName   = selectedCategoryName ?? facets.validCategories.find(c => c.id === categoryId)?.name;
   const cityName       = selectedCityName     ?? facets.availableCities.find(c => c.id === cityId)?.name;
-  const ageName        = ageIndex !== 0 ? AGE_OPTIONS[ageIndex]?.label : null;
+  const ageName        = FEATURE_FLAGS.AGE_FILTER_ENABLED && ageIndex !== 0 ? AGE_OPTIONS[ageIndex]?.label : null;
   const priceName      = price === 'free' ? 'Gratis' : price === 'paid' ? 'De pago' : null;
   const typeName       = type ? (TYPE_LABELS[type] ?? type) : null;
   const audienceName   = audience ? (AUDIENCE_LABELS[audience] ?? audience) : null;
@@ -811,18 +812,20 @@ export default function Filters({
           </select>
         )}
 
-        {/* Edad */}
-        <select
-          value={ageIndex}
-          onChange={e => handleAge(Number(e.target.value))}
-          className={selectCls(ageIndex !== 0)}
-          aria-label="Edad"
-        >
-          <option value={0}>Edad</option>
-          {AGE_OPTIONS.slice(1).map((o, i) => (
-            <option key={i + 1} value={i + 1}>{o.label}</option>
-          ))}
-        </select>
+        {/* Edad — oculto hasta que pipeline extraiga edades de forma fiable */}
+        {FEATURE_FLAGS.AGE_FILTER_ENABLED && (
+          <select
+            value={ageIndex}
+            onChange={e => handleAge(Number(e.target.value))}
+            className={selectCls(ageIndex !== 0)}
+            aria-label="Edad"
+          >
+            <option value={0}>Edad</option>
+            {AGE_OPTIONS.slice(1).map((o, i) => (
+              <option key={i + 1} value={i + 1}>{o.label}</option>
+            ))}
+          </select>
+        )}
 
         {/* Ordenar */}
         <select
@@ -990,22 +993,25 @@ export default function Filters({
               </div>
             )}
 
-            <div>
-              <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
-              <div className="grid grid-cols-2 gap-2">
-                {AGE_OPTIONS.map((o, i) => (
-                  <ToggleChip
-                    key={i}
-                    variant="tile"
-                    pressed={mobileAgeIdx === i}
-                    onClick={() => setMobileAgeIdx(i)}
-                    className="justify-center py-2.5"
-                  >
-                    {o.label}
-                  </ToggleChip>
-                ))}
+            {/* Edad — oculto hasta que pipeline extraiga edades de forma fiable */}
+            {FEATURE_FLAGS.AGE_FILTER_ENABLED && (
+              <div>
+                <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Edad</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {AGE_OPTIONS.map((o, i) => (
+                    <ToggleChip
+                      key={i}
+                      variant="tile"
+                      pressed={mobileAgeIdx === i}
+                      onClick={() => setMobileAgeIdx(i)}
+                      className="justify-center py-2.5"
+                    >
+                      {o.label}
+                    </ToggleChip>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             <div>
               <label className="block text-sm font-semibold text-[var(--hp-text-primary)] mb-2">Ordenar por</label>

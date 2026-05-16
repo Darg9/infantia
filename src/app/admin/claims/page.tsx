@@ -43,6 +43,7 @@ export default function ClaimsAdminPage() {
     if (res.ok) setClaims(await res.json());
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- setState ocurre dentro de fetch async (no síncrono), patrón estándar de carga con filtro
   useEffect(() => { load(filter); }, [filter]);
 
   async function act(id: string, action: 'approve' | 'reject') {
@@ -113,7 +114,7 @@ export default function ClaimsAdminPage() {
                   </div>
                   <p className='text-sm text-[var(--hp-text-secondary)]'>{c.userName ?? '—'} · {c.userEmail}</p>
                   {c.message && (
-                    <p className="text-sm text-[var(--hp-text-secondary)] mt-2 italic">"{c.message}"</p>
+                    <p className="text-sm text-[var(--hp-text-secondary)] mt-2 italic">&ldquo;{c.message}&rdquo;</p>
                   )}
                   <p className="text-xs text-[var(--hp-text-muted)] mt-2">
                     {new Date(c.createdAt).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' })}

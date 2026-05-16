@@ -27,6 +27,7 @@ function LoginForm() {
   const [isApple, setIsApple] = useState(false)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- detección post-mount de capacidad del cliente, navigator solo existe en browser
     setIsApple(/Mac|iPod|iPhone|iPad/.test(navigator.platform))
   }, [])
 

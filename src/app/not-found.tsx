@@ -4,6 +4,7 @@
 // =============================================================================
 
 import type { Metadata } from 'next';
+import Link from 'next/link';
 
 export const metadata: Metadata = {
   title: '404 — Página no encontrada | HabitaPlan',
@@ -35,18 +36,18 @@ export default function NotFound() {
 
         {/* CTAs */}
         <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-          <a
+          <Link
             href="/actividades"
             className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors text-center"
           >
             Ver actividades
-          </a>
-          <a
+          </Link>
+          <Link
             href="/"
             className="rounded-xl border border-[var(--hp-border)] bg-[var(--hp-bg-surface)] px-6 py-2.5 text-sm font-semibold text-[var(--hp-text-primary)] hover:bg-[var(--hp-bg-page)] transition-colors text-center"
           >
             Ir al inicio
-          </a>
+          </Link>
         </div>
 
       </div>

@@ -31,6 +31,7 @@ export function CityHeroLabel({ cities }: Props) {
     const storedId = localStorage.getItem(LS_KEY)
     if (!storedId) return
     const match = cities.find((c) => c.id === storedId)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- setState post-mount intencional: patrón hydration island, no hay alternativa sin useEffect
     if (match) setCityName(match.name)
   }, [cities])
 

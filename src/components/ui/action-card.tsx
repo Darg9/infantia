@@ -1,7 +1,7 @@
 import * as React from "react"
 import { clsx } from "clsx"
 
-export interface ActionCardProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {}
+export type ActionCardProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 /**
  * ActionCard — HabitaPlan Design System

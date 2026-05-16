@@ -32,6 +32,7 @@ export default function SponsorsAdminPage() {
     if (res.ok) setSponsors(await res.json());
   }
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- setState ocurre dentro de fetch async (no síncrono), patrón estándar de carga inicial
   useEffect(() => { load(); }, []);
 
   async function save() {
@@ -67,6 +68,8 @@ export default function SponsorsAdminPage() {
   }
 
   async function remove(id: string) {
+    // TODO(ui-debt): reemplazar confirm() por <Modal /> del DS cuando se construya el Modal de confirmación
+    // eslint-disable-next-line no-restricted-globals -- admin-only, pendiente migrar a Modal DS
     if (!confirm('¿Eliminar patrocinador?')) return;
     await fetch(`/api/admin/sponsors/${id}`, { method: 'DELETE' });
     load();

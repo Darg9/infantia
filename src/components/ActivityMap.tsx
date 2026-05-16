@@ -6,6 +6,7 @@
 // Si no hay pines (ciudad sin actividades geocodificadas), usa city.defaultCenter.
 // =============================================================================
 
+// eslint-disable-next-line no-restricted-imports -- leaflet requiere su CSS propio, no hay alternativa vía módulos CSS
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'react'
 import { activityPath } from '@/lib/activity-url'
@@ -45,7 +46,7 @@ export default function ActivityMap({ points, defaultCenter }: Props) {
       if (!containerRef.current || mapRef.current) return
 
       // Fix default icon paths (webpack/Next.js issue con Leaflet)
-      // @ts-ignore
+      // @ts-expect-error — _getIconUrl no está en el tipo público de Leaflet pero existe en runtime
       delete L.Icon.Default.prototype._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',

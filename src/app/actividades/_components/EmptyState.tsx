@@ -3,6 +3,7 @@
 // Muestra sugerencias específicas según qué filtros están activos
 // =============================================================================
 
+import Link from 'next/link';
 import { getCategoryEmoji } from '@/lib/category-utils';
 import ActivityCard from './ActivityCard';
 import { ZeroResultsTracker } from '@/components/analytics/ZeroResultsTracker';
@@ -113,12 +114,12 @@ export function EmptyState({
 
       {/* CTA principal */}
       {hasFilters && (
-        <a
+        <Link
           href="/actividades"
           className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 transition-colors"
         >
           Limpiar filtros y ver todo
-        </a>
+        </Link>
       )}
 
       {/* Categorías populares como sugerencias rápidas */}

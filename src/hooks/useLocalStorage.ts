@@ -36,38 +36,43 @@ export function useLocalStorage<T>(
   key: string,
   initial: T
 ): [value: T, setValue: (v: T | ((prev: T) => T)) => void, mounted: boolean] {
-  const [mounted, setMounted] = useState(false);
-  const [value, setValueRaw] = useState<T>(initial);
+  // Estado unificado: un único setState elimina renders en cascada.
+  // Antes: dos llamadas separadas (setValueRaw + setMounted) dentro del efecto.
+  const [state, setState] = useState<{ mounted: boolean; value: T }>({
+    mounted: false,
+    value: initial,
+  });
 
-  // Leer de localStorage después del mount (cliente)
+  // Leer de localStorage después del mount (cliente).
+  // Un único setState → sin cascading renders.
   useEffect(() => {
+    let parsed: T = initial;
     try {
       const raw = localStorage.getItem(key);
-      if (raw !== null) {
-        setValueRaw(JSON.parse(raw) as T);
-      }
+      if (raw !== null) parsed = JSON.parse(raw) as T;
     } catch {
       // JSON malformado u otro error → usar valor inicial
     }
-    setMounted(true);
+    setState({ mounted: true, value: parsed });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 'initial' es un valor de arranque, no debe re-disparar el efecto
   }, [key]);
 
   const setValue = useCallback(
     (update: T | ((prev: T) => T)) => {
-      setValueRaw((prev) => {
+      setState((prev) => {
         const next = typeof update === 'function'
-          ? (update as (prev: T) => T)(prev)
+          ? (update as (prev: T) => T)(prev.value)
           : update;
         try {
           localStorage.setItem(key, JSON.stringify(next));
         } catch {
           // localStorage lleno o no disponible
         }
-        return next;
+        return { ...prev, value: next };
       });
     },
     [key]
   );
 
-  return [value, setValue, mounted];
+  return [state.value, setValue, state.mounted];
 }

@@ -14,6 +14,7 @@ export function normalizePrice(value: unknown): number | null {
     type WithToNumber = { toNumber: () => number };
     type WithValueOf  = { valueOf: () => unknown };
     if ('toNumber' in value && typeof (value as WithToNumber).toNumber === 'function') {
+      // eslint-disable-next-line no-restricted-syntax -- implementación canónica de normalizePrice; .toNumber() SOLO permitido aquí
       result = (value as WithToNumber).toNumber();
     } else if ('valueOf' in value && typeof (value as WithValueOf).valueOf === 'function') {
       const val = Number((value as WithValueOf).valueOf());

@@ -10,15 +10,16 @@ import Link from 'next/link';
 export const dynamic = 'force-dynamic';
 
 const DAYS = 30;
-const since = () => new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000);
 
 export default async function MetricasPage() {
   await requireRole([UserRole.ADMIN]);
 
+  /* eslint-disable react-hooks/purity -- Server Component async (force-dynamic); new Date() es válido fuera del ciclo de render de React */
   const now   = new Date();
-  const d30   = since();
+  const d30   = new Date(Date.now() - DAYS * 24 * 60 * 60 * 1000);
   const d7    = new Date(Date.now() - 7  * 24 * 60 * 60 * 1000);
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  /* eslint-enable react-hooks/purity */
 
   // ── Queries en paralelo ──────────────────────────────────────────────────
   const [

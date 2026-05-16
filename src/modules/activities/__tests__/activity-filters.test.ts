@@ -77,38 +77,30 @@ describe('buildActivityWhere — categoryId', () => {
 });
 
 // =============================================================================
-// City — OR pattern (regla crítica: NUNCA JOIN estricto)
+// City — JOIN estricto por ciudad
 // =============================================================================
-describe('buildActivityWhere — cityId (OR pattern)', () => {
-  it('genera OR: locationId null OR location.cityId = cityId', () => {
+describe('buildActivityWhere — cityId (JOIN estricto)', () => {
+  it('genera location.cityId = cityId (sin incluir locationId null)', () => {
     const where = buildActivityWhere({ cityId: 'city-bog' });
     const and = where.AND as any[];
     expect(and).toBeDefined();
 
-    const cityClause = and.find((c) =>
-      c.OR?.some((o: any) => 'locationId' in o || 'location' in o),
-    );
+    const cityClause = and.find((c) => c.location?.cityId === 'city-bog');
     expect(cityClause).toBeDefined();
-    expect(cityClause.OR).toContainEqual({ locationId: null });
-    expect(cityClause.OR).toContainEqual({ location: { cityId: 'city-bog' } });
+    expect(cityClause).toEqual({ location: { cityId: 'city-bog' } });
   });
 
   it('NO genera cláusula de ciudad si cityId no se provee', () => {
     const where = buildActivityWhere({});
-    // Sin cityId no debe haber AND con OR de locationId
     const and = (where.AND as any[]) ?? [];
-    const cityClause = and.find((c) =>
-      c.OR?.some((o: any) => 'locationId' in o),
-    );
+    const cityClause = and.find((c) => c.location?.cityId);
     expect(cityClause).toBeUndefined();
   });
 
   it('omite cityId cuando exclude="cityId"', () => {
     const where = buildActivityWhere({ cityId: 'city-bog' }, 'cityId');
     const and = (where.AND as any[]) ?? [];
-    const cityClause = and.find((c) =>
-      c.OR?.some((o: any) => 'locationId' in o),
-    );
+    const cityClause = and.find((c) => c.location?.cityId);
     expect(cityClause).toBeUndefined();
   });
 });
@@ -452,7 +444,7 @@ describe('buildActivityWhere — combinación de filtros', () => {
     expect(and.length).toBe(4); // city + free + ageMin + badDomains
 
     // Todas las cláusulas deben estar presentes
-    const cityClause  = and.find((c) => c.OR?.some((o: any) => 'locationId' in o));
+    const cityClause  = and.find((c) => c.location?.cityId === 'city-bog');
     const freeClause  = and.find((c) => c.OR?.some((o: any) => o.price === 0));
     const ageClause   = and.find((c) => c.OR?.some((o: any) => o.ageMax?.gte !== undefined));
     const domainClause = and.find((c) => c.OR?.some((o: any) => o.sourceDomain === null));

@@ -168,16 +168,12 @@ export function buildActivityWhere(
     where.categories = { some: { categoryId: params.categoryId } };
   }
 
-  // ── City — OR pattern obligatorio ───────────────────────────────────────────
-  // Actividades sin location asignada son visibles en cualquier ciudad hasta que
-  // se les geocodifique. El JOIN estricto `where.location = { cityId }` las excluye.
+  // ── City — JOIN estricto por ciudad ─────────────────────────────────────────
+  // Solo actividades con location asignada a la ciudad pedida.
+  // Incluir locationId:null inflaría el conteo (aparecerían en todas las ciudades)
+  // generando discrepancia con la landing page /actividades/[citySlug].
   if (params.cityId && exclude !== 'cityId') {
-    andConditions.push({
-      OR: [
-        { locationId: null },
-        { location: { cityId: params.cityId } },
-      ],
-    });
+    andConditions.push({ location: { cityId: params.cityId } });
   }
 
   // ── Audience ─────────────────────────────────────────────────────────────────

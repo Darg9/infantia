@@ -331,7 +331,7 @@ export class ScrapingPipeline {
       linksForGemini = baseline;
     } else {
       // Antes de enviar a Gemini, ordenamos y seleccionamos el top según probabilidad
-      const { rankedPool, selected: rankedSelected, maxScore, zeroScorePct } = rankCandidates(allLinks, { maxPagesLimit: maxPages });
+      const { rankedPool, selected: rankedSelected, maxScore, zeroScorePct, epsilon } = rankCandidates(allLinks, { maxPagesLimit: maxPages });
 
       // Override por fuente tiene prioridad sobre el flag global
       const effectiveMode: 'hard' | 'shadow' =
@@ -369,6 +369,7 @@ export class ScrapingPipeline {
             selected: rankedSelected.length,
             topScore: maxScore,
             zeroScorePct: `${zeroScorePct}%`,
+            epsilon,
             avgScoreSelected: rankedSelected.reduce((sum, x) => sum + x.score, 0) / (rankedSelected.length || 1),
             selectionEfficiency: `${(selectionEfficiency * 100).toFixed(1)}%`,
           });

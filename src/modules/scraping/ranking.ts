@@ -26,7 +26,14 @@ const NEG_RE = /\b(permanente|siempre abierto|visítanos|quienes somos|contacto|
 // Patrones de URL: rutas de evento (fuerte señal de actividad)
 // /planes-*     → Alcaldía de Bogotá (bogota.gov.co/que-hacer/cultura/planes-*)
 // /pelicula*    → Cinemateca de Bogotá (cinematecadebogota.gov.co/node/peliculas/*)
-const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad\/|\/planes-|\/pelicula)/i;
+// /actividades/ → Maloka y sitios con plural. \/actividad(?:es?)?\/  cubre:
+//   /actividad/   (singular original)
+//   /actividades/ (plural — Maloka, otros)
+const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad(?:es?)?\/|\/planes-|\/pelicula)/i;
+
+// Rutas institucionales (no son eventos) — bibliotecas, colecciones, trámites, etc.
+// Estas rutas se ven principalmente en banrepcultural, jbb, sitios de gobierno
+const NEG_URL_RE = /\/(colecciones?|autoformacion|transparencia|contratacion|licitacion|empleo|directorio|biblioteca-[a-z])/i;
 
 // Fecha en URL: /año/mes/ o /año-mes-día/ — señal de contenido con fecha específica
 const URL_DATE_RE = /\/\d{4}\/\d{2}(?:\/\d{2})?\/|\/\d{4}-\d{2}-\d{2}\//;
@@ -104,6 +111,11 @@ function scoreOne(link: DiscoveredLink): RankedCandidate {
     signals.negativeStatic = -2;
   }
 
+  if (NEG_URL_RE.test(link.url)) {
+    s -= 2;
+    signals.negativeUrl = -2;
+  }
+
   // Señal de frescura desde sitemap lastmod (solo fuentes XML)
   const fresh = freshnessScore(link.lastmod);
   if (fresh > 0) {
@@ -117,9 +129,10 @@ function scoreOne(link: DiscoveredLink): RankedCandidate {
 /**
  * Toma una lista de URLs descubiertas y devuelve las mejores según el presupuesto.
  *
- * Estrategia ε-greedy (ε=0.20):
- *   80% explotación → top-K por score  (evita perder actividades obvias)
- *   20% exploración → muestra aleatoria del tail (evita missed outliers con score 0)
+ * Estrategia ε-greedy adaptativa:
+ *   ε = 0.20 (normal)  → 80% explotación + 20% exploración
+ *   ε = 0.05 (reducido) → cuando zeroScorePct > 70%: la fuente tiene muy poco signal,
+ *     explorar el tail es casi siempre budget desperdiciado → conservamos quota Gemini.
  *
  * @param items   Links extraídos en Fase 1 (Cheerio o Sitemap)
  * @param opts    maxPagesLimit = presupuesto Gemini estricto
@@ -132,6 +145,7 @@ export function rankCandidates(
   selected: RankedCandidate[];
   maxScore: number;
   zeroScorePct: number;
+  epsilon: number;
 } {
   const K = opts?.maxPagesLimit ?? 10;
   // Pool de exploración: hasta 2× el presupuesto (capped a all items)
@@ -148,10 +162,11 @@ export function rankCandidates(
   // rankedPool = ventana de exploración completa (shadow usa esto para comparar)
   const rankedPool = ranked.slice(0, maxCandidates);
 
-  // ε-greedy selection
-  const epsilon = 0.2;
-  const exploreCount = Math.floor(K * epsilon);           // 20% exploración
-  const exploitCount = K - exploreCount;                  // 80% explotación
+  // ε adaptativo: fuentes con >70% de score=0 son muy ruidosas → reducir exploración
+  // para no gastar quota Gemini en URLs casi seguramente inútiles.
+  const epsilon = zeroScorePct > 70 ? 0.05 : 0.2;
+  const exploreCount = Math.floor(K * epsilon);
+  const exploitCount = K - exploreCount;
 
   const topK = ranked.slice(0, K);                        // candidatos de explotación
   const tail  = ranked.slice(K, maxCandidates);           // pool de exploración
@@ -159,5 +174,5 @@ export function rankCandidates(
   const explored = shuffle(tail).slice(0, exploreCount);
   const selected = [...topK.slice(0, exploitCount), ...explored];
 
-  return { rankedPool, selected, maxScore, zeroScorePct };
+  return { rankedPool, selected, maxScore, zeroScorePct, epsilon };
 }

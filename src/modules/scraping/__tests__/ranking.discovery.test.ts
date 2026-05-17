@@ -174,6 +174,85 @@ describe('freshnessScore — bonus por lastmod reciente (+1 o +2)', () => {
   });
 });
 
+// ── v3: /actividades/ plural en URL_EVENT_RE ─────────────────────────────────
+
+describe('v3 — URL_EVENT_RE con /actividades/ plural (Maloka y similares)', () => {
+  it('maloka.org/actividades/tiburockcito → score ≥ 2 gracias a /actividades/', () => {
+    const url = 'https://maloka.org/actividades/tiburockcito-canciones-y-juegos-para-descubrir-el-mar';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].score).toBeGreaterThanOrEqual(2);
+    expect(rankedPool[0].signals['urlPattern']).toBe(2);
+  });
+
+  it('/actividad/ (singular) sigue funcionando sin regresión', () => {
+    const url = 'https://banrepcultural.org/bogota/actividad/visita-guiada-exposicion';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].score).toBeGreaterThanOrEqual(2);
+    expect(rankedPool[0].signals['urlPattern']).toBe(2);
+  });
+});
+
+// ── v3: NEG_URL_RE para rutas institucionales ─────────────────────────────────
+
+describe('v3 — NEG_URL_RE para rutas institucionales (banrepcultural, jbb)', () => {
+  it('/colecciones/ en path → signals.negativeUrl = -2', () => {
+    const url = 'https://banrepcultural.org/colecciones/arte-colombiano';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+    expect(rankedPool[0].score).toBeLessThanOrEqual(1);
+  });
+
+  it('/autoformacion/ en path → signals.negativeUrl = -2', () => {
+    const url = 'https://banrepcultural.org/autoformacion/historia-colonial';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+
+  it('/transparencia/ en path → signals.negativeUrl = -2', () => {
+    const url = 'https://jbb.gov.co/transparencia/planes-informes';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+
+  it('/biblioteca-luis-angel-arango/ en path → signals.negativeUrl = -2', () => {
+    const url = 'https://banrepcultural.org/bogota/biblioteca-luis-angel-arango/actividades';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    // Aunque contiene "actividades", el prefijo biblioteca-* neutraliza
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+
+  it('URL de evento real en banrepcultural NO activa NEG_URL_RE', () => {
+    const url = 'https://banrepcultural.org/bogota/actividad/concierto-jazz-bogota';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBeUndefined();
+    expect(rankedPool[0].score).toBeGreaterThanOrEqual(2);
+  });
+});
+
+// ── v3: ε adaptativo según zeroScorePct ──────────────────────────────────────
+
+describe('v3 — ε adaptativo (zeroScorePct > 70% → ε reducido a 0.05)', () => {
+  it('fuente con muchas URLs de score 0 → epsilon = 0.05', () => {
+    // 20 URLs con score 0 (rutas institucionales sin palabras clave)
+    const badLinks = Array.from({ length: 20 }, (_, i) =>
+      link(`https://banrepcultural.org/colecciones/item-${i}`),
+    );
+    const { epsilon, zeroScorePct } = rankCandidates(badLinks, { maxPagesLimit: 10 });
+    expect(zeroScorePct).toBeGreaterThan(70);
+    expect(epsilon).toBe(0.05);
+  });
+
+  it('fuente normal (zeroScorePct ≤ 70%) → epsilon = 0.20', () => {
+    // Mayoría de URLs con signal positivo (idartes style)
+    const goodLinks = Array.from({ length: 10 }, (_, i) =>
+      link(`https://idartes.gov.co/es/agenda/concierto/evento-${i}`),
+    );
+    const { epsilon, zeroScorePct } = rankCandidates(goodLinks, { maxPagesLimit: 5 });
+    expect(zeroScorePct).toBeLessThanOrEqual(70);
+    expect(epsilon).toBe(0.2);
+  });
+});
+
 // ── Falsos positivos — palabras nuevas no deben disparar en páginas estáticas ─
 
 describe('Regresión — palabras nuevas no deben romper páginas estáticas', () => {

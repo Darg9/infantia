@@ -29,6 +29,7 @@ import clsx from 'clsx';
 import { ACTIVITY_DISCLAIMER_FULL } from '@/modules/legal/constants/legal-disclaimers';
 import { normalizePrice } from '@/lib/decimal';
 import { slugify } from '@/lib/slugify';
+import { safeJsonLd } from '@/lib/json-ld';
 
 export async function generateMetadata({
   params,
@@ -265,8 +266,8 @@ export default async function ActividadDetallePage({
       {/* Tracker Invisible de Visita Pura */}
       <ActivityViewTracker activityId={id} />
       {/* JSON-LD: evento (solo si tiene startDate + location) + breadcrumb siempre */}
-      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />}
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
+      {jsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(jsonLd) }} />}
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbLd) }} />
       <div className="bg-[var(--hp-bg-page)]">
 
       {/* Breadcrumb visual */}

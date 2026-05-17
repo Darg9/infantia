@@ -16,6 +16,7 @@ import ActivityCard from '../_components/ActivityCard';
 import { serializeActivity } from '@/lib/prisma-serialize';
 import { getCategoryEmoji } from '@/lib/category-utils';
 import { SyncCityId } from '../_components/SyncCityId';
+import { safeJsonLd } from '@/lib/json-ld';
 
 const PAGE_LIMIT = 12;
 
@@ -149,9 +150,9 @@ export default async function CiudadLandingPage({ params }: Props) {
     <>
       {/* Sincroniza el CityProvider del header con la ciudad de esta landing page */}
       <SyncCityId cityId={city.id} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(faqLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListLd) }} />
       <main className="min-h-screen bg-[var(--hp-bg-page)] pb-20">
         
         {/* HERO SECTION */}

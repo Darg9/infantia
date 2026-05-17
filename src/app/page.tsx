@@ -18,6 +18,7 @@ import { roundRobinByCategory } from '@/lib/diversity-utils';
 // HeroSearchLoader: interaction-first — el chunk de HeroSearch no bloquea TBT.
 // Renderiza un placeholder HTML hasta hover/focus, luego monta HeroSearch real.
 import { HeroSearchLoader } from '@/app/_components/HeroSearchLoader';
+import { safeJsonLd } from '@/lib/json-ld';
 
 // CategoryCountsIsland: chunk propio; se hidrata post-FCP (conteos de categorías).
 const CategoryCountsIsland = dynamic(
@@ -193,16 +194,16 @@ export default async function HomePage() {
       {/* ── Structured Data ─────────────────────────────────────────────── */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(websiteLd) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(organizationLd) }}
       />
       {itemListLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListLd) }}
         />
       )}
     <div>

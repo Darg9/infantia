@@ -76,6 +76,7 @@ export const metadata: Metadata = {
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import IntentResolver from "@/components/IntentResolver";
 import { TimeToFirstActivityTracker } from "@/components/analytics/TimeToFirstActivityTracker";
+import { safeJsonLd } from '@/lib/json-ld';
 
 export default function RootLayout({
   children,
@@ -148,7 +149,7 @@ export default function RootLayout({
         {/* ── Organization schema — entidad HabitaPlan para Knowledge Graph ── */}
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          dangerouslySetInnerHTML={{ __html: safeJsonLd({
             '@context': 'https://schema.org',
             '@type': 'Organization',
             name: 'HabitaPlan',

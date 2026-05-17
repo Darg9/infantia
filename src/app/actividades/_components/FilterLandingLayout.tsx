@@ -6,6 +6,7 @@
 import Link from 'next/link';
 import ActivityCard from './ActivityCard';
 import { serializeActivity } from '@/lib/prisma-serialize';
+import { safeJsonLd } from '@/lib/json-ld';
 
 interface Breadcrumb {
   name: string;
@@ -61,18 +62,18 @@ export function FilterLandingLayout({
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbLd) }}
       />
       {itemListLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(itemListLd) }}
         />
       )}
       {faqLd && (
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }}
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(faqLd) }}
         />
       )}
       <div className="min-h-screen bg-[var(--hp-bg-page)]">

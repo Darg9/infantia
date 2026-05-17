@@ -6,17 +6,12 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['@react-pdf/renderer'],
 
   experimental: {
-    // Tree-shake automático de paquetes con named exports.
-    // Reduce unused JS en chunks del cliente — impacta TBT y LCP en mobile.
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-dialog',
-      '@radix-ui/react-select',
-      '@radix-ui/react-tabs',
-      '@radix-ui/react-popover',
-      '@radix-ui/react-tooltip',
-      'date-fns',
-    ],
+    // Usa browserslist de package.json para la compilación SWC.
+    // Elimina polyfills de Array.prototype.at, flatMap, Object.hasOwn, etc.
+    // que son innecesarios para Chrome/Firefox/Safari/Edge modernos (~24 KiB).
+    // NOTA: browserslist en package.json afecta autoprefixer (CSS) pero NO SWC;
+    // esta flag es la única manera de conectarlos en Next.js 13.4+.
+    browsersListForSwc: true,
   },
 
   // Optimización de imágenes externas (Supabase Storage + dominios de scraping).

@@ -71,11 +71,12 @@
   --hp-control-track: #cbd5e1;   /* track inactivo — gris slate, visible sobre white */
 
   /* ACTION
-     Light mode: #b46000 → 4.56:1 sobre blanco WCAG AA ✅ (también white sobre este bg = 4.56:1 ✅)
+     Light mode: #9e5200 → 5.24:1 sobre #f1f5f9 (bg-subtle) + 5.73:1 sobre blanco WCAG AA ✅
+       Antes #b46000: 4.16:1 sobre bg-subtle → fallaba en secciones con fondo slate-100.
      Dark mode: overrideado abajo → #ff8c00 → 7.62:1 sobre #111827 ✅
      El split por modo evita el trade-off: "oscuro para texto claro" vs "brillante para texto oscuro". */
-  --hp-action-primary: #b46000;
-  --hp-action-primary-hover: #963f00;
+  --hp-action-primary: #9e5200;
+  --hp-action-primary-hover: #7d3e00;
 
   /* RADIUS */
   --hp-radius-sm: 8px;

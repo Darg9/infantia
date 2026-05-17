@@ -32,10 +32,31 @@ const NEG_RE = /\b(permanente|siempre abierto|visítanos|quienes somos|contacto|
 const URL_EVENT_RE = /(\/evento\/|\/agenda\/|\/eventos\/|\/programate\/|\/actividad(?:es?)?\/|\/planes-|\/pelicula)/i;
 
 // Rutas institucionales (no son eventos) — bibliotecas, colecciones, trámites, etc.
-// Estas rutas se ven principalmente en banrepcultural, jbb, sitios de gobierno
-const NEG_URL_RE = /\/(colecciones?|autoformacion|transparencia|contratacion|licitacion|empleo|directorio|biblioteca-[a-z])/i;
+// Estas rutas se ven principalmente en banrepcultural, jbb, sitios de gobierno.
+//
+// IMPORTANTE — lookahead (?=[\/\?#]|$):
+//   Garantiza que el término sea un SEGMENTO completo del path, no un prefijo de slug.
+//   Correcto:   /autoformacion        → penaliza (-2)
+//   Correcto:   /autoformacion/       → penaliza (-2)
+//   Correcto:   /colecciones/libros   → penaliza (-2)  [/colecciones/ = colecciones de archivo]
+//   Incorrecto: /eventos/autoformacion-musical → NO penaliza (el término es parte de un slug)
+//
+// ADVERTENCIA — riesgo de blacklist editorial silenciosa:
+//   Agregar términos aquí sin test de regresión puede matar recall lentamente.
+//   Antes de añadir cualquier término, verificar que no aparezca como slug legítimo
+//   en URLs de eventos reales. Ver tests en ranking.discovery.test.ts.
+// Dos ramas:
+//   1. Términos simples + lookahead (?=[\/\?#]|$): garantiza que sean segmento completo
+//      → evita false positives en slugs como /autoformacion-musical
+//   2. biblioteca-[a-z]: el prefijo "biblioteca-" es suficientemente distintivo,
+//      no necesita lookahead (nunca aparece como prefijo de slug de evento)
+const NEG_URL_RE = /\/(colecciones?|autoformacion|transparencia|contratacion|licitacion|empleo|directorio)(?=[\/\?#]|$)|\/biblioteca-[a-z]/i;
 
-// Fecha en URL: /año/mes/ o /año-mes-día/ — señal de contenido con fecha específica
+// Fecha en URL: /año/mes/ o /año-mes-día/ — señal de contenido con fecha específica.
+// SEÑAL LATENTE (auditoría S75): 0% de actividades ACTIVE actuales vinieron de este patrón,
+// porque nuestras fuentes principales (Idartes, BibloRed, Alcaldía) no ponen fechas en URL.
+// Se mantiene porque periódicos culturales, blogs institucionales y agendas regionales
+// sí usan /2026/05/ — señal válida para fuentes futuras. Costo: ≈0. No eliminar.
 const URL_DATE_RE = /\/\d{4}\/\d{2}(?:\/\d{2})?\/|\/\d{4}-\d{2}-\d{2}\//;
 
 /**

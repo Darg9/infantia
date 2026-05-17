@@ -229,6 +229,54 @@ describe('v3 — NEG_URL_RE para rutas institucionales (banrepcultural, jbb)', (
   });
 });
 
+// ── v3: Regresión NEG_URL_RE — lookahead evita falsos positivos en slugs ──────
+//
+// TABLA DE COMPORTAMIENTO ESPERADO (auditoría S75):
+//   URL                                → resultado
+//   /colecciones/libros                → penaliza   (/colecciones = archivo)
+//   /colecciones/eventos-infantiles    → penaliza   (colecciones = archivo, no segmento de eventos)
+//   /autoformacion                     → penaliza   (segmento propio)
+//   /eventos/autoformacion-musical     → NO penaliza (autoformacion como parte de slug, no segmento)
+//
+// La distinción imposible con regex:
+//   /colecciones/libros vs /colecciones/eventos-infantiles
+//   Ambas tienen /colecciones/ como segmento — se penalizan igual (correcto semánticamente:
+//   en instituciones colombianas, "colecciones" = catálogo de archivo, no agenda de eventos).
+//
+// La distinción que SÍ protege el lookahead (?=[\/\?#]|$):
+//   /autoformacion      → segmento completo → penaliza
+//   /autoformacion-musical → parte de slug → NO penaliza ← esta es la regresión real a proteger
+
+describe('v3 — NEG_URL_RE lookahead: segmento completo vs prefijo de slug', () => {
+  it('/colecciones/libros → penaliza (segmento institucional de archivo)', () => {
+    const url = 'https://banrepcultural.org/colecciones/libros';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+
+  it('/colecciones/eventos-infantiles → también penaliza (colecciones siempre = catálogo)', () => {
+    // En instituciones colombianas "colecciones/" es siempre archivo/catálogo,
+    // no listado de eventos. Si crean eventos usarán /agenda/ o /actividades/.
+    const url = 'https://banrepcultural.org/colecciones/eventos-infantiles';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+
+  it('/eventos/autoformacion-musical → NO penaliza (autoformacion es parte del slug)', () => {
+    // REGRESIÓN CRÍTICA: sin lookahead, el regex matchea /autoformacion en cualquier posición.
+    // Con lookahead (?=[\/\?#]|$), solo matchea cuando el término es segmento completo.
+    const url = 'https://idartes.gov.co/es/eventos/autoformacion-musical-bogota';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBeUndefined();
+  });
+
+  it('/autoformacion sola → sí penaliza (segmento completo)', () => {
+    const url = 'https://banrepcultural.org/autoformacion';
+    const { rankedPool } = rankCandidates([link(url)], { maxPagesLimit: 1 });
+    expect(rankedPool[0].signals['negativeUrl']).toBe(-2);
+  });
+});
+
 // ── v3: ε adaptativo según zeroScorePct ──────────────────────────────────────
 
 describe('v3 — ε adaptativo (zeroScorePct > 70% → ε reducido a 0.05)', () => {

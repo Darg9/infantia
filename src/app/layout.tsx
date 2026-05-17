@@ -104,11 +104,16 @@ export default function RootLayout({
 
                 // 1. localStorage — fuente principal
                 var saved = null;
-                try { saved = localStorage.getItem('theme'); } catch(e2) {}
+                var lsBlocked = false;
+                try { saved = localStorage.getItem('theme'); } catch(e2) { lsBlocked = true; }
 
-                // 2. Cookie hp-theme — fallback robusto (resiste Brave Shields,
-                //    "clear on exit", fingerprint protection sobre localStorage).
-                if (saved !== 'dark' && saved !== 'light') {
+                // 2. Cookie hp-theme — SOLO cuando localStorage está completamente bloqueado
+                //    (Brave Shields, incógnito estricto con storage bloqueado).
+                //    Si lsBlocked=false y saved=null → sin elección manual → NO leer cookie
+                //    (podría ser stale de versiones anteriores que escribían la cookie en
+                //    auto-detección del sistema, causando que una visita con sistema=light
+                //    bloqueara futuros cambios del SO durante 1 año).
+                if (lsBlocked) {
                   var m = document.cookie.match(/(?:^|;\\s*)hp-theme=(dark|light)/);
                   if (m) saved = m[1];
                 }

@@ -5,11 +5,12 @@
 //
 // Prioridad de resolución (resolveTheme + script anti-flash en layout.tsx):
 //   1. localStorage.theme  → elección manual del usuario (fuente primaria)
-//   2. Cookie hp-theme      → fallback Brave Shields / localStorage bloqueado
+//   2. Cookie hp-theme      → fallback SOLO cuando localStorage está BLOQUEADO
+//                             (Brave Shields, incógnito estricto). NO se lee si
+//                             localStorage es accesible pero vacío — eso significa
+//                             "sin elección manual", y la cookie podría ser stale
+//                             de versiones anteriores del código.
 //                             SOLO se escribe cuando el usuario hace toggle manual.
-//                             NO se escribe en auto-detección del sistema — de lo
-//                             contrario una visita con sistema=light crea una cookie
-//                             stale que bloquea futuros cambios del sistema.
 //   3. prefers-color-scheme → preferencia del SO (fuente dinámica, sin persistir)
 //
 // Funcionalidades:
@@ -38,16 +39,23 @@ function resolveTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
 
   // 1. localStorage — fuente principal
+  let lsBlocked = false
   try {
     const saved = localStorage.getItem('theme')
     if (saved === 'dark' || saved === 'light') return saved
-  } catch { /* localStorage bloqueado (Brave Shields, incógnito estricto) */ }
+    // localStorage accesible pero vacío → sin elección manual → saltar cookie → usar sistema
+  } catch { lsBlocked = true /* localStorage bloqueado: Brave Shields, incógnito estricto */ }
 
-  // 2. Cookie hp-theme — fallback robusto para browsers con localStorage restrictivo
-  try {
-    const m = document.cookie.match(/(?:^|;\s*)hp-theme=(dark|light)/)
-    if (m) return m[1] as Theme
-  } catch { /* cookie API restringida */ }
+  // 2. Cookie hp-theme — SOLO cuando localStorage está completamente bloqueado.
+  //    Si lsBlocked=false y saved=null → no hay elección manual → NO leer cookie.
+  //    Una cookie stale (escrita por versiones anteriores en auto-detección) ganaría
+  //    sobre el sistema y bloquearía futuros cambios del SO durante 1 año.
+  if (lsBlocked) {
+    try {
+      const m = document.cookie.match(/(?:^|;\s*)hp-theme=(dark|light)/)
+      if (m) return m[1] as Theme
+    } catch { /* cookie API restringida */ }
+  }
 
   // 3. OS preference — último recurso
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
@@ -85,9 +93,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
 
     function handleSystemChange(e: MediaQueryListEvent) {
-      // Si hay elección manual, el sistema no manda
-      try { if (localStorage.getItem('theme')) return } catch { /* bloqueado */ }
-      try { if (document.cookie.match(/(?:^|;\s*)hp-theme=/)) return } catch { /* bloqueado */ }
+      // Si hay elección manual en localStorage, el sistema no manda
+      try {
+        if (localStorage.getItem('theme')) return
+        // localStorage accesible pero vacío → sin elección manual → dejar pasar
+        // (no leer cookie: podría ser stale de versiones anteriores)
+      } catch {
+        // localStorage bloqueado → revisar cookie como fuente de elección manual
+        try { if (document.cookie.match(/(?:^|;\s*)hp-theme=/)) return } catch { /* bloqueado */ }
+      }
 
       const next: Theme = e.matches ? 'dark' : 'light'
       document.documentElement.classList.toggle('dark', next === 'dark')

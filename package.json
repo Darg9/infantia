@@ -14,6 +14,7 @@
     "dev": "next dev",
     "generate:brand": "node scripts/generate-brand-assets.mjs",
     "build": "npm run generate:brand && prisma generate && next build",
+    "analyze": "ANALYZE=true npm run build",
     "start": "next start",
     "lint": "eslint",
     "migrate:prod": "prisma migrate deploy",
@@ -72,6 +73,7 @@
   },
   "devDependencies": {
     "@chromatic-com/storybook": "^1.9.0",
+    "@next/bundle-analyzer": "^16.2.6",
     "@playwright/test": "^1.58.2",
     "@storybook/addon-essentials": "^8.6.14",
     "@storybook/addon-interactions": "^8.6.14",

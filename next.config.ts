@@ -1,18 +1,15 @@
 import type { NextConfig } from "next";
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
+
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+  openAnalyzer: false, // genera el archivo pero no abre el browser automáticamente
+});
 
 const nextConfig: NextConfig = {
   // @react-pdf/renderer must run server-side only (uses Node.js APIs)
   serverExternalPackages: ['@react-pdf/renderer'],
-
-  experimental: {
-    // Usa browserslist de package.json para la compilación SWC.
-    // Elimina polyfills de Array.prototype.at, flatMap, Object.hasOwn, etc.
-    // que son innecesarios para Chrome/Firefox/Safari/Edge modernos (~24 KiB).
-    // NOTA: browserslist en package.json afecta autoprefixer (CSS) pero NO SWC;
-    // esta flag es la única manera de conectarlos en Next.js 13.4+.
-    browsersListForSwc: true,
-  },
 
   // Optimización de imágenes externas (Supabase Storage + dominios de scraping).
   // hostname '**' necesario: imágenes vienen de decenas de dominios distintos.
@@ -96,14 +93,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-// Sentry solo activo si SENTRY_DSN está configurado
+// Pipeline: bundleAnalyzer → (Sentry si hay DSN)
+const configWithAnalyzer = withBundleAnalyzer(nextConfig);
+
 export default process.env.SENTRY_DSN
-  ? withSentryConfig(nextConfig, {
-      // Silencia logs de Sentry CLI durante el build
+  ? withSentryConfig(configWithAnalyzer, {
       silent: true,
-      // Desactiva source map upload (requiere SENTRY_AUTH_TOKEN separado)
       sourcemaps: { disable: true },
-      // No inyectar Sentry en el bundle del cliente si no hay DSN público
       autoInstrumentServerFunctions: true,
     })
-  : nextConfig;
+  : configWithAnalyzer;

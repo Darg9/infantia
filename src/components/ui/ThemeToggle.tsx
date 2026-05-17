@@ -6,15 +6,30 @@
 // Client Component aislado → se puede insertar en cualquier Server Component
 // (Header, layout, etc.) sin contaminar el árbol SSR.
 //
+// Patrón mounted: el icono y los atributos dinámicos solo se renderizan
+// después de la hidratación. Antes de mount, se usan valores fijos que
+// coinciden con el SSR (theme='light' = MoonIcon por defecto).
+// Esto elimina el React Error #418 (hydration mismatch) que ocurría cuando
+// localStorage tenía 'dark' y el servidor renderizaba 'light'.
+//
 // SVG inline: 0 dependencias adicionales, bundle mínimo.
 // =============================================================================
 
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useTheme } from '@/hooks/useTheme'
 
 export function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
-  const isDark = theme === 'dark'
+  const [mounted, setMounted] = useState(false)
+
+  // Habilitar icono correcto solo después de hidratación.
+  // Pre-mount: mounted=false → isDark=false → MoonIcon (igual que SSR).
+  // Post-mount: isDark refleja el tema real de localStorage/sistema.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { setMounted(true) }, []) // excepción válida: patrón mounted único para eliminar hydration mismatch
+
+  const isDark = mounted && theme === 'dark'
 
   return (
     <Button

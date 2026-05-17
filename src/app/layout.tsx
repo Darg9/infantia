@@ -94,7 +94,7 @@ export default function RootLayout({
             procesa <style> inline al momento de parsear, sin round-trip de red).
             Especificidad html.dark (0,1,1) > html (0,1,0) \u2192 gana al CSS externo.
             No requiere inline style en JS ni removeProperty posterior. */}
-        <style>{`html.dark{background-color:#0b1220}`}</style>
+        <style>{`html.dark,html.dark body{background-color:#0b1220}`}</style>
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -137,9 +137,10 @@ export default function RootLayout({
                 // detecciones del sistema durante 1 año (bug: sistema cambia a dark
                 // pero la cookie stale gana y la app ignora el cambio).
 
-                requestAnimationFrame(function() {
-                  d.classList.remove('no-transition');
-                });
+                // no-transition es eliminada por ThemeProvider.useLayoutEffect —
+                // NO usar rAF aquí: rAF puede disparar antes de que React confirme
+                // el tema y CSS haya aplicado las variables, lo que activaría las
+                // transiciones de 180ms en el momento equivocado → flash visible.
               } catch(e) {}
             `,
           }}

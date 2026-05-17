@@ -21,7 +21,7 @@
 //   - Sin setState síncrono en effects (eslint react-hooks/set-state-in-effect)
 // =============================================================================
 
-import { createContext, useContext, useEffect, useState, useCallback } from 'react'
+import { createContext, useContext, useEffect, useLayoutEffect, useState, useCallback, useRef } from 'react'
 
 type Theme = 'light' | 'dark'
 
@@ -65,13 +65,27 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Leer fuente de verdad (localStorage) en el initializer — sin efecto síncrono.
   const [theme, setTheme] = useState<Theme>(resolveTheme)
 
-  // Efecto 1: re-aplicar clase CSS si la hidratación la eliminó.
-  // No llama setState — solo opera sobre el DOM.
+  // Captura el tema inicial para useLayoutEffect (el hook solo corre en mount).
+  const initialTheme = useRef(theme)
+
+  // Efecto 1: ANTES del primer paint (useLayoutEffect).
+  // Confirma la clase .dark y elimina no-transition que añadió el script anti-flash.
+  // Usar useLayoutEffect (no rAF, no useEffect) garantiza que:
+  //   1. Las transiciones CSS solo se activan DESPUÉS de que React ha aplicado el tema.
+  //   2. No hay flash: el DOM es correcto antes de que el browser pinte.
+   
+  useLayoutEffect(() => {
+    document.documentElement.classList.toggle('dark', initialTheme.current === 'dark')
+    document.documentElement.classList.remove('no-transition')
+  }, []) // mount-only: no re-dispara en cambios de tema (esos van en Efecto 2)
+
+  // Efecto 2: cambios de tema subsecuentes (toggle manual, cross-tab, sistema).
+  // Corre DESPUÉS del paint → las transiciones CSS de 180ms animan el cambio. ✅
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
 
-  // Efecto 2: cross-tab sync. setState solo dentro del callback del evento
+  // Efecto 3: cross-tab sync. setState solo dentro del callback del evento
   // (no sincrónico en el body del effect) → cumple eslint set-state-in-effect.
   useEffect(() => {
     function handleStorageChange(e: StorageEvent) {
@@ -86,7 +100,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener('storage', handleStorageChange)
   }, [])
 
-  // Efecto 3: seguir cambios del sistema en tiempo real (macOS auto-switch día/noche,
+  // Efecto 4: seguir cambios del sistema en tiempo real (macOS auto-switch día/noche,
   // usuario cambia preferencia mientras el app está abierto).
   // Solo aplica cuando NO hay elección manual explícita (sin localStorage ni cookie).
   useEffect(() => {
@@ -119,8 +133,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     // color-scheme se actualiza automáticamente vía CSS (.dark { color-scheme: dark })
     document.documentElement.classList.toggle('dark', next === 'dark')
 
-    // 2. Persistir elección del usuario (localStorage + cookie para SSR)
-    localStorage.setItem('theme', next)
+    // 2. Persistir elección del usuario
+    try { localStorage.setItem('theme', next) } catch { /* Brave Shields */ }
     document.cookie = `hp-theme=${next}; path=/; max-age=31536000; SameSite=Lax`
 
     // 3. Actualizar estado React → re-render del toggle

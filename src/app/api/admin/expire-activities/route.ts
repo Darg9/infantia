@@ -11,11 +11,13 @@ import { createLogger } from '@/lib/logger';
 const log = createLogger('cron:expire');
 
 export async function GET(req: NextRequest) {
-  // Verificar que la llamada viene de Vercel Cron o es autorizada
+  // Verificar que la llamada viene de Vercel Cron o es autorizada.
+  // IMPORTANTE: si CRON_SECRET no está definido → siempre rechazar.
+  // Patrón seguro: !secret || header !== match (nunca: secret && header !== match)
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
     return NextResponse.json({ error: 'No autorizado' }, { status: 401 })
   }
 

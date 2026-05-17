@@ -9,9 +9,11 @@ export const maxDuration = 60;
 const log = createLogger('api:retention-policy');
 
 export async function GET(request: Request) {
-  // Verificación de seguridad mínima para evitar abusos públicos
+  // Verificación CRON_SECRET — aplica en todos los entornos incluyendo development.
+  // Para probar localmente: definir CRON_SECRET en .env.local y pasar el header.
+  // IMPORTANTE: si CRON_SECRET no está definido → siempre rechazar.
   const authHeader = request.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}` && process.env.NODE_ENV !== 'development') {
+  if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

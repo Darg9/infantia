@@ -76,9 +76,15 @@ interface ActivityCardProps {
   compact?: boolean;
   /** Término de búsqueda activo — se resaltan coincidencias en título y descripción */
   searchQuery?: string;
+  /**
+   * priority=true → next/image fetchpriority="high" + preload.
+   * Usar SOLO en el primer card visible above-the-fold (LCP candidate).
+   * Mejora LCP evitando carga diferida en el elemento más grande del viewport.
+   */
+  priority?: boolean;
 }
 
-export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '' }: ActivityCardProps) {
+export default function ActivityCard({ activity, isFavorited = false, compact = false, searchQuery = '', priority = false }: ActivityCardProps) {
   const mainCategory = activity.categories[0]?.category;
   const gradient = getCategoryGradient(mainCategory?.slug ?? '');
   const categoryEmoji = mainCategory ? getCategoryEmoji(mainCategory.name) : '✨';
@@ -125,6 +131,7 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
             className="object-cover"
+            priority={priority}
           />)
         ) : (
           <span className="text-4xl select-none drop-shadow-[var(--hp-shadow-md)]">{categoryEmoji}</span>
@@ -139,7 +146,9 @@ export default function ActivityCard({ activity, isFavorited = false, compact = 
 
         {/* ── Overlay derecho: Gratis | Destacado ── */}
         {rightBadge === 'gratis' && (
-          <span className='absolute top-1.5 right-2 rounded-full bg-success-500 px-2 py-0.5 text-xs font-semibold text-white shadow-[var(--hp-shadow-md)]'>
+          // bg-success-500 text-white = ratio 2.77:1 → falla WCAG AA.
+          // Tokens hp-badge-fresh-*: #ecfdf5 bg / #047857 text = 7.4:1 → pasa AAA.
+          <span className='absolute top-1.5 right-2 rounded-full bg-[var(--hp-badge-fresh-bg)] px-2 py-0.5 text-xs font-semibold text-[var(--hp-badge-fresh-text)] shadow-[var(--hp-shadow-md)]'>
             Gratis
           </span>
         )}

@@ -282,8 +282,13 @@ export default async function HomePage() {
                 href={activityHref}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {displayActivities.map((activity) => (
-                  <ActivityCard key={activity.id} activity={serializeActivity(activity)} compact />
+                {displayActivities.map((activity, idx) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={serializeActivity(activity)}
+                    compact
+                    priority={idx === 0}
+                  />
                 ))}
               </div>
               <div className="mt-8 text-center">

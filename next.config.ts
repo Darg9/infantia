@@ -5,6 +5,20 @@ const nextConfig: NextConfig = {
   // @react-pdf/renderer must run server-side only (uses Node.js APIs)
   serverExternalPackages: ['@react-pdf/renderer'],
 
+  experimental: {
+    // Tree-shake automático de paquetes con named exports.
+    // Reduce unused JS en chunks del cliente — impacta TBT y LCP en mobile.
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-tooltip',
+      'date-fns',
+    ],
+  },
+
   // Optimización de imágenes externas (Supabase Storage + dominios de scraping).
   // hostname '**' necesario: imágenes vienen de decenas de dominios distintos.
   // Restringir a dominios específicos cuando el catálogo de fuentes sea estable.

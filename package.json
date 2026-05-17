@@ -1,7 +1,15 @@
 {
   "name": "habitaplan",
-  "version": "0.21.1",
+  "version": "0.21.2",
   "private": true,
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Firefox versions",
+    "last 2 Safari versions",
+    "last 2 Edge versions",
+    "not dead",
+    "not IE 11"
+  ],
   "scripts": {
     "dev": "next dev",
     "generate:brand": "node scripts/generate-brand-assets.mjs",

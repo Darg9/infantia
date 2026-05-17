@@ -125,11 +125,12 @@ export default function RootLayout({
                   d.classList.remove('dark');
                 }
 
-                // Escribir cookie si no existe aún — garantiza persistencia
-                // en el próximo ciclo aunque localStorage sea inaccesible.
-                if (!document.cookie.match(/(?:^|;\\s*)hp-theme=/)) {
-                  document.cookie = 'hp-theme=' + theme + '; path=/; max-age=31536000; SameSite=Lax';
-                }
+                // IMPORTANTE: NO escribir cookie aquí aunque no exista.
+                // La cookie solo se escribe cuando el usuario elige explícitamente
+                // (toggleTheme en ThemeProvider). Si la escribimos aquí, una visita
+                // con sistema=light crea hp-theme=light que bloquea futuras
+                // detecciones del sistema durante 1 año (bug: sistema cambia a dark
+                // pero la cookie stale gana y la app ignora el cambio).
 
                 requestAnimationFrame(function() {
                   d.classList.remove('no-transition');

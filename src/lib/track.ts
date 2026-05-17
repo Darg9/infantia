@@ -4,8 +4,8 @@ const lastEventMap = new Map<string, number>();
 // Analytics Sampling Rate Config
 // Leído del entorno global en cliente o fallback a 1.0 (100%)
 const getSampleRate = () => {
-  if (typeof window !== 'undefined' && (window as any).ANALYTICS_SAMPLE_RATE !== undefined) {
-    return Number((window as any).ANALYTICS_SAMPLE_RATE) || 1.0;
+  if (typeof window !== 'undefined' && (window as Window & { ANALYTICS_SAMPLE_RATE?: number }).ANALYTICS_SAMPLE_RATE !== undefined) {
+    return Number((window as Window & { ANALYTICS_SAMPLE_RATE?: number }).ANALYTICS_SAMPLE_RATE) || 1.0;
   }
   return 1.0; // En producción V3 se podrá ajustar desde un <script> global si es necesario
 };
@@ -78,7 +78,7 @@ export async function trackEvent({
 // ============================================================================
 
 class EventBatchTracker {
-  private queue: Array<{ activityId: string; metadata?: any }> = [];
+  private queue: Array<{ activityId: string; metadata?: Record<string, unknown> }> = [];
   private sessionSeen = new Set<string>();
   private flushTimer: NodeJS.Timeout | null = null;
   private readonly FLUSH_INTERVAL = 5000; // 5 segundos
@@ -93,7 +93,7 @@ class EventBatchTracker {
     }
   }
 
-  public trackFeedImpression(activityId: string, context?: any) {
+  public trackFeedImpression(activityId: string, context?: Record<string, unknown>) {
     // 1. Sampling Rate
     if (Math.random() > getSampleRate()) return;
 

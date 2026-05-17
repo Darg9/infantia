@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
 
     let sentCount = 0;
     let skippedCount = 0;
-    const errors: any[] = [];
+    const errors: Array<{ email: string | null; error: string }> = [];
 
     for (const user of users) {
       if (!user.email) {
@@ -77,7 +77,8 @@ export async function POST(request: NextRequest) {
       }
 
       try {
-        const prefs = user.notificationPrefs as any;
+        interface NotifPrefs { email?: boolean; frequency?: string; categories?: { newActivities?: boolean } }
+        const prefs = user.notificationPrefs as NotifPrefs | null;
 
         // Skip if email disabled
         if (!prefs?.email) {
@@ -189,12 +190,12 @@ export async function POST(request: NextRequest) {
           if (result.success) {
             sentCount++;
           } else {
-            errors.push({ email: user.email, error: result.error });
+            errors.push({ email: user.email, error: result.error ?? 'Unknown error' });
           }
         }
       } catch (error: unknown) {
         log.error(`Error processing user ${user.email}:`, { error: getErrorMessage(error) });
-        errors.push({ email: user.email, error: getErrorMessage(error) as any });
+        errors.push({ email: user.email, error: getErrorMessage(error) });
       }
     }
 
@@ -249,7 +250,7 @@ export async function POST(request: NextRequest) {
   } catch (error: unknown) {
     log.error('Catastrophic error:', { error });
     return NextResponse.json(
-      { success: false, error: getErrorMessage(error) as any },
+      { success: false, error: getErrorMessage(error) },
       { status: 500 }
     );
   } finally {

@@ -35,8 +35,7 @@ export function toNumber(value: unknown): number | null {
     const n = parseFloat(value);
     return isNaN(n) ? null : n;
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  if (typeof (value as any).toNumber === 'function') {
+  if (typeof (value as Record<string, unknown>).toNumber === 'function') {
     // eslint-disable-next-line no-restricted-syntax -- esta función ES la implementación del patrón; normalizePrice() la consume
     return (value as { toNumber: () => number }).toNumber();
   }

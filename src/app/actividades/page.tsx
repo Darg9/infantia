@@ -409,7 +409,7 @@ export default async function ActividadesPage({
                 type={filters.type}
                 audience={filters.audience}
                 popularCategories={topCategories}
-                fallbackActivities={fallbackActivities}
+                fallbackActivities={fallbackActivities.map(serializeActivity)}
                 favoriteIds={favoriteIds}
               />
             ) : (

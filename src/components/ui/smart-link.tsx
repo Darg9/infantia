@@ -26,7 +26,7 @@ export function SmartLink({ href, children, ...props }: SmartLinkProps) {
 
   // Next.js Link tipado
   return (
-    <Link href={href} {...(props as any)}>
+    <Link href={href} {...props}>
       {children}
     </Link>
   );

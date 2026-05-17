@@ -5,7 +5,7 @@ import { batchTracker } from "@/lib/track";
 
 interface FeedImpressionTrackerProps {
   activityId: string;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   children: React.ReactNode;
 }
 

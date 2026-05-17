@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireRole } from '@/lib/auth';
-import { UserRole } from '@/generated/prisma/client';
+import { UserRole, Prisma } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +14,7 @@ export async function GET(req: Request) {
     const to = searchParams.get('to');
     const source = searchParams.get('source');
 
-    const where: any = {};
+    const where: Prisma.ContentQualityMetricWhereInput = {};
 
     if (from || to) {
       where.createdAt = {};

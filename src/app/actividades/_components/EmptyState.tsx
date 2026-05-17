@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { getCategoryEmoji } from '@/lib/category-utils';
 import ActivityCard from './ActivityCard';
 import { ZeroResultsTracker } from '@/components/analytics/ZeroResultsTracker';
+import type { SerializedActivity } from '@/lib/prisma-serialize';
 
 interface PopularCategory {
   id: string;
@@ -22,7 +23,7 @@ interface EmptyStateProps {
   type?: string;
   audience?: string;
   popularCategories: PopularCategory[];
-  fallbackActivities?: any[];
+  fallbackActivities?: SerializedActivity[];
   favoriteIds?: Set<string>;
 }
 

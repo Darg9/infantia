@@ -271,6 +271,7 @@ export class ScrapingStorage {
         sourcePlatform: sourceOptions?.platform ?? 'WEBSITE',
         sourceConfidence: data.confidenceScore,
         sourceCapturedAt: new Date(),
+        locationId: null as string | null,
       };
 
       // 4. Obtener o crear Location (con geocoding y overrides fijos)
@@ -292,7 +293,7 @@ export class ScrapingStorage {
       }
 
       if (locationId) {
-        (activityData as any).locationId = locationId;
+        activityData.locationId = locationId;
       }
 
       let activityId: string;

@@ -9,6 +9,7 @@
 // eslint-disable-next-line no-restricted-imports -- leaflet requiere su CSS propio, no hay alternativa vía módulos CSS
 import 'leaflet/dist/leaflet.css'
 import { useEffect, useRef } from 'react'
+import type * as L from 'leaflet'
 import { activityPath } from '@/lib/activity-url'
 
 export interface MapPoint {
@@ -37,7 +38,7 @@ function markerColor(category: string | null): string {
 
 export default function ActivityMap({ points, defaultCenter }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<any>(null)
+  const mapRef = useRef<L.Map | null>(null)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -65,7 +66,7 @@ export default function ActivityMap({ points, defaultCenter }: Props) {
       }).addTo(map)
 
       // Pins de actividades
-      const markers: any[] = []
+      const markers: L.Marker[] = []
       points.forEach((point) => {
         const color = markerColor(point.category)
 

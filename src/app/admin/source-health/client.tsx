@@ -3,8 +3,21 @@
 import { useEffect, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
+interface SourceHealthRow {
+  id: string;
+  source: string;
+  successCount: number;
+  errorCount: number;
+  lastSuccessAt: string | null;
+  lastErrorAt: string | null;
+  avgResponseMs: number;
+  score: number;
+  status: string;
+  updatedAt: string;
+}
+
 export default function SourceHealthClient() {
-  const [data, setData] = useState<any[]>([]);
+  const [data, setData] = useState<SourceHealthRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {

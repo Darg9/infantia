@@ -51,7 +51,7 @@ export function queueCityReview(entry: CityReviewEntry): void {
   void (async () => {
     try {
       const db = getPrisma();
-      await (db as any).$executeRaw`
+      await db.$executeRaw`
         INSERT INTO "city_review_queue"
           ("raw_input", "normalized_input", "suggested_city_id", "similarity_score")
         VALUES

@@ -8,6 +8,7 @@
 // =============================================================================
 
 import { useEffect, useRef, useState } from 'react';
+import type * as L from 'leaflet';
 import { activityPath } from '@/lib/activity-url';
 import { useCity } from '@/components/providers/CityProvider';
 
@@ -32,8 +33,8 @@ const EMERGENCY_ZOOM = 11;
 
 export default function MapInner({ searchParams, height = '520px' }: Props) {
   const containerRef  = useRef<HTMLDivElement>(null);
-  const mapRef        = useRef<any>(null);        // instancia L.Map
-  const layerGroupRef = useRef<any>(null);        // L.LayerGroup para los pines
+  const mapRef        = useRef<L.Map | null>(null);         // instancia L.Map
+  const layerGroupRef = useRef<L.LayerGroup | null>(null); // L.LayerGroup para los pines
 
   const { city } = useCity();
 
@@ -163,13 +164,13 @@ export default function MapInner({ searchParams, height = '520px' }: Props) {
 
       // Ajustar vista para mostrar todos los pines
       if (markers.length === 1) {
-        mapRef.current.setView([markers[0].lat, markers[0].lng], 14);
+        mapRef.current?.setView([markers[0].lat, markers[0].lng], 14);
       } else if (markers.length > 1) {
         const bounds = L.latLngBounds(markers.map((m) => [m.lat, m.lng] as [number, number]));
-        mapRef.current.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
+        mapRef.current?.fitBounds(bounds, { padding: [48, 48], maxZoom: 15 });
       } else if (city) {
         // Sin pines pero con ciudad seleccionada: centrar en coordenadas de la ciudad
-        mapRef.current.setView([city.defaultLat, city.defaultLng], city.defaultZoom);
+        mapRef.current?.setView([city.defaultLat, city.defaultLng], city.defaultZoom);
       }
       // Sin pines ni ciudad: el map quedó en el centro inicial (EMERGENCY_CENTER)
     });

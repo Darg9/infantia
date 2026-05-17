@@ -24,7 +24,7 @@ export interface SchedulePlan {
     name: string;
     url: string;
     platform: string;
-    config?: Record<string, unknown> | null;
+    config?: unknown;
     city?: { name: string } | null;
     vertical?: { slug: string } | null;
     [key: string]: unknown; // permite campos extra sin romper narrowing

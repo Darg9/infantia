@@ -68,9 +68,9 @@ export function estimateCost(maxUrls: number, mode: Mode, reparseCount: number =
   return discoveryCost + reparseCost;
 }
 
-export interface PlanResult {
-  planned: SchedulePlan[];
-  skipped: { source: any; mode: Mode; reason: string }[];
+export interface PlanResult<S extends { name: string } = SchedulePlan['source']> {
+  planned: Array<Omit<SchedulePlan, 'source'> & { source: S }>;
+  skipped: { source: S; mode: Mode; reason: string }[];
   budgetUsed: number;
 }
 
@@ -85,12 +85,12 @@ export interface PlanResult {
  * El reparse ya no tiene prioridad propia: va montado sobre el modo de discovery
  * como costo adicional. Si no hay budget para el reparse, se hace discovery solo.
  */
-export function buildPredictivePlan(
-  sources: { source: any; stats: SourceStats }[],
+export function buildPredictivePlan<S extends { name: string }>(
+  sources: { source: S; stats: SourceStats }[],
   totalBudget: number
-): PlanResult {
-  const plan: SchedulePlan[] = [];
-  const skipped: PlanResult['skipped'] = [];
+): PlanResult<S> {
+  const plan: Array<Omit<SchedulePlan, 'source'> & { source: S }> = [];
+  const skipped: PlanResult<S>['skipped'] = [];
 
   let budgetRemaining = totalBudget;
   const maxBudgetPerSource = 0.25 * totalBudget;

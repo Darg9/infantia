@@ -5,6 +5,7 @@
 // =============================================================================
 
 import { useEffect, useRef } from 'react';
+import type * as L from 'leaflet';
 
 interface Props {
   lat:          number;
@@ -15,7 +16,7 @@ interface Props {
 
 export default function ActivityDetailMapInner({ lat, lng, locationName, address }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const mapRef       = useRef<any>(null);
+  const mapRef       = useRef<L.Map | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;

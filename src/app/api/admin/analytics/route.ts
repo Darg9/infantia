@@ -118,10 +118,10 @@ export async function GET(request: Request) {
     const filterStats: Record<string, { count: number, zeroResults: number, withQuery: number }> = {};
     
     filterEventsRaw.forEach(ev => {
-      const meta = ev.metadata as Record<string, any>;
+      const meta = ev.metadata as Record<string, unknown>;
       if (!meta || !meta.filterType || !meta.filterValue) return;
       
-      const key = `${meta.filterType}:${meta.filterValue}`;
+      const key = `${String(meta.filterType)}:${String(meta.filterValue)}`;
       if (!filterStats[key]) {
         filterStats[key] = { count: 0, zeroResults: 0, withQuery: 0 };
       }

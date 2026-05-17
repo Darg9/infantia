@@ -5,10 +5,13 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createLogger } from '@/lib/logger';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 const log = createLogger('api:scraping:sources');
 
 export async function GET() {
+  await requireRole([UserRole.ADMIN]);
   try {
     const sources = await prisma.scrapingSource.findMany({
       include: {

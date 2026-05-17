@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getSystemStatus } from '@/modules/scraping/alerts';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  await requireRole([UserRole.ADMIN]);
   try {
     const latest = await prisma.contentQualityMetric.findFirst({
       orderBy: { createdAt: "desc" }

@@ -15,6 +15,10 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
+
+export const dynamic = 'force-dynamic';
 
 // BigInt no es serializable por JSON.stringify directamente
 function n(v: unknown): number {
@@ -53,6 +57,7 @@ type RawRow = {
 };
 
 export async function GET(req: NextRequest) {
+  await requireRole([UserRole.ADMIN]);
   const { searchParams } = req.nextUrl;
 
   // Defaults: últimos 7 días

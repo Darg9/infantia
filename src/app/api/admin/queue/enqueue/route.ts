@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { enqueueBatchJob, enqueueInstagramJob } from '@/modules/scraping/queue'
 import { z } from 'zod'
 import { createLogger } from '@/lib/logger';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 const log = createLogger('api:queue:enqueue');
 
@@ -28,6 +30,7 @@ const instagramSchema = z.object({
 const bodySchema = z.discriminatedUnion('type', [batchSchema, instagramSchema])
 
 export async function POST(request: NextRequest) {
+  await requireRole([UserRole.ADMIN]);
   try {
     const body = await request.json()
     const parsed = bodySchema.safeParse(body)

@@ -1,7 +1,12 @@
 import { prisma } from "@/lib/db";
 import { NextResponse } from "next/server";
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
+
+export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
+  await requireRole([UserRole.ADMIN]);
   const { searchParams } = new URL(request.url);
   const hours = parseInt(searchParams.get('hours') || '72', 10);
   const now = new Date();

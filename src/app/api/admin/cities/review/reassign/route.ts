@@ -6,8 +6,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 export async function POST(req: NextRequest) {
+  await requireRole([UserRole.ADMIN]);
   const body = await req.json().catch(() => ({}));
   const { id, cityId } = body as { id?: string; cityId?: string };
 

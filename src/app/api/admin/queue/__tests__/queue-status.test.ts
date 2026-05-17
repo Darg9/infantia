@@ -3,6 +3,12 @@ import { NextRequest } from 'next/server'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────────
 
+const { mockRequireRole } = vi.hoisted(() => ({
+  mockRequireRole: vi.fn().mockResolvedValue(undefined),
+}))
+vi.mock('@/lib/auth', () => ({ requireRole: mockRequireRole }))
+vi.mock('@/generated/prisma/client', () => ({ UserRole: { ADMIN: 'ADMIN' } }))
+
 const mockQueue = {
   getWaitingCount: vi.fn(),
   getActiveCount: vi.fn(),

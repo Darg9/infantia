@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(req: Request) {
+  await requireRole([UserRole.ADMIN]);
   try {
     const { searchParams } = new URL(req.url);
 

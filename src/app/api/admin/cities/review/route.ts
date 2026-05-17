@@ -7,6 +7,10 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
+
+export const dynamic = 'force-dynamic';
 
 type RawRow = {
   id: string;
@@ -19,6 +23,7 @@ type RawRow = {
 };
 
 export async function GET() {
+  await requireRole([UserRole.ADMIN]);
   try {
     const rows = await prisma.$queryRaw<RawRow[]>`
       SELECT

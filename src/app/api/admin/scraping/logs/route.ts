@@ -5,10 +5,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { createLogger } from '@/lib/logger';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 const log = createLogger('api:scraping:logs');
 
 export async function GET(request: NextRequest) {
+  await requireRole([UserRole.ADMIN]);
   try {
     const { searchParams } = request.nextUrl
     const page = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10) || 1)

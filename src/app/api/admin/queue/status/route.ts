@@ -5,10 +5,13 @@
 import { NextResponse } from 'next/server'
 import { getScrapingQueue } from '@/modules/scraping/queue'
 import { createLogger } from '@/lib/logger';
+import { requireRole } from '@/lib/auth';
+import { UserRole } from '@/generated/prisma/client';
 
 const log = createLogger('api:queue:status');
 
 export async function GET() {
+  await requireRole([UserRole.ADMIN]);
   try {
     const queue = getScrapingQueue()
 

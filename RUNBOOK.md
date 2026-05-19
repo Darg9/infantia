@@ -256,7 +256,54 @@ ROI estimado:      Nulo
 
 ---
 
-## 8. Gobernanza Documental
+## 8. Rollback de Producción
+
+HabitaPlan corre en Vercel (frontend/API) + Supabase (DB) + Upstash Redis (cache/queues). El rollback tiene dos niveles:
+
+### 8.1 Rollback de código — Vercel (1 clic)
+
+1. Ir a [vercel.com/dashboard](https://vercel.com/dashboard) → proyecto `habitaplan`
+2. Tab **Deployments** → localizar el último deployment estable
+3. Botón ⋯ → **Promote to Production**
+
+Vercel redirige el tráfico en ~10 segundos sin downtime. No requiere git revert.
+
+**Cuándo usarlo:** bug en producción detectado post-deploy, degradación de Core Web Vitals, error 500 nuevo en rutas críticas.
+
+### 8.2 Rollback de migración de BD — Supabase
+
+Supabase/PostgreSQL **no tiene rollback automático** de migraciones DDL. El flujo seguro:
+
+1. **Antes de migrar:** tomar snapshot manual en Supabase Dashboard → **Database → Backups → Take snapshot**
+2. **Si la migración falla:** restaurar snapshot desde el mismo panel (tarda ~5 min, implica downtime)
+3. **Si solo son datos:** `psql` con `BEGIN; ... ROLLBACK;` o query directa en Supabase SQL Editor
+
+**Política actual:** todas las migraciones son aditivas (ADD COLUMN, CREATE TABLE, CREATE INDEX). No hay DROP en el historial activo. El riesgo de migración es bajo.
+
+### 8.3 Rollback de Redis / Queues
+
+No hay rollback de estado Redis. Si BullMQ acumula jobs corruptos:
+
+```bash
+# Ver estado de queues en Upstash Dashboard (Redis Insight)
+# O limpiar queue específica:
+node -e "const { Queue } = require('bullmq'); const q = new Queue('scraping', { connection: ... }); q.drain();"
+```
+
+### 8.4 Checklist post-incidente
+
+```
+□ Rollback aplicado (Vercel o Supabase)
+□ Causa raíz identificada
+□ Fix en rama nueva (no directo a master)
+□ Tests pasan localmente antes de re-deploy
+□ Verificar /api/health post-deploy
+□ Registrar en CHANGELOG.md bajo [ops/incident-YYYY-MM-DD]
+```
+
+---
+
+## 9. Gobernanza Documental
 
 ### Cuándo generar nueva versión del Documento Fundacional
 
@@ -282,4 +329,4 @@ node scripts/generate_v28.mjs   # actualizar número antes de ejecutar
 
 ---
 
-*Última actualización: 2026-04-26 (S58)*
+*Última actualización: 2026-05-19 (S76)*

@@ -263,6 +263,10 @@ model ActivityCategory {
 // User Interactions
 // =============================================================================
 
+/// ⚠️  CHECK constraint DB-level: exactamente uno de activityId o locationId debe estar presente (XOR).
+/// Gestionado en migración `20260416000000_mixed_favorites` como `favorites_xor_check`.
+/// Prisma no genera este constraint — NO usar `prisma db push --force-reset` o se perderá.
+/// Verificar con: SELECT conname FROM pg_constraint WHERE conname = 'favorites_xor_check';
 model Favorite {
   id         String   @id @default(cuid())
   userId     String

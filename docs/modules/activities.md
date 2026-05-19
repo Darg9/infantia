@@ -1,7 +1,7 @@
 # Módulo: Activities
 
-**Versión:** ✅ v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión:** ✅ v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 
 ## ¿Qué hace?
@@ -22,6 +22,8 @@ Expone una API REST para crear, leer, actualizar y eliminar actividades. Es el m
 | GET | `/api/activities/map` | No | Actividades con coords reales para mapa (máx 500). **Requiere `?cityId=` obligatorio — HTTP 400 sin él (v0.16.1)**. Excluye coords (0,0). Filtro estricto por `location.cityId`. |
 | POST | `/api/activities/:id/view` | No | Registra una vista (métricas) |
 | GET/POST | `/api/activities/:id/ratings` | Auth (POST) | Calificaciones de una actividad |
+
+> **Rate limiting (v0.22.0):** `POST /api/ratings` tiene rate limit 20 req/hora por userId (post-auth). `GET /api/ratings` no está limitado. Implementado via `src/lib/rate-limit.ts` con Redis fixed-window + fail-open. Todos los bodies validados con Zod v4.
 
 ## Endpoints de favoritos
 

@@ -9,6 +9,58 @@ Relación con Documento Fundacional:
 
 ---
 
+## [v0.22.0] — 2026-05-19 (S76 — Auditoría Técnica: Seguridad API + Cobertura + CI)
+
+### Security — Rate Limiting
+
+- **`src/lib/rate-limit.ts`** (NUEVO): rate limiting HTTP fixed-window con Redis. Fail-open si Redis no disponible.
+- **Límites configurados:** `contact` 5 req/h · `events` 120 req/min · `search_log` 60 req/min · `ratings` 20 req/h.
+- **4 rutas protegidas:** `POST /api/contact`, `POST /api/events`, `POST /api/search/log`, `POST /api/ratings`.
+
+### Security — Zod Validation
+
+- **6 rutas migradas** de body casts directos (`as { id?: string }`) a schemas Zod con mensajes de error en español:
+  - `POST /api/contact`, `POST /api/events`, `POST /api/search/log`, `POST /api/ratings` (GET también), `POST|DELETE /api/push/subscribe`, `POST /api/admin/cities/review/approve`.
+- Zod v4 API: `{ error: 'msg' }` constructor en lugar de `invalid_type_error/required_error`.
+
+### Refactor — Código Legal SSOT
+
+- **`src/modules/legal/constants/consent.ts`** (NUEVO): `CONSENT_TEXT` extraído a constante compartida. Elimina duplicación 3× y corrige TypeScript error por export ilegal en route file.
+
+### Fix — TypeScript
+
+- **`auth/terminos/page.tsx`**: `searchParams: Promise<{ next?: string }>` + `await` — cumple Next.js 16.
+- **`api/children/route.ts`**: removido `export const CONSENT_TEXT` (named export no-HTTP viola contrato Next.js route files).
+
+### Fix — Pipeline
+
+- **Dead code eliminado:** `claude.analyzer.ts` + `claude-analyzer.test.ts` + `scheduler.core.v1.ts` + `scheduler.types.v1.ts`.
+- **`getSourceAggregatedStats()`**: implementado con queries reales a `source_run_metrics` (antes hardcoded).
+
+### Tests
+
+- **`quota-tracker.test.ts`**: 2 tests failing corregidos (bug `keyFor() slice(-8)` — keys deben ser exactamente 8 chars).
+- **`save-activity-v2.test.ts`** (NUEVO): mock paths corregidos (4 niveles), mock `db.ts` añadido, tests location failure.
+- **Resultados:** 87 archivos · 1544 tests · 89.68% stmts / **82.86% branches** / 90.86% funcs / 91.02% lines.
+- **Threshold branches:** 79% → **83%** en `vitest.config.ts`.
+
+### CI/CD
+
+- **`ci.yml` + `e2e.yml`**: `node-version: 20` → `24` (alinea con entorno local v24.14.0).
+- **`e2e.yml`**: `playwright test --project=sin-auth` (cubre 6/7 specs — antes solo 1).
+
+### Docs & Schema
+
+- **`prisma/schema.prisma`**: comentario `///` en `Favorite` sobre CHECK constraint XOR.
+- **`RUNBOOK.md`**: §8 Rollback de Producción (Vercel 1-clic, Supabase snapshots, checklist).
+- Todos los documentos actualizados a v0.22.0.
+
+### Despliegue
+
+- **Rama:** `master` | **Versión:** v0.22.0 | **Plataforma:** Vercel (auto-deploy)
+
+---
+
 ## [v0.21.1] — 2026-05-16 (S73 — Code Quality Sprint: ESLint limpio + Modal DS)
 
 ### Code Quality — ESLint

@@ -1,6 +1,6 @@
 # HabitaPlan — Plan de Pruebas
 
-**Version:** v0.21.1 | **Fecha:** 2026-05-16
+**Version:** v0.22.0 | **Fecha:** 2026-05-19
 **Framework:** Vitest + @vitest/coverage-v8
 **Threshold:** 85% (cap desde dia 16 del proyecto — 2026-04-24)
 
@@ -27,9 +27,9 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 
 ---
 
-## Cobertura actual (v0.21.1 — S73)
+## Cobertura actual (v0.22.0 — S76)
 
-> **Nota DEBT-07:** threshold de branches diferenciado en 79% (real: 79.94%) por complejidad de orquestación en `pipeline.ts` y `activities.service.ts`. Ver DEBT-07 en CLAUDE.md.
+> **Nota DEBT-07:** threshold de branches diferenciado en 83% (real: 82.86%) — subido desde 79% en S76. DEBT-07 sigue activo en `pipeline.ts` (~73%) y `activities.service.ts` (~70%). Plan: tests de ramas en sprints futuros.
 
 | Modulo | Test | Stmts | Funcs | Estado |
 |--------|------|-------|-------|--------|
@@ -43,8 +43,8 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | lib/venue-dictionary | venue-dictionary.test.ts | 100% | 100% | OK |
 | lib/expire-activities | expire-activities.test.ts | 100% | 100% | OK |
 | lib/date-label-utils | date-label-utils.test.ts | 100% | 100% | OK ← NUEVO S69 (SSR-safe, UTC-5, 27 tests) |
-| lib/geocoding | geocoding.test.ts | 95% | 95% | OK ← NUEVO v0.16.1 |
-| lib/push | push.test.ts | 94% | 94% | OK ← NUEVO v0.16.1 |
+| lib/geocoding | geocoding.test.ts | 95% | 95% | OK |
+| lib/push | push.test.ts | 94% | 94% | OK |
 | lib/logger | — | ~85% | ~85% | Sin tests dedicados (Sentry dynamic import dificulta mock) |
 | lib/email/templates/activity-digest | activity-digest.test.tsx | ~95% | 100% | OK |
 | lib/supabase/client | client.test.ts | 100% | 100% | OK |
@@ -59,22 +59,22 @@ Calculado automaticamente en `vitest.config.ts`. Cap fijo en 85% para evitar blo
 | scraping/ranking (discovery) | ranking.discovery.test.ts | 100% | 100% | OK ← NUEVO S70 (12 tests URL reales auditoría) |
 | scraping/cheerio-extractor | cheerio-extractor.test.ts | 94% | 100% | OK |
 | scraping/playwright-extractor | playwright-extractor.test.ts | ~97% | ~90% | OK |
-| scraping/claude-analyzer | claude-analyzer.test.ts | 100% | 100% | OK |
+| ~~scraping/claude-analyzer~~ | ~~claude-analyzer.test.ts~~ | — | — | **ELIMINADO S76** (dead code — stack usa Gemini) |
 | scraping/gemini-analyzer | gemini-analyzer.test.ts | 94% | 94% | OK |
+| scraping/pipeline-v2/save-activity-v2 | save-activity-v2.test.ts | ~75% | ~80% | OK ← NUEVO S76 |
 | scraping/queue/connection | queue-connection.test.ts | 100% | 100% | OK |
 | scraping/queue/scraping.queue | queue.test.ts | 100% | 100% | OK |
 | scraping/queue/scraping.worker | queue-worker.test.ts | 100% | 100% | OK |
 | activities/schemas | schemas.test.ts | 100% | 100% | OK |
-| activities/ranking | ranking.test.ts | 100% | 100% | OK ← NUEVO S44 (ctrBoost default, tiers, score addition) |
-| activities/activity-filters | activity-filters.test.ts | 100% | 100% | OK ← NUEVO S58 (SSOT buildActivityWhere, dateRange S65) |
-| activities/service | service.test.ts | ~80% | ~70% | ⚠️ DEBT-07: ramas Prisma/Redis complejas |
-| analytics/metrics | metrics.test.ts | 100% | 100% | OK ← NUEVO S44 (getCTRByDomain, ctrToBoost, cache, fail-safe) |
+| activities/ranking | ranking.test.ts | 100% | 100% | OK |
+| activities/activity-filters | activity-filters.test.ts | 100% | 100% | OK |
+| activities/service | service.test.ts | ~80% | ~70% | ⚠️ DEBT-07 |
+| analytics/metrics | metrics.test.ts | 100% | 100% | OK |
 | api/admin/sponsors | sponsors.test.ts | ~95% | 100% | OK |
-| lib/ratings | — | Sin test dedicado (testeado via ratings API) | — | OK |
-| api/ratings | ratings.test.ts | ~90% | 100% | OK ← ACTUALIZADO v0.16.1 (recalcProviderRating mock) |
-| lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK ← NUEVO S32 (calcSourceScore, formatReach, TIER_LABEL/COLOR) |
+| api/ratings | ratings.test.ts | ~90% | 100% | OK |
+| lib/source-scoring | source-scoring.test.ts | 100% | 100% | OK |
 
-**Total v0.21.1 (S73): 86.86% stmts / 79.94% branches (threshold 79%) / 86 archivos | 1411 tests (2 skipped)**
+**Total v0.22.0 (S76): 89.68% stmts / 82.86% branches (threshold 83%) / 87 archivos | 1544 tests (2 skipped)**
 
 ---
 

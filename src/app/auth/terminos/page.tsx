@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { TERMS_META } from '@/modules/legal/constants/terms'
 import { DATA_TREATMENT_META } from '@/modules/legal/constants/data-treatment'
 
-export default async function TerminosPage({ searchParams }: { searchParams: { next?: string } }) {
+export default async function TerminosPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const session = await getSession()
   if (!session) redirect('/login')
 
@@ -14,8 +14,9 @@ export default async function TerminosPage({ searchParams }: { searchParams: { n
   const dbUser = await prisma.user.findUnique({
     where: { supabaseAuthId: session.id }
   })
-  
-  const nextUrl = searchParams.next ?? '/perfil'
+
+  const resolvedParams = await searchParams
+  const nextUrl = resolvedParams.next ?? '/perfil'
 
   if (dbUser?.termsAcceptedAt) {
     redirect(nextUrl)

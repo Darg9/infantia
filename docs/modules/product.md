@@ -1,7 +1,7 @@
 # Módulo: Producto y Experiencia de Usuario (UX)
 
-**Versión:** ✅ v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión:** ✅ v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 
 Este documento traza los lineamientos funcionales y lógicos que dictan la experiencia de navegación para los cuidadores y publicadores dentro de HabitaPlan.
@@ -102,7 +102,7 @@ Refactor editorial de las tarjetas de actividad:
 - **Overlay derecho:** máx 1 badge por tarjeta — Gratis | ⭐ Destacado
 - `src/lib/date-label-utils.ts` — SSR-safe, timezone-aware (UTC-5), injectable `now` para tests
 
-### 🔗 CategoryHub y Discovery SEO (v0.21.1 — S72)
+### 🔗 CategoryHub y Discovery SEO (v0.22.0 — S72)
 
 El componente `<CategoryHub />` se integra en el Home y páginas de listado como punto de acceso editorial a categorías y precios:
 - **Chips SSR `<Link>`** a `/actividades/categoria/{slug}` — crawlables por Google, sin JavaScript requerido.
@@ -110,7 +110,7 @@ El componente `<CategoryHub />` se integra en el Home y páginas de listado como
 - **Orden por CTR** (Música → Lectura → Teatro y danza → …) — las categorías con más conversión aparecen primero.
 - **`FilterLandingLayout`** con prop `relatedLinks` — sección "También te puede interesar" en páginas de categoría y precio. Internal linking dinámico con autoridad editorial.
 
-### 🏛️ Centro de Confianza (v0.21.1 — S72)
+### 🏛️ Centro de Confianza (v0.22.0 — S72)
 
 Hub unificado en `/centro-de-confianza` como SSOT legal y editorial:
 - Rutas `/privacidad` y `/terminos` redirigen con 301 permanente.

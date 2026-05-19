@@ -1,6 +1,6 @@
 # Roadmap de Producto y UX: La Era de la Abundancia (Post-V3)
-**Versión:** v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión:** v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 Con la infraestructura base resuelta (Adquisición, Ranking, SEO, Diversidad), el enfoque del ecosistema HabitaPlan transiciona de "almacenar y clasificar datos" a **"gestionar la calidad emergente y el descubrimiento"**.
 

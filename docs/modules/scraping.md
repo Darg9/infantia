@@ -1,7 +1,7 @@
 # Módulo: Scraping
 
-**Versión actual:** v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión actual:** v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 
 ## ¿Qué hace?
@@ -312,7 +312,7 @@ const colombiaDate = new Date().toLocaleDateString('es-CO', {
   weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   timeZone: 'America/Bogota'
 });
-// → "viernes, 16 de mayo de 2026"
+// → "viernes, 19 de mayo de 2026"
 ```
 
 **Metadata temporal en `extractionMetadata.temporal` (JSONB):**

@@ -1,6 +1,6 @@
 # Riesgos de seguridad aceptados
 
-Última revisión: 2026-05-16
+Última revisión: 2026-05-19
 
 Este documento registra vulnerabilidades conocidas que no tienen fix disponible
 sin introducir cambios breaking, junto con su justificación de riesgo aceptado.
@@ -49,3 +49,27 @@ a hojas Excel generadas desde fuentes no confiables, lo que no ocurre en este sc
 
 **Acción futura:** Migrar a `exceljs` (mantenido, sin CVEs) cuando se toque `export-activities.ts`
 la próxima vez. Issue: reemplazar `xlsx` por `exceljs` en `scripts/export-activities.ts`.
+
+---
+
+## 4. `ws` < 8.20.1 — MODERATE (dentro de react-email)
+
+**CVE:** GHSA-58qx-3vcg-4xpx — Uninitialized memory disclosure
+
+**Cómo entra:** `ws` es dependencia transitiva de `socket.io` → `engine.io`, que viene de `react-email` (versiones canary). No está expuesto en el servidor HTTP de producción.
+
+**Fix disponible:** `npm audit fix --force` → requiere downgrade a `react-email@1.10.1` (breaking — versión sin server action support).
+
+**Decisión:** Riesgo aceptado. `ws` se usa internamente en react-email dev server, no en el servidor de producción de Next.js. Sin superficie de ataque real.
+
+---
+
+## 5. `brace-expansion` 5.0.2–5.0.5 — MODERATE
+
+**CVE:** GHSA-jxxr-4gwj-5jf2 — Large numeric range defeats documented `max` DoS protection
+
+**Cómo entra:** Dependencia transitiva de `@fastify/otel` y `@typescript-eslint`. No se usa en producción.
+
+**Fix disponible:** `npm audit fix` puede parcialmente resolverlo, pero el conteo total no baja (otras rutas al mismo paquete). Sin impacto en runtime de producción.
+
+**Decisión:** Riesgo aceptado. Dev/tooling only.

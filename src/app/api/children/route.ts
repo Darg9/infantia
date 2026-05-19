@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
-
-// Texto exacto de consentimiento — debe coincidir con el mostrado en el formulario
-export const CONSENT_TEXT =
-  'Soy el padre, madre o tutor legal de este menor y autorizo el tratamiento de sus datos personales ' +
-  'por parte de HabitaPlan conforme a la Política de Tratamiento de Datos Personales (Ley 1581 de 2012). ' +
-  'Los datos del menor se usarán exclusivamente para personalizar la búsqueda de actividades y nunca serán ' +
-  'compartidos con terceros para fines comerciales.'
+import { CONSENT_TEXT } from '@/modules/legal/constants/consent'
 
 export async function GET() {
   try {

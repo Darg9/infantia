@@ -1,7 +1,7 @@
 # Módulo: Centro de Seguridad y Legal
 
-**Versión:** ✅ v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión:** ✅ v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 Este módulo centraliza todas las normativas legales, políticas de privacidad, tratamiento de datos (Cumplimiento de la Ley 1581) y reglas de interacción del usuario bajo una arquitectura **Single Source of Truth (SSOT)**.
 
@@ -15,7 +15,8 @@ Para resolver el problema histórico de desincronización entre lo que se muestr
 | `terms.ts` | Términos de Servicio | Límites de Responsabilidad (Intermediario), Uso apropiado, Propiedad. |
 | `data-treatment.ts` | Tratamiento Datos (Ley 1581) | Principios de privacidad, Tratamiento de datos de **menores**, Autorización. |
 | `legal-disclaimers.ts` | Advertencias UI | Mensajes inyectados en la UI recordando la condición de fuente tercera. |
-| `pqrs.ts` [NUEVO] | Gestión de PQRS | Categorías legales (Acceso, Rectificación, Supresión) y Canales de respuesta. |
+| `pqrs.ts` | Gestión de PQRS | Categorías legales (Acceso, Rectificación, Supresión) y Canales de respuesta. |
+| `consent.ts` | Consentimiento parental (Ley 1581 menores) | `CONSENT_TEXT` — texto único exportado y consumido por `api/children/route.ts`, `onboarding/page.tsx`, `perfil/hijos/nuevo/page.tsx`. Elimina duplicación 3×. |
 
 ### Flujos UI (`/seguridad/*`) vs Generación PDF (`react-pdf`)
 

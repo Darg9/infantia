@@ -172,6 +172,7 @@ El CI rechazará PRs que bajen la cobertura por debajo del threshold del día.
 | v0.20.0 | V29 | Search Assist Hardening, NFD Query Normalization, 2-Layer Filtering |
 | v0.21.0 | V28 | CategoryHub SEO, centro-de-confianza, Event/Org JSON-LD, Vercel Analytics, force-reparse |
 | v0.21.1 | V28 | ESLint cleanup (0 warnings src/), confirm()→Modal sponsors, patch quality S73 |
+| v0.22.0 | V28 | Rate limiting (rate-limit.ts), Zod 6 rutas, dead code cleanup, test coverage 82.86% branches, CI Node 24 |
 
 ### Regla para Documento Fundacional
 
@@ -234,12 +235,21 @@ Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando 
 - **Multi-City SSOT (v0.16.1):** `?cityId=` en la URL es la única fuente de verdad. Jerarquía estricta: URL > localStorage (`hp_city_id`) > default (city con más locations en BD). Backend `GET /api/activities/map` requiere `cityId` explícito — HTTP 400 sin él. Sin fallback geográfico implícito jamás.
 - **CityProvider scoped (v0.16.1):** montado SOLO en `/actividades/layout.tsx` (segment layout) + `/mapa`. NO en root layout. Evita query global innecesaria. `CitySwitcher` en Header es standalone: lee/escribe localStorage directamente y actualiza URL solo cuando está en `/actividades` o `/mapa`.
 - **EMERGENCY_CENTER (v0.16.1):** `MapInner.tsx` usa coords hardcodeadas de Bogotá como último recurso defensivo (`EMERGENCY_CENTER`), no como comportamiento normal. En runtime normal: `city.defaultLat/Lng/Zoom` del contexto. `City.defaultLat/Lng/Zoom` son NOT NULL en BD.
-## Estado actual (v0.21.1 — Actualizado 2026-05-16)
+- **Rate limiting SSOT:** `src/lib/rate-limit.ts` — `checkRateLimit(id, config)` + `rateLimitResponse(rl)` + `getIP(req)` + `RATE_LIMITS` (contact 5/h · events 120/min · search_log 60/min · ratings 20/h). Fixed-window Redis, fail-open si Redis no disponible.
+- **Zod v4 API:** `{ error: 'msg' }` en constructores de tipo (reemplaza `invalid_type_error/required_error` de v3). Aplicado en todas las rutas que manejan body externo.
+- **CONSENT_TEXT SSOT:** `src/modules/legal/constants/consent.ts` — única fuente del texto de consentimiento parental. Importado en `api/children/route.ts`, `onboarding/page.tsx`, `perfil/hijos/nuevo/page.tsx`.
+- **searchParams Next.js 16:** En pages del App Router, `searchParams` debe tiparte como `Promise<{...}>` y hacer `await searchParams` antes de usar.
+- **CI Node.js:** `ci.yml` y `e2e.yml` usan `node-version: 24` (alineado con local v24.14.0).
+
+## Estado actual (v0.22.0 — Actualizado 2026-05-19)
 - **~219 actividades ACTIVE** en BD (Bogotá principalmente; Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13)
-- **1436 tests** en 86 archivos — `npm test` pasa — 1436 passed, 2 skipped, 0 errores
-- Cobertura: statements 89.07% ✅ | branches 81.78% ✅ (umbral 79% diferenciado) | lines 90.39% ✅
-- **ESLint limpio** en `src/` — 0 warnings en código de producción (S73). scripts/ excluidos con globalIgnores.
-- GitHub Actions CI/CD: tests + build automático en cada push a master. E2E Playwright bloqueante.
+- **1544 tests** en 87 archivos — `npm test` pasa — 1544 passed, 2 skipped, 0 errores
+- Cobertura: statements 89.68% ✅ | branches 82.86% ✅ (umbral 83%) | functions 90.86% ✅ | lines 91.02% ✅
+- **ESLint:** 0 errores, 0 warnings en `src/`. 246 warnings en scripts/ (excluidos del gate).
+- **TypeScript:** `tsc --noEmit` 0 errores en `src/`. 2 errores pre-existentes en `.next/types/` resueltos en S76.
+- **Rate limiting activo** en 4 rutas públicas (Redis fixed-window, fail-open).
+- **Zod validation** en 6 rutas API (sin body casts directos).
+- GitHub Actions CI/CD: tests + build automático en cada push a master. E2E `--project=sin-auth` (6/7 specs).
 - Vercel deployment: ACTIVO (Despliegue automático de master) — proyecto **habitaplan-prod**, cuenta **Darg9** — https://www.habitaplan.com (Vercel team: dargs-projects-564b09ef)
 - BullMQ + Upstash Redis: OPERATIVO
 - **20 fuentes web** (18 Bogotá + 2 Medellín) + **12 Instagram** + canal Telegram

@@ -7,15 +7,15 @@ Se actualiza en cada PR que toca ese módulo.
 
 | Módulo | Doc | Estado |
 |---|---|---|
-| auth | [auth.md](auth.md) | ✅ v0.21.1 |
-| scraping | [scraping.md](scraping.md) | ✅ v0.21.1 |
-| activities | [activities.md](activities.md) | ✅ v0.21.1 |
-| product / ux | [product.md](product.md) | ✅ v0.21.1 |
-| analytics | [analytics.md](analytics.md) | ✅ v0.21.1 |
-| legal | [legal.md](legal.md) | ✅ v0.21.1 |
-| design-system | [design-system.md](design-system.md) | ✅ v0.21.1 |
-| product-roadmap | [product-roadmap.md](product-roadmap.md) | ✅ v0.21.1 |
-| seo-roadmap | [seo-roadmap.md](seo-roadmap.md) | ✅ v0.21.1 |
+| auth | [auth.md](auth.md) | ✅ v0.22.0 |
+| scraping | [scraping.md](scraping.md) | ✅ v0.22.0 |
+| activities | [activities.md](activities.md) | ✅ v0.22.0 |
+| product / ux | [product.md](product.md) | ✅ v0.22.0 |
+| analytics | [analytics.md](analytics.md) | ✅ v0.22.0 |
+| legal | [legal.md](legal.md) | ✅ v0.22.0 |
+| design-system | [design-system.md](design-system.md) | ✅ v0.22.0 |
+| product-roadmap | [product-roadmap.md](product-roadmap.md) | ✅ v0.22.0 |
+| seo-roadmap | [seo-roadmap.md](seo-roadmap.md) | ✅ v0.22.0 |
 | providers | providers.md | 🔜 pendiente |
 | search | search.md | *Ref. en product.md* |
 | verticals | verticals.md | 🔜 pendiente |

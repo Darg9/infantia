@@ -490,7 +490,7 @@ describe('saveActivityV2()', () => {
       mocks.mockProviderFindFirst.mockResolvedValue(null);
       mocks.mockProviderCreate.mockResolvedValue({ id: 'ig-001', name: '@miinstagram' });
 
-      const result = await saveActivityV2(baseNLPResult, SOURCE_URL, activeGate, {
+      const _result = await saveActivityV2(baseNLPResult, SOURCE_URL, activeGate, {
         platform: 'INSTAGRAM',
         instagramUsername: 'miinstagram',
       });

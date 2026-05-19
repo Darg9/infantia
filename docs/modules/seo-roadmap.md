@@ -1,6 +1,6 @@
 # Estrategia SEO de Abundancia (V3)
-**Versión:** v0.21.1
-**Última actualización:** 16 de mayo de 2026
+**Versión:** v0.22.0
+**Última actualización:** 19 de mayo de 2026
 
 Este documento traza la hoja de ruta estratégica para gobernar el volumen masivo de datos introducido por el Pipeline V3, evitando que la abundancia degrade la calidad técnica y semántica del SEO de HabitaPlan.
 

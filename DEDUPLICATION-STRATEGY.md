@@ -7,7 +7,7 @@
 - **Nivel 2** ✅: Validación diaria + limpieza automática
 - **Nivel 3** ⚠️: Revisión manual de similares 70-90%
 
-**Estado Actual (v0.21.1 — 2026-05-16):**
+**Estado Actual (v0.22.0 — 2026-05-19):**
 - ~219 actividades ACTIVE en DB (Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13, otras)
 - ~5.054 URLs en caché total
 - Protección automática integrada en `ScrapingStorage`

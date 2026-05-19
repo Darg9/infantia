@@ -1,6 +1,6 @@
 # HabitaPlan — Arquitectura del Sistema
 
-> Versión: v0.21.1 | Actualizado: 16 de mayo de 2026
+> Versión: v0.22.0 | Actualizado: 19 de mayo de 2026
 > Documento vivo — se actualiza con cada versión mayor.
 
 ---
@@ -647,8 +647,10 @@ Todas las rutas bajo `/api/`. Respuestas estandarizadas por `lib/api-response.ts
 | Método | Ruta | Auth | Descripción |
 |---|---|---|---|
 | `GET` | `/api/health` | Pública | Health check con timeouts explícitos (DB/Redis 2000ms). Semántica `ok\|degraded\|down`. `business_signal` con `operational`, `stale` (48h), `by_city` (JOIN SQL→NFD slug). 503 solo si DB falla. |
-| `POST` | `/api/contact` | Pública | Formulario de contacto |
-| `POST` | `/api/search/log` | Pública | Registro de búsquedas para métricas |
+| `POST` | `/api/contact` | Pública | Formulario de contacto — **rate limit: 5 req/h por IP** |
+| `POST` | `/api/search/log` | Pública | Registro de búsquedas para métricas — **rate limit: 60 req/min por IP** |
+| `POST` | `/api/events` | Pública | Tracking de eventos — **rate limit: 120 req/min por IP** |
+| `POST` | `/api/ratings` | Auth | Upsert rating — **rate limit: 20 req/h por userId** |
 
 ### Admin (protegidas por middleware.ts global)
 | Método | Ruta | Auth | Descripción |

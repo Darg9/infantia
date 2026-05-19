@@ -150,7 +150,7 @@ Actualizado: 19 de mayo de 2026 | Version: v0.22.0
 |---------|-------|--------|
 | useActivityHistory.test.ts | — | OK |
 
-## Cobertura por módulo clave (v0.21.1 — S73 — datos reales)
+## Cobertura por módulo clave (v0.22.0 — S76/S77 — datos reales)
 
 | Archivo | Stmts | Branch | Funcs | Lines | Nota |
 |---------|-------|--------|-------|-------|------|
@@ -178,7 +178,6 @@ Actualizado: 19 de mayo de 2026 | Version: v0.22.0
 | scraping/queue/scraping.worker.ts | 100% | 100% | 100% | 100% | ✅ |
 | scraping/extractors/cheerio.extractor.ts | 90.44% | 95% | 82.6% | 91.54% | ✅ |
 | scraping/extractors/playwright.extractor.ts | 85.44% | 72.34% | 74.5% | 88.1% | ✅ |
-| scraping/nlp/claude.analyzer.ts | 100% | 100% | 92.3% | 100% | ✅ |
 | scraping/nlp/gemini.analyzer.ts | 92.21% | 94.44% | 84.55% | 94.69% | ✅ |
 | scraping/data-pipeline.ts | 98.3% | 100% | 94.64% | 100% | ✅ |
 | activities/activity-filters.ts | 100% | 100% | 94.87% | 100% | ✅ |
@@ -190,7 +189,7 @@ Actualizado: 19 de mayo de 2026 | Version: v0.22.0
 | lib/push.ts | ~94% | ~84% | ~94% | ~94% | ✅ |
 | scraping/quality/activity-gate.ts | 96% | 100% | 94.44% | 95.34% | ✅ |
 | scraping/quality/publish-validator.ts | 82.05% | 100% | 63.63% | 81.57% | ✅ branches OK |
-| **TOTAL** | **86.86%** | **79.94%** | **79.94%** | **88.36%** | — |
+| **TOTAL** | **89.68%** | **82.86%** | **90.86%** | **91.02%** | — |
 
 > **Módulos excluidos de coverage (ver `vitest.config.ts`):** `save-activity-v2.ts`, `activity-gate-v2.ts`, `source-trust.ts`, `category-skew.ts`, `scheduler.core.ts`, `intent-manager.ts`, `require-auth.ts`, `diversity-utils.ts`, `highlight.tsx`, `pqrs.ts`, `toggle-favorite.ts`, `merger.ts`, `city-review.ts`, `legal/constants/**`, `producer.ts`, `quota-tracker.ts`, `track.ts`
 

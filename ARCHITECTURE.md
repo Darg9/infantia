@@ -248,10 +248,6 @@ habitaplan/
 │   ├── source-health.ts            # Dashboard unificado Coverage+Dedupe+Temporal+ParserMix (S71)
 │   ├── temporal-metrics.ts         # Reporte temporal per-sourceDomain (S69)
 │   ├── reclassify-categories.ts    # Migración taxonomía categorías → 7 canónicas (S68)
-│   ├── force-reparse-source.ts     # Re-parsea actividades existentes sin pipeline completo (S72)
-│   │                               #   --source, --limit=N, --dry-run, --only-missing-dates
-│   ├── source-health.ts            # Dashboard unificado Coverage+Dedupe+Temporal+ParserMix (S71)
-│   ├── temporal-metrics.ts         # Reporte per-sourceDomain de metadata temporal (S69)
 │   └── generate_v28.mjs            # Genera Documento Fundacional V28 (.docx)
 │
 ├── prisma/
@@ -467,7 +463,7 @@ ScrapingStorage.saveActivity()
 1. Busca `<a>` con texto: `siguiente`, `next`, `›`, `»`, `>>`
 2. Busca `<a href>` con parámetro `?page=N+1`
 
-### Fuentes activas (al 2026-05-16 — S73)
+### Fuentes activas (al 2026-05-19 — S77)
 
 > Ver `active_sources.md` para el estado operativo completo por fuente.
 > Ver `scripts/source-health.ts` para dashboard en tiempo real (Coverage+Dedupe+Temporal+ParserMix).
@@ -475,9 +471,9 @@ ScrapingStorage.saveActivity()
 #### Bogotá — Web (Cheerio + Gemini) — ACTIVE
 | Fuente | Actividades ACTIVE | Parser | Notas |
 |---|---|---|---|
-| Idartes | ~87 | Gemini/Cheerio | 26% con fecha (backfill pendiente) |
-| BibloRed | ~54 | Gemini | Pipeline V3, maxPages=50 |
-| bogota.gov.co (Alcaldía) | ~39 | Gemini HARD mode | Discovery ranking v2 activado |
+| Idartes | ~87 | Gemini/Cheerio | 26% con fecha (backfill pendiente — quota reset 2026-05-20) |
+| BibloRed | ~66 | Gemini | Pipeline V3, maxPages=50; +12 en S77 |
+| bogota.gov.co (Alcaldía) | ~41 | Gemini HARD mode | Discovery ranking v2 activado; +2 en S77 |
 | Planetario de Bogotá | ~14 | Gemini | ~64% cobertura temporal |
 | Banrepcultural | ~2 | Playwright (SPA) | Requiere entorno sin VPN |
 | Cinemateca Distrital | ~1 | Gemini | URL_EVENT_RE incluye /pelicula |
@@ -511,7 +507,7 @@ ScrapingStorage.saveActivity()
 | Biblioteca Piloto | 0 yield confirmado |
 | @distritojovenbta | 0 yield confirmado |
 
-**Total en BD (S73): ~219 actividades ACTIVE**
+**Total en BD (S77): ~233 actividades ACTIVE**
 Distribución categorías: Lectura 167 | Música 159 | Teatro y danza 136 | Ciencia y tec. 86 | Deportes 58 | Naturaleza 31 | Manualidades 15 | Arte y Creatividad 42 (needs_review)
 
 ---
@@ -753,11 +749,12 @@ npm run test:coverage
 
 ### Unit tests (Vitest)
 - **Framework:** Vitest + @vitest/coverage-v8
-- **Estado actual:** 1411 tests, 86 archivos, 0 fallos (v0.21.1 — S73)
-- **Cobertura real:** 86.86% stmts | 79.94% branches | 88.36% lines
-- **Threshold:** statements/functions/lines = 85% | branches = 79% (DEBT-07 — threshold diferenciado por complejidad de orquestación)
+- **Estado actual:** 1544 tests, 87 archivos, 0 fallos (v0.22.0 — S76/S77)
+- **Cobertura real:** 89.68% stmts | 82.86% branches | 90.86% funcs | 91.02% lines
+- **Threshold:** statements/functions/lines = 85% | branches = 83% (`Math.min(83, threshold)` en `vitest.config.ts` — subido en S76). `test:coverage` falla por 0.14% de margen; CI usa `npm test` sin coverage → OK.
 - **Módulos al 100%:** `lib/utils`, `lib/validation`, `lib/auth`, `lib/activity-url`, `lib/venue-dictionary`, `lib/expire-activities`, `lib/date-label-utils`, `scraping/cache`, `scraping/types`, `scraping/deduplication`, `scraping/logger`, `scraping/data-pipeline`, `scraping/queue/*`, `activities/schemas`, `activities/ranking`, `activities/activity-filters`, `analytics/metrics`
-- **Gap justificado (DEBT-07):** `pipeline.ts` (73.17% branches — orquestación compleja), `activities.service.ts` (69.56% branches — mocks Redis/Prisma), `playwright.extractor.ts` (~90% funcs — callbacks browser)
+- **Gap justificado (DEBT-07):** `pipeline.ts` (~73% branches — orquestación compleja), `activities.service.ts` (~70% branches — mocks Redis/Prisma), `playwright.extractor.ts` (~85% funcs — callbacks browser)
+- **Dead code eliminado (S76):** `scraping/nlp/claude.analyzer.ts` + `scheduler.v1` eliminados del código y tests
 - **Ver `TEST_STATUS.md`** para tabla completa por módulo
 
 **Patrón crítico para mocks:**
@@ -861,7 +858,7 @@ Reglas fundamentales:
 | Event schema JSON-LD (S72) | `src/app/actividad/[id]/page.tsx` — `VIRTUAL_RE` detecta eventos virtuales → `VirtualLocation` + `OnlineEventAttendanceMode`. `addressLocality` + `addressCountry: 'CO'` SIEMPRE presentes en `Place.address` (no condicionales). |
 | ESLint `_` prefix convention (S73) | Variables/args no usados prefijados con `_` son ignorados. `varsIgnorePattern/argsIgnorePattern/caughtErrorsIgnorePattern/destructuredArrayIgnorePattern: "^_"` + `ignoreRestSiblings: true`. `globalIgnores` para `scripts/**/*.mjs`, `e2e/**`. Resultado: 0 warnings en `src/` producción. |
 | confirm() → Modal DS (S73) | `confirm()` bloqueado por ESLint. Patrón: `useState<T \| null>(deleteTarget)` + `<Modal isOpen={!!deleteTarget} onConfirm={doDelete} onCancel={() => setDeleteTarget(null)} />`. Documentado en DS README, PR template, y enforced por linter. |
-| Coverage threshold branches diferenciado (S73) | `branches: Math.min(79, threshold)` en `vitest.config.ts`. Real: 79.94%. Módulos complejos (`pipeline.ts`, `activities.service.ts`) tienen ramas de error/fallback que requieren mocks Redis/BullMQ/Prisma para cubrirse. DEBT-07 documenta plan de mejora. |
+| Coverage threshold branches diferenciado (S76) | `branches: Math.min(83, threshold)` en `vitest.config.ts` (subido de 79% a 83% en S76). Real: 82.86% → `test:coverage` falla por 0.14%; CI usa `npm test` sin coverage → OK. Módulos complejos (`pipeline.ts`, `activities.service.ts`) tienen ramas de error/fallback que requieren mocks Redis/BullMQ/Prisma para cubrirse. DEBT-07 documenta plan de mejora. |
 | Multi-City Architecture | Resolución SSOT jerárquica (`URL > localStorage > fallback default`). El componente `CitySwitcher` sincroniza el estado cliente con la URL automáticamente en rutas sensibles para evitar mismatches. El backend estrictamente requiere `cityId`. `CityProvider` montado en `/actividades/layout.tsx` (Server Component) — no en root layout. Evita query global innecesaria en toda la app. Scope limitado donde importa. `Suspense` obligatorio por `useSearchParams()`. Ciudad default: city con más locations en DB (determinístico, sin hardcode). |
 | URL como SSOT de ciudad (v0.16.1) | La URL `?cityId=` es la única fuente de verdad. El Provider activa como sincronizador (no como origen). Jerarquía: URL > localStorage > default. Backend requiere cityId explícito (HTTP 400 sin él). Nunca fallback geográfico implícito. |
 | EMERGENCY_CENTER vs DEFAULT_CENTER (v0.16.1) | Renombrado de `DEFAULT_CENTER` a `EMERGENCY_CENTER` en MapInner.tsx para dejar claro que las coordenadas hardcodeadas de Bogotá son último recurso defensivo, no comportamiento normal. En runtime normal, el mapa usa `city.defaultLat/Lng/Zoom` del contexto. |

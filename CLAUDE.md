@@ -242,10 +242,10 @@ Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando 
 - **CI Node.js:** `ci.yml` y `e2e.yml` usan `node-version: 24` (alineado con local v24.14.0).
 
 ## Estado actual (v0.22.0 — Actualizado 2026-05-19)
-- **~219 actividades ACTIVE** en BD (Bogotá principalmente; Idartes 87, BibloRed 54, Alcaldía ~39, Planetario 14, Instagram 13)
+- **~233 actividades ACTIVE** en BD (Bogotá principalmente; Idartes 87, BibloRed ~66, Alcaldía ~41, Planetario 14, Instagram 13)
 - **1544 tests** en 87 archivos — `npm test` pasa — 1544 passed, 2 skipped, 0 errores
 - Cobertura: statements 89.68% ✅ | branches 82.86% ✅ (umbral 83%) | functions 90.86% ✅ | lines 91.02% ✅
-- **ESLint:** 0 errores, 0 warnings en `src/`. 246 warnings en scripts/ (excluidos del gate).
+- **ESLint:** 0 errores, 0 warnings en `src/`. 215 warnings en `__tests__/` (`no-explicit-any` en mocks — excluidos del gate).
 - **TypeScript:** `tsc --noEmit` 0 errores en `src/`. 2 errores pre-existentes en `.next/types/` resueltos en S76.
 - **Rate limiting activo** en 4 rutas públicas (Redis fixed-window, fail-open).
 - **Zod validation** en 6 rutas API (sin body casts directos).
@@ -282,7 +282,7 @@ Comando: `node scripts/generate_v29.mjs` (V28 es la versión actual; V29 cuando 
 |---|---|---|---|---|
 | DEBT-01 | Legal / Copyright | Las descripciones ingestadas antes de S41 podían exponer liability por copyright. | **Fase 1 y 2 COMPLETADAS (S43):** Descripciones reescritas con `rule-based` y NLP. | - |
 | DEBT-02 | TypeScript | 235 usos de `any` pre-existentes en pipeline.ts, storage.ts, gemini.analyzer.ts | **CONGELADO (S45):** `eslint.config.mjs` bloquea nuevos `any` con `error`. | Reducir progresivamente al tocar cada archivo |
-| DEBT-03 | npm audit | 3 vulnerabilidades `moderate` en `@prisma/dev` (dependencia de desarrollo) | No están en producción (dev-only) | Esperar fix oficial de Prisma — no aplicar `--force` |
+| DEBT-03 | npm audit | 12 vulnerabilidades `moderate` + 1 `HIGH` en dependencias de desarrollo — ver `SECURITY.md` para detalle completo (S76) | No están en producción (dev-only) | Esperar fixes upstream — no aplicar `--force`. `xlsx` HIGH: migrar a `exceljs` al tocar `export-activities.ts`. |
 | DEBT-04 | Estabilidad DB | Schema drift y parseo inseguro de Prisma Decimal a string en UI causando Error 500s | **Mitigado (S42):** Implementación de `decimal.ts` globalizado. | - |
 | DEBT-05 | ESLint legacy | ~~178 warnings pre-existentes~~ | **RESUELTO (S73):** `_` prefix convention + globalIgnores (scripts/, e2e/). 0 warnings en `src/` producción. | — |
 | DEBT-06 | Testing Mocks | ~~7 fallos en tests de pipeline tras refactor de Resilience Singleton y SaveActivity en S57.~~ | **RESUELTO (2026-05-02):** Tests alineados con comportamiento real del módulo `resilience/` v0.18.0. `classifyError` ETIMEDOUT fix (E-01) incluido. 83 archivos / 1326 tests — exit 0. | — |

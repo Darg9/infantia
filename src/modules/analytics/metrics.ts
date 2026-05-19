@@ -114,12 +114,71 @@ export function clearCTRCacheForTests(): void {
   ctrCache = null;
 }
 
+/** Valores neutros usados cuando no hay historial de runs. */
+const STATS_DEFAULTS = { saveRate: 0.20, avgCost: 50 };
+
 /**
- * Obtiene métricas promedio (saveRate, avgCost) de los últimos 5 runs por fuente.
- * Se utiliza para calcular heurísticas del Predictitve Scheduler.
+ * Obtiene métricas promedio de los últimos N runs de una fuente.
+ *
+ * Estrategia:
+ *   1. Resuelve el dominio → ScrapingSource.id (UUID) via la tabla ScrapingSource.
+ *   2. Consulta source_run_metrics por ese UUID, ordenando por run_at DESC.
+ *   3. Computa:
+ *      - saveRate  = activities_saved / urls_scraped  (0.20 si no hay datos)
+ *      - avgCost   = promedio de llamadas Gemini por run (análogo al presupuesto
+ *                    que usa el Scheduler: maxUrls × 1.5 para DEEP=40 → 60 aprox.)
+ *
+ * Fail-safe: devuelve STATS_DEFAULTS ante cualquier error o ausencia de datos.
+ *
+ * @param sourceId  Dominio de la fuente (p. ej. 'idartes.gov.co')
+ * @param limit     Número de runs a promediar (default 5)
  */
-export async function getSourceAggregatedStats(sourceId: string, _limit: number = 5): Promise<{ saveRate: number; avgCost: number }> {
-  // TODO: Implementar la tabla ingest_metrics o recuperar stats del SourceLog.
-  // Actualmente retorna un fallback neutro para no quebrar el Predictitve Scheduler.
-  return { saveRate: 0.20, avgCost: 50 };
+export async function getSourceAggregatedStats(
+  sourceId: string,
+  limit: number = 5,
+): Promise<{ saveRate: number; avgCost: number }> {
+  try {
+    // ── 1. Resolver dominio → UUID de ScrapingSource ──────────────────────
+    const source = await prisma.scrapingSource.findFirst({
+      where: { url: { contains: sourceId } },
+      select: { id: true },
+    });
+
+    if (!source) return STATS_DEFAULTS;
+
+    // ── 2. Consultar últimos N runs (raw — tabla sin modelo Prisma) ───────
+    type MetricRow = {
+      activities_saved: number;
+      urls_scraped:     number;
+      gemini_ok:        number;
+    };
+
+    const rows = await prisma.$queryRaw<MetricRow[]>`
+      SELECT activities_saved, urls_scraped, gemini_ok
+      FROM source_run_metrics
+      WHERE source_id = ${source.id}
+      ORDER BY run_at DESC
+      LIMIT ${limit}
+    `;
+
+    if (rows.length === 0) return STATS_DEFAULTS;
+
+    // ── 3. Promediar métricas ────────────────────────────────────────────
+    const totalSaved   = rows.reduce((s, r) => s + Number(r.activities_saved), 0);
+    const totalScraped = rows.reduce((s, r) => s + Number(r.urls_scraped), 0);
+    const avgGemini    = rows.reduce((s, r) => s + Number(r.gemini_ok), 0) / rows.length;
+
+    return {
+      saveRate: totalScraped > 0
+        ? Math.round((totalSaved / totalScraped) * 1000) / 1000
+        : STATS_DEFAULTS.saveRate,
+      avgCost: Math.round(avgGemini * 10) / 10,
+    };
+  } catch (err: unknown) {
+    log.warn('[metrics] getSourceAggregatedStats falló, usando defaults', {
+      sourceId,
+      error: getErrorMessage(err),
+    });
+    return STATS_DEFAULTS;
+  }
 }

@@ -120,7 +120,7 @@ const baseNLPResult: ActivityNLPResult = {
   pricePeriod: null,
   audience: 'KIDS',
   imageUrl: 'https://example.com/img.jpg',
-  schedules: [{ startDate: '2026-12-15', endDate: null }],
+  schedules: [{ startDate: '2026-12-15', endDate: undefined, notes: undefined }],
   location: { address: 'Calle 80 #10-20', city: 'Bogotá' },
   parserSource: 'gemini',
 };
@@ -130,7 +130,7 @@ const activeGate: GateV2Result = {
   score: 0.85,
   reason: 'High confidence',
   isInstitutional: false,
-  signals: {},
+  signals: { hasIntentSignal: false, hasTimeSignal: false, hasLocationSignal: false, noiseDetected: false, blockedBySourcePath: false },
   sourceTrust: 0.8,
 };
 
@@ -139,7 +139,7 @@ const pendingGate: GateV2Result = {
   score: 0.45,
   reason: 'Low confidence',
   isInstitutional: false,
-  signals: {},
+  signals: { hasIntentSignal: false, hasTimeSignal: false, hasLocationSignal: false, noiseDetected: false, blockedBySourcePath: false },
   sourceTrust: 0.4,
 };
 
@@ -148,7 +148,7 @@ const dropGate: GateV2Result = {
   score: 0.1,
   reason: 'Not an activity',
   isInstitutional: false,
-  signals: {},
+  signals: { hasIntentSignal: false, hasTimeSignal: false, hasLocationSignal: false, noiseDetected: false, blockedBySourcePath: false },
   sourceTrust: 0.1,
 };
 
@@ -407,10 +407,8 @@ describe('saveActivityV2()', () => {
     it('registra review_decision en BD (fire-and-forget)', async () => {
       await saveActivityV2(baseNLPResult, SOURCE_URL, activeGate);
 
-      // fire-and-forget con void — puede que no se haya llamado aún de forma síncrona,
-      // pero al final del tick de evento sí. Dejamos que el mock resuelva.
-      // Solo verificamos que no lanzó error.
-      expect(result => result).toBeDefined();
+      // fire-and-forget con void — no se puede esperar síncronamente.
+      // El test verifica que saveActivityV2 no lanza (si lanzara, el await de arriba fallaría).
     });
   });
 

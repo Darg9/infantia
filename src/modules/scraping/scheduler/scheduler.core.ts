@@ -12,8 +12,6 @@
  *       al final del run, controlado por el campo `reparseCount` en SchedulePlan.
  *       Budget = discovery_cost + reparse_cost (combinado, capped a 20 URLs de reparse).
  *
- * Archivos de referencia:
- *   Backup v1: scheduler.core.v1.ts / scheduler.types.v1.ts
  */
 import { Mode, SourceStats, SchedulePlan } from './scheduler.types';
 import { createLogger } from '../../../lib/logger';

@@ -1,42 +1,30 @@
-import type { Preview } from '@storybook/nextjs-vite'
-import React from 'react'
-import { withThemeByClassName } from '@storybook/addon-themes'
+import type { Preview } from "@storybook/react"
+import { withThemeByClassName } from "@storybook/addon-themes"
+import { ToastProvider } from "../src/components/ui"
 // eslint-disable-next-line no-restricted-imports -- Storybook necesita globals.css directamente para renderizar el DS correctamente
-import '../src/app/globals.css'
-
-export const parameters = {
-  layout: 'centered',
-  viewport: { defaultViewport: 'mobile' },
-  chromatic: { 
-    disableSnapshot: false,
-    pauseAnimationAtEnd: true 
-  },
-  controls: {
-    matchers: {
-      color: /(background|color)$/i,
-      date: /Date$/i,
-    },
-  },
-}
-
-export const decorators = [
-  withThemeByClassName({
-    themes: {
-      light: '',
-      dark: 'dark',
-    },
-    defaultTheme: 'light',
-  }),
-  (Story) => (
-    <div className="font-sans antialiased text-hp-text-primary bg-hp-bg-page w-full min-h-[400px] flex items-center justify-center p-4">
-      <Story />
-    </div>
-  ),
-]
+import "../src/app/globals.css"
+import React from "react"
 
 const preview: Preview = {
-  parameters,
-  decorators,
+  parameters: {
+    layout: "centered",
+    controls: {
+      matchers: {
+        color: /(background|color)$/i,
+        date: /Date$/i,
+      },
+    },
+  },
+  decorators: [
+    // Dark mode via clase .dark en <html> — compatible con Anti-FOT del DS
+    withThemeByClassName({
+      themes: { Claro: "", Oscuro: "dark" },
+      defaultTheme: "Claro",
+      parentSelector: "html",
+    }),
+    // ToastProvider global — cualquier story puede usar useToast()
+    (Story) => React.createElement(ToastProvider, null, React.createElement(Story)),
+  ],
 }
 
 export default preview

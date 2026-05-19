@@ -1,22 +1,34 @@
-import type { StorybookConfig } from '@storybook/react-vite';
+import type { StorybookConfig } from "@storybook/react-vite"
+import path from "path"
 
 const config: StorybookConfig = {
-  stories: [
-    "../src/**/*.mdx",
-    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
-  ],
+  stories: ["../src/**/*.stories.@(ts|tsx)"],
   addons: [
     "@storybook/addon-essentials",
-    "@chromatic-com/storybook",
+    "@storybook/addon-interactions",
     "@storybook/addon-themes",
-    "storybook-addon-pseudo-states"
+    "storybook-addon-pseudo-states",
+    "@chromatic-com/storybook",
   ],
   framework: {
     name: "@storybook/react-vite",
-    options: {}
+    options: {},
   },
-  staticDirs: [
-    "../public"
-  ]
-};
-export default config;
+  async viteFinal(config) {
+    config.resolve = config.resolve ?? {}
+    config.resolve.alias = {
+      ...(config.resolve.alias as Record<string, string>),
+      "@": path.resolve(__dirname, "../src"),
+      "next/link":  path.resolve(__dirname, "./__mocks__/next-link.tsx"),
+      "next/image": path.resolve(__dirname, "./__mocks__/next-image.tsx"),
+    }
+    config.css = {
+      postcss: {
+        plugins: [(await import("@tailwindcss/postcss")).default],
+      },
+    }
+    return config
+  },
+}
+
+export default config

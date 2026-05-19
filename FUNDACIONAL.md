@@ -1,6 +1,6 @@
 # HABITAPLAN — DOCUMENTO FUNDACIONAL V28
 > Generado por el script V28. Actualizado: 2026-04-25.
-> ⚠️ **Nota (2026-05-16):** Este archivo refleja el estado en V28 (S56). Las secciones 16, 17 y 19 han sido actualizadas manualmente con métricas reales de v0.21.1. Para el documento completo actualizado generar V29 cuando apliquen criterios de cambio material.
+> ⚠️ **Nota (2026-05-19):** Este archivo refleja el estado en V28 (S56). Las secciones 5, 16, 17 y 19 han sido actualizadas manualmente con métricas reales de v0.22.0 (S76). Para el documento completo actualizado generar V29 cuando apliquen criterios de cambio material.
 
 
 # 1. VISION Y PROBLEMA
@@ -137,7 +137,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | --- | --- |
 | C-01 (Critico) | PUT/DELETE /api/activities/:id estaban sin autenticacion. Correccion: requireRole([ADMIN]) agregado. |
 | C-02 (Critico) | CRON_SECRET tenia fallback inseguro '|| test-secret'. Correccion: eliminado fallback + check !cronSecret. |
-| npm audit | 0 vulnerabilidades criticas. defu prototype pollution (S29) y Vite (S30) corregidos. 3 moderate dev-only aceptables. |
+| npm audit | 0 vulnerabilidades criticas. defu prototype pollution (S29) y Vite (S30) corregidos. **12 moderate dev-only aceptadas (ver SECURITY.md — S76)** — ninguna con fix seguro sin breaking change. |
 
 
 ## 5.2 Design System — ESLint enforced (NUEVO V24 — S45/S53)
@@ -154,7 +154,18 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Rutas cron en lista de excepciones — autenticadas via CRON_SECRET.
 - Cualquier ruta /api/admin/* futura queda protegida automaticamente.
 
-## 5.4 Security Headers (next.config.ts)
+## 5.4 Rate Limiting por ruta (NUEVO v0.22.0 — S76)
+
+SSOT en `src/lib/rate-limit.ts` — Redis INCR + EXPIRE pipeline, fail-open si Redis no disponible.
+
+| Ruta | Límite | Clave |
+|------|--------|-------|
+| POST /api/contact | 5 req/hora | IP |
+| POST /api/search/log | 60 req/min | IP |
+| POST /api/events | 120 req/min | IP |
+| POST /api/ratings | 20 req/hora | userId |
+
+## 5.5 Security Headers (next.config.ts)
 
 | Header | Proposito |
 | --- | --- |
@@ -412,7 +423,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 - Cron Vercel: 9am UTC diario → POST /api/admin/send-notifications (CRON_SECRET).
 - Web Push VAPID: public/sw.js + API /api/push/subscribe. sendPushToMany() limpia endpoints expirados.
 
-# 16. ESTADO ACTUAL — v0.21.1 (2026-05-16)
+# 16. ESTADO ACTUAL — v0.22.0 (2026-05-19)
 
 | Metrica | Valor |
 | --- | --- |
@@ -420,17 +431,21 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Locations geocodificadas | 29/29 con coordenadas reales |
 | Cache URLs | ~5.054 URLs |
 | Cobertura temporal | ~63% con fecha explícita. DATE_FILTER_ENABLED=true en Vercel. |
-| Tests | **1411 pasando / 1413 totales (2 skipped) en 86 archivos — todos verdes** |
-| Cobertura | >91% stmts / >85% branches / >88% funcs |
-| ESLint | **0 warnings en src/** (S73 — _prefix convention + globalIgnores) |
+| Tests | **1544 pasando en 87 archivos — todos verdes** |
+| Cobertura | 89.68% stmts / **82.86% branches** / 90.86% funcs / 91.02% lines |
+| Threshold branches | **83%** (subido de 79% en S76) |
+| ESLint | **0 warnings en src/** (scripts/ excluidos via globalIgnores) |
 | TypeScript | 0 errores (tsc --noEmit) |
-| npm audit | 3 moderate dev-only aceptables (ver SECURITY.md) |
+| npm audit | 12 moderate dev-only aceptables (ver SECURITY.md — S76) |
 | Build | OK — sin warnings críticos |
 | Deployment | Vercel ACTIVO — habitaplan.com |
-| CI/CD | GitHub Actions — tests + build + smoke CI |
+| CI/CD | GitHub Actions — Node.js v24 — tests + build + smoke CI |
 | Cola | BullMQ + Upstash Redis OPERATIVO — Cron 6h activo |
 | Fuentes activas | 20 web Bogotá + 2 web Medellín + 12 Instagram + 1 Telegram |
 | Search engine | pg_trgm activo — similarity + GIN indexes |
+| Rate Limiting | ACTIVO — `src/lib/rate-limit.ts` SSOT — 4 rutas públicas (contact/search/events/ratings) |
+| Zod validation | Zod v4 API (`{ error: 'msg' }`) en 6 rutas — S76 |
+| CONSENT_TEXT | SSOT en `src/modules/legal/constants/consent.ts` — eliminada duplicación 3× — S76 |
 | Activity Gate | ACTIVO — doble capa semántica + heurística. Hostname matching exacto/sufijo. |
 | Date Preflight | Activo — date_preflight_logs. 3 capas. |
 | Parser Resiliente | Activo — PARSER_FALLBACK_ENABLED. Cheerio fallback cuando Gemini 429/503. |
@@ -444,7 +459,7 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Categorías | **7 canónicas congeladas** (Lectura/Música/Teatro/Ciencia/Deportes/Naturaleza/Manualidades) |
 | Taxonomía | Congelada hasta ~2026-07-01 — foco sourcing/ranking/discovery |
 | Branding SSOT | logo.svg + logo-dark.svg + logo-icon.svg — Brand Asset Pipeline en build |
-| DS Compliance | **Modal para confirmaciones destructivas** (S73 — confirm() eliminado) |
+| DS Compliance | **Modal para confirmaciones destructivas** — confirm() eliminado. useToast() único. |
 
 
 ## 16.1 Historial de versiones (S33-S54)
@@ -477,6 +492,8 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | v0.16.1 | V26 | Design System Zero-Debt. Semantic hp-tokens. Chromatic VRT. Storybook Vite. |
 | v0.16.1 | V26 | Search Assist System E2E. Hybrid Ranking. Zero-Debt DS Hardening. 1215 tests. |
 | **v0.16.1** | **V27** | **SVG-First Branding SSOT. logo.svg + logo-dark.svg + logo-icon.svg. Brand Asset Pipeline (og.png, favicon, apple-touch). Mobile Header fix. Test repair. Docs full sync.** |
+| S61–S75 | V28 | Hero Capsule, Design System Zero-Debt, Scheduler Predictivo, Discovery Ranking v3, Taxonomía 7 categorías, ActivityCard editorial, Temporal enrichment pipeline, Vercel Analytics, Event JSON-LD, force-reparse-source.ts, Centro de Confianza SSOT legal, CategoryHub SSR, Rate Limiting (S61–S75). |
+| **S76 — v0.22.0** | **V28** | **Rate limiting SSOT (4 rutas). Zod v4 en 6 rutas. CONSENT_TEXT SSOT (consent.ts). Fix searchParams Next.js 16. CI Node.js v24. Dead code eliminado (claude-analyzer.ts + scheduler.v1). E2E sin-auth completo. Branches threshold 83%. 1544 tests / 87 archivos. Docs full sync.** |
 
 
 # 17. TESTING
@@ -484,11 +501,12 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 | Metrica | Valor |
 | --- | --- |
 | Framework | Vitest + @vitest/coverage-v8 |
-| Tests totales | **1411 en 86 archivos (+ 2 skipped)** — actualizado 2026-05-16 |
-| Threshold | 85% branches — cap fijo |
-| Statements | >91% |
-| Branches | >85% |
-| Functions | >88% |
+| Tests totales | **1544 en 87 archivos** — actualizado 2026-05-19 (S76) |
+| Threshold branches | **83%** (subido de 79% en S76) |
+| Statements | 89.68% |
+| Branches | 82.86% |
+| Functions | 90.86% |
+| Lines | 91.02% |
 | Tiempo ejecucion | ~18s |
 
 
@@ -538,8 +556,8 @@ Para la plataforma: Datos propietarios de demanda de actividades en LATAM.
 
 | Comando | Descripcion |
 | --- | --- |
-| npm test | Correr todos los tests (1411 tests, ~18s) |
-| npm run test:coverage | Tests + reporte de cobertura (threshold 85%) |
+| npm test | Correr todos los tests (1544 tests, ~18s) |
+| npm run test:coverage | Tests + reporte de cobertura (threshold 83% branches) |
 | npm run generate:brand | Generar og.png, favicon.png, apple-touch-icon.png desde SVG |
 | npm run validate:logo | Validar que SVGs no tengan fondos falsos (pre-commit hook) |
 | npx tsx scripts/ingest-sources.ts --list | Ver inventario de fuentes por canal |

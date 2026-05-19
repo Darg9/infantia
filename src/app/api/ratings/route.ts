@@ -4,9 +4,29 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { requireAuth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { recalcProviderRating } from '@/lib/ratings'
+import { checkRateLimit, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit'
+
+// Mensajes en español que coinciden con lo que retorna la API al cliente.
+// Zod v4: usar `error` (string) en el constructor en lugar de invalid_type_error/required_error.
+const ratingSchema = z.object({
+  activityId: z
+    .string({ error: 'activityId requerido' })
+    .min(1, 'activityId requerido'),
+  score: z
+    .number({ error: 'score debe ser un entero entre 1 y 5' })
+    .int('score debe ser un entero entre 1 y 5')
+    .min(1, 'score debe ser un entero entre 1 y 5')
+    .max(5, 'score debe ser un entero entre 1 y 5'),
+  comment: z
+    .string({ error: 'comment debe ser texto (max 500 caracteres)' })
+    .max(500, 'comment debe ser texto (max 500 caracteres)')
+    .optional()
+    .nullable(),
+})
 
 export async function GET() {
   try {
@@ -59,22 +79,24 @@ export async function POST(req: NextRequest) {
       select: { id: true },
     })
 
-    const body = await req.json()
-    const { activityId, score, comment } = body
+    // Rate limiting — 20 req/hora por userId (post-auth, limita abuso de cuentas)
+    const rl = await checkRateLimit(dbUser.id, RATE_LIMITS.ratings)
+    if (!rl.allowed) return rateLimitResponse(rl)
 
-    if (!activityId || typeof activityId !== 'string') {
-      return NextResponse.json({ error: 'activityId requerido' }, { status: 400 })
+    let body: unknown
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
     }
 
-    if (typeof score !== 'number' || score < 1 || score > 5 || !Number.isInteger(score)) {
-      return NextResponse.json({ error: 'score debe ser un entero entre 1 y 5' }, { status: 400 })
+    const parsed = ratingSchema.safeParse(body)
+    if (!parsed.success) {
+      const first = parsed.error.issues[0]
+      return NextResponse.json({ error: first?.message ?? 'Datos inválidos' }, { status: 400 })
     }
 
-    if (comment !== undefined && comment !== null) {
-      if (typeof comment !== 'string' || comment.length > 500) {
-        return NextResponse.json({ error: 'comment debe ser texto (max 500 caracteres)' }, { status: 400 })
-      }
-    }
+    const { activityId, score, comment } = parsed.data
 
     // Verify activity exists
     const activity = await prisma.activity.findUnique({

@@ -5,22 +5,39 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@/lib/db';
+import { checkRateLimit, getIP, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
+
+const searchLogSchema = z.object({
+  query:       z.string().min(2).max(300),
+  resultCount: z.number().int().min(0).default(0),
+});
 
 export async function POST(req: NextRequest) {
-  try {
-    const { query, resultCount } = await req.json();
-    if (!query || typeof query !== 'string' || query.trim().length < 2) {
-      return NextResponse.json({ ok: false }, { status: 400 });
-    }
+  // Rate limiting — 60 req/min por IP (analytics de búsqueda)
+  const rl = await checkRateLimit(getIP(req), RATE_LIMITS.searchLog);
+  if (!rl.allowed) return rateLimitResponse(rl);
 
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
+  const parsed = searchLogSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ ok: false }, { status: 400 });
+  }
+
+  try {
     await prisma.searchLog.create({
       data: {
-        query:       query.trim().toLowerCase().slice(0, 300),
-        resultCount: typeof resultCount === 'number' ? resultCount : 0,
+        query:       parsed.data.query.trim().toLowerCase(),
+        resultCount: parsed.data.resultCount,
       },
     });
-
     return NextResponse.json({ ok: true });
   } catch {
     return NextResponse.json({ ok: false }, { status: 500 });

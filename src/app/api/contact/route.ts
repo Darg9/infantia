@@ -4,15 +4,30 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
+import { z } from 'zod';
 import { Resend } from 'resend';
 import { prisma } from '@/lib/db';
 import { createLogger } from '@/lib/logger';
+import { checkRateLimit, getIP, rateLimitResponse, RATE_LIMITS } from '@/lib/rate-limit';
 
 const log    = createLogger('api:contact');
 const resend = new Resend(process.env.RESEND_API_KEY || 'placeholder');
 
 const FROM_EMAIL    = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev';
 const CONTACT_EMAIL = 'info@habitaplan.com';
+
+// ── Schema Zod ────────────────────────────────────────────────────────────────
+
+const contactSchema = z.object({
+  category:     z.enum(['general', 'content_removal', 'data_access', 'data_claim', 'report_error', 'other']),
+  tipoDerecho:  z.enum(['access', 'update', 'rectification', 'deletion', 'revocation']).optional(),
+  nombre:       z.string().max(100).optional(),
+  email:        z.string().email('Correo electrónico inválido'),
+  mensaje:      z.string().min(10, 'El mensaje debe tener al menos 10 caracteres').max(2000),
+  actividadUrl: z.string().url().max(2048).optional().or(z.literal('')),
+});
+
+// ── Constantes ─────────────────────────────────────────────────────────────────
 
 const CATEGORY_LABELS: Record<string, string> = {
   general: 'Consulta general',
@@ -32,6 +47,10 @@ const DATA_RIGHT_LABELS: Record<string, string> = {
 };
 
 export async function POST(req: NextRequest) {
+  // Rate limiting — 5 req/hora por IP (dispara emails Resend, tiene costo real)
+  const rl = await checkRateLimit(getIP(req), RATE_LIMITS.contact);
+  if (!rl.allowed) return rateLimitResponse(rl);
+
   let body: unknown;
   try {
     body = await req.json();
@@ -39,28 +58,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 });
   }
 
-  const { category, tipoDerecho, nombre, email, mensaje, actividadUrl } = body as Record<string, string>;
-
-  // Validaciones
-  if (!category || !CATEGORY_LABELS[category]) {
-    return NextResponse.json({ error: 'Motivo inválido' }, { status: 400 });
+  // Validación Zod
+  const parsed = contactSchema.safeParse(body);
+  if (!parsed.success) {
+    const first = parsed.error.issues[0];
+    return NextResponse.json({ error: first?.message ?? 'Datos inválidos' }, { status: 400 });
   }
 
+  const { category, tipoDerecho, nombre, email, mensaje, actividadUrl } = parsed.data;
+
+  // Validación de negocio: tipoDerecho requerido para derechos de datos
   if (['data_access', 'data_claim'].includes(category) && !tipoDerecho) {
     return NextResponse.json({ error: 'Falta especificar el tipo de derecho solicitado' }, { status: 400 });
   }
 
-  // Nombre es opcional, default a 'Usuario'
-  const nombreClean = nombre?.trim() || 'Usuario';
-
-  if (!email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-    return NextResponse.json({ error: 'Correo electrónico inválido' }, { status: 400 });
-  }
-  
-  if (!mensaje?.trim() || mensaje.trim().length < 10) {
-    return NextResponse.json({ error: 'El mensaje debe tener al menos 10 caracteres' }, { status: 400 });
-  }
-
+  const nombreClean  = nombre?.trim() || 'Usuario';
   const emailClean   = email.trim().toLowerCase();
   const mensajeClean = mensaje.trim();
   const urlClean     = actividadUrl?.trim() || '';

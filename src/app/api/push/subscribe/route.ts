@@ -4,22 +4,40 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { getSession } from '@/lib/auth'
 import { prisma } from '@/lib/db'
+
+const subscribeSchema = z.object({
+  endpoint: z.string().url('endpoint debe ser una URL válida').max(2048),
+  keys: z.object({
+    p256dh: z.string().min(1, 'p256dh requerido'),
+    auth:   z.string().min(1, 'auth requerido'),
+  }),
+})
+
+const unsubscribeSchema = z.object({
+  endpoint: z.string().min(1, 'endpoint requerido'),
+})
 
 export async function POST(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const body = await req.json()
-  const { endpoint, keys } = body as {
-    endpoint: string
-    keys: { p256dh: string; auth: string }
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
   }
 
-  if (!endpoint || !keys?.p256dh || !keys?.auth) {
-    return NextResponse.json({ error: 'Datos de suscripción inválidos' }, { status: 400 })
+  const parsed = subscribeSchema.safeParse(body)
+  if (!parsed.success) {
+    const first = parsed.error.issues[0]
+    return NextResponse.json({ error: first?.message ?? 'Datos de suscripción inválidos' }, { status: 400 })
   }
+
+  const { endpoint, keys } = parsed.data
 
   const dbUser = await prisma.user.findUnique({
     where: { supabaseAuthId: session.id },
@@ -41,10 +59,18 @@ export async function DELETE(req: NextRequest) {
   const session = await getSession()
   if (!session) return NextResponse.json({ error: 'No autenticado' }, { status: 401 })
 
-  const body = await req.json()
-  const { endpoint } = body as { endpoint: string }
-  if (!endpoint) return NextResponse.json({ error: 'endpoint requerido' }, { status: 400 })
+  let body: unknown
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ error: 'Cuerpo inválido' }, { status: 400 })
+  }
 
-  await prisma.pushSubscription.deleteMany({ where: { endpoint } })
+  const parsed = unsubscribeSchema.safeParse(body)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'endpoint requerido' }, { status: 400 })
+  }
+
+  await prisma.pushSubscription.deleteMany({ where: { endpoint: parsed.data.endpoint } })
   return NextResponse.json({ ok: true })
 }

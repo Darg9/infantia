@@ -59,14 +59,16 @@ const HARDCODED_CITY_MAP: Record<string, string> = {
   'parqueexplora.org':                'Medellín',
 };
 
-function getHardcodedCity(domain: string): string | null {
+/** @internal — exported for unit tests */
+export function getHardcodedCity(domain: string): string | null {
   for (const [key, city] of Object.entries(HARDCODED_CITY_MAP)) {
     if (domain === key || domain.endsWith('.' + key)) return city;
   }
   return null;
 }
 
-function mapActivityType(categories: string[], title: string): string {
+/** @internal — exported for unit tests */
+export function mapActivityType(categories: string[], title: string): string {
   const titleLower = title.toLowerCase();
   if (categories.some(c => ['Teatro', 'Danza', 'Música'].includes(c))) return 'RECURRING';
   if (titleLower.includes('taller') || titleLower.includes('curso') || titleLower.includes('clase')) return 'RECURRING';
@@ -96,7 +98,8 @@ const EXPLICIT_DATE_RE = /\b(\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|juni
 /** Fecha relativa: "este viernes", "mañana", "próximo sábado", "este fin de semana", "esta semana" */
 const DATE_MENTION_RE = /\b(\d{1,2}\s+de\s+(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|octubre|noviembre|diciembre)|este\s+(viernes|s[aá]bado|domingo|lunes|martes|mi[eé]rcoles|jueves)|este\s+fin\s+de\s+semana|pr[oó]ximo\s+(s[aá]bado|domingo|viernes|lunes)|ma[nñ]ana\b|\besta\s+semana\b|\d{1,2}\/\d{1,2}\/\d{2,4})\b/i;
 
-function computeTemporalMeta(
+/** @internal — exported for unit tests */
+export function computeTemporalMeta(
   normalized: { schedules?: { startDate: string; endDate?: string | null }[] | null; title: string; description: string | null },
   isCheerioFallback: boolean,
 ): { status: string; dateSource: string; dateMentionDetected: boolean } {

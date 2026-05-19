@@ -31,8 +31,8 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
-      - name: Run Playwright tests
-        run: npx playwright test e2e/search-assist.spec.ts
+      - name: Run Playwright tests (sin-auth)
+        run: npx playwright test --project=sin-auth
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}

@@ -37,7 +37,6 @@ export default defineConfig({
         'src/**/*.v1.ts',
         // Módulos V2 en construcción activa — cobertura pendiente (DEBT-07)
         // Se añadirán a medida que se completen sus test suites
-        'src/modules/scraping/pipeline-v2/save-activity-v2.ts',
         'src/modules/scraping/quality/activity-gate-v2.ts',
         'src/modules/scraping/quality/source-trust.ts',
         'src/modules/scraping/quality/category-skew.ts',
@@ -60,16 +59,16 @@ export default defineConfig({
         // Infraestructura de cola — requiere integración BullMQ/Redis para testear ramas
         'src/modules/scraping/queue/producer.ts',    // DEBT-07: integración BullMQ
         // Módulos con dependencias Redis — ramas de fallback requieren integración
-        'src/lib/quota-tracker.ts',                  // DEBT-07: ramas Redis/filesystem
         'src/lib/track.ts',                          // DEBT-07: ramas throttle/keepalive Redis
       ],
       thresholds: {
         lines: threshold,
         functions: threshold,
-        // Branches: umbral diferenciado — ramas de error/fallback en pipeline.ts y
-        // activities.service.ts requieren mocks complejos de Redis/Prisma/BullMQ.
-        // Umbral real: 79.94%. Comprometido a ≥85% en DEBT-07 (próximas sprints).
-        branches: Math.min(79, threshold),
+        // Branches: mejora continua — subió de 79% → 83.38% al añadir cobertura
+        // de quota-tracker y save-activity-v2. Módulos complejos (pipeline.ts,
+        // storage.ts) con ramas de error/Redis requieren mocks de integración.
+        // DEBT-07: comprometido a ≥85% en siguiente sprint.
+        branches: Math.min(83, threshold),
         statements: threshold,
       },
     },

@@ -63,10 +63,11 @@ eslint.json
 eslint-report.txt
 eslint-report.json
 
-# ─── Storybook logs ─────────────────────────────────────────────
+# ─── Storybook logs + build output ──────────────────────────────
 build-storybook.log
 debug-storybook.log
 storybook-out.log
+storybook-static/
 
 # ─── Backups de archivos fuente ─────────────────────────────────
 *.bak

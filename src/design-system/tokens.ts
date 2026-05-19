@@ -45,13 +45,13 @@ export const semantic = {
   action: {
     /**
      * Split por modo — WCAG AA en ambos.
-     * Light: #b46000 (4.56:1 sobre blanco) | Dark: #ff8c00 (7.62:1 sobre #111827)
+     * Light: #9e5200 (5.73:1 sobre blanco / 5.24:1 sobre bg-subtle ✅) | Dark: #ff8c00 (7.62:1 sobre #111827)
      * En componentes usar var(--hp-action-primary) — globals.css aplica el override dark.
      * brand-500 (#ff8c00) sigue siendo el naranja decorativo en ambos modos.
      */
-    primary:      '#b46000',       // light — valor interactivo WCAG AA
+    primary:      '#9e5200',       // light — WCAG AA (actualizado S74: pasa sobre bg-subtle)
     primaryDark:  '#ff8c00',       // dark override (en globals.css .dark)
-    primaryHover: '#963f00',       // light
+    primaryHover: '#7d3e00',       // light
     primaryHoverDark: '#e67e00',   // dark override
   },
 } as const

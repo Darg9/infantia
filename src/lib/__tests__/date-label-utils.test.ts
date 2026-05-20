@@ -59,6 +59,30 @@ describe('getEditorialDateLabel', () => {
       const sch = { days: ['sat'] };
       expect(getEditorialDateLabel({ type: 'ONE_TIME', schedule: sch }, NOW)).toBeNull();
     });
+
+    it('retorna null para schedule RECURRING con days vacío', () => {
+      // Rama: formatScheduleDays([]) → if (!days.length) return null
+      const sch = { days: [], start: '10:00' };
+      expect(getEditorialDateLabel({ type: 'RECURRING', schedule: sch }, NOW)).toBeNull();
+    });
+
+    it('retorna "Todos los días" para schedule con los 7 días', () => {
+      // Rama: hasFullWeek && hasWeekend → 'Todos los días'
+      const sch = { days: ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] };
+      expect(getEditorialDateLabel({ type: 'RECURRING', schedule: sch }, NOW)).toBe('Todos los días');
+    });
+
+    it('retorna null para RECURRING con schedule sin propiedad days (no es array)', () => {
+      // Rama: Array.isArray(sch.days) → false (sch.days undefined)
+      const sch = { start: '10:00', end: '12:00' }; // objeto válido pero sin days
+      expect(getEditorialDateLabel({ type: 'RECURRING', schedule: sch }, NOW)).toBeNull();
+    });
+
+    it('retorna el código original para day desconocido (fallback ??)', () => {
+      // Rama: SCHEDULE_DAY_MAP[d] ?? d — d no existe en el mapa → retorna d tal cual
+      const sch = { days: ['holiday'] }; // 'holiday' no está en SCHEDULE_DAY_MAP
+      expect(getEditorialDateLabel({ type: 'RECURRING', schedule: sch }, NOW)).toBe('holiday');
+    });
   });
 
   // ── Hoy ───────────────────────────────────────────────────────────────────────
@@ -163,6 +187,20 @@ describe('getEditorialDateLabel', () => {
       const end   = cotDate(2030, 9, 5, 20); // 8 PM — mismo día
       expect(getEditorialDateLabel({ startDate: start, endDate: end }, NOW)).toBe('5 Sep');
     });
+
+    it('retorna solo fecha inicio para evento multi-día que cruza meses', () => {
+      // Rama: isSameColDay → años iguales, meses distintos → second && short-circuits
+      const start = cotDate(2030, 5, 30); // 30 mayo
+      const end   = cotDate(2030, 6, 2);  // 2 junio — mes diferente → no rango
+      expect(getEditorialDateLabel({ startDate: start, endDate: end }, NOW)).toBe('30 May');
+    });
+
+    it('retorna solo fecha inicio para evento multi-día que cruza años', () => {
+      // Rama: isSameColDay → años distintos → first && short-circuits
+      const start = cotDate(2030, 12, 30); // 30 diciembre
+      const end   = cotDate(2031, 1, 2);   // 2 enero año siguiente → no rango
+      expect(getEditorialDateLabel({ startDate: start, endDate: end }, NOW)).toBe('30 Dic');
+    });
   });
 
   // ── Eventos pasados ────────────────────────────────────────────────────────────
@@ -232,6 +270,15 @@ describe('getEditorialDateLabel', () => {
       const label = getEditorialDateLabel({ startDate: '2026-05-19T00:00:00Z' }, NOW);
       expect(label).not.toContain('PM');
       expect(label).not.toContain('AM');
+    });
+
+    it('rango "18–20 Ago" con endDate guardada como UTC midnight (rama endMidnightUTC=true)', () => {
+      // endDate = '2030-08-20T00:00:00Z' → end.getUTCHours()===0 → endMidnightUTC=true
+      // Cubre ramas: BRDA:129 branches 1+2 y BRDA:131 branch 0 (endMidnightUTC ? end)
+      expect(getEditorialDateLabel({
+        startDate: '2030-08-18T00:00:00Z',
+        endDate:   '2030-08-20T00:00:00Z',
+      }, NOW)).toBe('18–20 Ago');
     });
   });
 });

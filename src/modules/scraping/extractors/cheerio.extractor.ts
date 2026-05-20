@@ -101,6 +101,82 @@ export class CheerioExtractor implements Extractor {
   }
 
   /**
+   * Extrae fechas estructuradas desde etiquetas `<time datetime>` del HTML.
+   *
+   * Estándar HTML5 — ampliamente usado en sitios Drupal, WordPress y agendas culturales.
+   * El atributo `datetime` contiene la fecha en ISO 8601 (ej: "2026-05-21T20:00:00Z"),
+   * mientras que el texto visible puede ser solo "21 de Mayo" (incompleto para inferencia).
+   *
+   * Extrae SOLO valores con fecha válida (descarta valores solo de hora o inválidos).
+   * Devuelve array vacío si no hay `<time datetime>` en el HTML.
+   *
+   * @example
+   *   // HTML: <time datetime="2026-05-21T20:00:00Z">21 de Mayo</time>
+   *   extractTimeDates(html) → [{ datetime: '2026-05-21T20:00:00Z', text: '21 de Mayo' }]
+   */
+  static extractTimeDates(html: string): Array<{ datetime: string; text: string }> {
+    try {
+      const $ = cheerio.load(html);
+      const results: Array<{ datetime: string; text: string }> = [];
+
+      $('time[datetime]').each((_, el) => {
+        const datetime = $(el).attr('datetime')?.trim();
+        if (!datetime) return;
+
+        // Validar que sea una fecha real (no solo hora "HH:MM" o inválido)
+        const parsed = new Date(datetime);
+        if (isNaN(parsed.getTime())) return;
+
+        // Descartar valores que son solo tiempo (no tienen componente de fecha)
+        // Ejemplo: "20:00" → inválido. "2026-05-21" o "2026-05-21T20:00:00Z" → válido.
+        if (!datetime.match(/\d{4}-\d{2}-\d{2}/)) return;
+
+        const text = $(el).text().replace(/\s+/g, ' ').trim();
+        results.push({ datetime, text });
+      });
+
+      return results;
+    } catch {
+      return [];
+    }
+  }
+
+  /**
+   * Selecciona el mejor schedule a partir de fechas extraídas de `<time datetime>`.
+   *
+   * Estrategia:
+   *   - Prefiere fechas futuras (event upcoming)
+   *   - Si hay múltiples futuras: startDate = primera, endDate = última
+   *   - Si todas son pasadas: startDate = la más reciente (mejor que nada)
+   *   - Devuelve null si no hay fechas válidas
+   *
+   * @param timeDates  - Output de `extractTimeDates()`
+   * @param now        - Fecha de referencia (injectable para tests)
+   */
+  static pickBestSchedule(
+    timeDates: Array<{ datetime: string }>,
+    now: Date = new Date(),
+  ): { startDate: string; endDate?: string } | null {
+    const valid = timeDates
+      .map((t) => { try { return new Date(t.datetime); } catch { return null; } })
+      .filter((d): d is Date => d !== null && !isNaN(d.getTime()))
+      .sort((a, b) => a.getTime() - b.getTime());
+
+    if (valid.length === 0) return null;
+
+    const future = valid.filter((d) => d > now);
+    const chosen = future.length > 0 ? future[0] : valid[valid.length - 1];
+
+    // endDate solo si hay más de una fecha futura (rango real)
+    const lastFuture = future.length > 1 ? future[future.length - 1] : undefined;
+
+    return {
+      startDate: chosen.toISOString().split('T')[0],
+      ...(lastFuture ? { endDate: lastFuture.toISOString().split('T')[0] } : {}),
+    };
+  }
+
+  /**
    * Extrae texto limpio de un HTML ya cargado (sin hacer fetch).
    * Útil para construir ScrapedRawData desde HTML previamente descargado.
    */

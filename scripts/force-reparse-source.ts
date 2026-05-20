@@ -8,7 +8,7 @@
 //
 // Flujo:
 //   1. Busca actividades en BD de la fuente (por sourceDomain)
-//   2. Para cada URL: fetch HTML → Gemini → update campos temporales en BD
+//   2. Para cada URL: fetch HTML → Gemini (o Cheerio con --zero-quota) → update
 //   3. Actualiza cache (disco + BD)
 //   4. Reporta: updated / no_change / failed / skipped
 //
@@ -17,13 +17,20 @@
 //   npx tsx scripts/force-reparse-source.ts --source=idartes --dry-run
 //   npx tsx scripts/force-reparse-source.ts --source=idartes --limit=20
 //   npx tsx scripts/force-reparse-source.ts --source=idartes --only-missing-dates
+//   npx tsx scripts/force-reparse-source.ts --source=idartes --zero-quota
 //   npx tsx scripts/force-reparse-source.ts --source=biblored --limit=50 --dry-run
+//
+// --zero-quota:
+//   Extrae fechas desde <time datetime="..."> HTML sin usar Gemini.
+//   Cero coste de cuota. Óptimo para Idartes/Drupal que usan HTML5 <time>.
+//   Actualiza solo startDate, endDate y extractionMetadata.temporal.
 // =============================================================================
 
 import 'dotenv/config';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { PrismaClient, Prisma } from '../src/generated/prisma/client';
 import { GeminiAnalyzer } from '../src/modules/scraping/nlp/gemini.analyzer';
+import { CheerioExtractor } from '../src/modules/scraping/extractors/cheerio.extractor';
 import { ScrapingCache } from '../src/modules/scraping/cache';
 import { quota } from '../src/lib/quota-tracker';
 import type { ActivityNLPResult } from '../src/modules/scraping/types';
@@ -35,6 +42,7 @@ const sourceArg        = args.find(a => a.startsWith('--source='))?.replace('--s
 const limitArg         = parseInt(args.find(a => a.startsWith('--limit='))?.replace('--limit=', '') ?? '50');
 const dryRun           = args.includes('--dry-run');
 const onlyMissingDates = args.includes('--only-missing-dates');
+const zeroQuota        = args.includes('--zero-quota');
 const help             = args.includes('--help') || args.includes('-h');
 
 if (help || !sourceArg) {
@@ -46,11 +54,13 @@ Options:
   --limit=<n>           Max activities to process          (default: 50)
   --dry-run             Show what would happen, no writes
   --only-missing-dates  Only process activities with startDate IS NULL
+  --zero-quota          Use CheerioExtractor <time datetime> instead of Gemini (no quota cost)
   --help                Show this message
 
 Examples:
   npx tsx scripts/force-reparse-source.ts --source=idartes --dry-run
   npx tsx scripts/force-reparse-source.ts --source=idartes --limit=20 --only-missing-dates
+  npx tsx scripts/force-reparse-source.ts --source=idartes --only-missing-dates --zero-quota
   npx tsx scripts/force-reparse-source.ts --source=biblored --limit=30
 `);
   process.exit(sourceArg ? 0 : 1);
@@ -97,14 +107,20 @@ async function main() {
   const analyzer = new GeminiAnalyzer();
   const cache    = new ScrapingCache(sourceArg!);
 
-  // 1. Verificar cuota Gemini
-  const remaining = await quota.getRemaining();
-  console.log(`\n🤖 Force Reparse — fuente: "${sourceArg}" | Cuota Gemini: ${remaining} req restantes`);
+  // 1. Verificar cuota Gemini (skip si --zero-quota)
+  if (zeroQuota) {
+    console.log(`\n⚡ Force Reparse ZERO-QUOTA — fuente: "${sourceArg}"`);
+    console.log('   Modo: CheerioExtractor <time datetime> (sin Gemini, sin coste de cuota)');
+  } else {
+    const remaining = await quota.getRemaining();
+    console.log(`\n🤖 Force Reparse — fuente: "${sourceArg}" | Cuota Gemini: ${remaining} req restantes`);
 
-  if (remaining <= 0 && !dryRun) {
-    console.error('❌ Cuota Gemini agotada. Usa --dry-run para inspección o espera el reset (08:00 UTC).');
-    await prisma.$disconnect();
-    process.exit(1);
+    if (remaining <= 0 && !dryRun) {
+      console.error('❌ Cuota Gemini agotada.');
+      console.error('   Opciones: --dry-run para inspección | --zero-quota para extracción <time> | espera reset (08:00 UTC).');
+      await prisma.$disconnect();
+      process.exit(1);
+    }
   }
 
   if (dryRun)           console.log('🔍 DRY-RUN: no se guardan cambios en BD');
@@ -187,15 +203,63 @@ async function main() {
         continue;
       }
 
-      // Parse con Gemini (o fallback Cheerio si falla)
-      let parseResult: ActivityNLPResult;
-      let isCheerioFallback = false;
-
       if (dryRun) {
-        console.log(`       → DRY-RUN: fetch OK (${html.length} chars). Gemini no llamado.`);
+        console.log(`       → DRY-RUN: fetch OK (${html.length} chars). Parse no ejecutado.`);
         skipped++;
         continue;
       }
+
+      // ── Rama A: --zero-quota → extracción <time datetime> sin Gemini ────────
+      if (zeroQuota) {
+        const timeDates = CheerioExtractor.extractTimeDates(html);
+        const schedule  = CheerioExtractor.pickBestSchedule(timeDates);
+
+        const hadDate  = !!act.startDate;
+        const getsDate = !!schedule?.startDate;
+
+        if (!getsDate) {
+          console.log(`       ⏭️  Zero-quota: sin <time datetime> encontrado — no_change`);
+          noChange++;
+          continue;
+        }
+
+        const newStartDate = new Date(schedule!.startDate);
+        const newEndDate   = schedule!.endDate ? new Date(schedule!.endDate) : null;
+
+        const temporalMeta = {
+          status:              'resolved',
+          dateSource:          'explicit',
+          dateMentionDetected: false,
+          extractedFrom:       'time_datetime_attr',
+          timeDatesFound:      timeDates.length,
+        };
+
+        if (!dryRun) {
+          await prisma.activity.update({
+            where: { id: act.id },
+            data: {
+              startDate: newStartDate,
+              endDate:   newEndDate,
+              extractionMetadata: {
+                ...((act.extractionMetadata as Record<string, unknown>) ?? {}),
+                temporal:    temporalMeta,
+                reparsedAt:  new Date().toISOString(),
+                reparsedFrom: 'zero-quota-time-attr',
+              },
+            },
+          });
+        }
+
+        const dateSummary = `startDate → ${schedule!.startDate}${schedule!.endDate ? ` … ${schedule!.endDate}` : ''}`;
+        const changeTag   = !hadDate ? '🆕 fecha nueva' : '🔄 fecha actualizada';
+        console.log(`       ✅ ${changeTag}: ${dateSummary} (${timeDates.length} <time> encontradas)`);
+        updated++;
+        continue;
+      }
+
+      // ── Rama B: Gemini (comportamiento original) ─────────────────────────────
+      let parseResult: ActivityNLPResult;
+      let isCheerioFallback = false;
 
       try {
         parseResult = await analyzer.analyze(html, act.sourceUrl);
@@ -204,10 +268,11 @@ async function main() {
         const msg = geminiErr instanceof Error ? geminiErr.message : String(geminiErr);
         if (msg.includes('QUOTA_EXHAUSTED')) {
           console.error(`\n❌ Cuota agotada en mitad del proceso. ${updated} actualizadas hasta ahora.`);
+          console.error('   Tip: prueba --zero-quota para continuar sin Gemini (Idartes/Drupal/Wordpress).');
           break;
         }
         // Fallback: Gemini no disponible — mantener datos existentes, actualizar solo metadata
-        console.warn(`[warn] Gemini falló para ${act.sourceUrl}: ${msg}. Cheerio no extrae fechas — marcando degraded.`);
+        console.warn(`[warn] Gemini falló para ${act.sourceUrl}: ${msg}. Marcando degraded.`);
         parseResult = {
           title:           act.title,
           description:     null,
@@ -308,9 +373,11 @@ async function main() {
   await prisma.$disconnect();
 
   // 6. Resumen
+  const modeLabel = zeroQuota ? '⚡ zero-quota (<time datetime>)' : '🤖 Gemini';
   console.log(`
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📊 Resumen force-reparse "${sourceArg}"
+   Modo: ${modeLabel}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Total procesadas : ${activities.length}
   ✅ Actualizadas  : ${updated}
